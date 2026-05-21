@@ -38,11 +38,11 @@ export function NotificationRow({
   const { label, bg, color } = notifTypeInfo(notif.type)
 
   function getNavPath(): string | null {
-    if (notif.type === 'new_event_from_following' && notif.relatedEventId) {
-      return `/events/${notif.relatedEventId}`
+    if (notif.type === 'new_event_from_following' && (notif as any).relatedEventId) {
+      return `/events/${(notif as any).relatedEventId}`
     }
-    if (notif.type?.includes('order_') && notif.relatedTicketId) {
-      return `/events/${notif.relatedEventId}`
+    if (notif.type?.includes('order_') && (notif as any).relatedTicketId) {
+      return `/events/${(notif as any).relatedEventId}`
     }
     return null
   }

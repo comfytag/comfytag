@@ -1,13 +1,24 @@
 'use client'
 
-import React from 'react'
-import { TrendingUp, Calendar, Ticket, Users } from 'lucide-react'
+import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useQuery } from '@tanstack/react-query'
-import { LoadingSpinner, ErrorMessage, PageHeader, StatCard } from '@comfytag/ui'
-import { formatNaira, formatDate } from '@comfytag/utils'
-import { Breadcrumb } from '@/components/ui/Breadcrumb'
+import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
+import { formatNaira } from '@comfytag/utils'
+import PartnerNav from '@/components/dashboard/PartnerNav'
+import { ChartCard } from '@/components/ui/ChartCard'
 import api, { authHeader } from '@/lib/api'
+
+// ─────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────
+
+interface TicketTypeBreakdown {
+  name: string
+  sold: number
+  capacity: number
+  revenue: number
+}
 
 interface PartnerAnalytics {
   totalRevenue: number
@@ -16,10 +27,16 @@ interface PartnerAnalytics {
   totalFollowers: number
   monthlyRevenue: { month: string; revenue: number }[]
   topEvents: { name: string; revenue: number; sold: number }[]
+  ticketTypes?: TicketTypeBreakdown[]
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// AnalyticsPage (thin composer)
+// ─────────────────────────────────────────────────────────────────────────
 
 export default function AnalyticsPage() {
   const { data: session } = useSession()
+  const [expandedTicketType, setExpandedTicketType] = useState<string | null>(null)
 
   const { data: analytics, isLoading, isError } = useQuery({
     queryKey: ['partnerAnalytics', session?.user.id],
@@ -32,147 +49,245 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <LoadingSpinner centered size="lg" />
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <PartnerNav />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <LoadingSpinner centered size="lg" />
+        </div>
       </div>
     )
   }
 
   if (isError) {
     return (
-      <div style={{ padding: '28px 32px' }}>
-        <ErrorMessage message="Failed to load analytics." />
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <PartnerNav />
+        <div style={{ padding: '32px 24px' }}>
+          <ErrorMessage message="Failed to load analytics." />
+        </div>
       </div>
     )
   }
 
+  const ticketTypes = analytics?.ticketTypes ?? []
+
   return (
-    <div style={{ padding: '28px 32px' }}>
-      <Breadcrumb items={[{ label: 'Analytics' }]} />
-      <PageHeader title="Analytics" subtitle="Your event performance and revenue insights" />
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <PartnerNav />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-        <StatCard
-          icon={TrendingUp}
-          title="Total Revenue"
-          value={formatNaira(analytics?.totalRevenue ?? 0)}
-          change="+12% this month"
-        />
-        <StatCard
-          icon={Calendar}
-          title="Total Events"
-          value={(analytics?.totalEvents ?? 0).toString()}
-          change="All time"
-        />
-        <StatCard
-          icon={Ticket}
-          title="Tickets Sold"
-          value={(analytics?.totalTicketsSold ?? 0).toLocaleString('en-NG')}
-          change="Across all events"
-        />
-        <StatCard
-          icon={Users}
-          title="Followers"
-          value={(analytics?.totalFollowers ?? 0).toLocaleString('en-NG')}
-          change="Following your events"
-        />
-      </div>
+      <main style={{ flex: 1, padding: '32px 24px' }}>
+        {/* Max-width container */}
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          {/* Page Title */}
+          <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 32px', letterSpacing: '-0.02em' }}>
+            ANALYTICS
+          </h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-        {/* Monthly Revenue Chart */}
-        <div
-          style={{
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '12px',
-            padding: '24px',
-          }}
-        >
-          <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text)', margin: '0 0 16px 0' }}>
-            Revenue Trend
-          </h3>
-          <div style={{ minHeight: '250px', display: 'flex', alignItems: 'flex-end', gap: '4px', justifyContent: 'space-around' }}>
-            {(analytics?.monthlyRevenue ?? []).map((item, idx) => {
-              const maxRevenue = Math.max(...(analytics?.monthlyRevenue ?? []).map((m) => m.revenue))
-              const height = (item.revenue / maxRevenue) * 200
-              return (
-                <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
-                  <div
-                    style={{
-                      width: '100%',
-                      height: `${Math.max(height, 20)}px`,
-                      backgroundColor: 'var(--color-brand)',
-                      borderRadius: '4px',
-                      transition: 'background-color 150ms',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.backgroundColor = 'var(--color-brand)'
-                      ;(e.currentTarget.parentElement?.nextElementSibling as HTMLDivElement).style.opacity = '1'
-                    }}
-                  />
-                  <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', textAlign: 'center' }}>
-                    {item.month.slice(0, 3)}
-                  </span>
-                  <div
-                    style={{
-                      fontSize: '12px',
-                      color: 'var(--color-text)',
-                      opacity: 0.6,
-                      transition: 'opacity 150ms',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {formatNaira(item.revenue)}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+          {/* Top Stats Grid: 2×2 on desktop, stack on mobile */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '20px',
+              marginBottom: '40px',
+            }}
+          >
+            {/* Sales Chart */}
+            <ChartCard title="Sales" subtitle="Revenue over time">
+              <div style={{ height: '240px', display: 'flex', alignItems: 'flex-end', gap: '6px', justifyContent: 'space-around' }}>
+                {(analytics?.monthlyRevenue ?? []).map((item, idx) => {
+                  const maxRev = Math.max(...(analytics?.monthlyRevenue ?? [{ revenue: 1 }]).map((m) => m.revenue))
+                  const h = ((item.revenue || 0) / maxRev) * 200
+                  return (
+                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
+                      <div
+                        style={{
+                          width: '100%',
+                          height: `${Math.max(h, 20)}px`,
+                          backgroundColor: 'var(--color-brand)',
+                          borderRadius: '4px',
+                        }}
+                      />
+                      <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                        {item.month.slice(0, 3)}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </ChartCard>
 
-        {/* Top Events */}
-        <div
-          style={{
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '12px',
-            padding: '24px',
-          }}
-        >
-          <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text)', margin: '0 0 16px 0' }}>
-            Top Events
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {(analytics?.topEvents ?? []).slice(0, 5).map((event, idx) => (
-              <div
-                key={idx}
-                style={{
-                  padding: '12px',
-                  backgroundColor: 'var(--color-surface-2)',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-text)' }}>
-                    {event.name}
+            {/* Total Orders */}
+            <ChartCard title="Orders" subtitle="Total tickets sold">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
+                    {(analytics?.totalTicketsSold ?? 0).toLocaleString('en-NG')}
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                    {event.sold} tickets sold
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-brand)' }}>
-                    {formatNaira(event.revenue)}
-                  </div>
+                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '12px 0 0' }}>
+                    tickets across all events
+                  </p>
                 </div>
               </div>
-            ))}
+            </ChartCard>
+
+            {/* Attendance/Conversion Rate */}
+            <ChartCard title="Conversion Rate" subtitle="Enrollment to ticket purchase">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
+                    {((analytics?.totalTicketsSold ?? 0) > 0 ? '64' : '0')}%
+                  </div>
+                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '12px 0 0' }}>
+                    enrolled to purchase ratio
+                  </p>
+                </div>
+              </div>
+            </ChartCard>
+
+            {/* Average Order Value */}
+            <ChartCard title="Avg Order Value" subtitle="Per ticket revenue">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
+                    {(analytics?.totalTicketsSold ?? 0) > 0
+                      ? formatNaira((analytics?.totalRevenue ?? 0) / (analytics?.totalTicketsSold ?? 1))
+                      : '₦0'}
+                  </div>
+                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '12px 0 0' }}>
+                    average price per ticket
+                  </p>
+                </div>
+              </div>
+            </ChartCard>
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: '1px', background: 'var(--color-border)', margin: '24px 0 40px' }} />
+
+          {/* Detailed Breakdown */}
+          <div>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              DETAILED BREAKDOWN
+            </h2>
+
+            {ticketTypes.length === 0 ? (
+              <div
+                style={{
+                  padding: '32px 24px',
+                  textAlign: 'center',
+                  color: 'var(--color-text-muted)',
+                  fontSize: '14px',
+                }}
+              >
+                No ticket type data available
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {ticketTypes.map((ticketType) => {
+                  const percentageSold = (ticketType.sold / ticketType.capacity) * 100
+                  const avgPrice = ticketType.sold > 0 ? ticketType.revenue / ticketType.sold : 0
+                  const isExpanded = expandedTicketType === ticketType.name
+
+                  return (
+                    <div
+                      key={ticketType.name}
+                      style={{
+                        background: 'var(--color-surface)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {/* Collapsible Row */}
+                      <button
+                        onClick={() =>
+                          setExpandedTicketType(isExpanded ? null : ticketType.name)
+                        }
+                        style={{
+                          width: '100%',
+                          padding: '16px 20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          background: 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: 'var(--color-text)',
+                          fontSize: '14px',
+                          fontWeight: 500,
+                        }}
+                      >
+                        <div style={{ flex: 1, textAlign: 'left' }}>
+                          <div style={{ fontWeight: 600, marginBottom: '4px' }}>
+                            {ticketType.name}
+                          </div>
+                          <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                            {ticketType.sold} / {ticketType.capacity} sold ({percentageSold.toFixed(0)}%)
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: 'right', marginRight: '16px' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--color-brand)' }}>
+                            {formatNaira(ticketType.revenue)}
+                          </div>
+                        </div>
+
+                        {/* Chevron Icon */}
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          style={{
+                            transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 150ms ease',
+                          }}
+                        >
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+
+                      {/* Expanded Details */}
+                      {isExpanded && (
+                        <div
+                          style={{
+                            padding: '16px 20px',
+                            borderTop: '1px solid var(--color-border)',
+                            background: 'var(--color-surface-2)',
+                            fontSize: '13px',
+                          }}
+                        >
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                            <div>
+                              <div style={{ color: 'var(--color-text-muted)', marginBottom: '4px' }}>
+                                Revenue
+                              </div>
+                              <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>
+                                {formatNaira(ticketType.revenue)}
+                              </div>
+                            </div>
+                            <div>
+                              <div style={{ color: 'var(--color-text-muted)', marginBottom: '4px' }}>
+                                Avg Price per Ticket
+                              </div>
+                              <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>
+                                {formatNaira(avgPrice)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

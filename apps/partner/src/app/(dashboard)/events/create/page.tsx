@@ -5,15 +5,16 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useMutation } from '@tanstack/react-query'
 import Link from 'next/link'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, Edit2 } from 'lucide-react'
 import { Button, Input, Modal, ErrorMessage, PageHeader, MediaUploader } from '@comfytag/ui'
-import { NIGERIAN_STATES, EVENT_CATEGORIES } from '@comfytag/utils'
+import { NIGERIAN_STATES, EVENT_CATEGORIES, formatDate, formatTime, formatNaira } from '@comfytag/utils'
+import type { Event } from '@comfytag/types'
 import api, { authHeader } from '@/lib/api'
 import { fieldStyle, selectStyle, labelStyle, fieldGroupStyle, twoColGrid, cardStyle } from '@/lib/formStyles'
 import { PerformerTag } from '@/components/events/PerformerTag'
 import { TierListRow } from '@/components/events/TierListRow'
 
-interface Step1Form {
+interface FormState {
   name: string
   category: string
   description: string
@@ -35,68 +36,121 @@ export default function CreateEventPage() {
   const router = useRouter()
   const { data: session } = useSession()
 
-  const [step, setStep] = useState<1 | 2 | 3>(1)
-  const [form, setForm] = useState<Step1Form>({
-    name: '', category: '', description: '', date: '',
-    startTime: '', endTime: '', venue: '', address: '', state: '',
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1)
+  const [form, setForm] = useState<FormState>({
+    name: '',
+    category: '',
+    description: '',
+    date: '',
+    startTime: '',
+    endTime: '',
+    venue: '',
+    address: '',
+    state: '',
   })
+  const [coverImage, setCoverImage] = useState<string>('')
   const [tiers, setTiers] = useState<TierInput[]>([])
+  const [performers, setPerformers] = useState<string[]>([])
+  const [performerInput, setPerformerInput] = useState('')
+  const [details, setDetails] = useState({ specialNotes: '', isPublic: true })
+  const [images, setImages] = useState<string[]>([])
+
   const [tierModal, setTierModal] = useState(false)
   const [currentTier, setCurrentTier] = useState<TierInput>({ name: '', price: '', capacity: '' })
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
-  const [performers, setPerformers] = useState<string[]>([])
-  const [performerInput, setPerformerInput] = useState('')
-  const [images, setImages] = useState<string[]>([])
-  const [videoUrls, setVideoUrls] = useState<string[]>([])
-  const [step1Error, setStep1Error] = useState('')
-  const [submitError, setSubmitError] = useState('')
-  const [tierError, setTierError] = useState('')
+  const [stepErrors, setStepErrors] = useState<string>('')
 
   const { mutate, isPending } = useMutation({
     mutationFn: (body: object) =>
       api.post('/events/' + session!.user.id, body, authHeader(session?.user.token)).then(r => r.data),
     onSuccess: (data: { _id: string }) => router.push('/events/' + data._id),
-    onError: () => setSubmitError('Failed to create event. Please try again.'),
+    onError: () => setStepErrors('Failed to create event. Please try again.'),
   })
 
-  function handleStep1Next() {
-    const emptyFields: string[] = []
-    if (!form.name) emptyFields.push('Event Name')
-    if (!form.category) emptyFields.push('Category')
-    if (!form.description) emptyFields.push('Description')
-    if (!form.date) emptyFields.push('Date')
-    if (!form.startTime) emptyFields.push('Start Time')
-    if (!form.endTime) emptyFields.push('End Time')
-    if (!form.venue) emptyFields.push('Venue')
-    if (!form.address) emptyFields.push('Address')
-    if (!form.state) emptyFields.push('State')
-    if (emptyFields.length > 0) {
-      setStep1Error(`Please fill in: ${emptyFields.join(', ')}`)
-      return
+  // ─── Step Validation ───────────────────────────────────
+  function validateStep1(): boolean {
+    const missing: string[] = []
+    if (!form.name) missing.push('Event Name')
+    if (!form.category) missing.push('Category')
+    if (!form.date) missing.push('Date')
+    if (!form.startTime) missing.push('Start Time')
+    if (!form.endTime) missing.push('End Time')
+    if (!form.venue) missing.push('Venue')
+    if (!form.address) missing.push('Address')
+    if (!form.state) missing.push('State')
+
+    if (missing.length > 0) {
+      setStepErrors(`Please fill in: ${missing.join(', ')}`)
+      return false
     }
-    setStep(2)
-    setStep1Error('')
+    setStepErrors('')
+    return true
   }
 
+  function validateStep2(): boolean {
+    if (!coverImage) {
+      setStepErrors('Please upload a cover image')
+      return false
+    }
+    setStepErrors('')
+    return true
+  }
+
+  function validateStep3(): boolean {
+    if (tiers.length === 0) {
+      setStepErrors('Add at least one ticket tier')
+      return false
+    }
+    setStepErrors('')
+    return true
+  }
+
+  function validateStep4(): boolean {
+    if (!form.description) {
+      setStepErrors('Please add an event description')
+      return false
+    }
+    setStepErrors('')
+    return true
+  }
+
+  // ─── Navigation ───────────────────────────────────────
+  function nextStep() {
+    if (step === 1 && validateStep1()) setStep(2)
+    else if (step === 2 && validateStep2()) setStep(3)
+    else if (step === 3 && validateStep3()) setStep(4)
+    else if (step === 4 && validateStep4()) setStep(5)
+  }
+
+  function prevStep() {
+    if (step > 1) setStep((step - 1) as 1 | 2 | 3 | 4 | 5)
+  }
+
+  function goToStep(target: 1 | 2 | 3 | 4 | 5) {
+    if (target < step) {
+      setStep(target)
+      setStepErrors('')
+    }
+  }
+
+  // ─── Tier Management ───────────────────────────────────
   function handleAddTier() {
     const price = Number(currentTier.price)
     const capacity = Number(currentTier.capacity)
     if (!currentTier.name || price < 0 || capacity <= 0) {
-      setTierError('Please enter a valid name, price ≥ 0, and capacity > 0.')
+      setStepErrors('Please enter a valid name, price ≥ 0, and capacity > 0.')
       return
     }
     if (editingIndex !== null) {
-      // Update existing tier
       const updated = [...tiers]
       updated[editingIndex] = currentTier
       setTiers(updated)
       setEditingIndex(null)
     } else {
-      // Add new tier
       setTiers([...tiers, currentTier])
     }
     setCurrentTier({ name: '', price: '', capacity: '' })
-    setTierError('')
+    setStepErrors('')
     setTierModal(false)
   }
 
@@ -104,20 +158,19 @@ export default function CreateEventPage() {
     setCurrentTier(tiers[index])
     setEditingIndex(index)
     setTierModal(true)
-    setTierError('')
   }
 
   function handleOpenTierModal() {
     setCurrentTier({ name: '', price: '', capacity: '' })
     setEditingIndex(null)
     setTierModal(true)
-    setTierError('')
   }
 
   function handleRemoveTier(index: number) {
     setTiers(tiers.filter((_, i) => i !== index))
   }
 
+  // ─── Performer Management ───────────────────────────────
   function handleAddPerformer() {
     if (!performerInput.trim()) return
     setPerformers([...performers, performerInput.trim()])
@@ -128,27 +181,20 @@ export default function CreateEventPage() {
     setPerformers(performers.filter((_, i) => i !== index))
   }
 
+  // ─── Media Upload ──────────────────────────────────────
   async function handleUpload(file: File): Promise<string> {
     try {
       const fd = new FormData()
       fd.append('file', file)
       const res = await api.post<{ url: string }>('/upload', fd, authHeader(session?.user.token))
       return res.data.url
-    } catch (error) {
-      setSubmitError('Failed to upload file. Please try again.')
-      throw error
+    } catch {
+      setStepErrors('Failed to upload file. Please try again.')
+      throw new Error('Upload failed')
     }
   }
 
-  function handleStep2Next() {
-    if (tiers.length === 0) {
-      setSubmitError('Add at least one ticket tier')
-      return
-    }
-    setSubmitError('')
-    setStep(3)
-  }
-
+  // ─── Submit ─────────────────────────────────────────────
   function handleSubmit(status: 'draft' | 'published') {
     mutate({
       name: form.name,
@@ -160,19 +206,27 @@ export default function CreateEventPage() {
       venue: form.venue,
       address: form.address,
       state: form.state,
-      ticketType: tiers.map(t => ({ name: t.name, price: Number(t.price), capacity: Number(t.capacity) })),
+      coverImage,
+      images: [coverImage, ...images],
+      ticketType: tiers.map(t => ({
+        name: t.name,
+        price: Number(t.price),
+        capacity: Number(t.capacity),
+      })),
       performers: performers.length > 0 ? performers : undefined,
-      images,
-      videoUrl: videoUrls[0] ?? '',
+      gateRules: details.specialNotes ? [details.specialNotes] : undefined,
       status,
     })
   }
+
+  // ─── Step Indicator Bar ─────────────────────────────────
+  const stepLabels = ['Basic', 'Cover', 'Tickets', 'Details', 'Review']
 
   return (
     <div style={{ padding: '28px 32px' }}>
       <PageHeader
         title="Create Event"
-        subtitle="Fill in the details for your new event"
+        subtitle="Build your event in 5 steps"
         action={
           <Link
             href="/events"
@@ -190,32 +244,72 @@ export default function CreateEventPage() {
         }
       />
 
-      <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '24px', marginTop: 0 }}>
-        {step === 1 ? 'Step 1 of 3: Event Details' : step === 2 ? 'Step 2 of 3: Ticket Tiers' : 'Step 3 of 3: Media'}
-      </p>
+      {/* Step Indicator Bar */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '32px', maxWidth: '600px' }}>
+        {stepLabels.map((label, idx) => {
+          const num = idx + 1
+          const isActive = num === step
+          const isComplete = num < step
+          return (
+            <div
+              key={num}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => goToStep(num as 1 | 2 | 3 | 4 | 5)}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  cursor: num < step ? 'pointer' : isActive ? 'default' : 'not-allowed',
+                  background: isActive
+                    ? 'var(--color-brand)'
+                    : isComplete
+                      ? 'var(--color-success)'
+                      : 'var(--color-surface)',
+                  color: isActive || isComplete ? '#fff' : 'var(--color-text)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  transition: 'all var(--duration-fast) ease',
+                }}
+              >
+                {isComplete ? '✓' : num}
+              </button>
+              <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', textAlign: 'center' }}>
+                {label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
 
       <div style={{ maxWidth: '720px' }}>
+        {/* Step 1: Basic Info */}
         {step === 1 && (
           <div style={cardStyle}>
+            <h2 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 20px 0', color: 'var(--color-text)' }}>
+              Basic Event Info
+            </h2>
+
             <div style={fieldGroupStyle}>
               <Input
                 label="Event Name"
+                placeholder="e.g. Summer Festival 2025"
                 value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
                 required
               />
             </div>
 
-            <div style={fieldGroupStyle}>
-              <label style={labelStyle}>Description</label>
-              <textarea
-                value={form.description}
-                onChange={e => setForm({ ...form, description: e.target.value })}
-                style={{ ...fieldStyle, height: '100px', resize: 'vertical' }}
-              />
-            </div>
-
-            <div style={{ ...twoColGrid, marginBottom: '20px' }}>
+            <div style={twoColGrid}>
               <div style={fieldGroupStyle}>
                 <label style={labelStyle}>Category</label>
                 <select
@@ -225,7 +319,9 @@ export default function CreateEventPage() {
                 >
                   <option value="">Select category</option>
                   {EVENT_CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -240,7 +336,7 @@ export default function CreateEventPage() {
               </div>
             </div>
 
-            <div style={{ ...twoColGrid, marginBottom: '20px' }}>
+            <div style={twoColGrid}>
               <div style={fieldGroupStyle}>
                 <label style={labelStyle}>Start Time</label>
                 <input
@@ -263,33 +359,151 @@ export default function CreateEventPage() {
 
             <div style={fieldGroupStyle}>
               <Input
-                label="Venue"
+                label="Venue Name"
+                placeholder="e.g. Lekki Conservancy"
                 value={form.venue}
                 onChange={e => setForm({ ...form, venue: e.target.value })}
               />
             </div>
 
-            <div style={{ ...twoColGrid, marginBottom: '20px' }}>
-              <div style={fieldGroupStyle}>
-                <Input
-                  label="Address"
-                  value={form.address}
-                  onChange={e => setForm({ ...form, address: e.target.value })}
-                />
+            <div style={fieldGroupStyle}>
+              <Input
+                label="Address"
+                placeholder="e.g. Plot 50, Admiralty Way, Lekki"
+                value={form.address}
+                onChange={e => setForm({ ...form, address: e.target.value })}
+              />
+            </div>
+
+            <div style={fieldGroupStyle}>
+              <label style={labelStyle}>State</label>
+              <select
+                value={form.state}
+                onChange={e => setForm({ ...form, state: e.target.value })}
+                style={selectStyle}
+              >
+                <option value="">Select state</option>
+                {NIGERIAN_STATES.map(s => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {stepErrors && <ErrorMessage message={stepErrors} />}
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+              <Button variant="ghost" onClick={prevStep} disabled>
+                ← Back
+              </Button>
+              <Button variant="primary" onClick={nextStep} fullWidth>
+                Next: Cover Image →
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Cover Image */}
+        {step === 2 && (
+          <div style={cardStyle}>
+            <h2 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 20px 0', color: 'var(--color-text)' }}>
+              Cover Image
+            </h2>
+
+            <div style={fieldGroupStyle}>
+              <label style={labelStyle}>Event Cover (16:9 aspect ratio)</label>
+              <MediaUploader
+                label="Event Cover"
+                accept="image"
+                urls={coverImage ? [coverImage] : []}
+                onAdd={async (newUrls) => setCoverImage(newUrls[0] ?? '')}
+                onRemove={() => setCoverImage('')}
+                uploadFn={handleUpload}
+              />
+            </div>
+
+            {stepErrors && <ErrorMessage message={stepErrors} />}
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+              <Button variant="ghost" onClick={prevStep}>
+                ← Back
+              </Button>
+              <Button variant="primary" onClick={nextStep} fullWidth>
+                Next: Ticket Tiers →
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Ticket Tiers */}
+        {step === 3 && (
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0, color: 'var(--color-text)' }}>
+                Ticket Tiers
+              </h2>
+              <Button variant="ghost" size="sm" onClick={handleOpenTierModal}>
+                <Plus size={14} /> Add Tier
+              </Button>
+            </div>
+
+            {tiers.length === 0 ? (
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: 'var(--color-text-muted)',
+                  padding: '20px',
+                  textAlign: 'center',
+                  margin: 0,
+                  marginBottom: '20px',
+                }}
+              >
+                No ticket tiers yet. Add at least one.
+              </p>
+            ) : (
+              <div style={{ marginBottom: '20px' }}>
+                {tiers.map((tier, i) => (
+                  <TierListRow
+                    key={i}
+                    name={tier.name}
+                    price={tier.price}
+                    capacity={tier.capacity}
+                    onEdit={() => handleEditTier(i)}
+                    onRemove={() => handleRemoveTier(i)}
+                  />
+                ))}
               </div>
-              <div style={fieldGroupStyle}>
-                <label style={labelStyle}>State</label>
-                <select
-                  value={form.state}
-                  onChange={e => setForm({ ...form, state: e.target.value })}
-                  style={selectStyle}
-                >
-                  <option value="">Select state</option>
-                  {NIGERIAN_STATES.map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
+            )}
+
+            {stepErrors && <ErrorMessage message={stepErrors} />}
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+              <Button variant="ghost" onClick={prevStep}>
+                ← Back
+              </Button>
+              <Button variant="primary" onClick={nextStep} fullWidth>
+                Next: Event Details →
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Details */}
+        {step === 4 && (
+          <div style={cardStyle}>
+            <h2 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 20px 0', color: 'var(--color-text)' }}>
+              Event Details
+            </h2>
+
+            <div style={fieldGroupStyle}>
+              <label style={labelStyle}>Description</label>
+              <textarea
+                value={form.description}
+                onChange={e => setForm({ ...form, description: e.target.value })}
+                placeholder="Tell attendees about your event..."
+                style={{ ...fieldStyle, height: '120px', resize: 'vertical' }}
+              />
             </div>
 
             <div style={fieldGroupStyle}>
@@ -303,7 +517,7 @@ export default function CreateEventPage() {
                   placeholder="Add performer name and press Enter"
                   style={fieldStyle}
                 />
-                <Button variant="secondary" size="sm" onClick={handleAddPerformer}>
+                <Button variant="ghost" size="sm" onClick={handleAddPerformer}>
                   <Plus size={16} />
                 </Button>
               </div>
@@ -320,104 +534,178 @@ export default function CreateEventPage() {
               )}
             </div>
 
-            {step1Error && <ErrorMessage message={step1Error} />}
-
-            <div style={{ marginTop: '24px' }}>
-              <Button variant="primary" onClick={handleStep1Next} fullWidth>
-                Next: Add Ticket Tiers →
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0, color: 'var(--color-text)' }}>
-                Ticket Tiers
-              </h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleOpenTierModal}
-              >
-                <Plus size={14} /> Add Tier
-              </Button>
+            <div style={fieldGroupStyle}>
+              <label style={labelStyle}>Special Notes/Requirements (Optional)</label>
+              <textarea
+                value={details.specialNotes}
+                onChange={e => setDetails({ ...details, specialNotes: e.target.value })}
+                placeholder="e.g. Age restrictions, dress code, items not allowed..."
+                style={{ ...fieldStyle, height: '80px', resize: 'vertical' }}
+              />
             </div>
 
-            {tiers.length === 0 ? (
-              <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', padding: '20px', textAlign: 'center', margin: 0 }}>
-                No ticket tiers yet. Add at least one.
-              </p>
-            ) : (
-              <div>
-                {tiers.map((tier, i) => (
-                  <TierListRow
-                    key={i}
-                    name={tier.name}
-                    price={tier.price}
-                    capacity={tier.capacity}
-                    onEdit={() => handleEditTier(i)}
-                    onRemove={() => handleRemoveTier(i)}
-                  />
-                ))}
-              </div>
-            )}
+            <div style={fieldGroupStyle}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '14px' }}>
+                <input
+                  type="checkbox"
+                  checked={details.isPublic}
+                  onChange={e => setDetails({ ...details, isPublic: e.target.checked })}
+                  style={{ cursor: 'pointer' }}
+                />
+                <span>Make event public (visible to all attendees)</span>
+              </label>
+            </div>
 
-            {submitError && (
-              <div style={{ marginTop: '16px' }}>
-                <ErrorMessage message={submitError} />
-              </div>
-            )}
+            {stepErrors && <ErrorMessage message={stepErrors} />}
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-              <Button variant="ghost" onClick={() => setStep(1)}>← Back</Button>
-              <Button variant="primary" onClick={handleStep2Next}>
-                Next: Add Media →
+              <Button variant="ghost" onClick={prevStep}>
+                ← Back
+              </Button>
+              <Button variant="primary" onClick={nextStep} fullWidth>
+                Review & Publish →
               </Button>
             </div>
           </div>
         )}
 
-        {step === 3 && (
+        {/* Step 5: Review & Publish */}
+        {step === 5 && (
           <div style={cardStyle}>
-            <h2 style={{ fontSize: '16px', fontWeight: 600, margin: 0, marginBottom: '20px', color: 'var(--color-text)' }}>
-              Event Media
+            <h2 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 24px 0', color: 'var(--color-text)' }}>
+              Review & Publish
             </h2>
 
-            <div style={fieldGroupStyle}>
-              <MediaUploader
-                label="Event Images"
-                accept="image"
-                multiple
-                urls={images}
-                onAdd={(newUrls) => setImages([...images, ...newUrls])}
-                onRemove={(url) => setImages(images.filter(u => u !== url))}
-                uploadFn={handleUpload}
-              />
+            {/* Live Preview */}
+            <div
+              style={{
+                background: 'var(--color-surface-2)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '12px',
+                padding: '24px',
+                marginBottom: '28px',
+              }}
+            >
+              <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text)', margin: '0 0 16px 0' }}>
+                Event Preview
+              </h3>
+
+              {/* Cover + Info */}
+              <div
+                style={{
+                  background: 'var(--color-surface)',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  marginBottom: '16px',
+                }}
+              >
+                {coverImage && (
+                  <div style={{ width: '100%', height: '200px', position: 'relative', overflow: 'hidden' }}>
+                    <img
+                      src={coverImage}
+                      alt={form.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </div>
+                )}
+
+                <div style={{ padding: '16px' }}>
+                  <h4 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 8px 0' }}>
+                    {form.name || 'Event Name'}
+                  </h4>
+                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: 0 }}>
+                    {form.date && form.startTime ? `${formatDate(form.date)} at ${formatTime(form.startTime)}` : 'Date & time'}
+                  </p>
+                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '4px 0 0 0' }}>
+                    {form.venue || 'Venue'} • {form.state || 'State'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Summary Sections */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                {/* Description */}
+                <SummarySection
+                  title="Description"
+                  step={4}
+                  onClick={() => goToStep(4)}
+                >
+                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.5 }}>
+                    {form.description || 'Add description...'}
+                  </p>
+                </SummarySection>
+
+                {/* Tickets */}
+                <SummarySection
+                  title={`Tickets (${tiers.length})`}
+                  step={3}
+                  onClick={() => goToStep(3)}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {tiers.slice(0, 2).map((tier, i) => (
+                      <div key={i} style={{ fontSize: '13px', color: 'var(--color-text)' }}>
+                        {tier.name} — {formatNaira(Number(tier.price))} (×{tier.capacity})
+                      </div>
+                    ))}
+                    {tiers.length > 2 && (
+                      <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                        +{tiers.length - 2} more tier{tiers.length - 2 > 1 ? 's' : ''}
+                      </div>
+                    )}
+                  </div>
+                </SummarySection>
+
+                {/* Performers */}
+                <SummarySection
+                  title={`Lineup (${performers.length})`}
+                  step={4}
+                  onClick={() => goToStep(4)}
+                >
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    {performers.length > 0 ? (
+                      performers.slice(0, 3).map((p, i) => (
+                        <span key={i} style={{ fontSize: '12px', background: 'var(--color-brand)', color: '#fff', padding: '2px 6px', borderRadius: '4px' }}>
+                          {p}
+                        </span>
+                      ))
+                    ) : (
+                      <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>None added</span>
+                    )}
+                  </div>
+                </SummarySection>
+
+                {/* Visibility */}
+                <SummarySection
+                  title="Visibility"
+                  step={4}
+                  onClick={() => goToStep(4)}
+                >
+                  <p style={{ fontSize: '13px', color: 'var(--color-text)', margin: 0 }}>
+                    {details.isPublic ? '🌐 Public' : '🔒 Private'}
+                  </p>
+                </SummarySection>
+              </div>
             </div>
 
-            <div style={fieldGroupStyle}>
-              <MediaUploader
-                label="Promo Video (Optional)"
-                accept="video"
-                urls={videoUrls}
-                onAdd={(newUrls) => setVideoUrls(newUrls)}
-                onRemove={() => setVideoUrls([])}
-                uploadFn={handleUpload}
-              />
-            </div>
+            {stepErrors && <ErrorMessage message={stepErrors} />}
 
-            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '12px', marginBottom: 0 }}>
-              Images will be shown in the event gallery. Video will be the promo clip.
-            </p>
-
-            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-              <Button variant="ghost" onClick={() => setStep(2)}>← Back</Button>
-              <Button variant="ghost" loading={isPending} onClick={() => handleSubmit('draft')}>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <Button variant="ghost" onClick={prevStep}>
+                ← Back
+              </Button>
+              <Button
+                variant="ghost"
+                loading={isPending}
+                onClick={() => handleSubmit('draft')}
+              >
                 Save as Draft
               </Button>
-              <Button variant="primary" loading={isPending} onClick={() => handleSubmit('published')}>
+              <Button
+                variant="primary"
+                loading={isPending}
+                onClick={() => handleSubmit('published')}
+                fullWidth
+              >
                 Publish Event
               </Button>
             </div>
@@ -425,13 +713,16 @@ export default function CreateEventPage() {
         )}
       </div>
 
+      {/* Tier Modal */}
       <Modal
         isOpen={tierModal}
         onClose={() => setTierModal(false)}
         title={editingIndex !== null ? 'Edit Ticket Tier' : 'Add Ticket Tier'}
         footer={
           <>
-            <Button variant="ghost" onClick={() => setTierModal(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setTierModal(false)}>
+              Cancel
+            </Button>
             <Button variant="primary" onClick={handleAddTier}>
               {editingIndex !== null ? 'Update Tier' : 'Add Tier'}
             </Button>
@@ -460,12 +751,64 @@ export default function CreateEventPage() {
             onChange={e => setCurrentTier({ ...currentTier, capacity: e.target.value })}
           />
         </div>
-        {tierError && (
+        {stepErrors && (
           <div style={{ marginTop: '12px' }}>
-            <ErrorMessage message={tierError} />
+            <ErrorMessage message={stepErrors} />
           </div>
         )}
       </Modal>
+    </div>
+  )
+}
+
+// ─── Summary Section Component ──────────────────────────────
+function SummarySection({
+  title,
+  step,
+  onClick,
+  children,
+}: {
+  title: string
+  step: 1 | 2 | 3 | 4 | 5
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      style={{
+        background: 'var(--color-bg)',
+        borderRadius: '8px',
+        padding: '12px',
+        position: 'relative',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+        <h5 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)', margin: 0 }}>
+          {title}
+        </h5>
+        <button
+          type="button"
+          onClick={onClick}
+          aria-label={`Edit ${title}`}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '2px',
+            color: 'var(--color-text-muted)',
+            transition: 'color var(--duration-fast) ease',
+          }}
+          onMouseEnter={e => {
+            ;(e.target as HTMLElement).style.color = 'var(--color-brand)'
+          }}
+          onMouseLeave={e => {
+            ;(e.target as HTMLElement).style.color = 'var(--color-text-muted)'
+          }}
+        >
+          <Edit2 size={14} />
+        </button>
+      </div>
+      {children}
     </div>
   )
 }

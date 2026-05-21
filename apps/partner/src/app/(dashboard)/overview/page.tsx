@@ -1,152 +1,300 @@
-'use client'
-
-import { useSession } from 'next-auth/react'
-import { useQuery } from '@tanstack/react-query'
-import { Calendar, Users, Banknote, Zap } from 'lucide-react'
-import { StatCard, DataTable, ColumnDef, PageHeader, Badge, ErrorMessage } from '@comfytag/ui'
-import { formatNaira, formatDate } from '@comfytag/utils'
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { getServerSession } from 'next-auth'
+import { formatNaira } from '@comfytag/utils'
 import type { Event } from '@comfytag/types'
-import api, { authHeader } from '../../../lib/api'
+import type { ActivityItem } from '@/components/dashboard/ActivityFeed'
+import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
+import { ChartCard } from '@/components/ui/ChartCard'
+import { EventCard } from '@/components/ui/EventCard'
+import PartnerNav from '@/components/dashboard/PartnerNav'
+import api, { authHeader } from '@/lib/api'
 
-const columns: ColumnDef<Event>[] = [
-  {
-    key: 'name',
-    header: 'Event',
-    render: (row) => (
-      <span style={{ fontWeight: 500, color: 'var(--color-text)' }}>{row.name}</span>
-    ),
-  },
-  {
-    key: 'date',
-    header: 'Date',
-    render: (row) => formatDate(String(row.date ?? '')),
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    render: (row) => {
-      const s = String(row.status ?? '')
-      const mapped = s === 'published' ? 'approved' : s === 'cancelled' ? 'rejected' : s
-      return <Badge status={mapped} />
-    },
-  },
-  {
-    key: 'sold',
-    header: 'Sold',
-    render: (row) => ((row.sold as number) ?? 0).toLocaleString('en-NG'),
-  },
-]
-
-interface PartnerRevenue {
+interface DashboardStats {
   totalRevenue: number
-  totalTicketsSold: number
-  totalEvents: number
-  availableBalance: number
+  ticketsSoldThisMonth: number
 }
 
-export default function OverviewPage() {
-  const { data: session } = useSession()
+interface Activity {
+  _id: string
+  type: 'purchase' | 'comment' | 'warning'
+  description: string
+  timestamp: string
+}
 
-  const { data: events = [], isLoading: eventsLoading, isError: eventsError } = useQuery({
-    queryKey: ['events-overview', session?.user.id],
-    queryFn: () =>
-      api
-        .get<Event[]>('/events/user/' + session!.user.id, {
-          params: { limit: 100 },
-          ...authHeader(session?.user.token),
-        })
-        .then((r) => r.data),
-    enabled: !!session?.user.id,
-  })
+/**
+ * Helper: Get greeting based on time of day
+ */
+function getGreeting(): string {
+  const now = new Date()
+  const hour = now.getHours()
 
-  const { data: revenueData, isLoading: revenueLoading, isError: revenueError } = useQuery({
-    queryKey: ['partner-revenue', session?.user.id],
-    queryFn: () =>
-      api
-        .get<PartnerRevenue>('/partner/' + session!.user.id + '/revenue', {
-          ...authHeader(session?.user.token),
-        })
-        .then((r) => r.data),
-    enabled: !!session?.user.id,
-  })
+  if (hour < 12) return 'Good morning'
+  if (hour < 17) return 'Good afternoon'
+  return 'Good evening'
+}
 
-  const totalEvents = events.length
-  const totalSold = revenueData?.totalTicketsSold ?? 0
-  const realRevenue = revenueData?.totalRevenue ?? 0
-  const publishedCount = events.filter((e) => e.status === 'published').length
-  const isLoading = eventsLoading || revenueLoading
-  const isError = eventsError || revenueError
+export default async function OverviewPage() {
+  const session = await getServerSession()
+  if (!session?.user) notFound()
 
-  const recentEvents = [...events]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5)
+  const userId = session.user.id as string
+  const token = session.user.token as string
+
+  // Fetch organizer data
+  let organizer = null
+  try {
+    const res = await api.get(`/users/${userId}`, {
+      ...authHeader(token),
+    })
+    organizer = res.data
+  } catch {
+    // Log error but continue — page shows defaults
+  }
+
+  // Fetch dashboard stats
+  let stats: DashboardStats = {
+    totalRevenue: 0,
+    ticketsSoldThisMonth: 0,
+  }
+  try {
+    const res = await api.get(`/partner/${userId}/stats`, {
+      ...authHeader(token),
+    })
+    stats = res.data
+  } catch {
+    // Fallback to defaults
+  }
+
+  // Fetch upcoming events (next 6)
+  let upcomingEvents: Event[] = []
+  try {
+    const res = await api.get<Event[]>(`/events/user/${userId}`, {
+      params: { status: 'published', limit: 6 },
+      ...authHeader(token),
+    })
+    upcomingEvents = res.data
+      .filter((e) => new Date(e.date) > new Date())
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  } catch {
+    // Fallback to empty list
+  }
+
+  // Fetch activity feed (last 10 activities)
+  let activities: ActivityItem[] = []
+  try {
+    const res = await api.get<Activity[]>(`/partner/${userId}/activities`, {
+      params: { limit: 10 },
+      ...authHeader(token),
+    })
+    activities = res.data.map((a) => ({
+      id: a._id,
+      type: a.type,
+      description: a.description,
+      timestamp: a.timestamp,
+    }))
+  } catch {
+    // Fallback to empty list
+  }
+
+  const organizerName = organizer?.name || session.user.name || 'Organizer'
 
   return (
-    <div style={{ padding: '28px 32px' }}>
-      <PageHeader title="Overview" subtitle="Your performance at a glance" />
+    <>
+      <PartnerNav />
 
-      {isError && (
-        <div style={{ marginBottom: '20px' }}>
-          <ErrorMessage message="Failed to load overview data." />
-        </div>
-      )}
-
-      <div
+      <main
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '16px',
-          marginBottom: '32px',
+          maxWidth: '1280px',
+          margin: '0 auto',
+          padding: '0 24px',
         }}
       >
-        <StatCard
-          icon={Calendar}
-          value={String(totalEvents)}
-          label="Total Events"
-          isLoading={isLoading}
-        />
-        <StatCard
-          icon={Users}
-          value={totalSold.toLocaleString('en-NG')}
-          label="Tickets Sold"
-          isLoading={isLoading}
-        />
-        <StatCard
-          icon={Banknote}
-          value={formatNaira(realRevenue)}
-          label="Total Revenue"
-          isLoading={isLoading}
-        />
-        <StatCard
-          icon={Zap}
-          value={String(publishedCount)}
-          label="Active Events"
-          isLoading={isLoading}
-        />
-      </div>
-
-      <div
-        style={{
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: '12px',
-          overflow: 'hidden',
-        }}
-      >
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)' }}>
-          <h2 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text)', margin: 0 }}>
-            Recent Events
-          </h2>
+        {/* Greeting */}
+        <div
+          style={{
+            paddingTop: '32px',
+            paddingBottom: '16px',
+            fontSize: '18px',
+            fontWeight: 600,
+            color: 'var(--color-text)',
+          }}
+        >
+          {getGreeting()}, {organizerName}.
         </div>
-        <DataTable
-          columns={columns}
-          data={recentEvents}
-          isLoading={isLoading}
-          keyField="_id"
-          emptyTitle="No events yet"
-          emptySubtitle="Create your first event to get started"
-        />
-      </div>
-    </div>
+
+        {/* Stats Grid: 2 cards side-by-side */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '20px',
+            marginBottom: '40px',
+          }}
+        >
+          <ChartCard title="Total Revenue" subtitle="All-time earnings">
+            <div
+              style={{
+                fontSize: '36px',
+                fontWeight: 700,
+                color: 'var(--color-brand)',
+                lineHeight: 1,
+              }}
+            >
+              {formatNaira(stats.totalRevenue)}
+            </div>
+          </ChartCard>
+
+          <ChartCard title="Tickets Sold This Month" subtitle="Current month">
+            <div
+              style={{
+                fontSize: '36px',
+                fontWeight: 700,
+                color: 'var(--color-text)',
+                lineHeight: 1,
+              }}
+            >
+              {stats.ticketsSoldThisMonth.toLocaleString('en-NG')}
+            </div>
+          </ChartCard>
+        </div>
+
+        {/* Upcoming Events Section */}
+        <section
+          style={{
+            marginBottom: '40px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px',
+            }}
+          >
+            <h2
+              style={{
+                margin: 0,
+                fontSize: '18px',
+                fontWeight: 700,
+                color: 'var(--color-text)',
+              }}
+            >
+              YOUR UPCOMING EVENTS
+            </h2>
+          </div>
+
+          {upcomingEvents.length > 0 ? (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns:
+                  'repeat(auto-fill, minmax(240px, 1fr))',
+                gap: '16px',
+                marginBottom: '16px',
+              }}
+            >
+              {upcomingEvents.map((event) => (
+                <EventCard
+                  key={event._id}
+                  event={event}
+                  status={event.status === 'published' ? 'live' : 'draft'}
+                  onEdit={() => {
+                    // Placeholder for edit action
+                  }}
+                />
+              ))}
+
+              {/* Create New Event Button */}
+              <Link
+                href="/events/create"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  aspectRatio: '4/5',
+                  background: 'var(--color-surface)',
+                  border: '2px dashed var(--color-border)',
+                  borderRadius: 'var(--radius-lg)',
+                  cursor: 'pointer',
+                  transition: 'all var(--duration-fast) ease',
+                  textDecoration: 'none',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  color: 'var(--color-text-muted)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.borderColor =
+                    'var(--color-brand)'
+                  ;(e.currentTarget as HTMLAnchorElement).style.color =
+                    'var(--color-brand)'
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.borderColor =
+                    'var(--color-border)'
+                  ;(e.currentTarget as HTMLAnchorElement).style.color =
+                    'var(--color-text-muted)'
+                }}
+              >
+                <span style={{ fontSize: '24px' }}>+</span>
+                Create New Event
+              </Link>
+            </div>
+          ) : (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '40px 20px',
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-lg)',
+                marginBottom: '16px',
+              }}
+            >
+              <p
+                style={{
+                  margin: '0 0 12px',
+                  fontSize: '14px',
+                  color: 'var(--color-text-muted)',
+                }}
+              >
+                No upcoming events yet
+              </p>
+              <Link
+                href="/events/create"
+                style={{
+                  display: 'inline-block',
+                  padding: '8px 16px',
+                  background: 'var(--color-brand)',
+                  color: 'var(--color-text-on-brand)',
+                  borderRadius: 'var(--radius-md)',
+                  textDecoration: 'none',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                }}
+              >
+                Create First Event
+              </Link>
+            </div>
+          )}
+        </section>
+
+        {/* Activity Feed Section */}
+        <section
+          style={{
+            marginBottom: '40px',
+          }}
+        >
+          <ActivityFeed
+            activities={activities}
+            title="RECENT ACTIVITY"
+            live={false}
+          />
+        </section>
+      </main>
+    </>
   )
 }

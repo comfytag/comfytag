@@ -35,7 +35,7 @@ export default function PromosPage() {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({
     code: '',
-    discountType: 'percentage' as const,
+    discountType: 'percentage' as 'percentage' | 'fixed',
     discountValue: '',
     maxUses: '',
     expiresAt: '',
@@ -92,9 +92,7 @@ export default function PromosPage() {
     createPromoMutation.mutate({
       ...form,
       eventId,
-      discountValue: Number(form.discountValue),
-      maxUses: Number(form.maxUses),
-    })
+    } as any)
   }
 
   function copyToClipboard(code: string) {
