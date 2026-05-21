@@ -50,15 +50,20 @@ export default function TicketsPage() {
   // Adapter: build a User-compatible object for FaceEnrollmentBanner.
   // faceEnrolled is not stored in the JWT session, so we default to false —
   // the banner handles its own localStorage dismiss state internally.
-  const bannerUser: User = {
+  const bannerUser = {
     _id: session.user.id,
     name: session.user.name,
     email: session.user.email,
+    username: session.user.name,
     token: session.user.token,
     isPartner: session.user.isPartner,
     isAdmin: session.user.isAdmin,
-    image: session.user.image,
+    avatar: session.user.image,
+    isVerify: { email: false, photo: false, idCard: false, address: false },
+    onboarding: { completed: false },
     faceEnrolled: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   } as User
 
   return (

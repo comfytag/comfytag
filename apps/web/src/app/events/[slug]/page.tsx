@@ -188,7 +188,7 @@ export default function EventDetailPage() {
 
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 24px 100px' }}>
         <BackLink href="/" marginBottom={16}>Events</BackLink>
-        <EventMeta event={event} isLiked={isLiked} likeCount={likeCount} onLike={handleLike} />
+        <EventMeta event={event} isLiked={isLiked} likeCount={likeCount ?? undefined} onLike={handleLike} />
         <EventLineup performers={event.performers ?? []} />
         <Divider />
         <CommentSection eventId={event._id} initialComments={comments} initialHasMore={hasMoreComments} organizerId={event.planner_id} />

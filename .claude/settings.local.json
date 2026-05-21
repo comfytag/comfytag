@@ -154,7 +154,8 @@
       "Bash(git commit *)",
       "Bash(mkdir -p \"C:\\\\Users\\\\HOMEPC\\\\Desktop\\\\Web_Projects\\\\Personal\\\\comfytag\\\\apps\\\\partner\\\\src\\\\hooks\" 2>&1)",
       "PowerShell(\\(Get-Content \"C:\\\\Users\\\\HOMEPC\\\\Desktop\\\\Web_Projects\\\\Personal\\\\comfytag\\\\apps\\\\web\\\\src\\\\app\\\\events\\\\[slug]\\\\page.tsx\" | Measure-Object -Line\\).Lines)",
-      "PowerShell($path = 'C:\\\\Users\\\\HOMEPC\\\\Desktop\\\\Web_Projects\\\\Personal\\\\comfytag\\\\apps\\\\web\\\\src\\\\app\\\\events\\\\[slug]\\\\page.tsx'; \\(Get-Content -LiteralPath $path | Measure-Object -Line\\).Lines)"
+      "PowerShell($path = 'C:\\\\Users\\\\HOMEPC\\\\Desktop\\\\Web_Projects\\\\Personal\\\\comfytag\\\\apps\\\\web\\\\src\\\\app\\\\events\\\\[slug]\\\\page.tsx'; \\(Get-Content -LiteralPath $path | Measure-Object -Line\\).Lines)",
+      "Bash(timeout 120 bash -c 'while pgrep -f \"tsc --noEmit\" > /dev/null; do sleep 1; done')"
     ],
     "additionalDirectories": [
       "C:\\Users\\HOMEPC\\Desktop\\Web_Projects\\Personal\\comfytag\\apps\\partner\\src"
