@@ -68,7 +68,7 @@ export default function LoginPage() {
     <AuthLayout>
       {/* Password-reset success banner */}
       {didReset && (
-        <div style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '8px', padding: '10px 14px', marginBottom: '24px', fontSize: '13px', color: '#10B981' }}>
+        <div style={{ background: 'color-mix(in srgb, var(--color-success) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)', borderRadius: '8px', padding: '10px 14px', marginBottom: '24px', fontSize: '13px', color: 'var(--color-success)' }}>
           Password updated! Sign in with your new password.
         </div>
       )}

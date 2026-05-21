@@ -2,11 +2,13 @@
 
 import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import type { Ticket } from '@comfytag/types'
+import { useRouter } from 'next/navigation'
+import type { Ticket, User } from '@comfytag/types'
 import { LoadingSpinner, EmptyState } from '@comfytag/ui'
 import { authHeader, isUpcoming } from '@comfytag/utils'
 import { Navbar } from '@/components/layout/Navbar'
 import { TicketListItem } from '@/components/tickets/TicketListItem'
+import { FaceEnrollmentBanner } from '@/components/tickets/FaceEnrollmentBanner'
 import { TabBar } from '@/components/ui/TabBar'
 import api from '@/lib/api'
 
@@ -15,6 +17,7 @@ type Tab = 'upcoming' | 'past'
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function TicketsPage() {
   const { data: session, status } = useSession()
+  const router = useRouter()
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<Tab>('upcoming')
@@ -44,11 +47,33 @@ export default function TicketsPage() {
   const upcoming = tickets.filter((t) => t.status === 'active' && isUpcoming(t.date))
   const past = tickets.filter((t) => t.status !== 'active' || !isUpcoming(t.date))
 
+  // Adapter: build a User-compatible object for FaceEnrollmentBanner.
+  // faceEnrolled is not stored in the JWT session, so we default to false —
+  // the banner handles its own localStorage dismiss state internally.
+  const bannerUser: User = {
+    _id: session.user.id,
+    name: session.user.name,
+    email: session.user.email,
+    token: session.user.token,
+    isPartner: session.user.isPartner,
+    isAdmin: session.user.isAdmin,
+    image: session.user.image,
+    faceEnrolled: false,
+  } as User
+
   return (
     <>
       <Navbar />
       <main style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 24px 80px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '24px' }}>My Tickets</h1>
+
+        {!bannerUser.faceEnrolled && (
+          <FaceEnrollmentBanner
+            user={bannerUser}
+            onDismiss={() => {}}
+            onSetup={() => router.push('/profile/face-enrollment')}
+          />
+        )}
 
         <TabBar
           tabs={[

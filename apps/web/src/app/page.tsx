@@ -1,5 +1,7 @@
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { BottomTabBar } from '@/components/layout/BottomTabBar'
+import { HomeClientShell } from '@/components/home/HomeClientShell'
 import { CategoryPillsBar } from '@/components/home/CategoryPillsBar'
 import { EventFeedSection } from '@/components/home/EventFeedSection'
 import { EditorPicksSection } from '@/components/home/EditorPicksSection'
@@ -37,9 +39,7 @@ async function fetchCategories(): Promise<Category[]> {
 
 async function fetchEditorPicks(): Promise<Event[]> {
   try {
-    const res = await fetch(`${API}/events/pick/toppick`, {
-      next: { revalidate: 3600 },
-    })
+    const res = await fetch(`${API}/events/pick/toppick`, { next: { revalidate: 3600 } })
     if (!res.ok) return []
     const data: unknown = await res.json()
     if (Array.isArray(data)) return data as Event[]
@@ -60,9 +60,7 @@ interface TestimonialRaw {
 
 async function fetchTestimonials(): Promise<TestimonialRaw[]> {
   try {
-    const res = await fetch(`${API}/testimonials`, {
-      next: { revalidate: 3600 },
-    })
+    const res = await fetch(`${API}/testimonials`, { next: { revalidate: 3600 } })
     if (!res.ok) return []
     const data: unknown = await res.json()
     if (Array.isArray(data)) return data as TestimonialRaw[]
@@ -84,13 +82,15 @@ export default async function HomePage() {
   return (
     <>
       <Navbar />
+      <HomeClientShell />
       <CategoryPillsBar categories={categories} />
-      <EditorPicksSection events={editorPicks} />
       <main>
         <EventFeedSection initialEvents={events} />
+        <EditorPicksSection events={editorPicks} />
+        <TestimonialsSection testimonials={testimonials} />
       </main>
-      <TestimonialsSection testimonials={testimonials} />
       <Footer />
+      <BottomTabBar currentPath="/" />
     </>
   )
 }

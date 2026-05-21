@@ -7,47 +7,35 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
 
 async function fetchInitialEvents(): Promise<Event[]> {
   try {
-    const res = await fetch(`${API}/events?limit=12&page=1`, {
-      next: { revalidate: 60 },
-    })
+    const res = await fetch(`${API}/events?limit=12&page=1`, { next: { revalidate: 60 } })
     if (!res.ok) return []
-    const data: unknown = await res.json()
+    const data = (await res.json()) as unknown
     if (Array.isArray(data)) return data as Event[]
     const obj = data as Record<string, unknown>
     return (Array.isArray(obj.data) ? obj.data : Array.isArray(obj.events) ? obj.events : []) as Event[]
-  } catch {
-    return []
-  }
+  } catch { return [] }
 }
 
 async function fetchEventTypes(): Promise<string[]> {
   try {
-    const res = await fetch(`${API}/filter/byType`, {
-      next: { revalidate: 3600 },
-    })
+    const res = await fetch(`${API}/filter/byType`, { next: { revalidate: 3600 } })
     if (!res.ok) return []
-    const data: unknown = await res.json()
+    const data = (await res.json()) as unknown
     if (Array.isArray(data)) return data as string[]
     const obj = data as Record<string, unknown>
     return (Array.isArray(obj.data) ? obj.data : []) as string[]
-  } catch {
-    return []
-  }
+  } catch { return [] }
 }
 
 async function fetchStates(): Promise<string[]> {
   try {
-    const res = await fetch(`${API}/state/byState`, {
-      next: { revalidate: 3600 },
-    })
+    const res = await fetch(`${API}/state/byState`, { next: { revalidate: 3600 } })
     if (!res.ok) return []
-    const data: unknown = await res.json()
+    const data = (await res.json()) as unknown
     if (Array.isArray(data)) return data as string[]
     const obj = data as Record<string, unknown>
     return (Array.isArray(obj.data) ? obj.data : []) as string[]
-  } catch {
-    return []
-  }
+  } catch { return [] }
 }
 
 export default async function EventsPage() {
@@ -60,11 +48,7 @@ export default async function EventsPage() {
   return (
     <>
       <Navbar />
-      <EventsBrowseClient
-        initialEvents={initialEvents}
-        eventTypes={eventTypes}
-        states={states}
-      />
+      <EventsBrowseClient initialEvents={initialEvents} eventTypes={eventTypes} states={states} />
       <Footer />
     </>
   )
