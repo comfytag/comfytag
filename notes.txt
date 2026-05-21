@@ -1,0 +1,37 @@
+ ┌─────┬─────────────┬──────────────────────┬────────────────┬───────────────────┬───────────────┐
+     │  #  │  Username   │        Email         │    Password    │       Focus       │     City      │
+     ├─────┼─────────────┼──────────────────────┼────────────────┼───────────────────┼───────────────┤
+     │ 1   │ testpartner │ partner@comfytag.dev │ TestPass123!   │ Music & Nightlife │ Lagos         │
+     ├─────┼─────────────┼──────────────────────┼────────────────┼───────────────────┼───────────────┤
+     │ 2   │ techhubnig  │ tech@comfytag.dev    │ TechPass123!   │ Tech & Business   │ Abuja         │
+     ├─────┼─────────────┼──────────────────────┼────────────────┼───────────────────┼───────────────┤
+     │ 3   │ naijavibes  │ vibes@comfytag.dev   │ VibesPass123!  │ Arts & Culture    │ Port Harcourt │
+     ├─────┼─────────────┼──────────────────────┼────────────────┼───────────────────┼───────────────┤
+     │ 4   │ activelagos │ active@comfytag.dev  │ ActivePass123! │ Sports & Comedy   │ Lagos         │
+     └─────┴─────────────┴──────────────────────┴────────────────┴───────────────────┴───────────────┘
+    
+
+
+
+
+    ## Error Type
+Runtime TypeError
+
+## Error Message
+(notificationsData ?? []).filter is not a function
+
+
+    at Topbar (src/components/dashboard/Topbar.tsx:55:49)
+    at ShellClient (src/components/dashboard/ShellClient.tsx:26:9)
+    at DashboardLayout (src\app\(dashboard)\layout.tsx:11:7)
+
+## Code Frame
+  53 |   })
+  54 |
+> 55 |   const unreadCount = (notificationsData ?? []).filter(n => !n.read).length
+     |                                                 ^
+  56 |
+  57 |   useEffect(() => {
+  58 |     function handleClick(e: MouseEvent) {
+
+Next.js version: 16.2.6 (Turbopack)

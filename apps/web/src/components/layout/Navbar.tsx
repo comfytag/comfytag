@@ -1,0 +1,301 @@
+'use client'
+
+import React, { useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { AvatarInitials, LoadingSpinner } from '@comfytag/ui'
+import { authHeader, formatNaira } from '@comfytag/utils'
+import type { Notification, User } from '@comfytag/types'
+import api from '@/lib/api'
+
+export interface NavbarProps {
+  user?: User
+  onSearch?: (query: string) => void
+}
+
+export function Navbar({ user, onSearch }: NavbarProps) {
+  const { data: session } = useSession()
+  const router = useRouter()
+  const [searchVal, setSearchVal] = useState('')
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifs, setNotifs] = useState<Notification[]>([])
+  const [notifLoading, setNotifLoading] = useState(false)
+  const [walletBalance, setWalletBalance] = useState<number | null>(null)
+  const notifRef = useRef<HTMLDivElement>(null)
+
+  const currentUser = user || session?.user
+
+  // Close avatar dropdown on outside click
+  useEffect(() => {
+    if (!dropdownOpen) return
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [dropdownOpen])
+
+  // Close notification panel on outside click
+  useEffect(() => {
+    if (!notifOpen) return
+    function handleClick(e: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [notifOpen])
+
+  // Prefetch unread count on session load so dot shows on cold load
+  useEffect(() => {
+    if (!session) return
+    api
+      .get('/notification?page=1&limit=5', authHeader(session.user.token))
+      .then((r) => {
+        const list = Array.isArray(r.data)
+          ? r.data
+          : (r.data?.data ?? r.data?.notifications ?? [])
+        setNotifs(list as Notification[])
+      })
+      .catch(() => {})
+  }, [session])
+
+  // Refresh notifications when panel opens
+  useEffect(() => {
+    if (!notifOpen || !session) return
+    setNotifLoading(true)
+    api
+      .get('/notification?page=1&limit=5', authHeader(session.user.token))
+      .then((r) => {
+        const list = Array.isArray(r.data)
+          ? r.data
+          : (r.data?.data ?? r.data?.notifications ?? [])
+        setNotifs(list as Notification[])
+      })
+      .catch(() => {})
+      .finally(() => setNotifLoading(false))
+  }, [notifOpen, session])
+
+  // Fetch wallet balance when dropdown opens
+  useEffect(() => {
+    if (!dropdownOpen || !session) return
+    api
+      .get('/wallet', authHeader(session.user.token))
+      .then((r) => {
+        const bal = r.data?.data?.balance ?? r.data?.balance ?? null
+        setWalletBalance(typeof bal === 'number' ? bal : null)
+      })
+      .catch(() => {})
+  }, [dropdownOpen, session])
+
+  function handleSearch() {
+    const query = searchVal.trim()
+    if (query) {
+      if (onSearch) {
+        onSearch(query)
+      } else {
+        router.push(`/search?q=${encodeURIComponent(query)}`)
+      }
+    }
+  }
+
+  return (
+    <>
+      <style>{`
+        .__ct_navbar {
+          position: sticky;
+          top: 0;
+          z-index: 40;
+          background: var(--color-bg);
+          border-bottom: 1px solid var(--color-border);
+          height: 64px;
+          display: flex;
+          align-items: center;
+          padding: 0 24px;
+          gap: 16px;
+        }
+        .__ct_nav_search {
+          flex: 1;
+          max-width: 480px;
+        }
+        .__ct_nav_drop_item {
+          display: block;
+          padding: 10px 16px;
+          font-size: 14px;
+          color: var(--color-text);
+          text-decoration: none;
+          transition: background var(--duration-micro) ease;
+        }
+        .__ct_nav_drop_item:hover {
+          background: var(--color-surface-2);
+        }
+        .__ct_nav_drop_item:focus-visible {
+          outline: 2px solid var(--color-brand);
+          outline-offset: -2px;
+        }
+        @media (max-width: 767px) {
+          .__ct_navbar {
+            height: 56px;
+            padding: 0 16px;
+          }
+          .__ct_nav_search {
+            display: none;
+          }
+        }
+      `}</style>
+      <nav className="__ct_navbar" aria-label="Main navigation">
+        {/* Logo */}
+        <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          <div style={{ width: '32px', height: '32px', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-on-brand)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20 12V22H4V12" /><path d="M22 7H2v5h20V7z" /><path d="M12 22V7" />
+              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+            </svg>
+          </div>
+          <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>ComfyTag</span>
+        </Link>
+
+        {/* Search — desktop only */}
+        <div className="__ct_nav_search">
+          <SearchInput
+            value={searchVal}
+            onChange={setSearchVal}
+            onSearch={handleSearch}
+            placeholder="Search events, artists, venues…"
+          />
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        {/* Right side */}
+        {currentUser ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {/* Bell + notification panel */}
+            <div ref={notifRef} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setNotifOpen((o) => !o)}
+                aria-label="Notifications"
+                style={{
+                  position: 'relative',
+                  width: 38,
+                  height: 38,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 'var(--radius-full)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--color-text-muted)',
+                  transition: 'color var(--duration-micro) ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-text)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--color-text-muted)')}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                {notifs.some((n) => !n.read) && (
+                  <span
+                    style={{ position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: 'var(--radius-full)', background: 'var(--color-error)', border: '2px solid var(--color-bg)' }}
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
+
+              {notifOpen && (
+                <div style={{ position: 'absolute', top: '44px', right: 0, width: 320, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)', zIndex: 200, overflow: 'hidden' }}>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>Notifications</span>
+                    <Link href="/notifications" onClick={() => setNotifOpen(false)} style={{ fontSize: 12, color: 'var(--color-brand)', textDecoration: 'none' }}>See all</Link>
+                  </div>
+                  {notifLoading ? (
+                    <div style={{ padding: 16, textAlign: 'center' }}><LoadingSpinner size="sm" /></div>
+                  ) : notifs.length === 0 ? (
+                    <div style={{ padding: '20px 16px', textAlign: 'center', fontSize: 13, color: 'var(--color-text-muted)' }}>No notifications yet</div>
+                  ) : (
+                    notifs.map((n) => (
+                      <div key={n._id} style={{ padding: '10px 16px', borderBottom: '1px solid var(--color-border)', background: n.read ? 'transparent' : 'rgba(124,58,237,0.04)' }}>
+                        <p style={{ fontSize: 13, fontWeight: n.read ? 400 : 700, color: 'var(--color-text)', margin: '0 0 2px', lineHeight: 1.4 }}>{n.title}</p>
+                        <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.4 }}>{n.message}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Avatar + dropdown */}
+            <div ref={dropdownRef} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setDropdownOpen((o) => !o)}
+                aria-label="Account menu"
+                aria-expanded={dropdownOpen}
+                style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-full)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}
+              >
+                <AvatarInitials name={currentUser.name ?? currentUser.email} size={36} fontSize={13} />
+              </button>
+
+              {dropdownOpen && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)', minWidth: '210px', zIndex: 50, overflow: 'hidden' }}>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-border)' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text)' }}>{currentUser.name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentUser.email}</div>
+                    {walletBalance !== null && (
+                      <div style={{ fontSize: '12px', color: 'var(--color-brand)', marginTop: '4px', fontWeight: 600 }}>
+                        Hype Credits: {formatNaira(walletBalance)}
+                      </div>
+                    )}
+                  </div>
+                  {[
+                    { label: 'My Tickets', href: '/tickets' },
+                    { label: 'Saved Events', href: '/my-following' },
+                    { label: 'My Hype Link', href: '/hype-link' },
+                    { label: 'Settings', href: '/profile' },
+                  ].map((item) => (
+                    <Link key={item.href} href={item.href} className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>
+                      {item.label}
+                    </Link>
+                  ))}
+                  <div style={{ borderTop: '1px solid var(--color-border)' }}>
+                    <button
+                      type="button"
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                      style={{ width: '100%', textAlign: 'left', padding: '10px 16px', fontSize: '14px', color: 'var(--color-error)', background: 'none', border: 'none', cursor: 'pointer' }}
+                    >
+                      Log out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Link href="/login" style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-text)', textDecoration: 'none', padding: '6px 10px' }}>
+              Log In
+            </Link>
+            <Link
+              href="/register"
+              style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-on-brand)', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', padding: '8px 16px', textDecoration: 'none' }}
+            >
+              Sign Up
+            </Link>
+          </div>
+        )}
+      </nav>
+    </>
+  )
+}

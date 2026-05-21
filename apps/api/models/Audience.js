@@ -1,0 +1,125 @@
+import mongoose from 'mongoose';
+const { Schema } = mongoose;
+
+const AudienceSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+    },
+    event_id: {
+        type: String,
+        require: true,
+    },
+    user_id: {
+        type: String,
+        require: true,
+    },
+    eventname: {
+        type: String,
+        require: true,
+        lowercase: true,
+    },
+    amount:{
+        type: Number,
+        require: true,
+    },
+    numOfTicket:{
+        type: Number,
+        require: true,
+    },
+    reference: {
+        type: String,
+        uppercase: true
+    },
+    type: {
+        type: String,
+        required: true,
+        lowercase: true,
+    },
+    date: {
+        type: Date,
+        default: Date.now,
+    },
+    phone: {
+        type: Number,
+    },
+    email: {
+        type: String,
+        lowercase: true,
+        trim:true
+    },
+
+    // ─── Ticket Status ─────────────────────────────
+    status: {
+        type: String,
+        enum: ['active', 'used', 'transferred', 'refunded'],
+        default: 'active',
+    },
+
+    // ─── QR Code ───────────────────────────────────
+    qrCode: {
+        // Server-generated QR code data URL
+        type: String,
+        default: null,
+    },
+
+    // ─── Face Ownership ────────────────────────────
+    faceOwner: {
+        // user_id of the person whose face is linked
+        // to this ticket. Changes on transfer.
+        type: String,
+        default: null,
+    },
+    faceLinkedAt: {
+        type: Date,
+        default: null,
+    },
+
+    // ─── Ticket Transfer ───────────────────────────
+    transferredTo: {
+        // user_id of recipient on transfer
+        type: String,
+        default: null,
+    },
+    transferredFrom: {
+        // user_id of original owner (audit trail)
+        type: String,
+        default: null,
+    },
+    transferredAt: {
+        type: Date,
+        default: null,
+    },
+    transferToken: {
+        // Secure one-time token for accepting transfer
+        type: String,
+        default: null,
+        select: false,
+    },
+
+    // ─── Check-in ──────────────────────────────────
+    checkedIn: {
+        type: Boolean,
+        default: false,
+    },
+    checkedInAt: {
+        type: Date,
+        default: null,
+    },
+    checkedInMethod: {
+        // How entry was granted
+        type: String,
+        enum: ['face', 'qr', 'manual', null],
+        default: null,
+    },
+
+    // ─── TOTP ──────────────────────────────────────
+    totpSecret: {
+        type: String,
+        select: false,
+        default: null,
+    },
+},
+    { timestamps: true });
+
+export default mongoose.model("Audience", AudienceSchema)

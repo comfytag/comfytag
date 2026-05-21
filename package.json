@@ -1,0 +1,19 @@
+{
+  "name": "comfytag",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "turbo": "latest"
+  },
+  "packageManager": "pnpm@11.0.9",
+  "dependencies": {
+    "otplib": "^13.4.0"
+  }
+}

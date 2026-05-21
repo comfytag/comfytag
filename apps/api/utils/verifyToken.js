@@ -1,0 +1,44 @@
+import jwt from 'jsonwebtoken'
+import { createError } from '../utils/error.js';
+
+export const verifyToken = (req,res,next) =>{
+    const cookie = req.cookies.access_token
+    const bearerRaw = req.headers.authorization?.startsWith('Bearer ')
+        ? req.headers.authorization.slice(7).trim()
+        : null
+    const bearer = bearerRaw && bearerRaw !== 'undefined' && bearerRaw !== 'null' ? bearerRaw : null
+    const token = cookie || bearer
+    if(!token){
+         return next(createError(401,"You are not authenticated!"))
+        }
+
+    jwt.verify(token, process.env.JWT, (err, user)=>{
+        if(err) return next(createError(403,"Token not valid!"));
+        req.user = user;
+        next()
+    })
+}
+
+
+export const verifyUser = (req,res, next) =>{
+    verifyToken(req,res, (err) =>{
+        if(err) return next(err);
+        const userId = (req.user._id ?? req.user.id ?? '').toString()
+        if(userId === req.params.id || req.user.isPartner || req.user.isAdmin){
+            next()
+        } else{
+            return next(createError(403,"You are not authorized!"));
+        }
+    })
+}
+
+export const verifyAdmin = (req,res, next) =>{
+    verifyToken(req,res, (err) =>{
+        if(err) return next(err);
+        if(req.user.isAdmin){
+            next()
+        } else{
+            return next(createError(403,"You are not an admin!"));
+        }
+    })
+}

@@ -1,0 +1,18 @@
+import mongoose from 'mongoose';
+
+const Schema = mongoose.Schema;
+
+const tokenSchema = new Schema({
+	userId: {
+		type: Schema.Types.ObjectId,
+		required: true,
+		ref: "User",
+		unique: true,
+	},
+	token: { type: String, required: true },
+	type: { type: String, enum: ['verify', 'reset'], default: 'verify' },
+	createdAt: { type: Date, default: Date.now(), expires: 3600 },
+});
+
+export default mongoose.model("token", tokenSchema)
+

@@ -1,0 +1,240 @@
+C:\Users\HOMEPC\Desktop\Web_Projects\Personal\comfytag
+├── apps
+|  ├── admin
+|  |  ├── eslint.config.mjs
+|  |  ├── next-env.d.ts
+|  |  ├── next.config.ts
+|  |  ├── package.json
+|  |  ├── pnpm-lock.yaml
+|  |  ├── postcss.config.mjs
+|  |  ├── public
+|  |  |  ├── file.svg
+|  |  |  ├── globe.svg
+|  |  |  ├── next.svg
+|  |  |  ├── vercel.svg
+|  |  |  └── window.svg
+|  |  ├── README.md
+|  |  ├── src
+|  |  |  ├── app
+|  |  |  ├── lib
+|  |  |  └── types
+|  |  └── tsconfig.json
+|  ├── api
+|  |  ├── app.js
+|  |  ├── controllers
+|  |  |  ├── audience.js
+|  |  |  ├── auth.js
+|  |  |  ├── bank.js
+|  |  |  ├── category.js
+|  |  |  ├── event.js
+|  |  |  ├── face.js
+|  |  |  ├── notification.js
+|  |  |  ├── pushToken.js
+|  |  |  ├── testimonial.js
+|  |  |  ├── transfer.js
+|  |  |  └── users.js
+|  |  ├── Dockerfile
+|  |  ├── logo.png
+|  |  ├── models
+|  |  |  ├── Audience.js
+|  |  |  ├── Bank.js
+|  |  |  ├── Category.js
+|  |  |  ├── Event.js
+|  |  |  ├── Notification.js
+|  |  |  ├── PushToken.js
+|  |  |  ├── Testimonials.js
+|  |  |  ├── token.js
+|  |  |  ├── User.js
+|  |  |  └── Withdraw.js
+|  |  ├── package-lock.json
+|  |  ├── package.json
+|  |  ├── QRCode.png
+|  |  ├── routes
+|  |  |  ├── audience.js
+|  |  |  ├── auth.js
+|  |  |  ├── bank.js
+|  |  |  ├── category.js
+|  |  |  ├── event.js
+|  |  |  ├── face.js
+|  |  |  ├── notification.js
+|  |  |  ├── pushToken.js
+|  |  |  ├── testimonial.js
+|  |  |  ├── transfer.js
+|  |  |  ├── users.js
+|  |  |  └── withdraw.js
+|  |  ├── scripts
+|  |  |  ├── backup-mongo.sh
+|  |  |  └── README.md
+|  |  └── utils
+|  |     ├── error.js
+|  |     ├── QRCode.js
+|  |     ├── sendEmail.js
+|  |     └── verifyToken.js
+|  ├── mobile
+|  |  ├── app.json
+|  |  ├── App.tsx
+|  |  ├── assets
+|  |  |  ├── adaptive-icon.png
+|  |  |  ├── favicon.png
+|  |  |  ├── icon.png
+|  |  |  └── splash-icon.png
+|  |  ├── eas.json
+|  |  ├── index.ts
+|  |  ├── package.json
+|  |  ├── pnpm-lock.yaml
+|  |  ├── pnpm-workspace.yaml
+|  |  ├── src
+|  |  |  ├── lib
+|  |  |  ├── navigation
+|  |  |  ├── screens
+|  |  |  ├── store
+|  |  |  └── types
+|  |  └── tsconfig.json
+|  ├── partner
+|  |  ├── eslint.config.mjs
+|  |  ├── next-env.d.ts
+|  |  ├── next.config copy.js
+|  |  ├── next.config.ts
+|  |  ├── package.json
+|  |  ├── postcss.config.mjs
+|  |  ├── public
+|  |  |  ├── favicon.ico
+|  |  |  ├── favicon2.ico
+|  |  |  ├── images
+|  |  |  └── vercel.svg
+|  |  ├── README.md
+|  |  ├── src
+|  |  |  ├── app
+|  |  |  ├── components
+|  |  |  ├── lib
+|  |  |  ├── middleware.ts
+|  |  |  └── types
+|  |  ├── tsconfig.json
+|  |  └── tsconfig.tsbuildinfo
+|  └── web
+|     ├── eslint.config.mjs
+|     ├── next-env.d.ts
+|     ├── next.config.ts
+|     ├── package.json
+|     ├── pnpm-lock.yaml
+|     ├── pnpm-workspace.yaml
+|     ├── postcss.config.mjs
+|     ├── public
+|     |  ├── file.svg
+|     |  ├── globe.svg
+|     |  ├── next.svg
+|     |  ├── vercel.svg
+|     |  └── window.svg
+|     ├── README.md
+|     ├── src
+|     |  ├── app
+|     |  ├── lib
+|     |  └── types
+|     └── tsconfig.json
+├── design.md
+├── docker-compose.yml
+├── package.json
+├── packages
+|  ├── types
+|  |  ├── package.json
+|  |  ├── src
+|  |  |  └── index.ts
+|  |  └── tsconfig.json
+|  ├── ui
+|  |  ├── package.json
+|  |  ├── src
+|  |  |  ├── components
+|  |  |  ├── index.ts
+|  |  |  └── tokens
+|  |  ├── tailwind.config.ts
+|  |  └── tsconfig.json
+|  └── utils
+|     ├── package.json
+|     ├── src
+|     |  └── index.ts
+|     └── tsconfig.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── project-session.md
+├── PROJECT_CONTEXT.md
+├── turbo.json
+└── users
+   ├── package-lock.json
+   ├── package.json
+   ├── postcss.config.js
+   ├── public
+   |  ├── favicon.ico
+   |  ├── index.html
+   |  ├── logo192.png
+   |  ├── logo512.png
+   |  ├── manifest.json
+   |  └── robots.txt
+   ├── README.md
+   ├── src
+   |  ├── App.js
+   |  ├── assets
+   |  |  ├── double.png
+   |  |  ├── laptop.jpg
+   |  |  ├── mission.jpg
+   |  |  ├── single.png
+   |  |  ├── triple.png
+   |  |  └── vision.jpg
+   |  ├── components
+   |  |  ├── BuyTicket
+   |  |  ├── Cards
+   |  |  ├── CardWithImg
+   |  |  ├── Category.jsx
+   |  |  ├── constant
+   |  |  ├── Dropdown.jsx
+   |  |  ├── email.jsx
+   |  |  ├── EmailVerify
+   |  |  ├── EventDetails
+   |  |  ├── Filter
+   |  |  ├── Googlemap.js
+   |  |  ├── Lists.jsx
+   |  |  ├── Newsletter.jsx
+   |  |  ├── ScrollToTop.js
+   |  |  └── sections
+   |  ├── hooks
+   |  |  ├── GetData.js
+   |  |  └── useFetch.js
+   |  ├── images
+   |  |  ├── amazing - Copy.jpg
+   |  |  ├── amazing.jpg
+   |  |  ├── banner.jpg
+   |  |  ├── categories.jpg
+   |  |  ├── images.jpeg
+   |  |  ├── logo.png
+   |  |  ├── milky - Copy.jpeg
+   |  |  ├── milky.jpeg
+   |  |  ├── pexels - Copy.jpeg
+   |  |  ├── pexels-photo - Copy.jpeg
+   |  |  ├── pexels-photo.jpeg
+   |  |  ├── pexels.jpeg
+   |  |  ├── photo - Copy.jpeg
+   |  |  ├── photo.jpeg
+   |  |  └── success.png
+   |  ├── index.css
+   |  ├── index.js
+   |  ├── lib
+   |  |  ├── States.js
+   |  |  └── TicketDatas.js
+   |  ├── pages
+   |  |  ├── About.js
+   |  |  ├── Contact.js
+   |  |  ├── EventByCategory.js
+   |  |  ├── EventDetails.js
+   |  |  ├── EventList.js
+   |  |  ├── Index.js
+   |  |  ├── NotFound.js
+   |  |  ├── Onboard.js
+   |  |  ├── Privacy.js
+   |  |  ├── Register.js
+   |  |  └── Terms.js
+   |  └── styles
+   |     └── register.module.css
+   └── tailwind.config.js
+
+directory: 2608 file: 5757 symboliclink: 82
+
+ignored: directory (305)
