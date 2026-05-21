@@ -13,8 +13,8 @@ export function SectionCard({ children, style }: SectionCardProps) {
       style={{
         background: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
-        borderRadius: '12px',
-        padding: '28px',
+        borderRadius: 'var(--radius-lg)',
+        padding: '20px',
         marginBottom: '24px',
         ...style,
       }}

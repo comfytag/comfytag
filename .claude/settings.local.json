@@ -151,7 +151,11 @@
       "PowerShell($path = \"c:\\\\Users\\\\HOMEPC\\\\Desktop\\\\Web_Projects\\\\Personal\\\\comfytag\\\\discussion\"; Write-Host \"Exists: $\\(Test-Path $path\\)\"; if \\(Test-Path $path\\) { $items = [System.IO.Directory]::GetFileSystemEntries\\($path\\); Write-Host \"Count: $\\($items.Count\\)\"; $items | ForEach-Object { Write-Host $_ } })",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\HOMEPC\\\\Desktop\\\\Web_Projects\\\\Personal\\\\comfytag\\\\apps\\\\partner\\\\src\\\\hooks\" 2>&1)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\HOMEPC\\Desktop\\Web_Projects\\Personal\\comfytag\\apps\\partner\\src"
     ]
   }
 }

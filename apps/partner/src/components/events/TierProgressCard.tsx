@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import type { TierStats } from '@comfytag/types'
 import { formatNaira } from '@comfytag/utils'
 
@@ -13,16 +12,23 @@ export function TierProgressCard({ tier }: TierProgressCardProps) {
     <div
       style={{
         padding: '12px',
-        backgroundColor: 'var(--color-background)',
-        borderRadius: '8px',
+        backgroundColor: 'var(--color-bg)',
+        borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--color-border)',
       }}
     >
       <div style={{ marginBottom: '8px' }}>
-        <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: 'var(--color-text-muted)' }}>
+        <p
+          style={{
+            margin: '0 0 4px 0',
+            fontSize: '12px',
+            color: 'var(--color-text)',
+            fontWeight: 700,
+          }}
+        >
           {tier.name}
         </p>
-        <p style={{ margin: 0, fontSize: '14px', fontWeight: 500 }}>
+        <p style={{ margin: 0, fontSize: '14px', fontWeight: 500, color: 'var(--color-text)' }}>
           {formatNaira(tier.price)}
         </p>
       </div>

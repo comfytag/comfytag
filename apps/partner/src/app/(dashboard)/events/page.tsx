@@ -159,10 +159,9 @@ export default function EventsPage() {
         }}
       >
         <EventFilterTabs
-          selected={filter}
-          onSelect={(v) => setFilter(v as FilterValue)}
-          options={FILTERS}
-          counts={countByStatus}
+          active={filter}
+          onChange={(v) => setFilter(v as FilterValue)}
+          tabs={FILTERS}
         />
 
         <ViewToggle view={view} onViewChange={setView} />

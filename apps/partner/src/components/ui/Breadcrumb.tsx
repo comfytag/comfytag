@@ -18,15 +18,15 @@ export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
             <Link
               href={item.href}
               style={{
-                color: 'var(--color-brand)',
+                color: 'var(--color-text-muted)',
                 textDecoration: 'none',
-                transition: 'opacity 200ms',
+                transition: 'color 200ms',
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.opacity = '0.8'
+                (e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-brand)'
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.opacity = '1'
+                (e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-text-muted)'
               }}
             >
               {item.label}

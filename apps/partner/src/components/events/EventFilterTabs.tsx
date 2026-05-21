@@ -1,45 +1,63 @@
 'use client'
 
-import React from 'react'
+import { useState } from 'react'
 
-interface FilterOption {
-  value: string
+interface TabOption {
   label: string
+  value: string
 }
 
 interface EventFilterTabsProps {
-  selected: string
-  onSelect: (value: string) => void
-  options: FilterOption[]
-  counts?: Record<string, number>
+  active: string
+  onChange: (tab: string) => void
+  tabs: TabOption[]
 }
 
-export function EventFilterTabs({ selected, onSelect, options, counts }: EventFilterTabsProps) {
+export function EventFilterTabs({ active, onChange, tabs }: EventFilterTabsProps) {
+  const [hoveredTab, setHoveredTab] = useState<string | null>(null)
+
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-      {options.map((f) => (
-        <button
-          key={f.value}
-          onClick={() => onSelect(f.value)}
-          style={{
-            padding: '5px 12px',
-            borderRadius: '9999px',
-            fontSize: '13px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            transition: 'all 150ms',
-            background: selected === f.value ? 'var(--color-brand)' : 'var(--color-surface-2)',
-            color: selected === f.value ? 'white' : 'var(--color-text-muted)',
-            border:
-              selected === f.value
-                ? '1px solid var(--color-brand)'
-                : '1px solid var(--color-border)',
-          }}
-        >
-          {f.label}
-          {counts !== undefined && ` (${counts[f.value] ?? 0})`}
-        </button>
-      ))}
+    <div
+      style={{
+        display: 'flex',
+        gap: '0',
+        background: 'var(--color-bg)',
+        borderBottom: '1px solid var(--color-border)',
+      }}
+    >
+      {tabs.map((tab) => {
+        const isActive = active === tab.value
+        const isHovered = hoveredTab === tab.value
+
+        return (
+          <button
+            key={tab.value}
+            onClick={() => onChange(tab.value)}
+            onMouseEnter={() => setHoveredTab(tab.value)}
+            onMouseLeave={() => setHoveredTab(null)}
+            style={{
+              padding: '10px 16px',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: isActive
+                ? '2px solid var(--color-brand)'
+                : '2px solid transparent',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: isActive ? 600 : 400,
+              color: isActive
+                ? 'var(--color-brand)'
+                : isHovered
+                  ? 'var(--color-text)'
+                  : 'var(--color-text-muted)',
+              transition: 'color 150ms, border-color 150ms',
+              marginBottom: '-1px',
+            }}
+          >
+            {tab.label}
+          </button>
+        )
+      })}
     </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { formatNaira } from '@comfytag/utils'
 
@@ -13,14 +13,21 @@ interface TierListRowProps {
 }
 
 export function TierListRow({ name, price, capacity, onRemove, onEdit }: TierListRowProps) {
+  const [isHovered, setIsHovered] = useState(false)
+
   return (
     <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '12px 0',
+        padding: '12px 8px',
         borderBottom: '1px solid var(--color-border)',
+        background: isHovered ? 'var(--color-surface-2)' : 'transparent',
+        transition: 'background 150ms',
+        borderRadius: '4px',
       }}
     >
       <div>

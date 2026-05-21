@@ -1,40 +1,34 @@
 'use client'
 
-import { useState } from 'react'
-import Sidebar from './Sidebar'
-import Topbar from './Topbar'
+import { type ReactNode } from 'react'
+import PartnerNav from './PartnerNav'
 
-export default function ShellClient({ children }: { children: React.ReactNode }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+interface ShellClientProps {
+  children: ReactNode
+}
 
+export default function ShellClient({ children }: ShellClientProps) {
   return (
-    <>
-      <style>{`
-        .shell-main { margin-left: 0; }
-        @media (min-width: 768px) { .shell-main { margin-left: 240px; } }
-      `}</style>
-
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
-
-      <div
-        className="shell-main"
-        style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--color-bg)',
+      }}
+    >
+      <PartnerNav />
+      <main
+        style={{
+          maxWidth: 1280,
+          margin: '0 auto',
+          padding: '0 24px',
+          width: '100%',
+          flex: 1,
+        }}
       >
-        <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
-        <main
-          style={{
-            flex: 1,
-            padding: 24,
-            background: 'var(--color-bg)',
-            overflowY: 'auto',
-          }}
-        >
-          {children}
-        </main>
-      </div>
-    </>
+        {children}
+      </main>
+    </div>
   )
 }

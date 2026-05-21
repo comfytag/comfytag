@@ -8,16 +8,16 @@ import type { Notification } from '@comfytag/types'
 function notifTypeInfo(type: string): { label: string; bg: string; color: string } {
   const label = type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
   if (type.endsWith('_confirmed') || type.endsWith('_approved') || type.endsWith('_accepted')) {
-    return { label, bg: '#D1FAE5', color: '#065F46' }
+    return { label, bg: 'var(--color-success-subtle)', color: 'var(--color-success-text)' }
   }
   if (type.endsWith('_rejected') || type.endsWith('_declined')) {
-    return { label, bg: '#FEE2E2', color: '#991B1B' }
+    return { label, bg: 'var(--color-error-subtle)', color: 'var(--color-error-text)' }
   }
   if (type.endsWith('_reminder')) {
-    return { label, bg: '#FEF3C7', color: '#92400E' }
+    return { label, bg: 'var(--color-warning-subtle)', color: 'var(--color-warning-text)' }
   }
   if (type === 'new_event_from_following') {
-    return { label, bg: '#F5F3FF', color: '#5B21B6' }
+    return { label, bg: 'var(--color-brand-subtle)', color: 'var(--color-brand-dark)' }
   }
   return { label, bg: 'var(--color-surface-2)', color: 'var(--color-text-muted)' }
 }
@@ -55,7 +55,7 @@ export function NotificationRow({
       style={{
         display: 'flex',
         alignItems: 'center',
-        padding: '14px 16px',
+        padding: 'var(--spacing-3) var(--spacing-4)',
         borderBottom: '1px solid var(--color-border)',
         gap: '16px',
         cursor: isClickable ? 'pointer' : 'default',
@@ -139,7 +139,7 @@ export function NotificationRow({
 
       <span
         style={{
-          fontSize: '13px',
+          fontSize: 'var(--font-size-xs)',
           color: 'var(--color-text-muted)',
           whiteSpace: 'nowrap',
           flexShrink: 0,
@@ -149,18 +149,23 @@ export function NotificationRow({
       </span>
 
       {!notif.read && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            onMarkRead(notif._id)
-          }}
-          loading={isMarkingRead}
-          style={{ flexShrink: 0 }}
+        <span
+          style={{ flexShrink: 0, opacity: 0.7, transition: 'opacity 150ms' }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = '1' }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.7' }}
         >
-          Mark read
-        </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              onMarkRead(notif._id)
+            }}
+            loading={isMarkingRead}
+          >
+            Mark read
+          </Button>
+        </span>
       )}
     </div>
   )

@@ -14,12 +14,12 @@ export function PerformerTag({ name, onRemove }: PerformerTagProps) {
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '8px',
-        padding: '6px 12px',
+        gap: 'var(--spacing-2)',
+        padding: 'var(--spacing-1-5) var(--spacing-3)',
         backgroundColor: 'var(--color-brand)',
-        color: 'white',
-        borderRadius: '9999px',
-        fontSize: '13px',
+        color: 'var(--color-text-on-brand)',
+        borderRadius: 'var(--radius-full)',
+        fontSize: 'var(--font-size-sm)',
       }}
     >
       {name}
@@ -28,11 +28,19 @@ export function PerformerTag({ name, onRemove }: PerformerTagProps) {
         style={{
           background: 'none',
           border: 'none',
-          color: 'white',
+          color: 'var(--color-text-on-brand)',
           cursor: 'pointer',
           padding: 0,
           display: 'flex',
           alignItems: 'center',
+          opacity: 0.8,
+          transition: 'opacity 150ms',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '1'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '0.8'
         }}
       >
         <Trash2 size={14} />
