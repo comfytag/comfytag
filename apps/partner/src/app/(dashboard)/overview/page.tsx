@@ -3,32 +3,35 @@ import Link from 'next/link'
 import { getServerSession } from 'next-auth'
 import { formatNaira } from '@comfytag/utils'
 import type { Event } from '@comfytag/types'
-import type { ActivityItem } from '@/components/dashboard/ActivityFeed'
-import { ActivityFeed } from '@/components/dashboard/ActivityFeed'
 import { ChartCard } from '@/components/ui/ChartCard'
 import { EventCard } from '@/components/ui/EventCard'
-import PartnerNav from '@/components/dashboard/PartnerNav'
 import api, { authHeader } from '@/lib/api'
 
-interface DashboardStats {
+interface PartnerRevenue {
+  userId: string
   totalRevenue: number
-  ticketsSoldThisMonth: number
+  totalTicketsSold: number
+  totalEvents: number
+  pendingWithdrawals: number
+  approvedWithdrawals: number
+  sentWithdrawals: number
+  availableBalance: number
 }
 
-interface Activity {
-  _id: string
-  type: 'purchase' | 'comment' | 'warning'
-  description: string
-  timestamp: string
+interface PartnerAnalytics {
+  userId: string
+  totalLifetimeRevenue: number
+  totalEvents: number
+  totalTicketsSold: number
+  followers: number
+  averageTicketPrice: number
+  monthlyRevenue: Array<{ month: string; revenue: number }>
+  topEvents: Array<{ eventId: string; eventName: string; revenue: number }>
 }
 
-/**
- * Helper: Get greeting based on time of day
- */
 function getGreeting(): string {
   const now = new Date()
   const hour = now.getHours()
-
   if (hour < 12) return 'Good morning'
   if (hour < 17) return 'Good afternoon'
   return 'Good evening'
@@ -41,32 +44,24 @@ export default async function OverviewPage() {
   const userId = session.user.id as string
   const token = session.user.token as string
 
-  // Fetch organizer data
   let organizer = null
   try {
-    const res = await api.get(`/users/${userId}`, {
-      ...authHeader(token),
-    })
+    const res = await api.get(`/users/${userId}`, { ...authHeader(token) })
     organizer = res.data
-  } catch {
-    // Log error but continue — page shows defaults
-  }
+  } catch {}
 
-  // Fetch dashboard stats
-  let stats: DashboardStats = {
-    totalRevenue: 0,
-    ticketsSoldThisMonth: 0,
-  }
+  let revenue: PartnerRevenue | null = null
   try {
-    const res = await api.get(`/partner/${userId}/stats`, {
-      ...authHeader(token),
-    })
-    stats = res.data
-  } catch {
-    // Fallback to defaults
-  }
+    const res = await api.get<PartnerRevenue>(`/partner/${userId}/revenue`, { ...authHeader(token) })
+    revenue = res.data
+  } catch {}
 
-  // Fetch upcoming events (next 6)
+  let analytics: PartnerAnalytics | null = null
+  try {
+    const res = await api.get<PartnerAnalytics>(`/partner/${userId}/analytics`, { ...authHeader(token) })
+    analytics = res.data
+  } catch {}
+
   let upcomingEvents: Event[] = []
   try {
     const res = await api.get<Event[]>(`/events/user/${userId}`, {
@@ -76,33 +71,12 @@ export default async function OverviewPage() {
     upcomingEvents = res.data
       .filter((e) => new Date(e.date) > new Date())
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  } catch {
-    // Fallback to empty list
-  }
-
-  // Fetch activity feed (last 10 activities)
-  let activities: ActivityItem[] = []
-  try {
-    const res = await api.get<Activity[]>(`/partner/${userId}/activities`, {
-      params: { limit: 10 },
-      ...authHeader(token),
-    })
-    activities = res.data.map((a) => ({
-      id: a._id,
-      type: a.type,
-      description: a.description,
-      timestamp: a.timestamp,
-    }))
-  } catch {
-    // Fallback to empty list
-  }
+  } catch {}
 
   const organizerName = organizer?.name || session.user.name || 'Organizer'
 
   return (
     <>
-      <PartnerNav />
-
       <main
         style={{
           maxWidth: '1280px',
@@ -123,11 +97,11 @@ export default async function OverviewPage() {
           {getGreeting()}, {organizerName}.
         </div>
 
-        {/* Stats Grid: 2 cards side-by-side */}
+        {/* Stats Grid: 4 cards */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
             gap: '20px',
             marginBottom: '40px',
           }}
@@ -137,15 +111,15 @@ export default async function OverviewPage() {
               style={{
                 fontSize: '36px',
                 fontWeight: 700,
-                color: 'var(--color-brand)',
+                color: 'var(--color-gold)',
                 lineHeight: 1,
               }}
             >
-              {formatNaira(stats.totalRevenue)}
+              {formatNaira(revenue?.totalRevenue ?? 0)}
             </div>
           </ChartCard>
 
-          <ChartCard title="Tickets Sold This Month" subtitle="Current month">
+          <ChartCard title="Tickets Sold" subtitle="All-time tickets sold">
             <div
               style={{
                 fontSize: '36px',
@@ -154,7 +128,33 @@ export default async function OverviewPage() {
                 lineHeight: 1,
               }}
             >
-              {stats.ticketsSoldThisMonth.toLocaleString('en-NG')}
+              {(revenue?.totalTicketsSold ?? 0).toLocaleString('en-NG')}
+            </div>
+          </ChartCard>
+
+          <ChartCard title="Total Events" subtitle="Events created">
+            <div
+              style={{
+                fontSize: '36px',
+                fontWeight: 700,
+                color: 'var(--color-brand)',
+                lineHeight: 1,
+              }}
+            >
+              {(revenue?.totalEvents ?? 0).toLocaleString('en-NG')}
+            </div>
+          </ChartCard>
+
+          <ChartCard title="Followers" subtitle="Organizer followers">
+            <div
+              style={{
+                fontSize: '36px',
+                fontWeight: 700,
+                color: 'var(--color-text)',
+                lineHeight: 1,
+              }}
+            >
+              {(analytics?.followers ?? 0).toLocaleString('en-NG')}
             </div>
           </ChartCard>
         </div>
@@ -201,7 +201,7 @@ export default async function OverviewPage() {
                   event={event}
                   status={event.status === 'published' ? 'live' : 'draft'}
                   onEdit={() => {
-                    // Placeholder for edit action
+                    window.location.href = `/events/${event._id}/edit`
                   }}
                 />
               ))}
@@ -282,18 +282,6 @@ export default async function OverviewPage() {
           )}
         </section>
 
-        {/* Activity Feed Section */}
-        <section
-          style={{
-            marginBottom: '40px',
-          }}
-        >
-          <ActivityFeed
-            activities={activities}
-            title="RECENT ACTIVITY"
-            live={false}
-          />
-        </section>
       </main>
     </>
   )

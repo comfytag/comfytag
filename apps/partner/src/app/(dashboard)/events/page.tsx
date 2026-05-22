@@ -2,56 +2,75 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { useQuery } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
-import { Skeleton, EmptyState, Button, ErrorMessage } from '@comfytag/ui'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Plus, Copy, X } from 'lucide-react'
+import { Skeleton, EmptyState, ErrorMessage, Button } from '@comfytag/ui'
 import type { Event } from '@comfytag/types'
-import PartnerNav from '@/components/dashboard/PartnerNav'
 import { EventCard } from '@/components/ui/EventCard'
 import { EventFilterTabs } from '@/components/events/EventFilterTabs'
 import { ViewToggle } from '@/components/ui/ViewToggle'
 import api, { authHeader } from '@/lib/api'
 
-type FilterValue = 'all' | 'published' | 'draft' | 'ended'
-
-interface EventsResponse {
-  success: boolean
-  data: Event[]
-}
-
-const FILTERS = [
-  { value: 'all', label: 'All' },
-  { value: 'published', label: 'Published' },
-  { value: 'draft', label: 'Draft' },
-  { value: 'ended', label: 'Ended' },
-]
+type FilterValue = 'all' | 'published' | 'draft' | 'ended' | 'cancelled'
 
 export default function EventsPage() {
   const { data: session } = useSession()
+  const queryClient = useQueryClient()
+  const router = useRouter()
   const [filter, setFilter] = useState<FilterValue>('all')
   const [view, setView] = useState<'table' | 'grid'>('grid')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
 
   const { data: events = [], isLoading, isError } = useQuery<Event[]>({
     queryKey: ['events', session?.user.id],
     queryFn: () =>
       api
-        .get<EventsResponse>(`/events/user/${session!.user.id}`, {
+        .get<Event[]>(`/events/user/${session!.user.id}`, {
           ...authHeader(session?.user.token),
         })
-        .then((r) => r.data.data),
+        .then((r) => r.data ?? []),
     enabled: !!session?.user.id,
   })
 
-  const filtered = useMemo(
-    () => (filter === 'all' ? events : events.filter((e) => e.status === filter)),
-    [events, filter],
-  )
+  const duplicateMutation = useMutation({
+    mutationFn: async (eventId: string) => {
+      const res = await api.get<Event>(`/events/${eventId}`, authHeader(session?.user.token))
+      const original = res.data
+      const { _id, createdAt, updatedAt, sold, ...rest } = original as Event & { createdAt?: string; updatedAt?: string }
+      const payload = { ...rest, name: `Copy of ${rest.name}`, status: 'draft' as const, sold: 0 }
+      return api.post<Event>(`/events/${session!.user.id}`, payload, authHeader(session?.user.token)).then(r => r.data)
+    },
+    onSuccess: (newEvent) => {
+      queryClient.invalidateQueries({ queryKey: ['events', session?.user.id] })
+      router.push(`/events/${newEvent._id}/edit`)
+    },
+    onSettled: () => {
+      setDuplicatingId(null)
+    },
+  })
+
+  const tabFilters = useMemo(() => [
+    { value: 'all', label: events.length > 0 ? `All (${events.length})` : 'All' },
+    { value: 'published', label: `Published (${events.filter((e) => e.status === 'published').length})` },
+    { value: 'draft', label: `Draft (${events.filter((e) => e.status === 'draft').length})` },
+    { value: 'ended', label: `Ended (${events.filter((e) => e.status === 'ended').length})` },
+    { value: 'cancelled', label: `Cancelled (${events.filter((e) => e.status === 'cancelled').length})` },
+  ], [events])
+
+  const filtered = useMemo(() => {
+    let result = filter === 'all' ? events : events.filter(e => e.status === filter)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      result = result.filter(e => e.name.toLowerCase().includes(q))
+    }
+    return result
+  }, [events, filter, searchQuery])
 
   return (
     <div>
-      <PartnerNav />
-
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', paddingTop: '32px', paddingBottom: '32px' }}>
         {/* Header */}
         <div style={{ marginBottom: '32px' }}>
@@ -99,23 +118,73 @@ export default function EventsPage() {
           </div>
         )}
 
-        {/* Filter + View Toggle */}
+        {/* Search + Filter + View Toggle */}
         <div
           style={{
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            flexDirection: 'column',
+            gap: '16px',
             marginBottom: '24px',
-            flexWrap: 'wrap',
-            gap: '12px',
           }}
         >
-          <EventFilterTabs
-            active={filter}
-            onChange={(v) => setFilter(v as FilterValue)}
-            tabs={FILTERS}
-          />
-          <ViewToggle view={view} onViewChange={setView} />
+          <div style={{ position: 'relative', maxWidth: '320px' }}>
+            <input
+              type="text"
+              placeholder="Search events..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '9px 36px 9px 12px',
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '8px',
+                fontSize: '14px',
+                color: 'var(--color-text)',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--color-text-muted)',
+                  fontSize: '16px',
+                  lineHeight: 1,
+                  padding: 0,
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '12px',
+            }}
+          >
+            <EventFilterTabs
+              active={filter}
+              onChange={(v) => {
+                setFilter(v as FilterValue)
+                setSearchQuery('')
+              }}
+              tabs={tabFilters}
+            />
+            <ViewToggle view={view} onViewChange={setView} />
+          </div>
         </div>
 
         {/* Grid View */}
@@ -162,20 +231,60 @@ export default function EventsPage() {
                   )
                 : (
                     filtered.map((event) => (
-                      <EventCard
-                        key={event._id}
-                        event={event}
-                        status={event.status === 'published' ? 'live' : event.status === 'ended' ? 'ended' : 'draft'}
-                        href={`/events/${event._id}`}
-                        onEdit={() => {
-                          window.location.href = `/events/${event._id}/edit`
-                        }}
-                        onDelete={() => {
-                          if (confirm(`Delete "${event.name}"?`)) {
-                            void api.delete(`/events/${event._id}`, authHeader(session?.user.token))
+                      <div key={event._id} style={{ position: 'relative' }}>
+                        <EventCard
+                          event={event}
+                          status={
+                            event.status === 'published' ? 'live'
+                            : event.status === 'ended' ? 'ended'
+                            : event.status === 'cancelled' ? 'cancelled'
+                            : 'draft'
                           }
-                        }}
-                      />
+                          href={event.status === 'draft' ? `/events/${event._id}/edit` : `/events/${event._id}`}
+                          onEdit={event.status !== 'ended' && event.status !== 'cancelled' ? () => {
+                            window.location.href = `/events/${event._id}/edit`
+                          } : undefined}
+                          onDelete={() => {
+                            if (confirm(`Delete "${event.name}"?`)) {
+                              void api.delete(`/events/${event._id}`, authHeader(session?.user.token)).then(() => {
+                                queryClient.invalidateQueries({ queryKey: ['events', session?.user.id] })
+                              })
+                            }
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            setDuplicatingId(event._id)
+                            duplicateMutation.mutate(event._id)
+                          }}
+                          disabled={!!duplicatingId}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            marginTop: '8px',
+                            background: 'var(--color-surface)',
+                            border: '1px solid var(--color-border)',
+                            borderRadius: '8px',
+                            color: 'var(--color-text)',
+                            fontSize: '13px',
+                            fontWeight: 500,
+                            cursor: duplicatingId ? 'not-allowed' : 'pointer',
+                            transition: 'background var(--duration-fast) ease',
+                            opacity: duplicatingId ? 0.6 : 1,
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!duplicatingId) {
+                              (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface-2)'
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface)'
+                          }}
+                          title="Duplicate event"
+                        >
+                          {duplicatingId === event._id ? 'Duplicating...' : 'Duplicate'}
+                        </button>
+                      </div>
                     ))
                   )}
           </div>
@@ -259,7 +368,7 @@ export default function EventsPage() {
                                 ? 'var(--color-success)'
                                 : event.status === 'draft'
                                   ? 'var(--color-text-muted)'
-                                  : 'var(--color-text-muted)',
+                                  : 'var(--color-text-on-brand)',
                           }}
                         >
                           {event.status === 'published' ? 'Live' : event.status}
@@ -269,17 +378,45 @@ export default function EventsPage() {
                         {event.sold.toLocaleString('en-NG')}
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                        <Link
-                          href={`/events/${event._id}`}
-                          style={{
-                            color: 'var(--color-brand)',
-                            fontSize: '13px',
-                            textDecoration: 'none',
-                            fontWeight: 500,
-                          }}
-                        >
-                          View
-                        </Link>
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                          <Link
+                            href={event.status === 'draft' ? `/events/${event._id}/edit` : `/events/${event._id}`}
+                            style={{
+                              color: 'var(--color-brand)',
+                              fontSize: '13px',
+                              textDecoration: 'none',
+                              fontWeight: 500,
+                            }}
+                          >
+                            {event.status === 'draft' ? 'Edit' : 'View'}
+                          </Link>
+                          <button
+                            onClick={() => {
+                              setDuplicatingId(event._id)
+                              duplicateMutation.mutate(event._id)
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--color-text-muted)',
+                              cursor: 'pointer',
+                              fontSize: '13px',
+                              textDecoration: 'none',
+                              padding: '4px 8px',
+                              transition: 'color var(--duration-fast) ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-brand)'
+                            }}
+                            onMouseLeave={(e) => {
+                              (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-muted)'
+                            }}
+                            title="Duplicate event"
+                            disabled={duplicatingId === event._id}
+                          >
+                            {duplicatingId === event._id ? 'Duplicating...' : 'Duplicate'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
