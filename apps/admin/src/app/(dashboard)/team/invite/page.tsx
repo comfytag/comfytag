@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useMutation } from '@tanstack/react-query'
 import { Button, Input } from '@comfytag/ui'
 import api from '@/lib/api'
-import { PageHeader } from '@/components/ui/PageHeader'
 
 // ─── Types / Fetch ─────────────────────────────────────
 interface InviteForm {
@@ -36,17 +35,17 @@ export default function TeamInvitePage() {
 
   return (
     <div>
-      <PageHeader
-        title="Invite Admin"
-        action={
-          <Link
-            href="/team"
-            style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: 14 }}
-          >
-            ← Back to Team
-          </Link>
-        }
-      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: 'var(--color-text-primary)' }}>
+          Invite Admin
+        </h1>
+        <Link
+          href="/team"
+          style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: 14 }}
+        >
+          ← Back to Team
+        </Link>
+      </div>
 
       <div
         style={{

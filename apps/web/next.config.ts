@@ -1,3 +1,4 @@
+import type { NextConfig } from 'next'
 import withPWAInit from 'next-pwa'
 
 const withPWA = withPWAInit({
@@ -7,7 +8,7 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === 'development',
 })
 
-const nextConfig = {
+const nextConfig: NextConfig = {
   output: 'standalone',
   turbopack: {},
   images: {

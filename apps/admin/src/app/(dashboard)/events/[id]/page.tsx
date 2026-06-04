@@ -91,7 +91,6 @@ export default function EventDetailPage() {
   useEffect(() => {
     if (!event) return
     if (event.images) setImages(event.images)
-    if (event.videoUrl) setVideoUrl(event.videoUrl)
   }, [event])
 
   if (isLoading) return <LoadingSpinner size="lg" centered />
@@ -99,17 +98,17 @@ export default function EventDetailPage() {
 
   return (
     <div>
-      <PageHeader
-        title={event.name}
-        action={
-          <Link
-            href="/events"
-            style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: 14 }}
-          >
-            ← Back to Events
-          </Link>
-        }
-      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: 'var(--color-text-primary)' }}>
+          {event.name}
+        </h1>
+        <Link
+          href="/events"
+          style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: 14 }}
+        >
+          ← Back to Events
+        </Link>
+      </div>
 
       {/* Event info card */}
       <div
@@ -233,14 +232,15 @@ export default function EventDetailPage() {
 
         {mediaError && <ErrorMessage message={mediaError} />}
 
-        <Button
-          variant="primary"
-          loading={saveMutation.isPending}
-          onClick={() => saveMutation.mutate()}
-          style={{ marginTop: mediaError ? 12 : 0 }}
-        >
-          Save Media
-        </Button>
+        <div style={{ marginTop: mediaError ? 12 : 0 }}>
+          <Button
+            variant="primary"
+            loading={saveMutation.isPending}
+            onClick={() => saveMutation.mutate()}
+          >
+            Save Media
+          </Button>
+        </div>
       </div>
     </div>
   )
