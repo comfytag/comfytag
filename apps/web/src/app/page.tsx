@@ -1,5 +1,6 @@
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { HeroSection } from '@/components/home/HeroSection'
 import { HomeClientShell } from '@/components/home/HomeClientShell'
 import { HomeFeedClient } from '@/components/home/HomeFeedClient'
 import { EditorPicksSection } from '@/components/home/EditorPicksSection'
@@ -99,10 +100,11 @@ export default async function HomePage() {
   return (
     <>
       <Navbar />
+      <HeroSection />
+      <EditorPicksSection events={editorPicks} />
       <HomeClientShell />
       <main style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' }}>
         <HomeFeedClient events={events} categories={categories} />
-        <EditorPicksSection events={editorPicks} />
         <TestimonialsSection testimonials={testimonials} />
       </main>
       <Footer />

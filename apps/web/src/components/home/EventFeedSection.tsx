@@ -255,51 +255,93 @@ export function EventFeedSection({
             action={{ label: 'Browse all', href: '/events' }}
           />
         ) : (
-          visibleGroups.map((group) => (
-            <section key={group.label} style={{ marginBottom: '28px' }}>
-              <h3
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  color: 'var(--color-text-muted)',
-                  marginBottom: '10px',
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {group.label}
-              </h3>
+          <>
+            {visibleGroups.map((group) => (
+              <section key={group.label} style={{ marginBottom: '28px' }}>
+                <h3
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: 'var(--color-text-muted)',
+                    marginBottom: '10px',
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {group.label}
+                </h3>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                    gap: '14px',
+                  }}
+                >
+                  {group.events.map((event) => (
+                    <div
+                      key={event._id}
+                      onClick={() => onEventSelect?.(event._id)}
+                      role="button"
+                      tabIndex={0}
+                      style={{ cursor: 'pointer' }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          onEventSelect?.(event._id)
+                        }
+                      }}
+                    >
+                      <EventCard
+                        event={event}
+                        href={`/events/${event.slug ?? event._id}`}
+                        isLiked={likedIds.has(event._id)}
+                        onLike={handleLike}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+
+            {/* Browse all CTA — shown after last event group */}
+            {visibleGroups.length > 0 && allFeedEvents.length <= visibleCount && (
               <div
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                  gap: '14px',
+                  marginTop: '48px',
+                  marginBottom: '24px',
+                  display: 'flex',
+                  justifyContent: 'center',
                 }}
               >
-                {group.events.map((event) => (
-                  <div
-                    key={event._id}
-                    onClick={() => onEventSelect?.(event._id)}
-                    role="button"
-                    tabIndex={0}
-                    style={{ cursor: 'pointer' }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        onEventSelect?.(event._id)
-                      }
-                    }}
-                  >
-                    <EventCard
-                      event={event}
-                      href={`/events/${event.slug ?? event._id}`}
-                      isLiked={likedIds.has(event._id)}
-                      onLike={handleLike}
-                    />
-                  </div>
-                ))}
+                <a
+                  href="/events"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 24px',
+                    background: 'var(--color-brand)',
+                    color: 'var(--color-text-on-brand)',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    borderRadius: 'var(--radius-md)',
+                    transition: 'opacity var(--duration-fast) ease',
+                    cursor: 'pointer',
+                    border: 'none',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.opacity = '0.9'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.opacity = '1'
+                  }}
+                >
+                  Browse all events
+                  <span style={{ fontSize: '16px' }}>→</span>
+                </a>
               </div>
-            </section>
-          ))
+            )}
+          </>
         )}
 
         {/* Infinite scroll sentinel */}
