@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 :root {
+  /* Public System: Warm Light (Attendee + Mobile) */
   --color-brand: #7C3AED;
+  --color-brand-dark: #5B21B6;
   --color-brand-light: #EDE9FE;
-  --color-bg: #0F0F0F;
-  --color-surface: #1A1A1A;
-  --color-surface-2: #242424;
-  --color-text: #F5F5F4;
-  --color-text-muted: #A8A29E;
-  --color-border: #2E2E2E;
+  --color-bg: #FAFAF9;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F5F3FF;
+  --color-text: #1C1917;
+  --color-text-muted: #78716C;
+  --color-text-secondary: #78716C;
+  --color-border: #E8E5E0;
   --color-success: #10B981;
   --color-error: #EF4444;
   --color-warning: #F59E0B;
+  --color-energy: #F59E0B;
   --color-gold: #D97706;
+  --color-info: #3B82F6;
 
   /* Overlay + on-brand text */
-  --color-overlay:       rgba(28, 25, 23, 0.6);
+  --color-overlay: rgba(28, 25, 23, 0.60);
   --color-text-on-brand: #ffffff;
-
-  /* Brand extended */
-  --color-brand-dark:  #5B21B6;
-  --color-energy:      #F59E0B;
-  --color-info:        #3B82F6;
 
   /* Radius scale */
   --radius-sm:   6px;
@@ -31,11 +31,11 @@
   --radius-2xl:  24px;
   --radius-full: 9999px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.5);
+  /* Shadows (public system: low opacity) */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
 
   /* Motion */
   --duration-micro:    100ms;

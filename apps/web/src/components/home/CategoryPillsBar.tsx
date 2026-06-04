@@ -56,7 +56,7 @@ export function CategoryPillsBar({ categories, activeSlug, active, onSelect }: C
           )}
 
           {categories.map((cat) => {
-            const isActive = currentActive === (cat.slug ?? cat._id)
+            const isActive = currentActive === cat._id
             const className = `__ct_pills_item ${isActive ? 'active' : 'inactive'}`
 
             return isClickable ? (
@@ -64,7 +64,7 @@ export function CategoryPillsBar({ categories, activeSlug, active, onSelect }: C
                 key={cat._id}
                 type="button"
                 className={className}
-                onClick={() => onSelect?.(cat.slug ?? cat._id)}
+                onClick={() => onSelect?.(cat._id)}
               >
                 {cat.icon && <span aria-hidden="true" style={{ fontSize: '14px' }}>{cat.icon}</span>}
                 {cat.title}

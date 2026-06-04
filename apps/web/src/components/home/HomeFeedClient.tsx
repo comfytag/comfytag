@@ -13,10 +13,14 @@ interface HomeFeedClientProps {
 export function HomeFeedClient({ events, categories }: HomeFeedClientProps) {
   const [activeCategory, setActiveCategory] = useState('')
 
-  const filtered = useMemo(
-    () => (activeCategory ? events.filter((e) => e.category === activeCategory) : events),
-    [events, activeCategory]
-  )
+  const filtered = useMemo(() => {
+    if (!activeCategory) return events
+    const result = events.filter((e) => e.category === activeCategory)
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(`[CategoryFilter] activeCategory="${activeCategory}" matched ${result.length}/${events.length} events`)
+    }
+    return result
+  }, [events, activeCategory])
 
   return (
     <>
