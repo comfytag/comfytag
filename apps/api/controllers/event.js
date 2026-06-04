@@ -114,7 +114,6 @@ export const getEvent = async (req, res, next) => {
 
 // GET ALL
 export const getAllEvents = async (req, res, next) => {
-    // const { startDate, endDate } = req.query;
     try {
         const query = {};
         if (req.query.status) query.status = req.query.status;
@@ -122,11 +121,18 @@ export const getAllEvents = async (req, res, next) => {
         if (req.query.planner_id) query.planner_id = req.query.planner_id;
         if (req.query.state) query.state = req.query.state;
         if (req.query.category) query.category = req.query.category;
-        query.$or = [
-          { date: { $exists: false } },
-          { date: null },
-          { date: { $gte: new Date() } }
-        ];
+
+        // Handle past vs. upcoming events
+        if (req.query.showPast === 'true') {
+          query.date = { $lt: new Date() }
+        } else {
+          query.$or = [
+            { date: { $exists: false } },
+            { date: null },
+            { date: { $gte: new Date() } }
+          ]
+        }
+
         const getEvents = await Event.find(query).sort({ date: 1 }).lean();
         const normalized = getEvents.map(e => ({
           ...e,

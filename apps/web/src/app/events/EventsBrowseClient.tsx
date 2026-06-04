@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { EventCard } from '@/components/ui/EventCard'
 import { FilterPill } from '@/components/search/FilterPill'
@@ -56,6 +56,7 @@ export function EventsBrowseClient({
 }: EventsBrowseClientProps) {
   const router = useRouter()
   const { data: session } = useSession()
+  const searchParams = useSearchParams()
 
   const [events, setEvents] = useState<Event[]>(initialEvents)
   const [isLoading, setIsLoading] = useState(false)
@@ -64,13 +65,14 @@ export function EventsBrowseClient({
   const [hasMore, setHasMore] = useState(initialEvents.length === 12)
   const [totalCount, setTotalCount] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming')
   const [filters, setFilters] = useState<Filters>({
-    searchQuery: '',
-    types: [],
-    state: '',
+    searchQuery: searchParams.get('q') ?? '',
+    types: searchParams.get('category') ? [searchParams.get('category')!] : [],
+    state: searchParams.get('state') ?? '',
     minPrice: '',
     maxPrice: '',
-    date: '',
+    date: (searchParams.get('date') as Filters['date']) ?? '',
   })
   const [dateMenuOpen, setDateMenuOpen] = useState(false)
   const dateRef = useRef<HTMLDivElement>(null)
@@ -83,7 +85,7 @@ export function EventsBrowseClient({
     [states]
   )
 
-  const buildParams = useCallback((f: Filters, p: number) => {
+  const buildParams = useCallback((f: Filters, p: number, t: 'upcoming' | 'past') => {
     const params = new URLSearchParams()
     params.set('limit', '12')
     params.set('page', String(p))
@@ -93,11 +95,12 @@ export function EventsBrowseClient({
     if (f.minPrice) params.set('priceMin', f.minPrice)
     if (f.maxPrice) params.set('priceMax', f.maxPrice)
     if (f.date) params.set('date', f.date)
+    if (t === 'past') params.set('showPast', 'true')
     return params.toString()
   }, [])
 
   const fetchEvents = useCallback(
-    async (f: Filters, p: number, append = false) => {
+    async (f: Filters, p: number, t: 'upcoming' | 'past', append = false) => {
       const fresh = p === 1 && !append
       if (fresh) setIsLoading(true)
       else setIsLoadingMore(true)
@@ -105,8 +108,8 @@ export function EventsBrowseClient({
       try {
         const hasSearch =
           f.searchQuery.trim() || f.types.length > 0 || f.state || f.minPrice || f.maxPrice || f.date
-        const endpoint = hasSearch ? '/events/search' : '/events'
-        const response = await api.get(`${endpoint}?${buildParams(f, p)}`, authHeader(session?.user?.token))
+        const endpoint = (hasSearch || t === 'past') ? '/events/search' : '/events'
+        const response = await api.get(`${endpoint}?${buildParams(f, p, t)}`, authHeader(session?.user?.token))
         const data = response.data as Record<string, unknown>
         const list: Event[] = Array.isArray(data)
           ? (data as Event[])
@@ -132,10 +135,10 @@ export function EventsBrowseClient({
   useEffect(() => {
     if (isFirstRender.current) { isFirstRender.current = false; return }
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => { void fetchEvents(filters, 1) }, 300)
+    debounceRef.current = setTimeout(() => { void fetchEvents(filters, 1, tab) }, 300)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters])
+  }, [filters, tab])
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
@@ -151,7 +154,14 @@ export function EventsBrowseClient({
   }
 
   function handleClear() {
+    setTab('upcoming')
     setFilters({ searchQuery: '', types: [], state: '', minPrice: '', maxPrice: '', date: '' })
+  }
+
+  function handleTabChange(newTab: 'upcoming' | 'past') {
+    setTab(newTab)
+    setPage(1)
+    setEvents([])
   }
 
   // Close date menu on outside click
@@ -165,7 +175,7 @@ export function EventsBrowseClient({
   }, [dateMenuOpen])
 
   function handleLoadMore() {
-    void fetchEvents(filters, page + 1, true)
+    void fetchEvents(filters, page + 1, tab, true)
   }
 
   function handleEventSelect(id: string) {
@@ -199,7 +209,7 @@ export function EventsBrowseClient({
       {/* Page header */}
       <div style={{ marginBottom: '20px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-text)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
-          Browse Events
+          {tab === 'past' ? 'Past Events' : 'Browse Events'}
         </h1>
         {!isLoading && (
           <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', margin: 0 }}>
@@ -208,6 +218,42 @@ export function EventsBrowseClient({
               : `${displayCount} event${displayCount !== 1 ? 's' : ''} available`}
           </p>
         )}
+      </div>
+
+      {/* Tab toggle */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+        <button
+          onClick={() => handleTabChange('upcoming')}
+          style={{
+            padding: '8px 16px',
+            borderRadius: 'var(--radius-full)',
+            border: tab === 'upcoming' ? '1.5px solid var(--color-brand)' : '1.5px solid var(--color-border)',
+            background: tab === 'upcoming' ? 'var(--color-brand)' : 'var(--color-surface-2)',
+            color: tab === 'upcoming' ? 'var(--color-text-on-brand)' : 'var(--color-text)',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 150ms ease',
+          }}
+        >
+          Upcoming
+        </button>
+        <button
+          onClick={() => handleTabChange('past')}
+          style={{
+            padding: '8px 16px',
+            borderRadius: 'var(--radius-full)',
+            border: tab === 'past' ? '1.5px solid var(--color-brand)' : '1.5px solid var(--color-border)',
+            background: tab === 'past' ? 'var(--color-brand)' : 'var(--color-surface-2)',
+            color: tab === 'past' ? 'var(--color-text-on-brand)' : 'var(--color-text)',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 150ms ease',
+          }}
+        >
+          Past Events
+        </button>
       </div>
 
       {/* ── Filter bar (sticky) ── */}
@@ -271,7 +317,8 @@ export function EventsBrowseClient({
               />
             ))}
 
-            {/* Date dropdown pill */}
+            {/* Date dropdown pill — hidden in past tab */}
+            {tab === 'upcoming' && (
             <div ref={dateRef} style={{ position: 'relative' }}>
               <button
                 type="button"
@@ -346,6 +393,7 @@ export function EventsBrowseClient({
                 </div>
               )}
             </div>
+            )}
 
             {/* State dropdown */}
             <select

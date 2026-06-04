@@ -22,6 +22,7 @@ export const searchEvents = async (req, res, next) => {
       priceMin,
       date,
       featured,
+      showPast,
       page = 1,
       limit = 20,
     } = req.query
@@ -30,9 +31,23 @@ export const searchEvents = async (req, res, next) => {
     const limitNum = parseInt(limit)
     const skip = (pageNum - 1) * limitNum
 
-    const filter = { status: 'published' }
+    const filter = {}
     let sort = { createdAt: -1 }
     let projection = {}
+
+    // Handle past vs. upcoming events
+    const isPastMode = showPast === 'true'
+    if (isPastMode) {
+      filter.date = { $lt: new Date() }
+      filter.status = { $in: ['published', 'ended', 'cancelled'] }
+      sort = { date: -1 } // Most recent past first
+    } else {
+      filter.status = 'published'
+      if (!date) {
+        // Default: future events only (fixes leak in unfiltered search)
+        filter.date = { $gte: new Date() }
+      }
+    }
 
     if (q) {
       const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
