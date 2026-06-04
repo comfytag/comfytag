@@ -47,6 +47,306 @@ function EventCardSkeleton() {
   )
 }
 
+interface StateFilterDropdownProps {
+  value: string
+  states: string[]
+  onChange: (state: string) => void
+}
+
+function StateFilterDropdown({ value, states, onChange }: StateFilterDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [searchInput, setSearchInput] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const filteredStates = searchInput.trim()
+    ? states.filter((s) => s.toLowerCase().includes(searchInput.toLowerCase()))
+    : states
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleEscape)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+        document.removeEventListener('keydown', handleEscape)
+      }
+    }
+  }, [isOpen])
+
+  return (
+    <div ref={dropdownRef} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          padding: '8px 16px',
+          borderRadius: 'var(--radius-full)',
+          border: value ? '1.5px solid var(--color-brand)' : '1.5px solid var(--color-border)',
+          background: value ? 'var(--color-brand)' : 'var(--color-surface-2)',
+          color: value ? 'var(--color-text-on-brand)' : 'var(--color-text)',
+          fontSize: '13px',
+          fontWeight: 500,
+          cursor: 'pointer',
+          transition: 'all 150ms ease',
+          whiteSpace: 'nowrap',
+        }}
+        aria-expanded={isOpen}
+      >
+        {value || 'State ▾'}
+      </button>
+
+      {isOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 6px)',
+            left: 0,
+            width: '220px',
+            maxHeight: '280px',
+            overflowY: 'auto',
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-md)',
+            boxShadow: 'var(--shadow-lg)',
+            zIndex: 50,
+          }}
+          role="listbox"
+        >
+          <input
+            type="text"
+            placeholder="Search states..."
+            aria-label="Search states"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '8px 12px',
+              border: 'none',
+              borderBottom: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
+              fontSize: '13px',
+              color: 'var(--color-text)',
+              boxSizing: 'border-box',
+              outline: 'none',
+            }}
+            onFocus={(e) => (e.currentTarget.style.borderBottomColor = 'var(--color-brand)')}
+            onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'var(--color-border)')}
+          />
+
+          <button
+            type="button"
+            onClick={() => {
+              onChange('')
+              setIsOpen(false)
+              setSearchInput('')
+            }}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '10px 12px',
+              background: 'none',
+              border: 'none',
+              borderBottom: '1px solid var(--color-border)',
+              color: 'var(--color-text)',
+              fontSize: '13px',
+              fontWeight: 500,
+              textAlign: 'left',
+              cursor: 'pointer',
+            }}
+            role="option"
+          >
+            All states
+          </button>
+
+          {filteredStates.map((state) => (
+            <button
+              key={state}
+              type="button"
+              onClick={() => {
+                onChange(state)
+                setIsOpen(false)
+                setSearchInput('')
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 12px',
+                background: value === state ? 'var(--color-surface-2)' : 'none',
+                border: 'none',
+                borderBottom: '1px solid var(--color-border)',
+                color: 'var(--color-text)',
+                fontSize: '13px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                transition: 'background 100ms ease',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-surface-2)'
+              }}
+              onMouseLeave={(e) => {
+                if (value !== state) {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
+                }
+              }}
+              role="option"
+              aria-selected={value === state}
+            >
+              {state}
+            </button>
+          ))}
+
+          {filteredStates.length === 0 && (
+            <div style={{ padding: '10px 12px', color: 'var(--color-text-muted)', fontSize: '13px' }}>
+              No states found
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+interface PricePreset {
+  label: string
+  minPrice: string
+  maxPrice: string
+}
+
+interface PriceDropdownProps {
+  minPrice: string
+  maxPrice: string
+  onChange: (minPrice: string, maxPrice: string) => void
+}
+
+function PriceDropdown({ minPrice, maxPrice, onChange }: PriceDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const presets: PricePreset[] = [
+    { label: 'Any price', minPrice: '', maxPrice: '' },
+    { label: 'Free', minPrice: '0', maxPrice: '0' },
+    { label: 'Under ₦5,000', minPrice: '', maxPrice: '5000' },
+    { label: '₦5k – ₦20k', minPrice: '5000', maxPrice: '20000' },
+    { label: '₦20k+', minPrice: '20000', maxPrice: '' },
+  ]
+
+  const activePreset = presets.find((p) => p.minPrice === minPrice && p.maxPrice === maxPrice)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleEscape)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+        document.removeEventListener('keydown', handleEscape)
+      }
+    }
+  }, [isOpen])
+
+  return (
+    <div ref={dropdownRef} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          padding: '8px 16px',
+          borderRadius: 'var(--radius-full)',
+          border: activePreset && activePreset.label !== 'Any price' ? '1.5px solid var(--color-brand)' : '1.5px solid var(--color-border)',
+          background: activePreset && activePreset.label !== 'Any price' ? 'var(--color-brand)' : 'var(--color-surface-2)',
+          color: activePreset && activePreset.label !== 'Any price' ? 'var(--color-text-on-brand)' : 'var(--color-text)',
+          fontSize: '13px',
+          fontWeight: 500,
+          cursor: 'pointer',
+          transition: 'all 150ms ease',
+          whiteSpace: 'nowrap',
+        }}
+        aria-expanded={isOpen}
+      >
+        {activePreset?.label === 'Any price' || !activePreset ? 'Price ▾' : activePreset.label}
+      </button>
+
+      {isOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 6px)',
+            left: 0,
+            width: '200px',
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-md)',
+            boxShadow: 'var(--shadow-lg)',
+            zIndex: 50,
+            overflow: 'hidden',
+          }}
+          role="listbox"
+        >
+          {presets.map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() => {
+                onChange(preset.minPrice, preset.maxPrice)
+                setIsOpen(false)
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 12px',
+                background: activePreset?.label === preset.label ? 'var(--color-surface-2)' : 'none',
+                border: 'none',
+                borderBottom: '1px solid var(--color-border)',
+                color: 'var(--color-text)',
+                fontSize: '13px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                transition: 'background 100ms ease',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-surface-2)'
+              }}
+              onMouseLeave={(e) => {
+                if (activePreset?.label !== preset.label) {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
+                }
+              }}
+              role="option"
+              aria-selected={activePreset?.label === preset.label}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function EventsBrowseClient({
@@ -396,22 +696,20 @@ export function EventsBrowseClient({
             )}
 
             {/* State dropdown */}
-            <select
+            <StateFilterDropdown
               value={filters.state}
-              onChange={(e) => setFilters((prev) => ({ ...prev, state: e.target.value }))}
-              aria-label="Filter by state"
-              style={{
-                padding: '8px 28px 8px 12px', borderRadius: 'var(--radius-full)',
-                border: filters.state ? '1.5px solid var(--color-brand)' : '1.5px solid var(--color-border)',
-                background: filters.state ? 'var(--color-brand)' : 'var(--color-surface)',
-                color: filters.state ? 'var(--color-text-on-brand)' : 'var(--color-text)',
-                fontSize: '13px', fontWeight: 500, cursor: 'pointer',
-                outline: 'none', appearance: 'none',
-              }}
-            >
-              <option value="">All states</option>
-              {allStates.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
+              states={allStates}
+              onChange={(state) => setFilters((prev) => ({ ...prev, state }))}
+            />
+
+            {/* Price dropdown — hidden in past tab */}
+            {tab === 'upcoming' && (
+            <PriceDropdown
+              minPrice={filters.minPrice}
+              maxPrice={filters.maxPrice}
+              onChange={(minPrice, maxPrice) => setFilters((prev) => ({ ...prev, minPrice, maxPrice }))}
+            />
+            )}
 
             {/* Clear */}
             {hasActive && (
@@ -449,11 +747,42 @@ export function EventsBrowseClient({
         </div>
 
       ) : events.length === 0 ? (
-        <EmptyState
-          title="No events found"
-          subtitle={hasActive ? 'Try adjusting your filters or search for something else.' : 'No events are available right now. Check back soon!'}
-          action={hasActive ? { label: 'Clear Filters', href: '/events' } : undefined}
-        />
+        <div style={{ textAlign: 'center' }}>
+          <EmptyState
+            title="No events found"
+            subtitle={hasActive ? 'Try adjusting your filters or search for something else.' : 'No events are available right now. Check back soon!'}
+          />
+          {hasActive && (
+            <button
+              type="button"
+              onClick={handleClear}
+              style={{
+                marginTop: '24px',
+                padding: '10px 24px',
+                borderRadius: 'var(--radius-md)',
+                border: '1.5px solid var(--color-border)',
+                background: 'transparent',
+                color: 'var(--color-text)',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 150ms ease',
+              }}
+              onMouseEnter={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.backgroundColor = 'var(--color-surface-2)';
+                btn.style.borderColor = 'var(--color-brand)';
+              }}
+              onMouseLeave={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.backgroundColor = 'transparent';
+                btn.style.borderColor = 'var(--color-border)';
+              }}
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
 
       ) : viewMode === 'map' ? (
         /* ── Map view ── */
