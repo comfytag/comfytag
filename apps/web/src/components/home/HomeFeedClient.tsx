@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { CategoryPillsBar } from '@/components/home/CategoryPillsBar'
 import { EventFeedSection } from '@/components/home/EventFeedSection'
+import { isUpcoming } from '@comfytag/utils'
 import type { Event, Category } from '@comfytag/types'
 
 interface HomeFeedClientProps {
@@ -22,9 +23,18 @@ export function HomeFeedClient({ events, categories }: HomeFeedClientProps) {
     return result
   }, [events, activeCategory])
 
+  const visibleCategories = useMemo(() => {
+    return categories.filter((cat) => {
+      const key = (cat.slug ?? cat.title).toLowerCase()
+      return events.some(
+        (e) => e.status === 'published' && isUpcoming(e.date) && e.category.toLowerCase() === key
+      )
+    })
+  }, [events, categories])
+
   return (
     <>
-      <CategoryPillsBar categories={categories} active={activeCategory} onSelect={setActiveCategory} />
+      <CategoryPillsBar categories={visibleCategories} active={activeCategory} onSelect={setActiveCategory} />
       <EventFeedSection initialEvents={filtered} activeCategory={activeCategory} />
     </>
   )

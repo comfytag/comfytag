@@ -47,18 +47,6 @@ function EventCardSkeleton() {
   )
 }
 
-// Groups events by date label and returns ordered pairs [dateLabel, events[]]
-function groupByDate(events: Event[]): [string, Event[]][] {
-  const map = new Map<string, Event[]>()
-  for (const event of events) {
-    const label = formatDate(event.date) || 'Upcoming'
-    const bucket = map.get(label) ?? []
-    bucket.push(event)
-    map.set(label, bucket)
-  }
-  return Array.from(map.entries())
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function EventsBrowseClient({
@@ -102,8 +90,8 @@ export function EventsBrowseClient({
     if (f.searchQuery.trim()) params.set('q', f.searchQuery.trim())
     if (f.types.length > 0) params.set('category', f.types.join(','))
     if (f.state) params.set('state', f.state)
-    if (f.minPrice) params.set('minPrice', f.minPrice)
-    if (f.maxPrice) params.set('maxPrice', f.maxPrice)
+    if (f.minPrice) params.set('priceMin', f.minPrice)
+    if (f.maxPrice) params.set('priceMax', f.maxPrice)
     if (f.date) params.set('date', f.date)
     return params.toString()
   }, [])
@@ -128,7 +116,7 @@ export function EventsBrowseClient({
         if (fresh) { setEvents(list); setTotalCount(total) }
         else setEvents((prev) => [...prev, ...list])
 
-        setHasMore(list.length === 12)
+        setHasMore((data.hasMore as boolean) ?? list.length === 12)
         setPage(p)
       } catch {
         if (fresh) setEvents([])
@@ -196,7 +184,6 @@ export function EventsBrowseClient({
     !!filters.date
 
   const displayCount = totalCount ?? events.length
-  const dateGroups = useMemo(() => groupByDate(events), [events])
 
   // Merge quick types with API types (deduplicate)
   const pillTypes = useMemo(
@@ -432,33 +419,17 @@ export function EventsBrowseClient({
         </div>
 
       ) : (
-        /* ── List view (RA date-group style) ── */
+        /* ── List view (flat grid) ── */
         <>
-          {dateGroups.map(([dateLabel, groupEvents]) => (
-            <section key={dateLabel} style={{ marginBottom: '36px' }}>
-              {/* Bold date header */}
-              <h2
-                style={{
-                  fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em',
-                  textTransform: 'uppercase', color: 'var(--color-text-muted)',
-                  margin: '0 0 14px', paddingBottom: '8px',
-                  borderBottom: '1px solid var(--color-border)',
-                }}
-              >
-                {dateLabel}
-              </h2>
-
-              <div className="events-grid">
-                {groupEvents.map((event) => (
-                  <EventCard
-                    key={event._id}
-                    event={event}
-                    href={`/events/${event.slug ?? event._id}`}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
+          <div className="events-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px', marginBottom: '40px' }}>
+            {events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((event) => (
+              <EventCard
+                key={event._id}
+                event={event}
+                href={`/events/${event.slug ?? event._id}`}
+              />
+            ))}
+          </div>
 
           {/* Load more */}
           {hasMore && (
