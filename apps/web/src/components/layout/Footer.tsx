@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export function Footer() {
   const currentYear = new Date().getFullYear()
 
@@ -59,9 +61,9 @@ export function Footer() {
             { label: 'Privacy', href: '/privacy' },
             { label: 'Contact', href: '/contact' },
           ].map((item) => (
-            <a key={item.href} href={item.href} className="__ct_footer_link">
+            <Link key={item.href} href={item.href} className="__ct_footer_link">
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
 

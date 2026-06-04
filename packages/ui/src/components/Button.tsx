@@ -23,7 +23,7 @@ const sizeStyles: Record<NonNullable<ButtonProps['size']>, React.CSSProperties> 
 const variantBase: Record<NonNullable<ButtonProps['variant']>, React.CSSProperties> = {
   primary: { backgroundColor: 'var(--color-brand)', color: 'var(--color-text-on-brand)', border: 'none' },
   secondary: { backgroundColor: 'transparent', border: '2px solid var(--color-brand)', color: 'var(--color-brand)', borderColor: 'var(--color-brand)' },
-  ghost: { backgroundColor: 'transparent', color: 'var(--color-text)', border: '1px solid var(--color-border)' },
+  ghost: { backgroundColor: 'transparent', color: 'var(--color-brand)', border: '1px solid var(--color-brand)' },
   danger: { backgroundColor: 'var(--color-error)', color: 'var(--color-text-on-brand)', border: 'none' },
 }
 
@@ -48,7 +48,7 @@ export function Button({
       : variant === 'secondary'
       ? { background: 'rgba(124,58,237,0.06)', borderColor: 'var(--color-brand-dark)' }
       : variant === 'ghost'
-      ? { backgroundColor: 'var(--color-surface-2)' }
+      ? { backgroundColor: 'rgba(124,58,237,0.10)' }
       : { opacity: 0.85 }
     : {}
 

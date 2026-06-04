@@ -23,7 +23,7 @@ export function CitySelector({ isOpen, onClose, onSelect }: CitySelectorProps) {
   // Persist city selection to localStorage
   const handleCitySelect = (city: string) => {
     try {
-      localStorage.setItem('selectedCity', city)
+      localStorage.setItem('comfytag_city', city)
     } catch (err) {
       console.error('localStorage error:', err)
     }

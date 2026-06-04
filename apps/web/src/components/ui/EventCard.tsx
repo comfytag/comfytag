@@ -49,10 +49,7 @@ export function EventCard({
           display: 'block',
           height: `${height}px`,
           transform: hovered ? 'scale(1.02)' : 'scale(1)',
-          transition: `transform var(--duration-fast) ease, box-shadow var(--duration-fast) ease`,
-          boxShadow: hovered
-            ? 'var(--shadow-md)'
-            : 'none',
+          transition: `transform var(--duration-fast) ease`,
           cursor: onSelect ? 'pointer' : 'default',
         }}
         onMouseEnter={() => setHovered(true)}
@@ -81,7 +78,7 @@ export function EventCard({
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
+            background: 'linear-gradient(to top, rgba(0,0,0,0.65) 100%, rgba(0,0,0,0) 40%)',
           }}
         />
 
