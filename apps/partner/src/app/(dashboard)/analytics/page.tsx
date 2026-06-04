@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react'
 import { useQuery } from '@tanstack/react-query'
 import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { formatNaira } from '@comfytag/utils'
-import PartnerNav from '@/components/dashboard/PartnerNav'
 import { ChartCard } from '@/components/ui/ChartCard'
 import api, { authHeader } from '@/lib/api'
 
@@ -21,12 +20,13 @@ interface TicketTypeBreakdown {
 }
 
 interface PartnerAnalytics {
-  totalRevenue: number
+  totalLifetimeRevenue: number
   totalEvents: number
   totalTicketsSold: number
-  totalFollowers: number
+  followers: number
+  averageTicketPrice: number
   monthlyRevenue: { month: string; revenue: number }[]
-  topEvents: { name: string; revenue: number; sold: number }[]
+  topEvents: { eventId: string; eventName: string; revenue: number }[]
   ticketTypes?: TicketTypeBreakdown[]
 }
 
@@ -49,8 +49,7 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <PartnerNav />
+      <div>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <LoadingSpinner centered size="lg" />
         </div>
@@ -60,8 +59,7 @@ export default function AnalyticsPage() {
 
   if (isError) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <PartnerNav />
+      <div>
         <div style={{ padding: '32px 24px' }}>
           <ErrorMessage message="Failed to load analytics." />
         </div>
@@ -72,9 +70,7 @@ export default function AnalyticsPage() {
   const ticketTypes = analytics?.ticketTypes ?? []
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <PartnerNav />
-
+    <div>
       <main style={{ flex: 1, padding: '32px 24px' }}>
         {/* Max-width container */}
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
@@ -83,11 +79,11 @@ export default function AnalyticsPage() {
             ANALYTICS
           </h1>
 
-          {/* Top Stats Grid: 2×2 on desktop, stack on mobile */}
+          {/* Top Stats Grid: flexible wrap on desktop, stack on mobile */}
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
               gap: '20px',
               marginBottom: '40px',
             }}
@@ -109,7 +105,7 @@ export default function AnalyticsPage() {
                         }}
                       />
                       <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                        {item.month.slice(0, 3)}
+                        {new Date(item.month + '-01').toLocaleString('default', { month: 'short' })}
                       </span>
                     </div>
                   )
@@ -131,15 +127,29 @@ export default function AnalyticsPage() {
               </div>
             </ChartCard>
 
-            {/* Attendance/Conversion Rate */}
-            <ChartCard title="Conversion Rate" subtitle="Enrollment to ticket purchase">
+            {/* Followers */}
+            <ChartCard title="Followers" subtitle="Profile followers">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
-                    {((analytics?.totalTicketsSold ?? 0) > 0 ? '64' : '0')}%
+                    {(analytics?.followers ?? 0).toLocaleString('en-NG')}
                   </div>
                   <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '12px 0 0' }}>
-                    enrolled to purchase ratio
+                    total followers
+                  </p>
+                </div>
+              </div>
+            </ChartCard>
+
+            {/* Total Events */}
+            <ChartCard title="Events" subtitle="Total created events">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
+                    {(analytics?.totalEvents ?? 0).toLocaleString('en-NG')}
+                  </div>
+                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '12px 0 0' }}>
+                    all-time events
                   </p>
                 </div>
               </div>
@@ -150,8 +160,8 @@ export default function AnalyticsPage() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
-                    {(analytics?.totalTicketsSold ?? 0) > 0
-                      ? formatNaira((analytics?.totalRevenue ?? 0) / (analytics?.totalTicketsSold ?? 1))
+                    {(analytics?.averageTicketPrice ?? 0) > 0
+                      ? formatNaira(analytics?.averageTicketPrice ?? 0)
                       : '₦0'}
                   </div>
                   <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '12px 0 0' }}>

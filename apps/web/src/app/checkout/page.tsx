@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
@@ -50,6 +50,7 @@ interface PromoResult {
 }
 
 function CheckoutInner() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session } = useSession()
   const { gateOpen, openGate, closeGate } = useAuthGate()
@@ -332,6 +333,8 @@ function CheckoutInner() {
     )
   }
 
+  const CONFETTI_COLORS = ['#7C3AED', '#F59E0B', '#10B981', '#EF4444', '#3B82F6', '#EC4899']
+
   const eventName = event.name
   const shareUrl =
     typeof window !== 'undefined'
@@ -363,10 +366,7 @@ function CheckoutInner() {
 
         {/* Confetti pieces */}
         {Array.from({ length: 20 }).map((_, i) => {
-          const colors = [
-            '#7C3AED', '#F59E0B', '#10B981', '#EF4444',
-            '#3B82F6', '#EC4899', '#F97316', '#06B6D4',
-          ]
+          const colors = CONFETTI_COLORS
           const size = 8 + (i % 5) * 4
           return (
             <div
@@ -414,7 +414,7 @@ function CheckoutInner() {
             fill="none"
             aria-hidden="true"
           >
-            <circle cx="12" cy="12" r="12" fill="#10B981" />
+            <circle cx="12" cy="12" r="12" style={{ fill: 'var(--color-success)' }} />
             <path
               d="M7 12.5l3.5 3.5 6.5-7"
               stroke="#ffffff"
@@ -455,11 +455,11 @@ function CheckoutInner() {
           >
             Your ticket has been sent to{' '}
             <strong style={{ color: 'var(--color-text)' }}>{contactInfo || guestPhone}</strong>{' '}
-            via WhatsApp and email.
+            via email.
           </p>
 
           {magicLinkSent && (
-            <div style={{ width: '100%', background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '10px', padding: '12px 16px', fontSize: '13px', color: 'var(--color-text)', lineHeight: 1.5, textAlign: 'left' }}>
+            <div style={{ width: '100%', background: 'color-mix(in srgb, var(--color-brand) 6%, transparent)', border: '1px solid color-mix(in srgb, var(--color-brand) 20%, transparent)', borderRadius: '10px', padding: '12px 16px', fontSize: '13px', color: 'var(--color-text)', lineHeight: 1.5, textAlign: 'left' }}>
               📧 We sent a login link to <strong>{guestEmail}</strong> — tap it to access your tickets anytime.
             </div>
           )}
@@ -510,7 +510,7 @@ function CheckoutInner() {
 
           {/* View tickets */}
           <div style={{ width: '100%' }}>
-            <Button variant="ghost" fullWidth onClick={() => { window.location.href = '/tickets' }}>
+            <Button variant="ghost" fullWidth onClick={() => { router.push('/tickets') }}>
               View My Tickets
             </Button>
           </div>
@@ -647,7 +647,7 @@ function CheckoutInner() {
         padding: '32px 16px 64px',
       }}
     >
-      <div style={{ maxWidth: '520px', width: '100%' }}>
+      <div style={{ maxWidth: '480px', width: '100%' }}>
         {/* Back link */}
         <Link
           href={`/events/${event.slug ?? event._id}`}
@@ -859,7 +859,7 @@ function CheckoutInner() {
                   margin: '6px 0 0',
                 }}
               >
-                We'll send your ticket to this number via WhatsApp
+                We'll send your ticket confirmation to this number via SMS
               </p>
             </div>
           </div>

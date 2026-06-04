@@ -53,6 +53,7 @@ export function CityHeaderSection({ selectedCity, onCityChange }: CityHeaderSect
         isOpen={showCitySelector}
         onClose={() => setShowCitySelector(false)}
         onSelect={(city) => {
+          localStorage.setItem('comfytag_city', city)
           onCityChange(city)
           setShowCitySelector(false)
         }}
@@ -88,11 +89,9 @@ function CitySelectorModal({ isOpen, onClose, onSelect }: CitySelectorModalProps
         navigator.geolocation.getCurrentPosition(resolve, reject)
       })
       // Reverse geocode to get city name (simplified — in production use proper API)
-      console.log('Location detected:', position.coords)
       // For now, default to Lagos if location accessed
       onSelect('Lagos')
     } catch (err) {
-      console.error('Geolocation error:', err)
       setUseLocation(false)
     }
   }
@@ -107,7 +106,7 @@ function CitySelectorModal({ isOpen, onClose, onSelect }: CitySelectorModalProps
         .__ct_city_selector_search { width: 100%; padding: 12px 16px; border: 1px solid var(--color-border); background: var(--color-surface-2); border-radius: var(--radius-md); font-size: 14px; color: var(--color-text); transition: border-color 150ms ease, background 150ms ease; }
         .__ct_city_selector_search:focus { outline: 2px solid var(--color-brand); outline-offset: 0; border-color: var(--color-brand); }
         .__ct_city_selector_search::placeholder { color: var(--color-text-muted); }
-        .__ct_city_selector_auto { width: 100%; padding: 12px 16px; margin: 16px 24px 16px; background: var(--color-brand); color: var(--color-text-on-brand); border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: background 150ms ease; }
+        .__ct_city_selector_auto { width: 100%; padding: 12px 16px; margin: 16px 0; background: var(--color-brand); color: var(--color-text-on-brand); border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: background 150ms ease; }
         .__ct_city_selector_auto:hover { background: var(--color-brand-dark); }
         .__ct_city_selector_auto:focus-visible { outline: 2px solid var(--color-text-on-brand); outline-offset: 2px; }
         .__ct_city_selector_divider { height: 1px; background: var(--color-border); margin: 12px 24px; }

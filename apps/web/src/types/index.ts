@@ -12,6 +12,8 @@ declare module 'next-auth' {
       isPartner: boolean
       isAdmin: boolean
       image?: string
+      username?: string
+      createdAt?: string
     }
   }
 }

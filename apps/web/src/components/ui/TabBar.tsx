@@ -57,7 +57,7 @@ export function TabBar({ tabs, activeTab, onChange, variant = 'pill' }: TabBarPr
             fontSize: '14px',
             fontWeight: 600,
             background: activeTab === tab.value ? 'var(--color-brand)' : 'var(--color-surface-2)',
-            color: activeTab === tab.value ? '#ffffff' : 'var(--color-text-muted)',
+            color: activeTab === tab.value ? 'var(--color-text-on-brand)' : 'var(--color-text-muted)',
             transition: 'background 150ms, color 150ms',
           }}
         >

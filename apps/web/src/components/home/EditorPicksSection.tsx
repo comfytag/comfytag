@@ -22,7 +22,7 @@ export function EditorPicksSection({ events }: EditorPicksSectionProps) {
         marginBottom: '0',
       }}
     >
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: '40px' }}>
           <span
@@ -46,7 +46,7 @@ export function EditorPicksSection({ events }: EditorPicksSectionProps) {
             style={{
               fontSize: '32px',
               fontWeight: 700,
-              color: '#ffffff',
+              color: 'var(--color-text-on-brand)',
               marginBottom: '8px',
               letterSpacing: '-0.01em',
             }}
@@ -55,7 +55,8 @@ export function EditorPicksSection({ events }: EditorPicksSectionProps) {
           </h2>
           <p
             style={{
-              color: 'rgba(255,255,255,0.85)',
+              color: 'var(--color-text-on-brand)',
+              opacity: 0.85,
               fontSize: '16px',
               lineHeight: 1.6,
             }}

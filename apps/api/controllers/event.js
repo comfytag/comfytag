@@ -114,23 +114,25 @@ export const getEvent = async (req, res, next) => {
 
 // GET ALL
 export const getAllEvents = async (req, res, next) => {
-    const date_time = new Date();
     // const { startDate, endDate } = req.query;
     try {
         const query = {};
         if (req.query.status) query.status = req.query.status;
+        else query.status = 'published';
         if (req.query.planner_id) query.planner_id = req.query.planner_id;
         if (req.query.state) query.state = req.query.state;
         if (req.query.category) query.category = req.query.category;
-        const getEvents = await Event.find(query)
-        // const getEvents = await Event.find( { 
-        //         ticket_end: {
-        //           $gte: date_time,
-        //         //   $lt: date_time
-        //         }, 
-        //   })
-        res.status(200).json(getEvents)
-        console.log(getEvents.ticket_end, date_time)
+        query.$or = [
+          { date: { $exists: false } },
+          { date: null },
+          { date: { $gte: new Date() } }
+        ];
+        const getEvents = await Event.find(query).sort({ date: 1 }).lean();
+        const normalized = getEvents.map(e => ({
+          ...e,
+          date: e.date ?? e.event_date ?? null
+        }));
+        res.status(200).json(normalized);
     } catch (err) {
         next(err)
     }

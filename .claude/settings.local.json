@@ -157,7 +157,13 @@
       "PowerShell($path = 'C:\\\\Users\\\\HOMEPC\\\\Desktop\\\\Web_Projects\\\\Personal\\\\comfytag\\\\apps\\\\web\\\\src\\\\app\\\\events\\\\[slug]\\\\page.tsx'; \\(Get-Content -LiteralPath $path | Measure-Object -Line\\).Lines)",
       "Bash(timeout 120 bash -c 'while pgrep -f \"tsc --noEmit\" > /dev/null; do sleep 1; done')",
       "Bash(git -C \"c:/Users/HOMEPC/Desktop/Web_Projects/Personal/comfytag\" add -A)",
-      "Bash(git -C \"c:/Users/HOMEPC/Desktop/Web_Projects/Personal/comfytag\" commit -m \"Phase 4: Partner pages composition — 5 agents built ~1400 lines across Overview, Analytics, Events List, Create Event Wizard, Event Detail+Edit+Gate+Notifications+Settings with TypeScript fixes\")"
+      "Bash(git -C \"c:/Users/HOMEPC/Desktop/Web_Projects/Personal/comfytag\" commit -m \"Phase 4: Partner pages composition — 5 agents built ~1400 lines across Overview, Analytics, Events List, Create Event Wizard, Event Detail+Edit+Gate+Notifications+Settings with TypeScript fixes\")",
+      "Bash(dir \"c:\\\\Users\\\\HOMEPC\\\\Desktop\\\\Web_Projects\\\\Personal\\\\comfytag\\\\apps\\\\partner\\\\src\\\\components\\\\dashboard\")",
+      "PowerShell($ports = 3000, 3001, 3002, 3003, 4002; foreach \\($port in $ports\\) { $process = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess; if \\($process\\) { Stop-Process -Id $process -Force; Write-Host \"Killed process on port $port \\(PID: $process\\)\" } else { Write-Host \"No process on port $port\" } })",
+      "Bash(curl -s http://localhost:4002/categories)",
+      "Bash(curl -s http://localhost:4002/events/pick/toppick)",
+      "Bash(curl -s http://localhost:4002/testimonials)",
+      "Bash(curl -s http://localhost:3000)"
     ],
     "additionalDirectories": [
       "C:\\Users\\HOMEPC\\Desktop\\Web_Projects\\Personal\\comfytag\\apps\\partner\\src"

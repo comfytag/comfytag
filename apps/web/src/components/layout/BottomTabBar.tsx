@@ -110,9 +110,21 @@ export function BottomTabBar({ currentPath }: BottomTabBarProps) {
           background: none;
           cursor: pointer;
           min-height: 60px;
+          position: relative;
         }
         .__ct_bottom_tab_link.active {
           color: var(--color-brand);
+        }
+        .__ct_bottom_tab_link.active::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 3px;
+          height: 24px;
+          background: var(--color-brand);
+          border-radius: 0 0 3px 3px;
         }
         .__ct_bottom_tab_link:focus-visible {
           outline: 2px solid var(--color-brand);

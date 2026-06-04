@@ -1,29 +1,32 @@
 'use client'
 
 import React from 'react'
+import { useRouter } from 'next/navigation'
 import type { ReactNode } from 'react'
+import type { Category } from '@comfytag/types'
 
 export interface CategoryCardProps {
   name?: string
   icon?: ReactNode
   gradient?: string
   onClick?: () => void
-  category?: any
+  category?: Category
   href?: string
 }
 
 export function CategoryCard({ name, icon, gradient, onClick, category, href }: CategoryCardProps) {
+  const router = useRouter()
   const [hovered, setHovered] = React.useState(false)
 
-  const displayName = name ?? (category as any)?.name ?? ''
-  const displayIcon = icon ?? (category as any)?.icon ?? '🎫'
+  const displayName = name ?? category?.title ?? ''
+  const displayIcon = icon ?? category?.icon ?? '🎫'
   const background =
     gradient ??
     'linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark) 100%)'
 
   const handleClick = () => {
     if (href) {
-      window.location.href = href
+      router.push(href)
     } else if (onClick) {
       onClick()
     }
@@ -56,7 +59,7 @@ export function CategoryCard({ name, icon, gradient, onClick, category, href }: 
           transform: hovered ? 'scale(1.02)' : 'scale(1)',
           transition: `transform var(--duration-fast) ease, box-shadow var(--duration-fast) ease`,
           boxShadow: hovered
-            ? `0 0 12px rgba(124, 58, 237, 0.3)`
+            ? `0 0 12px color-mix(in srgb, var(--color-brand) 30%, transparent)`
             : 'none',
           cursor: onClick || href ? 'pointer' : 'default',
         }}

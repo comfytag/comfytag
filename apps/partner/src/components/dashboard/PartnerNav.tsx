@@ -11,9 +11,11 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Events', href: '/events' },
+  { label: 'Overview',  href: '/overview' },
+  { label: 'Events',    href: '/events' },
+  { label: 'Attendees', href: '/attendees' },
   { label: 'Analytics', href: '/analytics' },
-  { label: 'Settings', href: '/settings' },
+  { label: 'Payouts',   href: '/payouts' },
 ]
 
 export default function PartnerNav() {
@@ -43,6 +45,7 @@ export default function PartnerNav() {
 
   // Close dropdown when clicking outside
   useEffect(() => {
+    if (!dropdownOpen) return
     function handleClickOutside(event: MouseEvent) {
       if (
         dropdownRef.current &&
@@ -53,25 +56,43 @@ export default function PartnerNav() {
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [dropdownOpen])
 
-  const userInitial =
-    session?.user?.name?.charAt(0).toUpperCase() ?? '?'
+  const userInitial = session?.user?.name?.charAt(0).toUpperCase() ?? '?'
+  const avatarSrc = session?.user?.logo ?? null
 
   return (
-    <nav
-      style={{
-        height: 64,
-        background: 'var(--color-bg)',
-        borderBottom: '1px solid var(--color-border)',
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 24px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-      }}
-    >
+    <>
+      <style>{`
+        .__ct_partner_nav {
+          height: 64px;
+          padding: 0 24px;
+        }
+        .__ct_partner_nav_links {
+          display: flex;
+        }
+        @media (max-width: 767px) {
+          .__ct_partner_nav {
+            height: 56px;
+            padding: 0 16px;
+          }
+          .__ct_partner_nav_links {
+            display: none;
+          }
+        }
+      `}</style>
+      <nav
+        className="__ct_partner_nav"
+        style={{
+          background: 'var(--color-bg)',
+          borderBottom: '1px solid var(--color-border)',
+          display: 'flex',
+          alignItems: 'center',
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+        }}
+      >
       {/* Logo — left */}
       <Link
         href="/overview"
@@ -89,8 +110,8 @@ export default function PartnerNav() {
 
       {/* Center nav links */}
       <div
+        className="__ct_partner_nav_links"
         style={{
-          display: 'flex',
           alignItems: 'center',
           gap: 4,
           position: 'absolute',
@@ -179,7 +200,7 @@ export default function PartnerNav() {
                 width: 8,
                 height: 8,
                 borderRadius: '50%',
-                background: '#EF4444',
+                background: 'var(--color-error)',
                 border: '2px solid var(--color-bg)',
               }}
             />
@@ -197,7 +218,7 @@ export default function PartnerNav() {
               width: 36,
               height: 36,
               borderRadius: '50%',
-              background: 'var(--color-brand)',
+              background: avatarSrc ? 'transparent' : 'var(--color-brand)',
               color: 'var(--color-text-on-brand)',
               border: 'none',
               cursor: 'pointer',
@@ -207,9 +228,23 @@ export default function PartnerNav() {
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
+              overflow: 'hidden',
             }}
           >
-            {userInitial}
+            {avatarSrc ? (
+              <img
+                src={avatarSrc}
+                alt={session?.user?.name ?? 'Profile'}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                }}
+              />
+            ) : (
+              userInitial
+            )}
           </button>
 
           {dropdownOpen && (
@@ -259,6 +294,134 @@ export default function PartnerNav() {
                 </p>
               </div>
 
+              {/* Divider */}
+              <div style={{ borderBottom: '1px solid var(--color-border)' }} />
+
+              {/* KYC link */}
+              <Link
+                href="/kyc"
+                role="menuitem"
+                onClick={() => setDropdownOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 16px',
+                  fontSize: 14,
+                  color: 'var(--color-text)',
+                  textDecoration: 'none',
+                  transition: `background var(--duration-fast) ease`,
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'var(--color-border)'
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'transparent'
+                }}
+              >
+                KYC Verification
+              </Link>
+
+              {/* Tiers link */}
+              <Link
+                href="/tiers"
+                role="menuitem"
+                onClick={() => setDropdownOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 16px',
+                  fontSize: 14,
+                  color: 'var(--color-text)',
+                  textDecoration: 'none',
+                  transition: `background var(--duration-fast) ease`,
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'var(--color-border)'
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'transparent'
+                }}
+              >
+                Ticket Tiers
+              </Link>
+
+              {/* Team link */}
+              <Link
+                href="/team"
+                role="menuitem"
+                onClick={() => setDropdownOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 16px',
+                  fontSize: 14,
+                  color: 'var(--color-text)',
+                  textDecoration: 'none',
+                  transition: `background var(--duration-fast) ease`,
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'var(--color-border)'
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'transparent'
+                }}
+              >
+                Team
+              </Link>
+
+              {/* Onboarding link */}
+              <Link
+                href="/onboarding"
+                role="menuitem"
+                onClick={() => setDropdownOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 16px',
+                  fontSize: 14,
+                  color: 'var(--color-text)',
+                  textDecoration: 'none',
+                  transition: `background var(--duration-fast) ease`,
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'var(--color-border)'
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'transparent'
+                }}
+              >
+                Onboarding
+              </Link>
+
+              {/* Settings link */}
+              <Link
+                href="/settings"
+                role="menuitem"
+                onClick={() => setDropdownOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 16px',
+                  fontSize: 14,
+                  color: 'var(--color-text)',
+                  textDecoration: 'none',
+                  transition: `background var(--duration-fast) ease`,
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'var(--color-border)'
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'transparent'
+                }}
+              >
+                Settings
+              </Link>
+
               {/* Menu items */}
               <Link
                 href="/profile"
@@ -284,6 +447,9 @@ export default function PartnerNav() {
                 View Public Profile
               </Link>
 
+              {/* Divider */}
+              <div style={{ borderBottom: '1px solid var(--color-border)' }} />
+
               <button
                 role="menuitem"
                 onClick={() => void signOut({ callbackUrl: '/login' })}
@@ -293,7 +459,7 @@ export default function PartnerNav() {
                   textAlign: 'left',
                   padding: '10px 16px',
                   fontSize: 14,
-                  color: '#EF4444',
+                  color: 'var(--color-error)',
                   background: 'transparent',
                   border: 'none',
                   cursor: 'pointer',
@@ -314,6 +480,7 @@ export default function PartnerNav() {
           )}
         </div>
       </div>
-    </nav>
+      </nav>
+    </>
   )
 }

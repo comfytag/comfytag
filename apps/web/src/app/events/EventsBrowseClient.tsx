@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react'
 import { EventCard } from '@/components/ui/EventCard'
 import { FilterPill } from '@/components/search/FilterPill'
 import { MapView } from '@/components/search/MapView'
+import { ViewToggle } from '@/components/ui/ViewToggle'
 import { EmptyState, LoadingSpinner, Skeleton } from '@comfytag/ui'
 import { authHeader, NIGERIAN_STATES } from '@comfytag/utils'
 import { formatDate } from '@comfytag/utils'
@@ -28,7 +29,7 @@ interface Filters {
   state: string
   minPrice: string
   maxPrice: string
-  dateSort: boolean
+  date: '' | 'today' | 'tomorrow' | 'weekend'
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -42,52 +43,6 @@ function EventCardSkeleton() {
   return (
     <div style={{ borderRadius: '16px', overflow: 'hidden' }}>
       <Skeleton height="240px" borderRadius="16px" />
-    </div>
-  )
-}
-
-function ViewToggle({
-  view,
-  onChange,
-}: {
-  view: ViewMode
-  onChange: (v: ViewMode) => void
-}) {
-  return (
-    <div
-      role="group"
-      aria-label="View mode"
-      style={{
-        display: 'flex',
-        gap: '4px',
-        background: 'var(--color-surface-2)',
-        borderRadius: 'var(--radius-full)',
-        padding: '4px',
-        flexShrink: 0,
-      }}
-    >
-      {(['list', 'map'] as ViewMode[]).map((v) => (
-        <button
-          key={v}
-          type="button"
-          aria-pressed={view === v}
-          onClick={() => onChange(v)}
-          style={{
-            padding: '6px 14px',
-            borderRadius: 'var(--radius-full)',
-            border: 'none',
-            background: view === v ? 'var(--color-brand)' : 'transparent',
-            color: view === v ? 'var(--color-text-on-brand)' : 'var(--color-text-muted)',
-            fontSize: '13px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all var(--duration-fast)',
-            textTransform: 'capitalize',
-          }}
-        >
-          {v === 'list' ? 'List' : 'Map'}
-        </button>
-      ))}
     </div>
   )
 }
@@ -127,8 +82,10 @@ export function EventsBrowseClient({
     state: '',
     minPrice: '',
     maxPrice: '',
-    dateSort: false,
+    date: '',
   })
+  const [dateMenuOpen, setDateMenuOpen] = useState(false)
+  const dateRef = useRef<HTMLDivElement>(null)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isFirstRender = useRef(true)
@@ -143,11 +100,11 @@ export function EventsBrowseClient({
     params.set('limit', '12')
     params.set('page', String(p))
     if (f.searchQuery.trim()) params.set('q', f.searchQuery.trim())
-    if (f.types.length > 0) params.set('type', f.types.join(','))
+    if (f.types.length > 0) params.set('category', f.types.join(','))
     if (f.state) params.set('state', f.state)
     if (f.minPrice) params.set('minPrice', f.minPrice)
     if (f.maxPrice) params.set('maxPrice', f.maxPrice)
-    if (f.dateSort) params.set('sort', 'date')
+    if (f.date) params.set('date', f.date)
     return params.toString()
   }, [])
 
@@ -159,7 +116,7 @@ export function EventsBrowseClient({
 
       try {
         const hasSearch =
-          f.searchQuery.trim() || f.types.length > 0 || f.state || f.minPrice || f.maxPrice
+          f.searchQuery.trim() || f.types.length > 0 || f.state || f.minPrice || f.maxPrice || f.date
         const endpoint = hasSearch ? '/events/search' : '/events'
         const response = await api.get(`${endpoint}?${buildParams(f, p)}`, authHeader(session?.user?.token))
         const data = response.data as Record<string, unknown>
@@ -207,13 +164,19 @@ export function EventsBrowseClient({
     setFilters((prev) => ({ ...prev, types: [] }))
   }
 
-  function toggleDateSort() {
-    setFilters((prev) => ({ ...prev, dateSort: !prev.dateSort }))
+  function handleClear() {
+    setFilters({ searchQuery: '', types: [], state: '', minPrice: '', maxPrice: '', date: '' })
   }
 
-  function handleClear() {
-    setFilters({ searchQuery: '', types: [], state: '', minPrice: '', maxPrice: '', dateSort: false })
-  }
+  // Close date menu on outside click
+  useEffect(() => {
+    if (!dateMenuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (dateRef.current && !dateRef.current.contains(e.target as Node)) setDateMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [dateMenuOpen])
 
   function handleLoadMore() {
     void fetchEvents(filters, page + 1, true)
@@ -232,7 +195,7 @@ export function EventsBrowseClient({
     !!filters.state ||
     !!filters.minPrice ||
     !!filters.maxPrice ||
-    filters.dateSort
+    !!filters.date
 
   const displayCount = totalCount ?? events.length
   const dateGroups = useMemo(() => groupByDate(events), [events])
@@ -268,7 +231,7 @@ export function EventsBrowseClient({
           position: 'sticky',
           top: '64px',
           zIndex: 20,
-          background: 'var(--color-bg-public, #FAFAF9)',
+          background: 'var(--color-bg)',
           paddingTop: '12px',
           paddingBottom: '16px',
           marginBottom: '28px',
@@ -323,12 +286,81 @@ export function EventsBrowseClient({
               />
             ))}
 
-            {/* Date sort pill */}
-            <FilterPill
-              label="Date ▾"
-              active={filters.dateSort}
-              onClick={toggleDateSort}
-            />
+            {/* Date dropdown pill */}
+            <div ref={dateRef} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                onClick={() => setDateMenuOpen((o) => !o)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 'var(--radius-full)',
+                  border: filters.date ? '1.5px solid var(--color-brand)' : '1.5px solid var(--color-border)',
+                  background: filters.date ? 'var(--color-brand)' : 'var(--color-surface-2)',
+                  color: filters.date ? 'var(--color-text-on-brand)' : 'var(--color-text)',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  transition: 'all var(--duration-fast)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {filters.date === 'today'
+                  ? 'Today'
+                  : filters.date === 'tomorrow'
+                    ? 'Tomorrow'
+                    : filters.date === 'weekend'
+                      ? 'This Weekend'
+                      : 'Date ▾'}
+              </button>
+              {dateMenuOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 6px)',
+                    left: 0,
+                    background: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                    boxShadow: 'var(--shadow-lg)',
+                    zIndex: 50,
+                    overflow: 'hidden',
+                    minWidth: '140px',
+                  }}
+                >
+                  {(['', 'today', 'tomorrow', 'weekend'] as const).map((val) => (
+                    <button
+                      key={val || 'any'}
+                      type="button"
+                      onClick={() => {
+                        setFilters((p) => ({ ...p, date: val }))
+                        setDateMenuOpen(false)
+                      }}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        textAlign: 'left',
+                        padding: '10px 16px',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        background: filters.date === val ? 'var(--color-surface-2)' : 'transparent',
+                        color: 'var(--color-text)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        borderBottom: val !== 'weekend' ? '1px solid var(--color-border)' : 'none',
+                      }}
+                    >
+                      {val === ''
+                        ? 'Any date'
+                        : val === 'today'
+                          ? 'Today'
+                          : val === 'tomorrow'
+                            ? 'Tomorrow'
+                            : 'This Weekend'}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* State dropdown */}
             <select
@@ -371,13 +403,15 @@ export function EventsBrowseClient({
       </div>
 
       {/* ── Content area ── */}
+      <style>{`
+        .events-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 20px; }
+        @media (min-width: 640px) { .events-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+        @media (min-width: 1024px) { .events-grid { grid-template-columns: repeat(3, 1fr) !important; } }
+        @media (min-width: 1280px) { .events-grid { grid-template-columns: repeat(4, 1fr) !important; } }
+      `}</style>
+
       {isLoading ? (
         <div className="events-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '20px' }}>
-          <style>{`
-            @media (min-width: 640px) { .events-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-            @media (min-width: 1024px) { .events-grid { grid-template-columns: repeat(3, 1fr) !important; } }
-            @media (min-width: 1280px) { .events-grid { grid-template-columns: repeat(4, 1fr) !important; } }
-          `}</style>
           {Array.from({ length: SKELETON_COUNT }).map((_, i) => <EventCardSkeleton key={i} />)}
         </div>
 
@@ -394,19 +428,14 @@ export function EventsBrowseClient({
           <MapView
             events={events}
             onEventSelect={handleEventSelect}
+            onClose={() => setViewMode('list')}
+            selectedState={filters.state}
           />
         </div>
 
       ) : (
         /* ── List view (RA date-group style) ── */
         <>
-          <style>{`
-            .events-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 20px; }
-            @media (min-width: 640px) { .events-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-            @media (min-width: 1024px) { .events-grid { grid-template-columns: repeat(3, 1fr) !important; } }
-            @media (min-width: 1280px) { .events-grid { grid-template-columns: repeat(4, 1fr) !important; } }
-          `}</style>
-
           {dateGroups.map(([dateLabel, groupEvents]) => (
             <section key={dateLabel} style={{ marginBottom: '36px' }}>
               {/* Bold date header */}

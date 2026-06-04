@@ -24,7 +24,7 @@ export function AuthLayout({ children, title }: AuthLayoutProps) {
       <div
         style={{
           width: '100%',
-          maxWidth: '440px',
+          maxWidth: '480px',
           background: 'var(--color-surface)',
           borderRadius: 'var(--radius-lg)',
           overflow: 'hidden',

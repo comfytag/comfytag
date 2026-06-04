@@ -7,7 +7,7 @@ import { Wallet } from 'lucide-react'
 import { Badge, Button, Input, Modal, LoadingSpinner, ErrorMessage, DataTable, ColumnDef, PageHeader } from '@comfytag/ui'
 import { formatNaira, formatDate } from '@comfytag/utils'
 import type { WithdrawRequest, BankAccount, Event } from '@comfytag/types'
-import api, { authHeader } from '../../../../lib/api'
+import api, { authHeader } from '@/lib/api'
 
 const withdrawColumns: ColumnDef<WithdrawRequest>[] = [
   {
@@ -92,6 +92,14 @@ export default function WithdrawPage() {
     enabled: !!session?.user.id,
   })
 
+  const revenueQuery = useQuery({
+    queryKey: ['partnerRevenue', session?.user.id],
+    queryFn: () =>
+      api.get<{ availableBalance: number }>(`/partner/${session!.user.id}/revenue`, authHeader(session?.user.token))
+        .then((r) => r.data),
+    enabled: !!session?.user.id,
+  })
+
   const withdrawMutation = useMutation({
     mutationFn: (body: object) =>
       api.post('/withdraw/' + session!.user.id, body, authHeader(session?.user.token)).then((r) => r.data),
@@ -133,6 +141,7 @@ export default function WithdrawPage() {
   const requests = requestsQuery.data ?? []
   const banks = banksQuery.data ?? []
   const events = eventsQuery.data ?? []
+  const availableBalance = revenueQuery.data?.availableBalance ?? 0
 
   function closeModal() {
     setModal(false)
@@ -141,18 +150,6 @@ export default function WithdrawPage() {
     setAmount('')
     setSelectedEventId('')
   }
-
-  // Calculate available balance: total revenue minus approved withdrawals
-  const totalRevenue = events.reduce((sum, e) => {
-    const avgPrice = e.ticketType?.length
-      ? e.ticketType.reduce((s, t) => s + t.price, 0) / e.ticketType.length
-      : 0
-    return sum + ((e.sold ?? 0) * avgPrice)
-  }, 0)
-  const approvedWithdrawals = requests
-    .filter(r => r.status === 'approved' || r.status === 'sent')
-    .reduce((sum, r) => sum + (r.amount ?? 0), 0)
-  const availableBalance = Math.max(0, totalRevenue - approvedWithdrawals)
 
   return (
     <div style={{ padding: '28px 32px' }}>
@@ -166,7 +163,7 @@ export default function WithdrawPage() {
         }
       />
 
-      {eventsQuery.isLoading || banksQuery.isLoading ? null : (
+      {revenueQuery.isLoading ? null : (
         <div
           style={{
             backgroundColor: 'var(--color-surface)',

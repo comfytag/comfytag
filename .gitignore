@@ -28,3 +28,19 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+test_*.log
+
+# Claude Code (local workspace config)
+.claude/
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Project documentation (local/generated)
+deployment.md
+project-session.md
+system_overview.md
+discussion/
+test-results/
+tests/

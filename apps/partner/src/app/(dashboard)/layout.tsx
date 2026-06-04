@@ -7,7 +7,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session) redirect('/login')
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
       <ShellClient>{children}</ShellClient>
     </div>
   )

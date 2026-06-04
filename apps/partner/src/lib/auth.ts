@@ -11,12 +11,14 @@ declare module 'next-auth' {
       token: string
       logo?: string | null
       isVerified: boolean
+      isPartner: boolean
     }
   }
   interface User {
     token: string
     logo?: string | null
     isVerified: boolean
+    isPartner: boolean
   }
 }
 
@@ -26,6 +28,7 @@ declare module 'next-auth/jwt' {
     token: string
     logo?: string | null
     isVerified: boolean
+    isPartner: boolean
   }
 }
 
@@ -57,6 +60,7 @@ export const authOptions: NextAuthOptions = {
               _id: string
               name: string
               email: string
+              image?: string
               isPartner: boolean
               isAdmin: boolean
               isVerify?: { email?: boolean }
@@ -64,13 +68,17 @@ export const authOptions: NextAuthOptions = {
             token: string
           } = await res.json()
           if (!data.user) return null
+          if (!data.user.isPartner && !data.user.isAdmin) {
+            throw new Error('This account does not have partner access. Please register at /register.')
+          }
           return {
             id: data.user._id,
             name: data.user.name,
             email: data.user.email,
             token: data.token,
-            logo: null,
+            logo: data.user.image ?? null,
             isVerified: data.user.isVerify?.email ?? false,
+            isPartner: data.user.isPartner,
           }
         } catch {
           return null
@@ -85,6 +93,7 @@ export const authOptions: NextAuthOptions = {
         token.token = user.token
         token.logo = user.logo
         token.isVerified = user.isVerified
+        token.isPartner = user.isPartner
       }
       return token
     },
@@ -93,6 +102,7 @@ export const authOptions: NextAuthOptions = {
       session.user.token = token.token
       session.user.logo = token.logo ?? null
       session.user.isVerified = token.isVerified
+      session.user.isPartner = token.isPartner
       return session
     },
   },
@@ -101,7 +111,10 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
+    maxAge: 7 * 24 * 60 * 60,   // 7 days
+    updateAge: 24 * 60 * 60,    // refresh cookie daily (sliding window)
   },
+  secret: process.env.NEXTAUTH_SECRET,
 }
 
 export const getServerSession = () => nextAuthGetServerSession(authOptions)

@@ -33,5 +33,5 @@ export function HeartIcon({ filled = false }: HeartIconProps) {
 }
 
 export function Divider() {
-  return <hr style={{ borderTop: '1px solid var(--color-border)', margin: '24px 0', border: 'none' }} />
+  return <hr style={{ borderTop: '1px solid var(--color-border)', margin: '24px 0' }} />
 }

@@ -41,7 +41,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
         try {
-          const body: any = {
+          const body: { email: string; password: string; otp?: string } = {
             email: credentials.email,
             password: credentials.password,
           }
@@ -105,6 +105,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: { signIn: '/login' },
   session: { strategy: 'jwt' },
+  secret: process.env.NEXTAUTH_SECRET,
 }
 
 export const getServerSession = () => nextAuthGetServerSession(authOptions)

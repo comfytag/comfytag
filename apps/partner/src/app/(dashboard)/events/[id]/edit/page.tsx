@@ -7,12 +7,12 @@ import { getServerSession } from 'next-auth'
 import api, { authHeader } from '@/lib/api'
 
 interface EditEventPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function EditEventPage({ params }: EditEventPageProps) {
   const session = await getServerSession()
-  const eventId = params.id
+  const { id: eventId } = await params
 
   let event: Event | null = null
 

@@ -6,6 +6,8 @@ export interface SearchInputProps {
   value: string
   onChange: (value: string) => void
   onSearch?: (query: string) => void
+  onFocus?: () => void
+  onBlur?: () => void
   placeholder?: string
   autoFocus?: boolean
   className?: string
@@ -15,6 +17,8 @@ export function SearchInput({
   value,
   onChange,
   onSearch,
+  onFocus: onFocusProp,
+  onBlur: onBlurProp,
   placeholder = 'Search events, venues, organizers…',
   autoFocus = false,
   className,
@@ -65,8 +69,8 @@ export function SearchInput({
           onKeyDown={(e) => {
             if (e.key === 'Enter') onSearch?.(value)
           }}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onFocus={() => { setFocused(true); onFocusProp?.() }}
+          onBlur={() => { setFocused(false); onBlurProp?.() }}
           placeholder={placeholder}
           autoFocus={autoFocus}
           style={{

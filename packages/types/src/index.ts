@@ -5,7 +5,9 @@ export interface User {
   username: string
   email: string
   phone?: string
+  image?: string
   avatar?: string
+  bgImg?: string
   isPartner: boolean
   isAdmin: boolean
   isVerify: {
@@ -19,6 +21,14 @@ export interface User {
   }
   faceEnrolled: boolean
   faceEnrolledAt?: string
+  notificationPreferences?: {
+    email: boolean
+    sms: boolean
+  }
+  privacySettings?: {
+    publicProfile: boolean
+    showInSearch: boolean
+  }
   createdAt: string
   updatedAt: string
 }
@@ -59,6 +69,7 @@ export interface Event {
   venue: string
   address: string
   state: string
+  location?: string
   images: string[]
   coverImage?: string
   ticketType: TicketTier[]

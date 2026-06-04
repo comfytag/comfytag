@@ -8,7 +8,9 @@
     "dev": "nodemon app.js",
     "start": "node app.js",
     "seed:dev": "node scripts/seed-dev-users.js",
-    "seed:events": "node scripts/seed-events.js"
+    "seed:events": "node scripts/seed-events.js",
+    "seed:categories": "node scripts/seed-categories.js",
+    "seed:testimonials": "node scripts/seed-testimonials.js"
   },
   "author": "Wabjay",
   "license": "ISC",

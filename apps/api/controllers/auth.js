@@ -35,7 +35,7 @@ export const register = async (req,res,next) =>{
 		const salt = await bcrypt.genSalt(Number(process.env.SALT));
 		const hashPassword = await bcrypt.hash(req.body.password, salt);
 
-		user = await new User({ ...req.body, password: hashPassword }).save();
+		user = await new User({ ...req.body, password: hashPassword, isPartner: req.body.isPartner === true }).save();
 
 		const token = await new Token({
 			userId: user._id,
@@ -122,7 +122,10 @@ export const login = async (req,res,next) =>{
 				_id: user._id,
 				email: user.email,
 				name: user.name,
+				image: user.image,
+				isPartner: user.isPartner,
 				isAdmin: user.isAdmin,
+				isVerify: user.isVerify,
 				role: user.role || 'viewer'  // Ensure role is always returned (TASK 2)
 			},
 			token,

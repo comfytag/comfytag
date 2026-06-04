@@ -1,7 +1,8 @@
+export const dynamic = 'force-dynamic'
+
 import { PageHeader } from '@comfytag/ui'
-import { SectionCard } from '@/components/settings/SectionCard'
 import type { BankAccount, User } from '@comfytag/types'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from '@/lib/auth'
 import api, { authHeader } from '@/lib/api'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
 
@@ -34,7 +35,7 @@ export default async function SettingsPage({}: SettingsPageProps) {
   }
 
   return (
-    <div style={{ padding: '28px 32px' }}>
+    <div style={{ padding: '28px 16px' }}>
       <PageHeader title="Settings" subtitle="Manage your profile and payment details" />
 
       <div style={{ maxWidth: '720px' }}>

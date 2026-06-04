@@ -4,7 +4,7 @@ import React from 'react'
 
 export interface ButtonProps {
   children: React.ReactNode
-  variant?: 'primary' | 'ghost' | 'danger'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
   disabled?: boolean
@@ -15,13 +15,14 @@ export interface ButtonProps {
 }
 
 const sizeStyles: Record<NonNullable<ButtonProps['size']>, React.CSSProperties> = {
-  sm: { padding: '6px 12px', fontSize: '13px' },
-  md: { padding: '10px 18px', fontSize: '14px' },
-  lg: { padding: '12px 24px', fontSize: '15px' },
+  sm: { padding: '6px 14px', fontSize: '14px' },
+  md: { padding: '10px 20px', fontSize: '16px' },
+  lg: { padding: '12px 24px', fontSize: '18px' },
 }
 
 const variantBase: Record<NonNullable<ButtonProps['variant']>, React.CSSProperties> = {
   primary: { backgroundColor: 'var(--color-brand)', color: 'var(--color-text-on-brand)', border: 'none' },
+  secondary: { backgroundColor: 'transparent', border: '2px solid var(--color-brand)', color: 'var(--color-brand)', borderColor: 'var(--color-brand)' },
   ghost: { backgroundColor: 'transparent', color: 'var(--color-text)', border: '1px solid var(--color-border)' },
   danger: { backgroundColor: 'var(--color-error)', color: 'var(--color-text-on-brand)', border: 'none' },
 }
@@ -43,7 +44,9 @@ export function Button({
 
   const hoverOverride: React.CSSProperties = hovered && !isDisabled
     ? variant === 'primary'
-      ? { backgroundColor: 'var(--color-brand-light)' }
+      ? { backgroundColor: 'var(--color-brand-dark)' }
+      : variant === 'secondary'
+      ? { background: 'rgba(124,58,237,0.06)', borderColor: 'var(--color-brand-dark)' }
       : variant === 'ghost'
       ? { backgroundColor: 'var(--color-surface-2)' }
       : { opacity: 0.85 }

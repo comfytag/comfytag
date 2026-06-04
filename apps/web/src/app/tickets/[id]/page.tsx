@@ -24,9 +24,6 @@ export default function TicketDetailPage() {
   const [event, setEvent] = useState<Event | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const [totpToken, setTotpToken] = useState<string | null>(null)
-  const [totpSecsLeft, setTotpSecsLeft] = useState(30)
-
   const [scanState, setScanState] = useState<ScanState>('idle')
 
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
@@ -60,30 +57,6 @@ export default function TicketDetailPage() {
       .catch(() => {})
   }, [ticket, session])
 
-  // ─── TOTP token rotation ──────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!ticket || !session) return
-
-    async function fetchToken() {
-      try {
-        const r = await api.get(`/tickets/${ticket!.event_id}/token`, authHeader(session!.user.token))
-        setTotpToken(r.data?.token ?? r.data)
-        setTotpSecsLeft(30)
-      } catch {
-        // silent
-      }
-    }
-
-    fetchToken()
-    const interval = setInterval(fetchToken, 30_000)
-    return () => clearInterval(interval)
-  }, [ticket, session])
-
-  // ─── Countdown timer ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    const t = setInterval(() => setTotpSecsLeft((s) => Math.max(0, s - 1)), 1000)
-    return () => clearInterval(t)
-  }, [totpToken])
 
   // ─── SSE scan state ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -92,7 +65,8 @@ export default function TicketDetailPage() {
     const es = new EventSource(url)
     es.onmessage = (e) => {
       try {
-        setScanState((JSON.parse(e.data) as { state: ScanState }).state)
+        const payload = JSON.parse(e.data) as { checkedIn?: boolean }
+        setScanState(payload.checkedIn ? 'used' : 'idle')
       } catch {
         // silent
       }
@@ -125,9 +99,7 @@ export default function TicketDetailPage() {
   }, [ticket])
 
   // ─── QR source ───────────────────────────────────────────────────────────────
-  const qrSrc = totpToken
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(totpToken)}&bgcolor=ffffff&color=000000&margin=10`
-    : null
+  const qrSrc = ticket?.qrCode ?? null
 
   // ─── Auth guard ───────────────────────────────────────────────────────────────
   if (status === 'loading') {
@@ -169,7 +141,6 @@ export default function TicketDetailPage() {
                 event={event}
                 qrDataUrl={qrSrc ?? undefined}
                 scanState={stubScanState}
-                secondsUntilRefresh={ticket.status !== 'used' ? totpSecsLeft : undefined}
               />
             )}
 
@@ -213,100 +184,6 @@ export default function TicketDetailPage() {
               >
                 View Event Details →
               </Link>
-            )}
-
-            {/* QR section — only if ticket.status !== 'used' */}
-            {ticket.status !== 'used' && (
-              <div
-                style={{
-                  marginTop: 24,
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 16,
-                  padding: '24px',
-                  textAlign: 'center',
-                }}
-              >
-                {/* Scanned banner */}
-                {scanState === 'scanned' && (
-                  <div
-                    style={{
-                      background: 'var(--color-success)',
-                      color: '#ffffff',
-                      padding: '8px 16px',
-                      borderRadius: 8,
-                      marginBottom: 12,
-                      fontSize: 14,
-                      fontWeight: 600,
-                    }}
-                  >
-                    QR scanned — verifying entry…
-                  </div>
-                )}
-
-                {/* Live indicator */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 8,
-                    marginBottom: 16,
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      background: 'var(--color-success)',
-                      display: 'inline-block',
-                      animation: '__ct_pulse 1.5s infinite',
-                    }}
-                    aria-hidden="true"
-                  />
-                  <span
-                    style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-success)' }}
-                  >
-                    LIVE
-                  </span>
-                </div>
-
-                {/* QR image */}
-                {qrSrc ? (
-                  <img
-                    src={qrSrc}
-                    width={220}
-                    height={220}
-                    alt={`Ticket QR code — Ref: ${ticket.reference}`}
-                    style={{
-                      borderRadius: 8,
-                      display: 'block',
-                      margin: '0 auto',
-                      background: '#ffffff',
-                      padding: 8,
-                    }}
-                  />
-                ) : (
-                  <LoadingSpinner size="md" centered />
-                )}
-
-                {/* Countdown */}
-                <div
-                  style={{ marginTop: 12, fontSize: 13, color: 'var(--color-text-muted)' }}
-                >
-                  Refreshes in{' '}
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      color:
-                        totpSecsLeft <= 5 ? 'var(--color-error)' : 'var(--color-text)',
-                    }}
-                  >
-                    {totpSecsLeft}s
-                  </span>
-                </div>
-              </div>
             )}
 
             {/* Used state overlay */}

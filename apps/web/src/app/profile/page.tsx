@@ -5,18 +5,20 @@ import { useSession, signOut } from 'next-auth/react'
 import Image from 'next/image'
 import { Navbar } from '@/components/layout/Navbar'
 import { AvatarInitials, Button, Input, LoadingSpinner, EmptyState, ErrorMessage } from '@comfytag/ui'
-import { authHeader } from '@comfytag/utils'
+import { authHeader, formatDate } from '@comfytag/utils'
 import api from '@/lib/api'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
   const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     if (session?.user.name) setName(session.user.name)
+    if (session?.user.username) setUsername(session.user.username)
   }, [session])
 
   async function handleSave() {
@@ -24,7 +26,7 @@ export default function ProfilePage() {
     setIsSaving(true)
     setSaveError(null)
     try {
-      await api.patch(`/users/${session.user.id}`, { name }, authHeader(session.user.token))
+      await api.patch(`/users/${session.user.id}`, { name, username }, authHeader(session.user.token))
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
     } catch {
@@ -114,6 +116,12 @@ export default function ProfilePage() {
               onChange={(e) => setName(e.target.value)}
             />
 
+            <Input
+              label="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+            />
+
             <div>
               <Input
                 label="Email"
@@ -132,7 +140,9 @@ export default function ProfilePage() {
             {saveSuccess && (
               <div
                 style={{
+                  /* --color-success at 10% alpha */
                   backgroundColor: 'rgba(16,185,129,0.1)',
+                  /* --color-success at 25% alpha */
                   border: '1px solid rgba(16,185,129,0.25)',
                   borderRadius: '8px',
                   padding: '10px 14px',
@@ -198,7 +208,9 @@ export default function ProfilePage() {
             }}
           >
             <span style={{ color: 'var(--color-text-muted)' }}>Member since</span>
-            <span style={{ color: 'var(--color-text)' }}>—</span>
+            <span style={{ color: 'var(--color-text)' }}>
+              {session.user.createdAt ? formatDate(session.user.createdAt) : '—'}
+            </span>
           </div>
 
           <Button

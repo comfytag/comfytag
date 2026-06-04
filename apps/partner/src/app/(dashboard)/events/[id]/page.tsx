@@ -18,12 +18,12 @@ interface TierStatsResponse {
 }
 
 interface EventDetailPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
   const session = await getServerSession()
-  const eventId = params.id
+  const { id: eventId } = await params
 
   let event: Event | null = null
   let tierStats: TierStatsResponse | null = null

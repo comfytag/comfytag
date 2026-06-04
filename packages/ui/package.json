@@ -25,7 +25,9 @@
   },
   "devDependencies": {
     "typescript": "^5",
-    "@types/react": "^19",
-    "@types/react-dom": "^19"
+    "@types/react": "~19.1.10",
+    "@types/react-dom": "^19",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
   }
 }

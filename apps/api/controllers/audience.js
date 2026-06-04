@@ -14,28 +14,58 @@ import { generateSecret } from 'otplib'
 export const createFreeAudience = async (req, res, next) => {
     const { name, email, phone, eventname, numOfTicket, type, userId } = req.body
     const eventId = req.params.eventId
-    const newAudience = new Audience({
-        name,
-        email,
-        phone,
-        eventname,
-        numOfTicket: numOfTicket || 1,
-        type,
-        amount: 0,
-        reference: `FREE_${Date.now()}`,
-        status: 'active',
-        event_id: eventId,
-        user_id: userId || 'guest',
-        totpSecret: generateSecret(),
-    })
+
     try {
+        // Check for duplicate ticket
+        const existing = await Audience.findOne({ event_id: eventId, email })
+        if (existing) {
+            return res.status(400).json({ success: false, message: 'You already have a ticket for this event.' })
+        }
+
+        // Check tier capacity
+        const event = await Event.findById(eventId)
+        if (!event) {
+            return res.status(404).json({ success: false, message: 'Event not found.' })
+        }
+        const tier = event.ticketType.find(t => t.name === type)
+        if (tier && tier.capacity > 0 && tier.sold >= tier.capacity) {
+            return res.status(400).json({ success: false, message: 'This ticket tier is sold out.' })
+        }
+
+        const newAudience = new Audience({
+            name,
+            email,
+            phone,
+            eventname,
+            numOfTicket: numOfTicket || 1,
+            type,
+            amount: 0,
+            reference: `FREE_${Date.now()}`,
+            status: 'active',
+            event_id: eventId,
+            user_id: userId || 'guest',
+            totpSecret: generateSecret(),
+        })
+
         const savedAudience = await newAudience.save()
+
+        // Generate and save QR code
+        let qrCode = ''
+        try {
+            qrCode = await QR(savedAudience.reference)
+            await Audience.findByIdAndUpdate(savedAudience._id, { qrCode })
+        } catch (qrErr) {
+            console.log('QR generation failed:', qrErr.message)
+        }
+
         try {
             await Event.findByIdAndUpdate(eventId, { $inc: { sold: savedAudience.numOfTicket } })
         } catch (err) {
             next(err)
         }
+
         res.status(200).json(savedAudience)
+
         const text = 'Your free ticket is confirmed'
         const details = `<div>
         <p>Your free ticket has been confirmed!</p>
@@ -44,7 +74,7 @@ export const createFreeAudience = async (req, res, next) => {
         Number of tickets : ${savedAudience.numOfTicket} <br/>
         Ticket type : ${savedAudience.type} <br/>
         Amount paid : Free <br/>
-        </div>`
+        ${qrCode ? `<img src="${qrCode}" alt="Your QR Code" style="width:200px;height:200px;" />` : ''}</div>`
         await sendTicket(savedAudience.email, savedAudience.eventname + ' ticket', text, details)
     } catch (err) {
         next(err)
@@ -55,27 +85,55 @@ export const createFreeAudience = async (req, res, next) => {
 export const createAudience = async (req, res, next) => {
     const eventId = req.params.eventId;
     const userId = req.params.userId;
-    const newAudience = new Audience({
-        ...req.body,
-         event_id: eventId,
-         user_id: userId,
-         totpSecret: generateSecret(),
-     });
+
     try {
+        // Check for duplicate ticket
+        const existing = await Audience.findOne({ event_id: eventId, user_id: userId })
+        if (existing) {
+            return res.status(400).json({ success: false, message: 'You already have a ticket for this event.' })
+        }
+
+        // Check tier capacity
+        const event = await Event.findById(eventId)
+        if (!event) {
+            return res.status(404).json({ success: false, message: 'Event not found.' })
+        }
+        const tier = event.ticketType.find(t => t.name === req.body.type)
+        if (tier && tier.capacity > 0 && tier.sold >= tier.capacity) {
+            return res.status(400).json({ success: false, message: 'This ticket tier is sold out.' })
+        }
+
+        const newAudience = new Audience({
+            ...req.body,
+            event_id: eventId,
+            user_id: userId,
+            totpSecret: generateSecret(),
+        });
+
         const savedAudience = await newAudience.save()
 
+        // Generate and save QR code
+        let qrCode = ''
         try {
-        const audienceCount =  savedAudience.numOfTicket
+            qrCode = await QR(savedAudience.reference)
+            await Audience.findByIdAndUpdate(savedAudience._id, { qrCode })
+        } catch (qrErr) {
+            console.log('QR generation failed:', qrErr.message)
+        }
 
+        try {
+            const audienceCount = savedAudience.numOfTicket
             await Event.findByIdAndUpdate(eventId, {
-                 $inc: {sold: + audienceCount}
-                 });
+                $inc: { sold: + audienceCount }
+            });
         } catch (err) {
             next(err)
         }
+
         res.status(200).json(savedAudience)
+
         const text = 'Please download your ticket'
-        const details =  (`<div>
+        const details = (`<div>
         <p style={{fontSize : bold}}>Download your ticket</p>
         Name : ${savedAudience.name} <br/>
         Event : ${savedAudience.eventname} <br/>
@@ -83,22 +141,9 @@ export const createAudience = async (req, res, next) => {
         Ticket type : ${savedAudience.type} <br/>
         Amount paid :  ${savedAudience.amount} <br/>
         Date : ${moment(savedAudience.createdAt).format("YYYY-MM-DD")} <br/>
-        </div>`)
+        ${qrCode ? `<img src="${qrCode}" alt="Ticket QR Code" width="200" height="200" />` : ''}</div>`)
 
-        // Generate QR code for ticket
-        let qrCode = ''
-        try {
-          qrCode = await QR(savedAudience.reference)
-        } catch (qrErr) {
-          console.log('QR generation failed:', qrErr.message)
-        }
-
-        // Add QR code to email if generated
-        const emailDetails = qrCode
-          ? `${details}<br/><img src="${qrCode}" alt="Ticket QR Code" width="200" height="200" />`
-          : details
-
-        await sendTicket(savedAudience.email, savedAudience.eventname +" ticket", text, emailDetails);
+        await sendTicket(savedAudience.email, savedAudience.eventname +" ticket", text, details);
     } catch (err) {
         next(err)
     }
@@ -175,8 +220,23 @@ export const getAllAudience = async (req, res, next) => {
 // GET ALL
 export const getUserAudience = async (req, res, next) => {
     try {
-        const getUserAudienceAll = await Audience.find({ user_id: req.params.userId })
+        const userId = req.params.userId
+        const userEmail = req.user?.email
+
+        const query = userEmail
+            ? { $or: [{ user_id: userId }, { email: userEmail }] }
+            : { user_id: userId }
+
+        const getUserAudienceAll = await Audience.find(query)
         res.status(200).json(getUserAudienceAll)
+
+        // Silently migrate guest tickets to the real user_id for future queries (fire-and-forget)
+        if (userEmail && userId !== 'guest') {
+            Audience.updateMany(
+                { email: userEmail, user_id: 'guest' },
+                { $set: { user_id: userId } }
+            ).catch(() => {})
+        }
     } catch (err) {
         next(err)
     }
@@ -281,6 +341,48 @@ export const exportEventAudienceCSV = async (req, res, next) => {
             .setHeader('Content-Type', 'text/csv; charset=utf-8')
             .setHeader('Content-Disposition', 'attachment; filename=attendees.csv')
             .send(csv)
+    } catch (err) {
+        next(err)
+    }
+}
+
+// POST /audience/checkin-by-ref
+// QR / barcode scanner check-in: accepts a ticket reference string
+export const checkInByReference = async (req, res, next) => {
+    try {
+        const { reference } = req.body
+        if (!reference) return res.status(400).json({ success: false, message: 'Reference is required' })
+
+        const ticket = await Audience.findOne({ reference: reference.trim().toUpperCase() })
+        if (!ticket) return res.status(404).json({ success: false, message: 'Ticket not found' })
+
+        if (ticket.status === 'refunded') return res.status(400).json({ success: false, message: 'Ticket has been refunded' })
+        if (ticket.status === 'transferred') return res.status(400).json({ success: false, message: 'Ticket has been transferred' })
+
+        if (ticket.checkedIn) {
+            return res.status(200).json({
+                success: false,
+                alreadyCheckedIn: true,
+                attendeeName: ticket.name,
+                checkedInAt: ticket.checkedInAt,
+                ticketType: ticket.type,
+            })
+        }
+
+        ticket.checkedIn = true
+        ticket.checkedInAt = new Date()
+        ticket.checkedInMethod = 'qr'
+        ticket.status = 'used'
+        await ticket.save()
+
+        res.status(200).json({
+            success: true,
+            attendeeName: ticket.name,
+            email: ticket.email,
+            ticketType: ticket.type,
+            numOfTicket: ticket.numOfTicket,
+            checkedInAt: ticket.checkedInAt,
+        })
     } catch (err) {
         next(err)
     }

@@ -35,14 +35,22 @@ export const searchEvents = async (req, res, next) => {
     let projection = {}
 
     if (q) {
-      filter.$text = { $search: q }
-      projection = { score: { $meta: 'textScore' } }
-      sort = { score: { $meta: 'textScore' } }
+      const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const regex = new RegExp(escaped, 'i')
+      filter.$or = [
+        { name: regex },
+        { venue: regex },
+        { planner: regex },
+        { address: regex },
+        { state: regex },
+      ]
     }
 
     if (category) filter.category = category
 
     if (city) filter.state = { $regex: new RegExp(city, 'i') }
+
+    if (req.query.state) filter.state = { $regex: new RegExp(req.query.state, 'i') }
 
     if (featured === 'true') filter.featured = true
 
@@ -52,13 +60,13 @@ export const searchEvents = async (req, res, next) => {
       const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
 
       if (date === 'today') {
-        filter.event_date = { $gte: todayStart, $lte: todayEnd }
+        filter.date = { $gte: todayStart, $lte: todayEnd }
       } else if (date === 'tomorrow') {
         const tomorrowStart = new Date(todayStart)
         tomorrowStart.setDate(tomorrowStart.getDate() + 1)
         const tomorrowEnd = new Date(todayEnd)
         tomorrowEnd.setDate(tomorrowEnd.getDate() + 1)
-        filter.event_date = { $gte: tomorrowStart, $lte: tomorrowEnd }
+        filter.date = { $gte: tomorrowStart, $lte: tomorrowEnd }
       } else if (date === 'weekend') {
         const dayOfWeek = now.getDay() // 0=Sun, 6=Sat
         const daysUntilSat = dayOfWeek === 6 ? 0 : (6 - dayOfWeek)
@@ -67,7 +75,7 @@ export const searchEvents = async (req, res, next) => {
         const sundayEnd = new Date(saturdayStart)
         sundayEnd.setDate(sundayEnd.getDate() + 1)
         sundayEnd.setHours(23, 59, 59)
-        filter.event_date = { $gte: saturdayStart, $lte: sundayEnd }
+        filter.date = { $gte: saturdayStart, $lte: sundayEnd }
       }
     }
 
@@ -77,18 +85,23 @@ export const searchEvents = async (req, res, next) => {
       if (priceMax) filter['ticketType.price'].$lte = parseFloat(priceMax)
     }
 
-    const [data, total] = await Promise.all([
-      Event.find(filter, projection).sort(sort).skip(skip).limit(limitNum),
+    const [results, total] = await Promise.all([
+      Event.find(filter, projection).sort(sort).skip(skip).limit(limitNum).lean(),
       Event.countDocuments(filter),
     ])
 
+    const normalized = results.map(e => ({
+      ...e,
+      date: e.date ?? e.event_date ?? null
+    }));
+
     res.status(200).json({
       success: true,
-      data,
+      data: normalized,
       total,
       page: pageNum,
       limit: limitNum,
-      hasMore: skip + data.length < total,
+      hasMore: skip + normalized.length < total,
     })
   } catch (err) {
     next(err)
@@ -108,7 +121,7 @@ export const getSearchSuggestions = async (req, res, next) => {
 
     const [eventResults, organizerResults, artistEvents] = await Promise.all([
       Event.find({ name: regex, status: 'published' })
-        .select('name event_date state images')
+        .select('name date state images')
         .limit(3),
       User.find({
         isPartner: true,
@@ -151,7 +164,7 @@ export const getTrending = async (req, res, next) => {
   try {
     const data = await Event.find({
       status: 'published',
-      event_date: { $gte: new Date() },
+      date: { $gte: new Date() },
     })
       .sort({ sold: -1 })
       .limit(6)

@@ -77,7 +77,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser())
 const allowedOrigins = [
-  'http://localhost:3000',
+  'http://localhost:3003',
   'http://localhost:3001',
   'http://localhost:3002',
   process.env.WEB_URL,
@@ -170,6 +170,7 @@ app.use("/partner/category", categoryRouter)   // category endpoint
 app.use("/partner/audience", audienceRouter)   // audience endpoint
 app.use("/partner/bank", bankRouter)   // bank info endpoint
 app.use("/partner/withdraw", withdrawRouter)   //  withdraw info endpoint
+app.use("/partner/wallet", walletRouter)   // wallet endpoint
 
 // Error handling
 app.use((err, req, res, next) => {

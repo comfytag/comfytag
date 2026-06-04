@@ -1,9 +1,7 @@
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
-import { BottomTabBar } from '@/components/layout/BottomTabBar'
 import { HomeClientShell } from '@/components/home/HomeClientShell'
-import { CategoryPillsBar } from '@/components/home/CategoryPillsBar'
-import { EventFeedSection } from '@/components/home/EventFeedSection'
+import { HomeFeedClient } from '@/components/home/HomeFeedClient'
 import { EditorPicksSection } from '@/components/home/EditorPicksSection'
 import { TestimonialsSection } from '@/components/home/TestimonialsSection'
 import type { Event, Category } from '@comfytag/types'
@@ -52,20 +50,39 @@ async function fetchEditorPicks(): Promise<Event[]> {
 
 interface TestimonialRaw {
   _id: string
+  name?: string
+  userName?: string
+  userImage?: string
+  text?: string
+  quote?: string
+  rating?: number
+}
+
+interface TestimonialNormalized {
+  _id: string
   userName: string
   userImage?: string
   quote: string
   rating?: number
 }
 
-async function fetchTestimonials(): Promise<TestimonialRaw[]> {
+function normalizeTestimonial(t: TestimonialRaw): TestimonialNormalized {
+  return {
+    _id: t._id,
+    userName: t.userName ?? t.name ?? '',
+    userImage: t.userImage,
+    quote: t.quote ?? t.text ?? '',
+    rating: t.rating,
+  }
+}
+
+async function fetchTestimonials(): Promise<TestimonialNormalized[]> {
   try {
     const res = await fetch(`${API}/testimonials`, { next: { revalidate: 3600 } })
     if (!res.ok) return []
     const data: unknown = await res.json()
-    if (Array.isArray(data)) return data as TestimonialRaw[]
-    const obj = data as Record<string, unknown>
-    return (Array.isArray(obj.data) ? obj.data : []) as TestimonialRaw[]
+    const raw = (Array.isArray(data) ? data : Array.isArray((data as Record<string, unknown>).data) ? (data as Record<string, unknown>).data : []) as TestimonialRaw[]
+    return raw.map(normalizeTestimonial)
   } catch {
     return []
   }
@@ -83,14 +100,12 @@ export default async function HomePage() {
     <>
       <Navbar />
       <HomeClientShell />
-      <CategoryPillsBar categories={categories} />
-      <main>
-        <EventFeedSection initialEvents={events} />
+      <main style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' }}>
+        <HomeFeedClient events={events} categories={categories} />
         <EditorPicksSection events={editorPicks} />
         <TestimonialsSection testimonials={testimonials} />
       </main>
       <Footer />
-      <BottomTabBar currentPath="/" />
     </>
   )
 }

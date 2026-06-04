@@ -63,7 +63,13 @@ export default function CreateEventPage() {
   const { mutate, isPending } = useMutation({
     mutationFn: (body: object) =>
       api.post('/events/' + session!.user.id, body, authHeader(session?.user.token)).then(r => r.data),
-    onSuccess: (data: { _id: string }) => router.push('/events/' + data._id),
+    onSuccess: (data: { _id: string; status: string }) => {
+      if (data.status === 'draft') {
+        router.push('/events')
+      } else {
+        router.push('/events/' + data._id)
+      }
+    },
     onError: () => setStepErrors('Failed to create event. Please try again.'),
   })
 

@@ -120,7 +120,7 @@ export function OrganizerCard({
   onProfileClick,
   isFollowing = false,
   href,
-  variant: _variant,
+  variant,
   stats,
 }: OrganizerCardProps) {
   const verified = isVerified(organizer)
@@ -135,6 +135,36 @@ export function OrganizerCard({
   const handleFollowClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onFollow?.()
+  }
+
+  // Inline variant: compact row layout
+  if (variant === 'inline') {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '8px 0',
+        }}
+      >
+        <Avatar image={organizer.image} name={organizer.name} size={40} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span
+              style={{
+                fontSize: '14px',
+                fontWeight: 700,
+                color: 'var(--color-text)',
+              }}
+            >
+              {organizer.name}
+            </span>
+            {verified && <VerifiedBadge />}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const cardContent = (

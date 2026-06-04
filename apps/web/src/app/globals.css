@@ -3,19 +3,19 @@
 :root {
   --color-brand: #7C3AED;
   --color-brand-light: #EDE9FE;
-  --color-bg: #0D0D0D;
+  --color-bg: #0F0F0F;
   --color-surface: #1A1A1A;
   --color-surface-2: #242424;
   --color-text: #F5F5F4;
   --color-text-muted: #A8A29E;
-  --color-border: #2A2A2A;
+  --color-border: #2E2E2E;
   --color-success: #10B981;
   --color-error: #EF4444;
   --color-warning: #F59E0B;
   --color-gold: #D97706;
 
   /* Overlay + on-brand text */
-  --color-overlay:       rgba(0, 0, 0, 0.85);
+  --color-overlay:       rgba(28, 25, 23, 0.6);
   --color-text-on-brand: #ffffff;
 
   /* Brand extended */
@@ -35,6 +35,7 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.5);
 
   /* Motion */
   --duration-micro:    100ms;

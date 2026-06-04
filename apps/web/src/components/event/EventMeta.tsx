@@ -101,7 +101,7 @@ export function EventMeta({ event, isLiked, likeCount, onLike }: EventMetaProps)
             style={{
               padding: '6px 14px',
               borderRadius: '99px',
-              background: 'rgba(124,58,237,0.08)',
+              background: 'color-mix(in srgb, var(--color-brand) 8%, transparent)',
               color: 'var(--color-brand)',
               fontSize: '13px',
               fontWeight: 600,

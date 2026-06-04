@@ -12,26 +12,36 @@ interface EventTransparentNavProps {
 export function EventTransparentNav({ onBack, onShare, onGetTickets, allSoldOut }: EventTransparentNavProps) {
   const [hovering, setHovering] = useState(false)
   return (
-    <div
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 10,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '16px',
-        background: hovering
-          ? 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 100%)'
-          : 'transparent',
-        pointerEvents: 'auto',
-        transition: 'background 200ms ease',
-      }}
-    >
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .event-transparent-nav-buttons {
+            opacity: 1 !important;
+          }
+        }
+      `}</style>
+      <div
+        className="event-transparent-nav-buttons"
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '16px',
+          background: hovering
+            ? 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 100%)'
+            : 'transparent',
+          pointerEvents: 'auto',
+          transition: 'background 200ms ease',
+          opacity: hovering ? 1 : 0,
+        }}
+      >
       <button
         type="button"
         onClick={onBack}
@@ -104,5 +114,6 @@ export function EventTransparentNav({ onBack, onShare, onGetTickets, allSoldOut 
         </svg>
       </button>
     </div>
+    </>
   )
 }

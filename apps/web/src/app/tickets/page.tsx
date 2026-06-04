@@ -1,6 +1,20 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+
+const TICKETS_PAGE_STYLES = `
+  .__ct_tickets_heading {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-text);
+  }
+
+  .__ct_tickets_wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+`
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import type { Ticket, User } from '@comfytag/types'
@@ -44,8 +58,8 @@ export default function TicketsPage() {
     )
   }
 
-  const upcoming = tickets.filter((t) => t.status === 'active' && isUpcoming(t.date))
-  const past = tickets.filter((t) => t.status !== 'active' || !isUpcoming(t.date))
+  const upcoming = tickets.filter((t) => t.status === 'active')
+  const past = tickets.filter((t) => t.status !== 'active')
 
   // Adapter: build a User-compatible object for FaceEnrollmentBanner.
   // faceEnrolled is not stored in the JWT session, so we default to false —
@@ -68,9 +82,10 @@ export default function TicketsPage() {
 
   return (
     <>
+      <style>{TICKETS_PAGE_STYLES}</style>
       <Navbar />
-      <main style={{ maxWidth: '640px', margin: '0 auto', padding: '32px 24px 80px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '24px' }}>My Tickets</h1>
+      <main className="__ct_tickets_wrap">
+        <h1 className="__ct_tickets_heading" style={{ marginBottom: '24px' }}>My Tickets</h1>
 
         {!bannerUser.faceEnrolled && (
           <FaceEnrollmentBanner

@@ -23,6 +23,7 @@ const UserSchema = new Schema({
         role: { type: String, enum: ['super_admin', 'finance', 'moderator', 'viewer'], default: 'viewer' },
         isPartner: { type: Boolean, default: false },
         image: { type: String, },
+        avatar: { type: String, },
         bgImg: { type: String, },
         address: { type: String, lowercase: true },
         verify: {
@@ -93,6 +94,20 @@ const UserSchema = new Schema({
             type: Boolean,
             default: false,
         },
+        notificationPreferences: {
+            type: {
+                email: { type: Boolean, default: true },
+                sms:   { type: Boolean, default: true },
+            },
+            default: () => ({ email: true, sms: true }),
+        },
+        privacySettings: {
+            type: {
+                publicProfile: { type: Boolean, default: true },
+                showInSearch:  { type: Boolean, default: true },
+            },
+            default: () => ({ publicProfile: true, showInSearch: true }),
+        },
     // },
     // password: { type: String, required: true, }
 // }
@@ -106,11 +121,12 @@ UserSchema.methods.generateAuthToken = function () {
 		{
 			id: this._id.toString(),
 			_id: this._id.toString(),
+			email: this.email,
 			isPartner: !!this.isPartner,
 			isAdmin: !!this.isAdmin,
 		},
 		process.env.JWT,
-		{ expiresIn: "10h" }
+		{ expiresIn: "7d" }
 	);
 	return token;
 };
@@ -134,6 +150,7 @@ export const validatRegister = (data) => {
 		email: Joi.string().email().required().label("Email"),
 		password: passwordComplexity().required().label("Password"),
 		confirm_password: Joi.string().required().label("Confirm password"),
+		isPartner: Joi.boolean().optional(),
 	});
 	return schema.validate(data);
 };

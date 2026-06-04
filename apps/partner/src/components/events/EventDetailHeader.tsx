@@ -39,6 +39,11 @@ export function EventDetailHeader({
             >
               <ArrowLeft size={16} /> All Events
             </Link>
+            <Link href={`/events/${eventId}/analytics`}>
+              <Button variant="ghost" size="sm">
+                Analytics
+              </Button>
+            </Link>
             <Link href={`/events/${eventId}/edit`}>
               <Button variant="ghost" size="sm">
                 Edit Event
@@ -53,6 +58,13 @@ export function EventDetailHeader({
               >
                 Publish
               </Button>
+            )}
+            {event.status === 'published' && (
+              <Link href={`/events/${eventId}/gate`}>
+                <Button variant="ghost" size="sm">
+                  Open Gate
+                </Button>
+              </Link>
             )}
             {event.status === 'published' && (
               <Button

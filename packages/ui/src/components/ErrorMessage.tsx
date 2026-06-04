@@ -15,9 +15,9 @@ export function ErrorMessage({ message, onRetry, className }: ErrorMessageProps)
         alignItems: 'flex-start',
         gap: '8px',
         padding: '12px 16px',
-        backgroundColor: 'rgba(239,68,68,0.1)',
+        backgroundColor: 'color-mix(in srgb, var(--color-error) 10%, transparent)',
         borderRadius: '8px',
-        border: '1px solid rgba(239,68,68,0.2)',
+        border: '1px solid color-mix(in srgb, var(--color-error) 20%, transparent)',
       }}
     >
       <span style={{ color: 'var(--color-error)', fontSize: '16px', flexShrink: 0 }}>⚠</span>

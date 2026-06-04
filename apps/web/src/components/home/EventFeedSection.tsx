@@ -17,6 +17,7 @@ interface EventFeedSectionProps {
   events?: Event[]
   initialEvents?: Event[]
   onEventSelect?: (id: string) => void
+  activeCategory?: string
 }
 
 function isThisWeekend(dateStr: string): boolean {
@@ -35,10 +36,10 @@ interface DateGroup {
 }
 
 function groupByDate(events: Event[]): DateGroup[] {
-  const published = events.filter((e) => e.status === 'published' && isUpcoming(e.date))
+  const published = events.filter((e) => e.status === 'published')
   const today = published.filter((e) => isToday(e.date))
   const weekend = published.filter((e) => !isToday(e.date) && isThisWeekend(e.date))
-  const upcoming = published.filter((e) => !isToday(e.date) && !isThisWeekend(e.date))
+  const upcoming = published.filter((e) => !isToday(e.date) && !isThisWeekend(e.date) && isUpcoming(e.date))
 
   const groups: DateGroup[] = []
   if (today.length) groups.push({ label: 'TODAY', date: today[0].date, events: today })
@@ -74,6 +75,7 @@ export function EventFeedSection({
   events = [],
   initialEvents = [],
   onEventSelect,
+  activeCategory,
 }: EventFeedSectionProps) {
   const { data: session } = useSession()
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
@@ -85,20 +87,20 @@ export function EventFeedSection({
   const tonight = useMemo(
     () =>
       eventList
-        .filter((e) => e.status === 'published' && isToday(e.date))
+        .filter((e) => e.status === 'published' && isToday(e.date) && (!activeCategory || e.category === activeCategory))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .slice(0, 8),
-    [eventList]
+    [eventList, activeCategory]
   )
 
   // This weekend row (compact horizontal scroll)
   const thisWeekend = useMemo(
     () =>
       eventList
-        .filter((e) => e.status === 'published' && isThisWeekend(e.date) && !isToday(e.date))
+        .filter((e) => e.status === 'published' && isThisWeekend(e.date) && !isToday(e.date) && (!activeCategory || e.category === activeCategory))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .slice(0, 8),
-    [eventList]
+    [eventList, activeCategory]
   )
 
   // Date-grouped grid below
@@ -153,36 +155,43 @@ export function EventFeedSection({
 
   return (
     <>
+      <style>{`
+        .ct-scroll-row::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       <AuthGateSheet isOpen={gateOpen} onClose={closeGate} trigger="like" />
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px 80px' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px 48px' }}>
         {/* TONIGHT → horizontal scroll row */}
         {tonight.length > 0 && (
-          <section style={{ marginBottom: '40px' }}>
+          <section style={{ marginBottom: '24px' }}>
             <h2
               style={{
-                fontSize: '16px',
+                fontSize: '12px',
                 fontWeight: 700,
-                color: 'var(--color-text)',
-                marginBottom: '16px',
-                letterSpacing: '0.02em',
+                color: 'var(--color-text-muted)',
+                marginBottom: '10px',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
               }}
             >
-              TONIGHT →
+              TONIGHT
             </h2>
             <div
+              className="ct-scroll-row"
               style={{
                 display: 'flex',
-                gap: '16px',
+                gap: '12px',
                 overflowX: 'auto',
-                paddingBottom: '8px',
+                paddingBottom: '4px',
                 scrollBehavior: 'smooth',
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
               }}
             >
               {tonight.map((event) => (
-                <div key={event._id} style={{ flexShrink: 0, width: '200px' }}>
+                <div key={event._id} style={{ flexShrink: 0, width: '160px' }}>
                   <EventCard
                     event={event}
                     href={`/events/${event.slug ?? event._id}`}
@@ -198,31 +207,33 @@ export function EventFeedSection({
 
         {/* THIS WEEKEND → horizontal scroll row */}
         {thisWeekend.length > 0 && (
-          <section style={{ marginBottom: '40px' }}>
+          <section style={{ marginBottom: '24px' }}>
             <h2
               style={{
-                fontSize: '16px',
+                fontSize: '12px',
                 fontWeight: 700,
-                color: 'var(--color-text)',
-                marginBottom: '16px',
-                letterSpacing: '0.02em',
+                color: 'var(--color-text-muted)',
+                marginBottom: '10px',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
               }}
             >
-              THIS WEEKEND →
+              THIS WEEKEND
             </h2>
             <div
+              className="ct-scroll-row"
               style={{
                 display: 'flex',
-                gap: '16px',
+                gap: '12px',
                 overflowX: 'auto',
-                paddingBottom: '8px',
+                paddingBottom: '4px',
                 scrollBehavior: 'smooth',
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
               }}
             >
               {thisWeekend.map((event) => (
-                <div key={event._id} style={{ flexShrink: 0, width: '200px' }}>
+                <div key={event._id} style={{ flexShrink: 0, width: '160px' }}>
                   <EventCard
                     event={event}
                     href={`/events/${event.slug ?? event._id}`}
@@ -245,14 +256,15 @@ export function EventFeedSection({
           />
         ) : (
           visibleGroups.map((group) => (
-            <section key={group.label} style={{ marginBottom: '40px' }}>
+            <section key={group.label} style={{ marginBottom: '28px' }}>
               <h3
                 style={{
-                  fontSize: '18px',
+                  fontSize: '12px',
                   fontWeight: 700,
-                  color: 'var(--color-text)',
-                  marginBottom: '16px',
-                  letterSpacing: '-0.01em',
+                  color: 'var(--color-text-muted)',
+                  marginBottom: '10px',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
                 }}
               >
                 {group.label}
@@ -260,8 +272,8 @@ export function EventFeedSection({
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                  gap: '20px',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                  gap: '14px',
                 }}
               >
                 {group.events.map((event) => (

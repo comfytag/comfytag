@@ -14,6 +14,8 @@ declare module 'next-auth' {
       isPartner: boolean
       isAdmin: boolean
       image?: string
+      username?: string
+      createdAt?: string
     }
   }
   interface User {
@@ -24,6 +26,8 @@ declare module 'next-auth' {
     isPartner: boolean
     isAdmin: boolean
     image?: string
+    username?: string
+    createdAt?: string
   }
 }
 
@@ -34,6 +38,8 @@ declare module 'next-auth/jwt' {
     isPartner: boolean
     isAdmin: boolean
     image?: string
+    username?: string
+    createdAt?: string
   }
 }
 
@@ -65,6 +71,8 @@ export const authOptions: NextAuthOptions = {
               _id: string
               name: string
               email: string
+              username?: string
+              createdAt?: string
               isPartner: boolean
               isAdmin: boolean
               image?: string
@@ -80,6 +88,8 @@ export const authOptions: NextAuthOptions = {
             isPartner: data.user.isPartner,
             isAdmin: data.user.isAdmin,
             image: data.user.image,
+            username: data.user.username,
+            createdAt: data.user.createdAt,
           }
         } catch {
           return null
@@ -111,6 +121,8 @@ export const authOptions: NextAuthOptions = {
         token.isPartner = user.isPartner
         token.isAdmin = user.isAdmin
         token.image = user.image
+        token.username = user.username
+        token.createdAt = user.createdAt
       }
       return token
     },
@@ -120,6 +132,8 @@ export const authOptions: NextAuthOptions = {
       session.user.isPartner = token.isPartner
       session.user.isAdmin = token.isAdmin
       session.user.image = token.image
+      session.user.username = token.username
+      session.user.createdAt = token.createdAt
       return session
     },
   },

@@ -53,9 +53,10 @@ export function Input({
     backgroundColor: 'var(--color-surface-2)',
     border: `1px solid ${error ? 'var(--color-error)' : focused ? 'var(--color-brand)' : 'var(--color-border)'}`,
     color: 'var(--color-text)',
-    borderRadius: '8px',
+    borderRadius: 'var(--radius-md)',
     padding: `10px ${isPassword ? '44px' : '14px'} 10px ${leftIcon ? '40px' : '14px'}`,
-    fontSize: '14px',
+    fontSize: '16px',
+    minHeight: '48px',
     outline: 'none',
     boxSizing: 'border-box',
     transition: 'border-color 150ms ease',
@@ -69,7 +70,7 @@ export function Input({
           style={{
             fontSize: '14px',
             color: 'var(--color-text)',
-            fontWeight: 500,
+            fontWeight: 600,
             marginBottom: '6px',
             display: 'block',
           }}

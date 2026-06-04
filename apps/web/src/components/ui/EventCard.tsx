@@ -42,7 +42,6 @@ export function EventCard({
         .__ct_eventcard:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; border-radius: 16px; }
       `}</style>
       <div
-        className="__ct_eventcard"
         style={{
           position: 'relative',
           borderRadius: 'var(--radius-lg)',
@@ -52,7 +51,7 @@ export function EventCard({
           transform: hovered ? 'scale(1.02)' : 'scale(1)',
           transition: `transform var(--duration-fast) ease, box-shadow var(--duration-fast) ease`,
           boxShadow: hovered
-            ? `0 0 12px rgba(124, 58, 237, 0.3)`
+            ? 'var(--shadow-md)'
             : 'none',
           cursor: onSelect ? 'pointer' : 'default',
         }}
@@ -178,7 +177,7 @@ export function EventCard({
               alignItems: 'center',
               justifyContent: 'center',
               backdropFilter: 'blur(4px)',
-              color: isLiked ? 'var(--color-error)' : '#ffffff',
+              color: isLiked ? 'var(--color-error)' : 'var(--color-text-on-brand)',
               transition: 'color var(--duration-fast) ease',
             }}
           >
@@ -224,7 +223,7 @@ export function EventCard({
 
   if (href) {
     return (
-      <Link href={href}>
+      <Link href={href} className="__ct_eventcard">
         {content}
       </Link>
     )

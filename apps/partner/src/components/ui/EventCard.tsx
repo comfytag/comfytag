@@ -8,7 +8,7 @@ import { formatDate, formatTime } from '@comfytag/utils'
 
 export interface PartnerEventCardProps {
   event: Event
-  status?: 'draft' | 'live' | 'ended'
+  status?: 'draft' | 'live' | 'ended' | 'cancelled'
   compact?: boolean
   isTrending?: boolean
   isSoldOut?: boolean
@@ -60,14 +60,14 @@ function MenuItem({ label, icon, onClick, danger = false }: MenuItemProps) {
   )
 }
 
-function getStatusBadgeStyle(status: 'draft' | 'live' | 'ended'): React.CSSProperties {
+function getStatusBadgeStyle(status: 'draft' | 'live' | 'ended' | 'cancelled'): React.CSSProperties {
   if (status === 'live') {
     return {
       background: 'var(--color-success)',
-      color: '#ffffff',
+      color: 'var(--color-text-on-brand)',
     }
   }
-  if (status === 'ended') {
+  if (status === 'ended' || status === 'cancelled') {
     return {
       background: 'rgba(0,0,0,0.5)',
       color: 'var(--color-text-muted)',
@@ -112,9 +112,9 @@ export function EventCard({
     }
   }, [menuOpen])
 
-  const totalCap = event.ticketType.reduce((s, t) => s + t.capacity, 0)
+  const totalCap = (event.ticketType ?? []).reduce((s, t) => s + t.capacity, 0)
   const soldPct = totalCap > 0 ? event.sold / totalCap : 0
-  const imageSrc = event.coverImage ?? event.images[0] ?? '/placeholder.svg'
+  const imageSrc = event.coverImage ?? event.images?.[0] ?? '/placeholder.svg'
   const height = compact ? 180 : 240
 
   const hasMenuActions =
@@ -232,7 +232,7 @@ export function EventCard({
                 alignItems: 'center',
                 justifyContent: 'center',
                 backdropFilter: 'blur(4px)',
-                color: '#ffffff',
+                color: 'var(--color-text-on-brand)',
               }}
             >
               {/* Three-dot SVG */}

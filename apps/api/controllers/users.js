@@ -111,7 +111,10 @@ export const onboardUser = async (req, res, next) => {
 export const updateUser = async (req,res,next) =>{
     try{
         // Whitelist allowed fields — prevent privilege escalation
-        const allowedFields = ['name', 'email', 'phone', 'businessName', 'address', 'image', 'bgImg'];
+        const allowedFields = [
+            'name', 'email', 'phone', 'businessName', 'address', 'image', 'avatar', 'bgImg',
+            'notificationPreferences', 'privacySettings',
+        ];
         const updateData = {};
         allowedFields.forEach(field => {
             if (field in req.body) {

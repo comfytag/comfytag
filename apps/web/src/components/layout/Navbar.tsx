@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { SearchInput } from '@/components/ui/SearchInput'
+import { SearchSuggestionsOverlay } from '@/components/ui/SearchSuggestionsOverlay'
 import { AvatarInitials, LoadingSpinner } from '@comfytag/ui'
 import { authHeader, formatNaira } from '@comfytag/utils'
 import type { Notification, User } from '@comfytag/types'
@@ -19,6 +20,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
   const { data: session } = useSession()
   const router = useRouter()
   const [searchVal, setSearchVal] = useState('')
+  const [searchFocused, setSearchFocused] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -141,6 +143,33 @@ export function Navbar({ user, onSearch }: NavbarProps) {
           outline: 2px solid var(--color-brand);
           outline-offset: -2px;
         }
+        .__ct_nav_login_link {
+          color: var(--color-text-muted);
+          transition: color var(--duration-micro) ease;
+        }
+        .__ct_nav_login_link:hover {
+          color: var(--color-text);
+        }
+        .__ct_nav_mobile_search_btn {
+          display: none;
+          width: 38px;
+          height: 38px;
+          border-radius: var(--radius-full);
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: var(--color-text-muted);
+          transition: color var(--duration-micro) ease;
+          padding: 0;
+          flex-shrink: 0;
+        }
+        .__ct_nav_mobile_search_btn:hover {
+          color: var(--color-text);
+        }
+        .__ct_nav_mobile_search_btn:focus-visible {
+          outline: 2px solid var(--color-brand);
+          outline-offset: 2px;
+        }
         @media (max-width: 767px) {
           .__ct_navbar {
             height: 56px;
@@ -149,32 +178,50 @@ export function Navbar({ user, onSearch }: NavbarProps) {
           .__ct_nav_search {
             display: none;
           }
+          .__ct_nav_mobile_search_btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
         }
       `}</style>
       <nav className="__ct_navbar" aria-label="Main navigation">
         {/* Logo */}
-        <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-          <div style={{ width: '32px', height: '32px', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-on-brand)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M20 12V22H4V12" /><path d="M22 7H2v5h20V7z" /><path d="M12 22V7" />
-              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
-              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
-            </svg>
-          </div>
-          <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)', letterSpacing: '-0.02em' }}>ComfyTag</span>
+        <Link href="/" style={{ fontWeight: 700, fontSize: '18px', color: 'var(--color-brand)', textDecoration: 'none', letterSpacing: '-0.3px' }}>
+          ComfyTag
         </Link>
 
         {/* Search — desktop only */}
-        <div className="__ct_nav_search">
+        <div className="__ct_nav_search" style={{ position: 'relative' }}>
           <SearchInput
             value={searchVal}
             onChange={setSearchVal}
             onSearch={handleSearch}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setSearchFocused(false)}
             placeholder="Search events, artists, venues…"
+          />
+          <SearchSuggestionsOverlay
+            query={searchVal}
+            isOpen={searchFocused}
+            onClose={() => { setSearchFocused(false); setSearchVal('') }}
           />
         </div>
 
         <div style={{ flex: 1 }} />
+
+        {/* Mobile search button */}
+        <button
+          type="button"
+          className="__ct_nav_mobile_search_btn"
+          onClick={() => router.push('/events')}
+          aria-label="Search events"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+        </button>
 
         {/* Right side */}
         {currentUser ? (
@@ -214,8 +261,24 @@ export function Navbar({ user, onSearch }: NavbarProps) {
                 )}
               </button>
 
-              {notifOpen && (
-                <div style={{ position: 'absolute', top: '44px', right: 0, width: 320, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)', zIndex: 200, overflow: 'hidden' }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '44px',
+                  right: 0,
+                  width: 320,
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-lg)',
+                  boxShadow: 'var(--shadow-lg)',
+                  zIndex: 200,
+                  overflow: 'hidden',
+                  opacity: notifOpen ? 1 : 0,
+                  transform: notifOpen ? 'translateY(0)' : 'translateY(-8px)',
+                  pointerEvents: notifOpen ? 'auto' : 'none',
+                  transition: 'opacity 200ms ease, transform 200ms ease',
+                }}
+              >
                   <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text)' }}>Notifications</span>
                     <Link href="/notifications" onClick={() => setNotifOpen(false)} style={{ fontSize: 12, color: 'var(--color-brand)', textDecoration: 'none' }}>See all</Link>
@@ -226,14 +289,14 @@ export function Navbar({ user, onSearch }: NavbarProps) {
                     <div style={{ padding: '20px 16px', textAlign: 'center', fontSize: 13, color: 'var(--color-text-muted)' }}>No notifications yet</div>
                   ) : (
                     notifs.map((n) => (
-                      <div key={n._id} style={{ padding: '10px 16px', borderBottom: '1px solid var(--color-border)', background: n.read ? 'transparent' : 'rgba(124,58,237,0.04)' }}>
+                      <div key={n._id} style={{ padding: '10px 16px', borderBottom: '1px solid var(--color-border)', background: n.read ? 'transparent' : 'color-mix(in srgb, var(--color-brand) 4%, transparent)' }}>
                         <p style={{ fontSize: 13, fontWeight: n.read ? 400 : 700, color: 'var(--color-text)', margin: '0 0 2px', lineHeight: 1.4 }}>{n.title}</p>
                         <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.4 }}>{n.message}</p>
                       </div>
                     ))
                   )}
                 </div>
-              )}
+
             </div>
 
             {/* Avatar + dropdown */}
@@ -284,7 +347,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
           </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Link href="/login" style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-text)', textDecoration: 'none', padding: '6px 10px' }}>
+            <Link href="/login" className="__ct_nav_login_link" style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none', padding: '6px 10px' }}>
               Log In
             </Link>
             <Link

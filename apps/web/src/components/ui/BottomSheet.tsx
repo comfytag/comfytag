@@ -56,6 +56,9 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
           borderRadius: `var(--radius-lg) var(--radius-lg) 0 0`,
           maxHeight: '90vh',
           overflowY: 'auto',
+          maxWidth: '480px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
           transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
           transition: `transform var(--duration-entrance) cubic-bezier(0.32, 0.72, 0, 1)`,
         }}
@@ -87,7 +90,7 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
         )}
 
         {/* Content */}
-        <div style={{ padding: '0 24px 32px' }}>{children}</div>
+        <div style={{ padding: '0 24px calc(32px + env(safe-area-inset-bottom))' }}>{children}</div>
       </div>
     </>
   )

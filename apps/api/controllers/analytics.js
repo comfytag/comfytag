@@ -173,6 +173,29 @@ export const getPartnerAnalytics = async (req, res, next) => {
 
     const followers = await Follow.countDocuments({ organizer_id: userId })
 
+    // Aggregate ticketTypes across all events
+    const ticketTypeMap = {}
+
+    for (const event of events) {
+      for (const tier of (event.ticketType ?? [])) {
+        const key = tier.name
+        if (!ticketTypeMap[key]) {
+          ticketTypeMap[key] = { name: tier.name, sold: 0, capacity: 0, revenue: 0 }
+        }
+        ticketTypeMap[key].capacity += tier.capacity
+      }
+    }
+
+    for (const ticket of tickets) {
+      const key = ticket.type
+      if (key && ticketTypeMap[key]) {
+        ticketTypeMap[key].sold += (ticket.numOfTicket ?? 1)
+        ticketTypeMap[key].revenue += (ticket.amount ?? 0)
+      }
+    }
+
+    const ticketTypes = Object.values(ticketTypeMap)
+
     res.status(200).json({
       userId,
       totalLifetimeRevenue,
@@ -182,6 +205,7 @@ export const getPartnerAnalytics = async (req, res, next) => {
       averageTicketPrice: Math.round(averageTicketPrice * 100) / 100,
       monthlyRevenue: monthlyRevenueArray,
       topEvents: topEventsArray,
+      ticketTypes,
     })
   } catch (err) {
     next(err)

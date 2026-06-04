@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
@@ -8,7 +8,7 @@ import { Button, Input, ErrorMessage } from '@comfytag/ui'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { SSOButton, GoogleIcon, AppleIcon } from '@/components/auth/SSOButton'
 
-export default function LoginPage() {
+function LoginInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') ?? '/'
@@ -68,7 +68,7 @@ export default function LoginPage() {
     <AuthLayout>
       {/* Password-reset success banner */}
       {didReset && (
-        <div style={{ background: 'color-mix(in srgb, var(--color-success) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)', borderRadius: '8px', padding: '10px 14px', marginBottom: '24px', fontSize: '13px', color: 'var(--color-success)' }}>
+        <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)', borderRadius: '8px', padding: '10px 14px', marginBottom: '24px', fontSize: '13px', color: 'var(--color-success)' }}>
           Password updated! Sign in with your new password.
         </div>
       )}
@@ -182,5 +182,13 @@ export default function LoginPage() {
         </Link>
       </div>
     </AuthLayout>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginInner />
+    </Suspense>
   )
 }

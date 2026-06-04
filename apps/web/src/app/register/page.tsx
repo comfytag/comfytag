@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
@@ -10,7 +10,7 @@ import { SSOButton, GoogleIcon, AppleIcon } from '@/components/auth/SSOButton'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
 
-export default function RegisterPage() {
+function RegisterInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') ?? '/'
@@ -130,5 +130,13 @@ export default function RegisterPage() {
         </Link>
       </div>
     </AuthLayout>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterInner />
+    </Suspense>
   )
 }

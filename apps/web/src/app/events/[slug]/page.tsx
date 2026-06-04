@@ -21,7 +21,7 @@ import { Divider } from '@/components/events/EventIcons'
 import { useLike } from '@/hooks/useLike'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
-import { authHeader } from '@comfytag/utils'
+import { authHeader, formatNaira } from '@comfytag/utils'
 import type { Event as EventType } from '@comfytag/types'
 import api from '@/lib/api'
 
@@ -187,8 +187,42 @@ export default function EventDetailPage() {
       </div>
 
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 24px 100px' }}>
-        <BackLink href="/" marginBottom={16}>Events</BackLink>
+        <BackLink href="/events" marginBottom={16}>Events</BackLink>
         <EventMeta event={event} isLiked={isLiked} likeCount={likeCount ?? undefined} onLike={handleLike} />
+        {allSoldOut ? (
+          <div style={{
+            padding: '13px 20px',
+            borderRadius: '12px',
+            background: 'var(--color-surface-2)',
+            color: 'var(--color-text-muted)',
+            fontSize: '15px',
+            fontWeight: 700,
+            textAlign: 'center',
+            marginBottom: '24px',
+          }}>
+            Sold Out
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setTicketSheetOpen(true)}
+            style={{
+              width: '100%',
+              padding: '13px 20px',
+              borderRadius: '12px',
+              border: 'none',
+              background: 'var(--color-brand)',
+              color: 'var(--color-text-on-brand)',
+              fontSize: '15px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              marginBottom: '24px',
+            }}
+          >
+            Get Tickets{minPrice > 0 ? ` — from ${formatNaira(minPrice)}` : ' — Free'}
+          </button>
+        )}
         <EventLineup performers={event.performers ?? []} />
         <Divider />
         <CommentSection eventId={event._id} initialComments={comments} initialHasMore={hasMoreComments} organizerId={event.planner_id} />

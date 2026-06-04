@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: comfytag-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web
+      - partner
+      - admin
+      - api
+    networks:
+      - comfytag-network
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: comfytag-web
+    restart: unless-stopped
+    env_file:
+      - apps/web/.env
+    networks:
+      - comfytag-network
+
+  partner:
+    build:
+      context: .
+      dockerfile: apps/partner/Dockerfile
+    container_name: comfytag-partner
+    restart: unless-stopped
+    env_file:
+      - apps/partner/.env
+    networks:
+      - comfytag-network
+
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+    container_name: comfytag-admin
+    restart: unless-stopped
+    env_file:
+      - apps/admin/.env
+    networks:
+      - comfytag-network
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: comfytag-api
+    restart: unless-stopped
+    env_file:
+      - apps/api/.env
+    depends_on:
+      - redis
+    networks:
+      - comfytag-network
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: comfytag-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - comfytag-network
+
+volumes:
+  redis_data:
+
+networks:
+  comfytag-network:
+    driver: bridge

@@ -1,16 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button, Input, ErrorMessage } from '@comfytag/ui'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const queryError = searchParams.get('error')
+    if (queryError) {
+      setError(queryError)
+    }
+  }, [searchParams])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -104,6 +112,13 @@ export default function LoginPage() {
             </div>
           )}
         </form>
+
+        <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '13px', color: 'var(--color-text-muted)' }}>
+          Don't have an account?{' '}
+          <a href="/register" style={{ color: 'var(--color-brand)', textDecoration: 'none' }}>
+            Create one
+          </a>
+        </p>
       </div>
     </div>
   )

@@ -1,65 +1,65 @@
+'use client'
+
+import { use, useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { useQuery } from '@tanstack/react-query'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { GateStats } from '@/components/events/GateStats'
+import { GateScannerPanel } from '@/components/events/GateScannerPanel'
 import { GateAttendeesPanel } from '@/components/events/GateAttendeesPanel'
 import { PageHeader, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
-import { getServerSession } from 'next-auth'
 import api, { authHeader } from '@/lib/api'
 
 interface CheckInStats {
   eventId: string
   totalCapacity: number
-  totalCheckedIn: number
-  totalAttendees: number
+  checkedIn: number
+  remaining: number
+  checkInRate: number
+  byTier: Record<string, number>
+  byMethod: Record<string, number>
 }
 
-interface Attendee {
-  _id: string
-  name: string
-  email: string
-  numOfTicket: number
-  checkedIn?: boolean
-  checkInDate?: string
-}
+type TabId = 'scanner' | 'attendees'
 
 interface GatePageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
-export default async function GatePage({ params }: GatePageProps) {
-  const session = await getServerSession()
-  const eventId = params.id
+export default function GatePage({ params }: GatePageProps) {
+  const { id: eventId } = use(params)
+  const { data: session } = useSession()
+  const token = session?.user?.token as string | undefined
+  const [activeTab, setActiveTab] = useState<TabId>('scanner')
 
-  let stats: CheckInStats | null = null
-  let attendees: Attendee[] | null = null
-  let hasError = false
+  const {
+    data: rawStats,
+    isLoading: statsLoading,
+    isError: statsError,
+  } = useQuery({
+    queryKey: ['checkInStats', eventId],
+    queryFn: () =>
+      api
+        .get<CheckInStats>(`/events/${eventId}/checkin-stats`, authHeader(token))
+        .then((r) => r.data),
+    refetchInterval: 5000,
+    enabled: !!token,
+  })
 
-  try {
-    const statsRes = await api.get<CheckInStats>(
-      `/events/${eventId}/checkin-stats`,
-      authHeader(session?.user?.token as string)
-    )
-    stats = statsRes.data
-  } catch {
-    hasError = true
-  }
+  // Map API shape → GateStats component shape
+  const stats = rawStats
+    ? {
+        eventId,
+        totalCapacity: rawStats.totalCapacity,
+        totalCheckedIn: rawStats.checkedIn,
+        totalAttendees: rawStats.checkedIn + rawStats.remaining,
+      }
+    : null
 
-  try {
-    const attendeesRes = await api.get<Attendee[]>(
-      `/audience/event/${eventId}`,
-      { params: { limit: 200 }, ...authHeader(session?.user?.token as string) }
-    )
-    attendees = attendeesRes.data
-  } catch {
-    hasError = true
-  }
-
-  if (hasError || !stats || !attendees) {
-    return (
-      <div style={{ padding: '24px' }}>
-        <ErrorMessage message="Failed to load check-in data." />
-      </div>
-    )
-  }
+  const tabs: { id: TabId; label: string }[] = [
+    { id: 'scanner', label: 'Scanner' },
+    { id: 'attendees', label: 'Attendees' },
+  ]
 
   return (
     <div style={{ padding: '28px 32px' }}>
@@ -71,11 +71,61 @@ export default async function GatePage({ params }: GatePageProps) {
         ]}
       />
 
-      <PageHeader title="Gate Management" subtitle="Real-time check-in tracking and management" />
+      <PageHeader
+        title="Gate Management"
+        subtitle="Real-time check-in tracking and management"
+      />
 
-      <GateStats stats={stats} />
+      {/* Stats strip — always visible */}
+      {statsLoading && !stats && (
+        <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-muted)', fontSize: '14px' }}>
+          <LoadingSpinner size="sm" />
+          Loading stats…
+        </div>
+      )}
+      {statsError && (
+        <div style={{ marginBottom: '32px' }}>
+          <ErrorMessage message="Failed to load check-in stats." />
+        </div>
+      )}
+      {stats && <GateStats stats={stats} />}
 
-      <GateAttendeesPanel attendees={attendees} eventId={eventId} />
+      {/* Tab switcher */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '4px',
+          marginBottom: '24px',
+          backgroundColor: 'var(--color-surface)',
+          borderRadius: '10px',
+          padding: '4px',
+          width: 'fit-content',
+        }}
+      >
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: '8px 20px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: activeTab === tab.id ? 600 : 400,
+              color: activeTab === tab.id ? '#ffffff' : 'var(--color-text-muted)',
+              backgroundColor: activeTab === tab.id ? 'var(--color-brand)' : 'transparent',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      {activeTab === 'scanner' && <GateScannerPanel eventId={eventId} />}
+      {activeTab === 'attendees' && <GateAttendeesPanel eventId={eventId} />}
     </div>
   )
 }
