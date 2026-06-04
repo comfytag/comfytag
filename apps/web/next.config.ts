@@ -9,6 +9,7 @@ const withPWA = withPWAInit({
 
 const nextConfig = {
   output: 'standalone',
+  turbopack: {},
   images: {
     remotePatterns: [
       { protocol: 'https' as const, hostname: '**' },
