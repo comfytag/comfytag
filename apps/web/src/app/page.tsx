@@ -4,6 +4,8 @@ import { HeroSection } from '@/components/home/HeroSection'
 import { HomeClientShell } from '@/components/home/HomeClientShell'
 import { HomeFeedClient } from '@/components/home/HomeFeedClient'
 import { EditorPicksSection } from '@/components/home/EditorPicksSection'
+import { HowItWorksSection } from '@/components/home/HowItWorksSection'
+import { CategoryGridSection } from '@/components/home/CategoryGridSection'
 import { TestimonialsSection } from '@/components/home/TestimonialsSection'
 import type { Event, Category } from '@comfytag/types'
 
@@ -102,6 +104,8 @@ export default async function HomePage() {
       <Navbar />
       <HeroSection />
       <EditorPicksSection events={editorPicks} />
+      <HowItWorksSection />
+      <CategoryGridSection />
       <HomeClientShell />
       <main style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' }}>
         <HomeFeedClient events={events} categories={categories} />

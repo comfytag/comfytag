@@ -95,7 +95,8 @@ export function EventFeedSection({
       `}</style>
       <AuthGateSheet isOpen={gateOpen} onClose={closeGate} trigger="like" />
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px 48px' }}>
+      <section style={{ padding: '0 16px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', paddingTop: '28px', paddingBottom: '48px' }}>
         {/* TONIGHT → horizontal scroll row */}
         {tonight.length > 0 && (
           <section style={{ marginBottom: '24px' }}>
@@ -225,7 +226,8 @@ export function EventFeedSection({
         {allUpcomingEvents.length > visibleCount && (
           <div ref={sentinelRef} style={{ height: '40px', marginTop: '8px' }} aria-hidden="true" />
         )}
-      </div>
+        </div>
+      </section>
     </>
   )
 }

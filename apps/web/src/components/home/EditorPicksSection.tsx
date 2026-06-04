@@ -25,7 +25,7 @@ export function EditorPicksSection({ events }: EditorPicksSectionProps) {
         marginBottom: '0',
       }}
     >
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{ marginBottom: '40px' }}>
           <span
