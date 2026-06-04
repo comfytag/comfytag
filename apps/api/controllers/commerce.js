@@ -46,7 +46,14 @@ export const searchEvents = async (req, res, next) => {
       ]
     }
 
-    if (category) filter.category = category
+    if (category) {
+      const cats = category.split(',').map(c => c.trim()).filter(Boolean)
+      if (cats.length === 1) {
+        filter.category = new RegExp(`^${cats[0]}$`, 'i')
+      } else {
+        filter.category = { $in: cats.map(c => new RegExp(`^${c}$`, 'i')) }
+      }
+    }
 
     if (city) filter.state = { $regex: new RegExp(city, 'i') }
 

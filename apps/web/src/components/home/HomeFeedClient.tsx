@@ -15,7 +15,7 @@ export function HomeFeedClient({ events, categories }: HomeFeedClientProps) {
 
   const filtered = useMemo(() => {
     if (!activeCategory) return events
-    const result = events.filter((e) => e.category === activeCategory)
+    const result = events.filter((e) => e.category.toLowerCase() === activeCategory.toLowerCase())
     if (process.env.NODE_ENV === 'development') {
       console.debug(`[CategoryFilter] activeCategory="${activeCategory}" matched ${result.length}/${events.length} events`)
     }

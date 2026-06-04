@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { EventCard } from '@/components/ui/EventCard'
+import { isUpcoming } from '@comfytag/utils'
 import type { Event } from '@comfytag/types'
 
 interface EditorPicksSectionProps {
@@ -11,8 +12,10 @@ interface EditorPicksSectionProps {
 export function EditorPicksSection({ events }: EditorPicksSectionProps) {
   if (!events || events.length === 0) return null
 
-  // Take featured/editor-picked events (first 4)
-  const featured = events.slice(0, 4)
+  // Filter to only upcoming, published events, then take first 4
+  const featured = events
+    .filter((e) => e.status === 'published' && isUpcoming(e.date))
+    .slice(0, 4)
 
   return (
     <section

@@ -154,9 +154,7 @@ export function EventsBrowseClient({
   function toggleType(type: string) {
     setFilters((prev) => ({
       ...prev,
-      types: prev.types.includes(type)
-        ? prev.types.filter((t) => t !== type)
-        : [...prev.types, type],
+      types: prev.types.includes(type) ? [] : [type],
     }))
   }
 
