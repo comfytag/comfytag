@@ -29,4 +29,4 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-CMD ["npx", "next", "start"]
+CMD ["/app/node_modules/.bin/next", "start"]
