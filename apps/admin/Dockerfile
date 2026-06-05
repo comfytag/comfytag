@@ -15,18 +15,18 @@ COPY apps/admin ./apps/admin
 RUN pnpm --filter @comfytag/admin build
 
 FROM base AS runner
-WORKDIR /app
+WORKDIR /app/apps/admin
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/apps/admin/.next ./.next
 COPY --from=builder /app/apps/admin/public ./public
 COPY --from=builder /app/apps/admin/package.json ./package.json
-COPY --from=builder /app/package.json ../package.json
+COPY --from=builder /app/package.json /app/package.json
 RUN chown -R nextjs:nodejs /app
 USER nextjs
 EXPOSE 3002
 ENV PORT=3002
 ENV HOSTNAME="0.0.0.0"
-CMD ["/app/node_modules/.bin/next", "start"]
+CMD ["node", "/app/node_modules/next/dist/bin/next", "start"]
