@@ -26,4 +26,4 @@ WORKDIR /app/apps/web
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-CMD ["node", "/app/node_modules/next/dist/bin/next", "start"]
+CMD ["pnpm", "exec", "next", "start"]
