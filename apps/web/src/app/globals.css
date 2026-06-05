@@ -5,6 +5,8 @@
   --color-brand: #7C3AED;
   --color-brand-dark: #5B21B6;
   --color-brand-light: #EDE9FE;
+  --color-brand-alpha-4: rgba(124, 58, 237, 0.04);
+  --color-brand-alpha-8: rgba(124, 58, 237, 0.08);
   --color-bg: #FAFAF9;
   --color-surface: #FFFFFF;
   --color-surface-2: #F5F3FF;

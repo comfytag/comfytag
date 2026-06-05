@@ -1,59 +1,28 @@
-'use client'
+﻿'use client'
 
-import { useState } from 'react'
-import { useSession } from 'next-auth/react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState, useMemo } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Skeleton, EmptyState, ErrorMessage } from '@comfytag/ui'
-import type { Event, TierStats } from '@comfytag/types'
+import type { TierStats } from '@comfytag/types'
 import { TiersEventAccordion } from '@/components/tiers/TiersEventAccordion'
 import { TierEditModal } from '@/components/tiers/TierEditModal'
-import api, { authHeader } from '@/lib/api'
-
-interface EventWithTiers extends Event {
-  tiers?: TierStats[]
-}
+import { useMyEvents, useEventTierStats } from '@/hooks'
+import { api } from '@/lib/api'
 
 interface EditingTier extends TierStats {
   eventId: string
 }
 
 export default function TiersPage() {
-  const { data: session } = useSession()
   const queryClient = useQueryClient()
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null)
   const [editingTier, setEditingTier] = useState<EditingTier | null>(null)
 
   // Fetch organizer's events
-  const { data: events = [], isLoading: eventsLoading, isError: eventsError } = useQuery<Event[]>({
-    queryKey: ['events', session?.user.id],
-    queryFn: () =>
-      api
-        .get<Event[]>(`/events/user/${session!.user.id}`, authHeader(session?.user.token))
-        .then((r) => r.data ?? []),
-    enabled: !!session?.user.id,
-  })
+  const { data: events = [], isLoading: eventsLoading, isError: eventsError } = useMyEvents()
 
-  // Fetch tiers for each event
-  const { data: tiersMap = {}, isLoading: tiersLoading } = useQuery({
-    queryKey: ['eventTiers', events.map(e => e._id).join(',')],
-    queryFn: async () => {
-      const map: Record<string, TierStats[]> = {}
-      await Promise.all(
-        events.map(event =>
-          api
-            .get<TierStats[]>(`/events/${event._id}/tiers/stats`, authHeader(session?.user.token))
-            .then(r => {
-              map[event._id] = r.data ?? []
-            })
-            .catch(() => {
-              map[event._id] = []
-            })
-        )
-      )
-      return map
-    },
-    enabled: events.length > 0 && !!session?.user.id,
-  })
+  // Fetch tiers for expanded event
+  const expandedEventTiersQuery = useEventTierStats(expandedEventId || '')
 
   // Edit tier mutation
   const editTierMutation = useMutation({
@@ -61,12 +30,13 @@ export default function TiersPage() {
       if (!editingTier) throw new Error('No tier selected')
       return api.put(
         `/events/${editingTier.eventId}/tiers/${editingTier._id}`,
-        data,
-        authHeader(session?.user.token)
+        data
       ).then(r => r.data)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['eventTiers'] })
+      if (expandedEventId) {
+        queryClient.invalidateQueries({ queryKey: ['partner-events', 'tiers', expandedEventId] })
+      }
       setEditingTier(null)
     },
   })
@@ -76,16 +46,23 @@ export default function TiersPage() {
     mutationFn: async (params: [string, string]) => {
       const [eventId, tierId] = params
       return api.delete(
-        `/events/${eventId}/tiers/${tierId}`,
-        authHeader(session?.user.token)
+        `/events/${eventId}/tiers/${tierId}`
       ).then(r => r.data)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['eventTiers'] })
+      if (expandedEventId) {
+        queryClient.invalidateQueries({ queryKey: ['partner-events', 'tiers', expandedEventId] })
+      }
     },
   })
 
-  const eventsWithTiers: EventWithTiers[] = events.map(event => ({
+  const tiersLoading = expandedEventId && expandedEventTiersQuery.isLoading
+  const tiersMap = expandedEventTiersQuery.data?.tiers?.reduce((map, tier) => {
+    if (expandedEventId) map[expandedEventId] = [tier]
+    return map
+  }, {} as Record<string, TierStats[]>) || {}
+
+  const eventsWithTiers = events.map(event => ({
     ...event,
     tiers: tiersMap[event._id] ?? [],
   }))
@@ -163,3 +140,4 @@ export default function TiersPage() {
     </div>
   )
 }
+

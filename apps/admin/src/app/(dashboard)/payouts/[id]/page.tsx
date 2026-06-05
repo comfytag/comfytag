@@ -3,29 +3,13 @@
 import type { CSSProperties } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
 import { Banknote } from 'lucide-react'
 import { Badge, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { formatNaira, formatDate } from '@comfytag/utils'
 import type { WithdrawRequest } from '@comfytag/types'
-import api from '@/lib/api'
 import { StatCard } from '@comfytag/ui'
 import { PageHeader } from '@comfytag/ui'
-
-// ─── Fetch functions ───────────────────────────────────
-const fetchWithdraw = async (id: string, token: string): Promise<WithdrawRequest> => {
-  const { data } = await api.get<WithdrawRequest>(`/admin/withdraw/show/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  return data
-}
-
-const updateWithdrawStatus = async (id: string, status: string, token: string): Promise<void> => {
-  await api.put(`/admin/withdraw/edit/${id}`, { status }, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-}
+import { usePayoutById, useApprovePayout, useRejectPayout } from '@/hooks'
 
 // ─── InfoField helper ──────────────────────────────────
 function InfoField({ label, value }: { label: string; value: React.ReactNode }) {
@@ -49,22 +33,12 @@ function InfoField({ label, value }: { label: string; value: React.ReactNode }) 
 
 // ─── Page ──────────────────────────────────────────────
 export default function PayoutDetailPage() {
-  const { data: session } = useSession()
   const params = useParams()
   const id = params.id as string
-  const queryClient = useQueryClient()
 
-  const { data: withdraw, isLoading, isError } = useQuery({
-    queryKey: ['admin', 'withdraw', id],
-    queryFn: () => fetchWithdraw(id, session?.user?.token ?? ''),
-    enabled: !!id && !!session?.user?.token,
-  })
-
-  const mutation = useMutation({
-    mutationFn: (newStatus: 'approved' | 'rejected') =>
-      updateWithdrawStatus(id, newStatus, session?.user?.token ?? ''),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'withdraw', id] }),
-  })
+  const { data: withdraw, isLoading, isError } = usePayoutById(id)
+  const approveMutation = useApprovePayout()
+  const rejectMutation = useRejectPayout()
 
   if (isLoading) return <LoadingSpinner size="lg" centered />
   if (isError || !withdraw) return <ErrorMessage message="Failed to load payout" />
@@ -127,8 +101,8 @@ export default function PayoutDetailPage() {
       {withdraw.status === 'pending' && (
         <div style={{ display: 'flex', gap: 12 }}>
           <button
-            onClick={() => mutation.mutate('approved')}
-            disabled={mutation.isPending}
+            onClick={() => approveMutation.mutate({ id })}
+            disabled={approveMutation.isPending || rejectMutation.isPending}
             style={{
               padding: '10px 24px',
               borderRadius: 8,
@@ -138,14 +112,14 @@ export default function PayoutDetailPage() {
               fontSize: 14,
               backgroundColor: 'var(--color-success)',
               color: '#fff',
-              opacity: mutation.isPending ? 0.6 : 1,
+              opacity: approveMutation.isPending || rejectMutation.isPending ? 0.6 : 1,
             }}
           >
-            {mutation.isPending ? 'Processing...' : 'Approve'}
+            {approveMutation.isPending ? 'Processing...' : 'Approve'}
           </button>
           <button
-            onClick={() => mutation.mutate('rejected')}
-            disabled={mutation.isPending}
+            onClick={() => rejectMutation.mutate({ id })}
+            disabled={rejectMutation.isPending || approveMutation.isPending}
             style={{
               padding: '10px 24px',
               borderRadius: 8,
@@ -155,7 +129,7 @@ export default function PayoutDetailPage() {
               backgroundColor: 'transparent',
               color: 'var(--color-error)',
               border: '1px solid var(--color-error)',
-              opacity: mutation.isPending ? 0.6 : 1,
+              opacity: rejectMutation.isPending || approveMutation.isPending ? 0.6 : 1,
             }}
           >
             Reject
@@ -164,12 +138,12 @@ export default function PayoutDetailPage() {
       )}
 
       {/* Mutation result feedback */}
-      {mutation.isSuccess && (
+      {(approveMutation.isSuccess || rejectMutation.isSuccess) && (
         <div style={{ marginTop: 16, color: 'var(--color-success)', fontSize: 14 }}>
           Status updated successfully.
         </div>
       )}
-      {mutation.isError && (
+      {(approveMutation.isError || rejectMutation.isError) && (
         <div style={{ marginTop: 16, color: 'var(--color-error)', fontSize: 14 }}>
           Failed to update status.
         </div>

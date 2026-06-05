@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { LoadingSpinner, ErrorMessage, Input, Button } from '@comfytag/ui'
 import { PageHeader } from '@comfytag/ui'
-import api from '@/lib/api'
-import type { AdminUser } from '@/types'
+import type { User } from '@comfytag/types'
+import { useUserById, useUpdateUser } from '@/hooks'
 
 // ─── InfoRow ────────────────────────────────────────────
 interface InfoRowProps {
@@ -30,14 +29,6 @@ function InfoRow({ label, value }: InfoRowProps) {
   )
 }
 
-// ─── Fetch ───────────────────────────────────────────────
-async function fetchAdminUser(userId: string, token: string): Promise<AdminUser> {
-  const { data } = await api.get<AdminUser>(`/admin/users/${userId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  return data
-}
-
 // ─── Card style ──────────────────────────────────────────
 const cardStyle: React.CSSProperties = {
   backgroundColor: 'var(--color-surface)',
@@ -58,17 +49,11 @@ const cardHeadingStyle: React.CSSProperties = {
 export default function SettingsPage() {
   const { data: session } = useSession()
   const userId = session?.user?.id ?? ''
-  const token = session?.user?.token ?? ''
-  const queryClient = useQueryClient()
 
-  const { data, isLoading, isError } = useQuery<AdminUser>({
-    queryKey: ['admin', 'settings', userId],
-    queryFn: () => fetchAdminUser(userId, token),
-    enabled: !!userId,
-  })
+  const { data, isLoading, isError } = useUserById(userId)
+  const updateMutation = useUpdateUser()
 
   const [name, setName] = useState<string>(data?.name ?? '')
-  const [saving, setSaving] = useState<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false)
 
   // Sync name when remote data loads / changes
@@ -86,22 +71,18 @@ export default function SettingsPage() {
   }, [success])
 
   async function handleSave() {
-    setSaving(true)
-    try {
-      await api.put(
-        `/admin/users/${userId}`,
-        { name },
-        { headers: { Authorization: `Bearer ${token}` } },
-      )
-      setSuccess(true)
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'settings', userId] })
-    } finally {
-      setSaving(false)
-    }
+    updateMutation.mutate(
+      { id: userId, payload: { name } },
+      {
+        onSuccess: () => {
+          setSuccess(true)
+        },
+      },
+    )
   }
 
-  const lastLoginFormatted: string = data?.lastLoginAt
-    ? new Date(data.lastLoginAt).toLocaleDateString('en-NG', {
+  const lastLoginFormatted: string = (data as any)?.lastLoginAt
+    ? new Date((data as any).lastLoginAt).toLocaleDateString('en-NG', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -161,7 +142,7 @@ export default function SettingsPage() {
           )}
           <Button
             variant="primary"
-            loading={saving}
+            loading={updateMutation.isPending}
             onClick={() => void handleSave()}
           >
             Save changes
@@ -177,9 +158,9 @@ export default function SettingsPage() {
             borderTop: '1px solid var(--color-border)',
           }}
         >
-          <InfoRow label="Role" value={data?.role ?? ''} />
+          <InfoRow label="Role" value={(data as any)?.role ?? ''} />
           <div style={{ borderTop: '1px solid var(--color-border)' }}>
-            <InfoRow label="Status" value={data?.isActive ? 'Active' : 'Inactive'} />
+            <InfoRow label="Status" value={(data as any)?.isActive ? 'Active' : 'Inactive'} />
           </div>
           <div style={{ borderTop: '1px solid var(--color-border)' }}>
             <InfoRow label="Last login" value={lastLoginFormatted} />

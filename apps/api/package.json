@@ -10,7 +10,10 @@
     "seed:dev": "node scripts/seed-dev-users.js",
     "seed:events": "node scripts/seed-events.js",
     "seed:categories": "node scripts/seed-categories.js",
-    "seed:testimonials": "node scripts/seed-testimonials.js"
+    "seed:testimonials": "node scripts/seed-testimonials.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "author": "Wabjay",
   "license": "ISC",
@@ -43,6 +46,11 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
-    "@types/express": "^4.17.17"
+    "@types/express": "^4.17.17",
+    "vitest": "^2.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "supertest": "^7.0.0",
+    "@types/supertest": "^6.0.0",
+    "mongodb-memory-server": "^9.0.0"
   }
 }

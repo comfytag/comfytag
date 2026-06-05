@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@comfytag/ui'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface KycDocSectionProps {
   docType: 'photo' | 'idCard' | 'address'
@@ -40,9 +40,7 @@ export function KycDocSection({
         `/partner/users/${userId}/kyc`,
         formData,
         {
-          ...authHeader(token),
           headers: {
-            ...authHeader(token).headers,
             'Content-Type': 'multipart/form-data',
           },
         }
@@ -129,7 +127,7 @@ export function KycDocSection({
             whiteSpace: 'nowrap',
           }}
         >
-          {isVerified ? '✓ Verified' : 'Pending'}
+          {isVerified ? 'âœ“ Verified' : 'Pending'}
         </span>
       </div>
 
@@ -262,3 +260,4 @@ export function KycDocSection({
     </div>
   )
 }
+

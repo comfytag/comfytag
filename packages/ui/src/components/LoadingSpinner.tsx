@@ -20,6 +20,7 @@ export function LoadingSpinner({ size = 'md', centered = false, className }: Loa
       <style>{`@keyframes __ct_spin{100%{transform:rotate(360deg)}}`}</style>
       <div
         className={centered ? undefined : className}
+        suppressHydrationWarning
         style={{
           width: px,
           height: px,
@@ -37,6 +38,7 @@ export function LoadingSpinner({ size = 'md', centered = false, className }: Loa
     return (
       <div
         className={className}
+        suppressHydrationWarning
         style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}
       >
         {spinner}

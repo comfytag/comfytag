@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, EmptyState } from '@comfytag/ui'
 import type { Notification } from '@comfytag/types'
 import { NotificationRow } from './NotificationRow'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface NotificationsPanelProps {
   notifications: Notification[]
@@ -23,7 +23,7 @@ export function NotificationsPanel({
 
   const markAllReadMutation = useMutation({
     mutationFn: () =>
-      api.put('/notifications/read-all', {}, authHeader(session?.user.token)).then(r => r.data),
+      api.put('/notifications/read-all', {}).then(r => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', session?.user.id] })
     },
@@ -31,7 +31,7 @@ export function NotificationsPanel({
 
   const markOneReadMutation = useMutation({
     mutationFn: (notifId: string) =>
-      api.put(`/notifications/${notifId}/read`, {}, authHeader(session?.user.token)).then(r => r.data),
+      api.put(`/notifications/${notifId}/read`, {}).then(r => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', session?.user.id] })
     },
@@ -84,3 +84,4 @@ export function NotificationsPanel({
     </>
   )
 }
+

@@ -1,7 +1,19 @@
 import React from 'react'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+
+export const metadata: Metadata = {
+  title: "About ComfyTag — Nigeria's Face-Powered Event Ticketing Platform",
+  description: "ComfyTag is Nigeria's first face-powered event ticketing platform. Show your face for instant entry—no QR codes, pure frictionless experience.",
+  alternates: { canonical: 'https://comfytag.com/about' },
+  openGraph: {
+    title: "About ComfyTag",
+    description: "Nigeria's first face-powered event ticketing. Your face is your ticket.™",
+    url: 'https://comfytag.com/about',
+  },
+}
 
 export default function AboutPage() {
   return (
@@ -61,10 +73,7 @@ export default function AboutPage() {
                 lineHeight: 1.8,
               }}
             >
-              We believe events are about people, not logistics. ComfyTag removes
-              friction from event check-in by letting attendees show their face
-              instead of fumbling for QR codes. Organizers get real-time
-              analytics. Attendees get a seamless, secure experience.
+              We believe events are about vibes, not logistics. ComfyTag removes the friction — no more fumbling for QR codes, no more checking bags at entry. Organizers get instant analytics. Attendees get a seamless, secure experience.
             </p>
           </div>
 
@@ -78,7 +87,7 @@ export default function AboutPage() {
                 marginBottom: '16px',
               }}
             >
-              Built for Nigeria
+              Built for Nigerian Gen Z
             </h2>
             <p
               style={{
@@ -87,10 +96,7 @@ export default function AboutPage() {
                 lineHeight: 1.8,
               }}
             >
-              ComfyTag is founded and built in Nigeria, for Nigerians. We
-              integrate Paystack and Termii, support Nigerian bank transfers,
-              honor Nigerian privacy law (NDPR), and design for Gen Z event
-              culture in Lagos, Abuja, Port Harcourt, and beyond.
+              We get it: you don't have time for nonsense. You want to buy event tickets in Ilorin, roll up to the venue, and get straight to the party. That's what we built. Nigeria-native, Gen Z-first, zero gatekeeping.
             </p>
           </div>
 
@@ -167,7 +173,7 @@ export default function AboutPage() {
                 marginBottom: '16px',
               }}
             >
-              Our Team
+              Security & Privacy
             </h2>
             <p
               style={{
@@ -176,10 +182,7 @@ export default function AboutPage() {
                 lineHeight: 1.8,
               }}
             >
-              ComfyTag is built by a passionate team of engineers, designers, and
-              product leaders obsessed with making events frictionless. We are Gen
-              Z and millennial technologists who grew up in Nigeria and understand
-              what the market needs.
+              Your biometric data is yours. We're fully NDPR-compliant. Face templates are encrypted on-device and never sent to servers. We don't sell, share, or log-crawl your data. Period.
             </p>
           </div>
 
@@ -200,7 +203,7 @@ export default function AboutPage() {
                 marginBottom: '12px',
               }}
             >
-              Get In Touch
+              Join the Movement
             </h2>
             <p
               style={{
@@ -209,11 +212,10 @@ export default function AboutPage() {
                 marginBottom: '20px',
               }}
             >
-              Have questions or want to partner with us? We would love to hear
-              from you.
+              Thousands of attendees and organizers are already using ComfyTag. Join them. Browse events in your city right now and see what you're missing.
             </p>
             <Link
-              href="/contact"
+              href="/events"
               style={{
                 display: 'inline-block',
                 padding: '12px 24px',
@@ -225,7 +227,7 @@ export default function AboutPage() {
                 textDecoration: 'none',
               }}
             >
-              Contact Us
+              Browse Events in Ilorin →
             </Link>
           </div>
         </div>

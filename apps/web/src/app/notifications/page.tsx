@@ -1,62 +1,22 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Navbar } from '@/components/layout/Navbar'
 import { LoadingSpinner, EmptyState } from '@comfytag/ui'
 import { authHeader } from '@comfytag/utils'
 import type { Notification } from '@comfytag/types'
 import { NotifRow } from '@/components/notifications/NotifRow'
-import api from '@/lib/api'
+import { useNotifications, useMarkNotificationRead } from '@/hooks/useNotifications'
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function NotificationsPage() {
   const { data: session, status } = useSession()
-  const [notifs, setNotifs] = useState<Notification[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasMore, setHasMore] = useState(false)
-  const [page, setPage] = useState(1)
-  const [loadingMore, setLoadingMore] = useState(false)
-
-  const fetchNotifs = useCallback(
-    async (pageNum: number, append: boolean) => {
-      if (!session) return
-      if (append) setLoadingMore(true)
-      else setIsLoading(true)
-
-      try {
-        const r = await api.get(`/notification?page=${pageNum}&limit=50`, authHeader(session.user.token))
-        const list: Notification[] = Array.isArray(r.data)
-          ? r.data
-          : (r.data?.data ?? r.data?.notifications ?? [])
-        setNotifs((prev) => (append ? [...prev, ...list] : list))
-        setHasMore(list.length === 50)
-      } catch {
-        // silent
-      } finally {
-        setIsLoading(false)
-        setLoadingMore(false)
-      }
-    },
-    [session],
-  )
-
-  useEffect(() => {
-    if (session) {
-      fetchNotifs(1, false)
-    }
-  }, [session, fetchNotifs])
-
-  function handleLoadMore() {
-    const next = page + 1
-    setPage(next)
-    fetchNotifs(next, true)
-  }
+  const { data: notifs = [], isLoading } = useNotifications()
+  const { mutate: markRead } = useMarkNotificationRead()
 
   function handleRead(id: string) {
-    setNotifs((prev) =>
-      prev.map((n) => (n._id === id ? { ...n, read: true } : n)),
-    )
+    markRead(id)
   }
 
   // Auth guard
@@ -96,29 +56,6 @@ export default function NotificationsPage() {
                 token={session?.user.token ?? ''}
               />
             ))}
-          </div>
-        )}
-
-        {hasMore && (
-          <div style={{ marginTop: 20, textAlign: 'center' }}>
-            <button
-              type="button"
-              onClick={handleLoadMore}
-              disabled={loadingMore}
-              style={{
-                padding: '10px 24px',
-                fontSize: 14,
-                fontWeight: 600,
-                color: 'var(--color-brand)',
-                background: 'none',
-                border: '1px solid var(--color-brand)',
-                borderRadius: 8,
-                cursor: loadingMore ? 'not-allowed' : 'pointer',
-                opacity: loadingMore ? 0.6 : 1,
-              }}
-            >
-              {loadingMore ? 'Loading…' : 'Load more'}
-            </button>
           </div>
         )}
       </main>

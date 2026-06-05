@@ -7,7 +7,7 @@ import { Button, Input, ErrorMessage, LoadingSpinner } from '@comfytag/ui'
 import { Navbar } from '@/components/layout/Navbar'
 import { BackLink } from '@/components/ui/BackLink'
 import { authHeader, NIGERIAN_STATES } from '@comfytag/utils'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface BankAccount {
   accountName: string
@@ -68,8 +68,7 @@ export default function BankPage() {
     const fetchBank = async () => {
       try {
         const response = await api.get(
-          `/bank/${session.user.id}`,
-          authHeader(session.user.token)
+          `/bank/${session.user.id}`
         )
         const existing = response.data?.data as BankAccount | undefined
         if (existing) {
@@ -108,8 +107,7 @@ export default function BankPage() {
 
       await api.post(
         `/bank/${session.user.id}`,
-        payload,
-        authHeader(session.user.token)
+        payload
       )
 
       setSuccess(true)

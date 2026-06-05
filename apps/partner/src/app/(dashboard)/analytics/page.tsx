@@ -1,16 +1,14 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
-import { useQuery } from '@tanstack/react-query'
 import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { formatNaira } from '@comfytag/utils'
 import { ChartCard } from '@/components/ui/ChartCard'
-import api, { authHeader } from '@/lib/api'
+import { usePartnerAnalytics } from '@/hooks'
 
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Types
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface TicketTypeBreakdown {
   name: string
@@ -30,22 +28,14 @@ interface PartnerAnalytics {
   ticketTypes?: TicketTypeBreakdown[]
 }
 
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // AnalyticsPage (thin composer)
-// ─────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function AnalyticsPage() {
-  const { data: session } = useSession()
   const [expandedTicketType, setExpandedTicketType] = useState<string | null>(null)
 
-  const { data: analytics, isLoading, isError } = useQuery({
-    queryKey: ['partnerAnalytics', session?.user.id],
-    queryFn: () =>
-      api
-        .get<PartnerAnalytics>(`/partner/${session!.user.id}/analytics`, authHeader(session?.user.token))
-        .then((r) => r.data),
-    enabled: !!session?.user.id,
-  })
+  const { data: analytics, isLoading, isError, refetch } = usePartnerAnalytics()
 
   if (isLoading) {
     return (
@@ -61,13 +51,16 @@ export default function AnalyticsPage() {
     return (
       <div>
         <div style={{ padding: '32px 24px' }}>
-          <ErrorMessage message="Failed to load analytics." />
+          <ErrorMessage
+            message="Failed to load analytics."
+            onRetry={() => refetch()}
+          />
         </div>
       </div>
     )
   }
 
-  const ticketTypes = analytics?.ticketTypes ?? []
+  const ticketTypes = (analytics as any)?.ticketTypes ?? []
 
   return (
     <div>
@@ -162,7 +155,7 @@ export default function AnalyticsPage() {
                   <div style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
                     {(analytics?.averageTicketPrice ?? 0) > 0
                       ? formatNaira(analytics?.averageTicketPrice ?? 0)
-                      : '₦0'}
+                      : 'â‚¦0'}
                   </div>
                   <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '12px 0 0' }}>
                     average price per ticket
@@ -194,7 +187,7 @@ export default function AnalyticsPage() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {ticketTypes.map((ticketType) => {
+                {ticketTypes.map((ticketType: TicketTypeBreakdown) => {
                   const percentageSold = (ticketType.sold / ticketType.capacity) * 100
                   const avgPrice = ticketType.sold > 0 ? ticketType.revenue / ticketType.sold : 0
                   const isExpanded = expandedTicketType === ticketType.name
@@ -301,3 +294,4 @@ export default function AnalyticsPage() {
     </div>
   )
 }
+

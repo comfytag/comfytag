@@ -1,247 +1,183 @@
-'use client'
-
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import { EventHeroCarousel } from '@/components/event/EventHeroCarousel'
-import { EventTransparentNav } from '@/components/event/EventTransparentNav'
-import { EventMeta } from '@/components/event/EventMeta'
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { EventInteractiveSection } from '@/components/event/EventInteractiveSection'
 import { EventLineup } from '@/components/event/EventLineup'
 import { EventLocation } from '@/components/event/EventLocation'
-import { EventShareRow } from '@/components/event/EventShareRow'
-import { EventRelatedSection } from '@/components/event/EventRelatedSection'
 import { EventMediaGallery } from '@/components/event/EventMediaGallery'
-import { EventStickyBar } from '@/components/event/EventStickyBar'
-import { TicketTierSheet } from '@/components/event/TicketTierSheet'
-import { CommentSection, type Comment } from '@/components/event/CommentSection'
-import { OrganizerCard, type OrganizerStats } from '@/components/ui/OrganizerCard'
-import { AuthGateSheet } from '@/components/ui/AuthGateSheet'
-import { BackLink } from '@/components/ui/BackLink'
+import { EventRelatedSection } from '@/components/event/EventRelatedSection'
 import { Divider } from '@/components/events/EventIcons'
-import { useLike } from '@/hooks/useLike'
-import { useAuthGate } from '@/hooks/useAuthGate'
-import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
-import { authHeader, formatNaira } from '@comfytag/utils'
+import { JsonLd } from '@/components/seo/JsonLd'
 import type { Event as EventType } from '@comfytag/types'
-import api from '@/lib/api'
+import type { Comment } from '@/components/event/CommentSection'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
 
-export default function EventDetailPage() {
-  const { slug } = useParams<{ slug: string }>()
-  const router = useRouter()
-  const { data: session } = useSession()
+async function getEvent(slug: string): Promise<EventType | null> {
+  let res: Response
+  try {
+    res = await fetch(`${API}/events/${slug}`, {
+      next: { revalidate: 60 },
+    })
+  } catch {
+    throw new Error('Unable to connect to event service. Please try again.')
+  }
+  if (res.status === 404) return null
+  if (!res.ok) throw new Error(`Event service error (${res.status})`)
+  const data = (await res.json()) as unknown
+  const obj = data as Record<string, unknown>
+  // Handle both direct Event and wrapped { success, data } shapes
+  if (obj.success !== undefined && obj.data) return obj.data as EventType
+  return data as EventType
+}
 
-  const [event, setEvent] = useState<EventType | null>(null)
-  const [comments, setComments] = useState<Comment[]>([])
-  const [hasMoreComments, setHasMoreComments] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isFollowing, setIsFollowing] = useState(false)
-  const [orgStats, setOrgStats] = useState<OrganizerStats | null>(null)
-  const [ticketSheetOpen, setTicketSheetOpen] = useState(false)
-  const [heroVisible, setHeroVisible] = useState(true)
-  const [relatedEvents, setRelatedEvents] = useState<EventType[]>([])
-  const [shareToast, setShareToast] = useState(false)
-  const [hypeLinkLoading, setHypeLinkLoading] = useState(false)
+async function getRelatedEvents(category: string, excludeId: string): Promise<EventType[]> {
+  try {
+    const res = await fetch(
+      `${API}/events?category=${encodeURIComponent(category)}&status=published`,
+      { next: { revalidate: 60 } }
+    )
+    if (!res.ok) return []
+    const data = (await res.json()) as unknown
+    const obj = data as Record<string, unknown>
+    const list = (Array.isArray(data)
+      ? data
+      : Array.isArray(obj.data)
+        ? obj.data
+        : Array.isArray(obj.events)
+          ? obj.events
+          : []) as EventType[]
+    return list
+      .filter((e) => e._id !== excludeId && e.status === 'published')
+      .slice(0, 4)
+  } catch {
+    return []
+  }
+}
 
-  const { gateOpen, gateTrigger, openGate, closeGate } = useAuthGate()
-  const { isLiked, likeCount, toggleLike } = useLike(event?._id || '', false, event?.sold)
+async function getInitialComments(eventId: string): Promise<{ comments: Comment[]; hasMore: boolean }> {
+  try {
+    const res = await fetch(
+      `${API}/events/${eventId}/comments?page=1&limit=20`,
+      { cache: 'no-store' }
+    )
+    if (!res.ok) return { comments: [], hasMore: false }
+    const data = (await res.json()) as { comments: Comment[]; hasMore: boolean }
+    return { comments: data.comments ?? [], hasMore: data.hasMore ?? false }
+  } catch {
+    return { comments: [], hasMore: false }
+  }
+}
 
-  const heroRef = useRef<HTMLDivElement>(null)
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const event = await getEvent(slug)
+  if (!event) {
+    return { title: 'Event Not Found' }
+  }
+  const coverImage = event.coverImage ?? event.images[0]
+  return {
+    title: event.name,
+    description: event.description
+      ? event.description.slice(0, 155)
+      : `Buy tickets for ${event.name} on ComfyTag. ${event.venue}, ${event.state}. Your face is your ticket. Instant checkout via Paystack.`,
+    alternates: { canonical: `https://comfytag.com/events/${slug}` },
+    openGraph: {
+      title: event.name,
+      description: event.description?.slice(0, 160) ?? `Get tickets for ${event.name}`,
+      images: coverImage
+        ? [{ url: coverImage, width: 1200, height: 630, alt: event.name }]
+        : [],
+      type: 'website',
+      url: `https://comfytag.com/events/${slug}`,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: event.name,
+      description: event.description?.slice(0, 160) ?? `Get tickets for ${event.name}`,
+      images: coverImage ? [coverImage] : [],
+    },
+  }
+}
 
-  const fetchEvent = useCallback(async () => {
-    if (!slug) return
-    setIsLoading(true)
-    setError(null)
-    try {
-      const res = await fetch(`${API}/events/${slug}`)
-      if (!res.ok) throw new Error('Event not found')
-      const data = (await res.json()) as EventType
-      setEvent(data)
+export default async function EventDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
+  const event = await getEvent(slug)
 
-      const headers: HeadersInit = {}
-      if (session?.user?.token) {
-        ;(headers as Record<string, string>)['Authorization'] = `Bearer ${session.user.token}`
-      }
-      const [commentsRes, followRes, statsRes, relatedRes] = await Promise.allSettled([
-        fetch(`${API}/events/${data._id}/comments?page=1&limit=20`, { headers }),
-        fetch(`${API}/organizers/${data.planner_id}/follow/status`, { headers }),
-        fetch(`${API}/organizers/${data.planner_id}/stats`, { headers }),
-        fetch(`${API}/events?category=${encodeURIComponent(data.category)}&status=published`, { headers }),
-      ])
-
-      if (commentsRes.status === 'fulfilled' && commentsRes.value.ok) {
-        const cd = (await commentsRes.value.json()) as { comments: Comment[]; hasMore: boolean }
-        setComments(cd.comments ?? [])
-        setHasMoreComments(cd.hasMore ?? false)
-      }
-      if (followRes.status === 'fulfilled' && followRes.value.ok) {
-        const fd = (await followRes.value.json()) as { following: boolean; followerCount: number }
-        setIsFollowing(fd.following)
-      }
-      if (statsRes.status === 'fulfilled' && statsRes.value.ok) {
-        setOrgStats((await statsRes.value.json()) as OrganizerStats)
-      }
-      if (relatedRes.status === 'fulfilled' && relatedRes.value.ok) {
-        const rd = await relatedRes.value.json()
-        const list = (Array.isArray(rd) ? rd : rd.data ?? rd.events ?? []) as EventType[]
-        setRelatedEvents(list.filter(e => e._id !== data._id && e.status === 'published').slice(0, 4))
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load event')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [slug])
-
-  useEffect(() => { fetchEvent() }, [fetchEvent])
-
-  useEffect(() => {
-    const el = heroRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(([entry]) => setHeroVisible(entry.isIntersecting), { threshold: 0.1 })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
-
-  async function handleLike() {
-    if (!session) { openGate('like'); return }
-    await toggleLike()
+  if (!event) {
+    notFound()
   }
 
-  async function handleFollow() {
-    if (!session) { openGate('like'); return }
-    if (!event) return
-    try {
-      const res = await api.post<{ following: boolean; followerCount: number }>(
-        `/organizers/${event.planner_id}/follow`, null, authHeader(session.user.token),
-      )
-      setIsFollowing(res.data.following)
-      if (orgStats) setOrgStats({ ...orgStats, followerCount: res.data.followerCount })
-    } catch { /* silent */ }
-  }
+  // Parallel fetch of secondary data
+  const [relatedEvents, { comments, hasMore }] = await Promise.all([
+    getRelatedEvents(event.category, event._id),
+    getInitialComments(event._id),
+  ])
 
-  async function handleShare() {
-    if (!event) return
-    const url = `${window.location.origin}/events/${event.slug ?? event._id}`
-    if (navigator.share) {
-      await navigator.share({ title: event.name, url }).catch(() => {})
-    } else {
-      await navigator.clipboard.writeText(url).catch(() => {})
-      setShareToast(true)
-      setTimeout(() => setShareToast(false), 2000)
-    }
-  }
-
-  async function handleHypeLink() {
-    if (!session) { openGate('hype-link'); return }
-    if (!event) return
-    setHypeLinkLoading(true)
-    try {
-      const r = await api.get(`/referral/${event._id}`, authHeader(session.user.token))
-      const refUrl: string = r.data?.url ?? r.data?.referralUrl ?? `${window.location.origin}/events/${event.slug ?? event._id}?ref=${session.user.id}`
-      const text = `Omo, you dey go ${event.name}? 🔥 Use my link:`
-      if (navigator.share) {
-        await navigator.share({ title: event.name, text, url: refUrl }).catch(() => {})
-      } else {
-        await navigator.clipboard.writeText(refUrl).catch(() => {})
-        setShareToast(true)
-        setTimeout(() => setShareToast(false), 2000)
-      }
-    } catch { /* silent */ }
-    finally { setHypeLinkLoading(false) }
-  }
-
-  function handleCheckout(tierId: string, qty: number) {
-    if (!event) return
-    setTicketSheetOpen(false)
-    router.push(`/checkout?eventId=${event._id}&tierId=${tierId}&qty=${qty}`)
-  }
-
-  if (isLoading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg)' }}>
-      <LoadingSpinner size="lg" centered />
-    </div>
-  )
-
-  if (error || !event) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg)', padding: '24px' }}>
-      <ErrorMessage message={error ?? 'Event not found'} onRetry={fetchEvent} />
-    </div>
-  )
-
-  const allImages = [...(event.coverImage ? [event.coverImage] : []), ...event.images]
-  const minPrice = event.ticketType.length > 0 ? Math.min(...event.ticketType.map(t => t.price)) : 0
-  const allSoldOut = event.ticketType.every(t => t.sold >= t.capacity)
-  const organizer = { _id: event.planner_id, name: event.planner, isPartner: false, isVerify: {} as { email?: boolean; photo?: boolean } }
+  const lowestPrice = Math.min(...(event.ticketType ?? []).map((t: { price?: number }) => t.price ?? 0))
 
   return (
     <>
-      <AuthGateSheet isOpen={gateOpen} onClose={closeGate} trigger={gateTrigger} redirectTo={`/events/${event.slug ?? event._id}`} />
-      <TicketTierSheet isOpen={ticketSheetOpen} onClose={() => setTicketSheetOpen(false)} tiers={event.ticketType} eventName={event.name} onCheckout={handleCheckout} />
-
-      <div ref={heroRef} style={{ position: 'relative' }}>
-        <EventTransparentNav onBack={() => router.back()} onShare={handleShare} onGetTickets={() => setTicketSheetOpen(true)} allSoldOut={allSoldOut} />
-        <EventHeroCarousel images={allImages} name={event.name} />
-      </div>
-
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 24px 100px' }}>
-        <BackLink href="/events" marginBottom={16}>Events</BackLink>
-        <EventMeta event={event} isLiked={isLiked} likeCount={likeCount ?? undefined} onLike={handleLike} />
-        {allSoldOut ? (
-          <div style={{
-            padding: '13px 20px',
-            borderRadius: '12px',
-            background: 'var(--color-surface-2)',
-            color: 'var(--color-text-muted)',
+      <JsonLd
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'Event',
+          name: event.name,
+          startDate: event.date,
+          eventStatus: 'https://schema.org/EventScheduled',
+          eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+          location: {
+            '@type': 'Place',
+            name: event.venue,
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: event.state,
+              addressCountry: 'NG',
+            },
+          },
+          image: event.coverImage || (event.images && event.images[0]),
+          description: event.description || `${event.name} event on ComfyTag`,
+          offers: {
+            '@type': 'Offer',
+            url: `https://comfytag.com/events/${event.slug}`,
+            priceCurrency: 'NGN',
+            price: lowestPrice,
+            availability: 'https://schema.org/InStock',
+          },
+        }}
+      />
+      <EventInteractiveSection
+      event={event}
+      relatedEvents={relatedEvents}
+      initialComments={comments}
+      initialHasMore={hasMore}
+    >
+      <EventLineup performers={event.performers ?? []} />
+      <Divider />
+      {event.description ? (
+        <p
+          style={{
             fontSize: '15px',
-            fontWeight: 700,
-            textAlign: 'center',
+            color: 'var(--color-text)',
+            lineHeight: 1.7,
             marginBottom: '24px',
-          }}>
-            Sold Out
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setTicketSheetOpen(true)}
-            style={{
-              width: '100%',
-              padding: '13px 20px',
-              borderRadius: '12px',
-              border: 'none',
-              background: 'var(--color-brand)',
-              color: 'var(--color-text-on-brand)',
-              fontSize: '15px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              marginBottom: '24px',
-            }}
-          >
-            Get Tickets{minPrice > 0 ? ` — from ${formatNaira(minPrice)}` : ' — Free'}
-          </button>
-        )}
-        <EventLineup performers={event.performers ?? []} />
-        <Divider />
-        <CommentSection eventId={event._id} initialComments={comments} initialHasMore={hasMoreComments} organizerId={event.planner_id} />
-        <Divider />
-        {event.description && (
-          <p style={{ fontSize: '15px', color: 'var(--color-text)', lineHeight: 1.7, marginBottom: '24px', whiteSpace: 'pre-wrap' }}>
-            {event.description}
-          </p>
-        )}
-        <EventMediaGallery event={event} />
-        <EventLocation event={event} />
-        <EventShareRow onShare={handleShare} onHypeLink={handleHypeLink} shareToast={shareToast} hypeLinkLoading={hypeLinkLoading} />
-        <Divider />
-        <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 4px' }}>Organizer</h2>
-        <OrganizerCard organizer={organizer} stats={orgStats ?? undefined} href={`/organizer/${event.planner_id}`} isFollowing={isFollowing} onFollow={handleFollow} variant="inline" />
-        <EventRelatedSection events={relatedEvents} />
-      </div>
-
-      <EventStickyBar isVisible={!heroVisible} minPrice={minPrice} allSoldOut={allSoldOut} onGetTickets={() => setTicketSheetOpen(true)} />
+            whiteSpace: 'pre-wrap',
+          }}
+        >
+          {event.description}
+        </p>
+      ) : null}
+      <EventMediaGallery event={event} />
+      <EventLocation event={event} />
+      <EventRelatedSection events={relatedEvents} />
+    </EventInteractiveSection>
     </>
   )
 }

@@ -1,11 +1,9 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
 import { Users, Calendar, TrendingUp, Banknote, Download } from 'lucide-react'
 import { LoadingSpinner, ErrorMessage, Button } from '@comfytag/ui'
 import { formatNaira } from '@comfytag/utils'
-import type { Event, User, WithdrawRequest } from '@comfytag/types'
+import type { Event, WithdrawRequest, User } from '@comfytag/types'
 import {
   ResponsiveContainer,
   AreaChart,
@@ -22,28 +20,10 @@ import {
   Legend,
 } from 'recharts'
 import type { ValueType, NameType, Formatter } from 'recharts/types/component/DefaultTooltipContent'
-import api from '@/lib/api'
 import { StatCard } from '@comfytag/ui'
 import { PageHeader } from '@comfytag/ui'
 import { TopEventRow } from '@/components/analytics/TopEventRow'
-
-// ─── Query fetch functions ─────────────────────────────
-const fetchUsers = async (): Promise<User[]> => {
-  const { data } = await api.get<User[]>('/admin/users')
-  return data
-}
-
-const fetchEvents = async (): Promise<Event[]> => {
-  const { data } = await api.get<Event[]>('/admin/event')
-  return data
-}
-
-const fetchWithdraws = async (token: string): Promise<WithdrawRequest[]> => {
-  const { data } = await api.get<WithdrawRequest[]>('/admin/withdraw', {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  return data
-}
+import { useAllUsers, useAllAdminEvents, useAllPayouts } from '@/hooks'
 
 // ─── Status colors (hex only — recharts cannot read CSS vars) ──
 const STATUS_COLORS: Record<string, string> = {
@@ -174,25 +154,9 @@ const chartHeadingStyle: React.CSSProperties = {
 
 // ─── Page component ────────────────────────────────────
 export default function AnalyticsPage() {
-  const { data: session } = useSession()
-
-  const usersQuery = useQuery({
-    queryKey: ['admin', 'users'],
-    queryFn: fetchUsers,
-    enabled: !!session?.user?.token,
-  })
-
-  const eventsQuery = useQuery({
-    queryKey: ['admin', 'events'],
-    queryFn: fetchEvents,
-    enabled: !!session?.user?.token,
-  })
-
-  const withdrawsQuery = useQuery({
-    queryKey: ['admin', 'withdraws'],
-    queryFn: () => fetchWithdraws(session?.user?.token ?? ''),
-    enabled: !!session?.user?.token,
-  })
+  const usersQuery = useAllUsers()
+  const eventsQuery = useAllAdminEvents()
+  const withdrawsQuery = useAllPayouts()
 
   if (usersQuery.isLoading || eventsQuery.isLoading || withdrawsQuery.isLoading) {
     return <LoadingSpinner size="lg" centered />

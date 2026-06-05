@@ -1,24 +1,12 @@
 'use client'
 
 import { use, useState } from 'react'
-import { useSession } from 'next-auth/react'
-import { useQuery } from '@tanstack/react-query'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { GateStats } from '@/components/events/GateStats'
 import { GateScannerPanel } from '@/components/events/GateScannerPanel'
 import { GateAttendeesPanel } from '@/components/events/GateAttendeesPanel'
 import { PageHeader, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
-import api, { authHeader } from '@/lib/api'
-
-interface CheckInStats {
-  eventId: string
-  totalCapacity: number
-  checkedIn: number
-  remaining: number
-  checkInRate: number
-  byTier: Record<string, number>
-  byMethod: Record<string, number>
-}
+import { useEventCheckinStats } from '@/hooks'
 
 type TabId = 'scanner' | 'attendees'
 
@@ -28,23 +16,13 @@ interface GatePageProps {
 
 export default function GatePage({ params }: GatePageProps) {
   const { id: eventId } = use(params)
-  const { data: session } = useSession()
-  const token = session?.user?.token as string | undefined
   const [activeTab, setActiveTab] = useState<TabId>('scanner')
 
   const {
     data: rawStats,
     isLoading: statsLoading,
     isError: statsError,
-  } = useQuery({
-    queryKey: ['checkInStats', eventId],
-    queryFn: () =>
-      api
-        .get<CheckInStats>(`/events/${eventId}/checkin-stats`, authHeader(token))
-        .then((r) => r.data),
-    refetchInterval: 5000,
-    enabled: !!token,
-  })
+  } = useEventCheckinStats(eventId)
 
   // Map API shape → GateStats component shape
   const stats = rawStats

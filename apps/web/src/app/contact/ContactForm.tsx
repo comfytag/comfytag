@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Input, Button, ErrorMessage } from '@comfytag/ui'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface FormData {
   name: string
@@ -62,13 +62,13 @@ export default function ContactForm() {
       style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
     >
       <Input
-        label="Name"
+        label="Your Name"
         value={formData.name}
         onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
         required
       />
       <Input
-        label="Email"
+        label="Email Address"
         type="email"
         value={formData.email}
         onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
@@ -91,7 +91,7 @@ export default function ContactForm() {
             marginBottom: '8px',
           }}
         >
-          Message
+          What's Up?
         </label>
         <textarea
           id="contact-message"
@@ -133,7 +133,7 @@ export default function ContactForm() {
       )}
 
       <Button type="submit" fullWidth loading={isSubmitting}>
-        Send Message
+        Send It
       </Button>
     </form>
   )

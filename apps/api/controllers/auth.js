@@ -35,7 +35,13 @@ export const register = async (req,res,next) =>{
 		const salt = await bcrypt.genSalt(Number(process.env.SALT));
 		const hashPassword = await bcrypt.hash(req.body.password, salt);
 
-		user = await new User({ ...req.body, password: hashPassword, isPartner: req.body.isPartner === true }).save();
+		user = await new User({
+			name:      req.body.name,
+			username:  req.body.username,
+			email:     req.body.email,
+			password:  hashPassword,
+			isPartner: req.body.isPartner === true,
+		}).save();
 
 		const token = await new Token({
 			userId: user._id,

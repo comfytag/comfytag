@@ -1,6 +1,6 @@
 import type { Notification, NotificationType } from '@comfytag/types'
 import { authHeader } from '@comfytag/utils'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface NotifRowProps {
   notif: Notification
@@ -42,7 +42,7 @@ export function NotifRow({ notif, onRead, token }: NotifRowProps) {
     if (notif.read) return
     onRead(notif._id)
     api
-      .put(`/notifications/${notif._id}/read`, null, authHeader(token))
+      .put(`/notifications/${notif._id}/read`, null)
       .catch(() => {})
   }
 

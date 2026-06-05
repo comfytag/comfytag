@@ -11,7 +11,7 @@ import { EmptyState, LoadingSpinner, Skeleton } from '@comfytag/ui'
 import { authHeader, NIGERIAN_STATES } from '@comfytag/utils'
 import { formatDate } from '@comfytag/utils'
 import type { Event } from '@comfytag/types'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 
 export interface EventsBrowseClientProps {
   initialEvents: Event[]
@@ -409,7 +409,7 @@ export function EventsBrowseClient({
         const hasSearch =
           f.searchQuery.trim() || f.types.length > 0 || f.state || f.minPrice || f.maxPrice || f.date
         const endpoint = (hasSearch || t === 'past') ? '/events/search' : '/events'
-        const response = await api.get(`${endpoint}?${buildParams(f, p, t)}`, authHeader(session?.user?.token))
+        const response = await api.get(`${endpoint}?${buildParams(f, p, t)}`)
         const data = response.data as Record<string, unknown>
         const list: Event[] = Array.isArray(data)
           ? (data as Event[])

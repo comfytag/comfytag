@@ -148,7 +148,7 @@ export function BottomTabBar({ currentPath }: BottomTabBarProps) {
               aria-label={tab.ariaLabel}
               aria-current={active ? 'page' : undefined}
             >
-              <div style={{ width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div suppressHydrationWarning style={{ width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {tab.icon}
               </div>
               <span>{tab.label}</span>

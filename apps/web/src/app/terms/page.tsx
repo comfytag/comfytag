@@ -1,8 +1,16 @@
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { BackLink } from '@/components/ui/BackLink'
+import type { Metadata } from 'next'
 
 const LAST_UPDATED = 'May 18, 2026'
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions | ComfyTag",
+  description: "ComfyTag Terms & Conditions: Complete refund policy, platform rules, organizer guidelines, and attendee responsibilities detailed fully.",
+  alternates: { canonical: 'https://comfytag.com/terms' },
+  robots: { index: true, follow: false },
+}
 
 export default function TermsPage() {
   return (

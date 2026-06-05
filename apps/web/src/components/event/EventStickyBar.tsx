@@ -13,7 +13,7 @@ interface EventStickyBarProps {
 
 export function EventStickyBar({ isVisible, minPrice, allSoldOut, onGetTickets }: EventStickyBarProps) {
   return (
-    <StickyBottomBar isVisible={isVisible}>
+    <StickyBottomBar isVisible={isVisible} data-testid="event-sticky-bar">
       <div
         style={{
           display: 'flex',

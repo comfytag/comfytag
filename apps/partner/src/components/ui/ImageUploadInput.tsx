@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface Props {
   value: string

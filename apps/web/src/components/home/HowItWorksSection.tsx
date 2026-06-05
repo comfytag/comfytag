@@ -10,8 +10,8 @@ interface Step {
 
 const steps: Step[] = [
   {
-    title: 'Discover',
-    description: 'Find events in your city by category, date, or name',
+    title: 'Enroll Your Face',
+    description: 'Takes 30 seconds. That\'s it. One scan, infinite entry at any ComfyTag venue.',
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
@@ -20,8 +20,8 @@ const steps: Step[] = [
     ),
   },
   {
-    title: 'Buy',
-    description: 'Secure checkout via Paystack or Stripe (your choice)',
+    title: 'Find & Buy Tickets',
+    description: 'Browse events by vibe, date, or city. Check out via Paystack in seconds.',
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2" />
@@ -30,8 +30,8 @@ const steps: Step[] = [
     ),
   },
   {
-    title: 'Show Face',
-    description: 'Skip the queue. Your face IS your ticket.',
+    title: 'Show Your Face',
+    description: 'No QR code needed. Your face IS your ticket. Walk straight in.',
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2" />

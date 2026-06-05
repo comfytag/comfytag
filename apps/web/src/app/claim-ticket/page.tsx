@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { LoadingSpinner } from '@comfytag/ui'
 import { authHeader } from '@comfytag/utils'
 import { Navbar } from '@/components/layout/Navbar'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 
 type TicketPreview = {
   _id: string
@@ -56,11 +56,12 @@ function ClaimTicketContent() {
       await api.post(
         '/tickets/transfer/claim',
         { reference: ref },
-        authHeader(session.user.token),
       )
       router.push('/tickets')
-    } catch (err: any) {
-      setClaimError(err.response?.data?.message ?? 'Failed to claim ticket. Please try again.')
+    } catch (err) {
+      setClaimError(
+        err instanceof Error ? err.message : 'Failed to claim ticket. Please try again.'
+      )
       setClaiming(false)
     }
   }

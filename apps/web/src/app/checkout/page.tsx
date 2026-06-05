@@ -11,7 +11,6 @@ import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { AuthGateSheet } from '@/components/ui/AuthGateSheet'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import {
-  authHeader,
   formatNaira,
   formatDate,
   isValidEmail,
@@ -20,9 +19,7 @@ import {
   calculatePaystackFee,
 } from '@comfytag/utils'
 import type { Event, TicketTier } from '@comfytag/types'
-import api from '@/lib/api'
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
+import { api } from '@/lib/api'
 
 declare global {
   interface Window {
@@ -103,9 +100,8 @@ function CheckoutInner() {
 
     async function loadEvent() {
       try {
-        const res = await fetch(`${API}/events/${eventId}`)
-        if (!res.ok) throw new Error('Event not found')
-        const data = (await res.json()) as Event
+        const res = await api.get(`/events/${eventId}`)
+        const data = res.data as Event
         const foundTier = data.ticketType.find((t) => t._id === tierId)
         if (!foundTier) throw new Error('Ticket tier not found')
         setEvent(data)
@@ -153,13 +149,8 @@ function CheckoutInner() {
     setPromoLoading(true)
     try {
       // TODO: wire promo endpoint
-      const res = await fetch(`${API}/promo/validate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: promoCode, eventId }),
-      })
-      if (!res.ok) throw new Error('Invalid or expired code')
-      const data = (await res.json()) as PromoResult
+      const res = await api.post('/promo/validate', { code: promoCode, eventId })
+      const data = res.data as PromoResult
       setPromoApplied(data)
       setPromoError(null)
     } catch {
@@ -210,7 +201,7 @@ function CheckoutInner() {
       return
     }
     try {
-      await api.post(`/paystack/verify/${reference}`, null, authHeader(session.user.token))
+      await api.post(`/paystack/verify/${reference}`)
 
       await api.post(
         `/audience/${session.user.id}/${eventId}`,
@@ -225,7 +216,6 @@ function CheckoutInner() {
           reference,
           status: 'active',
         },
-        authHeader(session.user.token),
       )
 
       setSuccessRef(reference)

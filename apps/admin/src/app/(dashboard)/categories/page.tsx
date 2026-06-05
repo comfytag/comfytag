@@ -1,17 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
 import { Badge, Button, LoadingSpinner, ErrorMessage, Modal } from '@comfytag/ui'
 import type { Category } from '@comfytag/types'
-import api from '@/lib/api'
 import { DataTable } from '@comfytag/ui'
 import type { ColumnDef } from '@comfytag/ui'
 import { PageHeader } from '@comfytag/ui'
 import { Pencil, Eye, EyeOff } from 'lucide-react'
 import { CategoryForm as CategoryFormFields } from '@/components/categories/CategoryForm'
 import type { CategoryFormValues } from '@/components/categories/CategoryForm'
+import { useCategories, useCreateCategory, useUpdateCategory } from '@/hooks'
 
 // ─── Local type alias for form state ────────────────────
 type CategoryForm = CategoryFormValues
@@ -23,12 +21,6 @@ const DEFAULT_FORM: CategoryForm = {
   description: '',
   sortOrder: '0',
   isActive: true,
-}
-
-// ─── Query / Mutation helpers ──────────────────────────
-const fetchCategories = async (): Promise<Category[]> => {
-  const { data } = await api.get<Category[]>('/categories')
-  return data
 }
 
 // ─── Column definitions (MODULE LEVEL) ─────────────────
@@ -145,9 +137,6 @@ function ActionButton({
 
 // ─── Page ───────────────────────────────────────────────
 export default function CategoriesPage() {
-  const { data: session } = useSession()
-  const queryClient = useQueryClient()
-
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
@@ -155,46 +144,37 @@ export default function CategoriesPage() {
   const [addForm, setAddForm] = useState<CategoryForm>(DEFAULT_FORM)
   const [editForm, setEditForm] = useState<CategoryForm>(DEFAULT_FORM)
 
-  const authHeaders = { Authorization: `Bearer ${session?.user?.token}` }
+  const { data: categories, isLoading, isError } = useCategories()
+  const createMutation = useCreateCategory()
+  const updateMutation = useUpdateCategory()
 
-  const { data: categories, isLoading, isError } = useQuery({
-    queryKey: ['admin', 'categories'],
-    queryFn: fetchCategories,
-  })
+  const handleCreateSubmit = (form: CategoryForm) => {
+    createMutation.mutate({
+      ...form,
+      sortOrder: Number(form.sortOrder) || 0,
+    })
+    setIsAddModalOpen(false)
+    setAddForm(DEFAULT_FORM)
+  }
 
-  const createMutation = useMutation({
-    mutationFn: (form: CategoryForm) =>
-      api.post('/categories', {
+  const handleUpdateSubmit = (id: string, form: CategoryForm) => {
+    updateMutation.mutate({
+      id,
+      payload: {
         ...form,
         sortOrder: Number(form.sortOrder) || 0,
-      }, { headers: authHeaders }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] })
-      setIsAddModalOpen(false)
-      setAddForm(DEFAULT_FORM)
-    },
-  })
+      },
+    })
+    setIsEditModalOpen(false)
+    setEditingCategory(null)
+  }
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, form }: { id: string; form: CategoryForm }) =>
-      api.put(`/categories/${id}`, {
-        ...form,
-        sortOrder: Number(form.sortOrder) || 0,
-      }, { headers: authHeaders }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] })
-      setIsEditModalOpen(false)
-      setEditingCategory(null)
-    },
-  })
-
-  const toggleMutation = useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
-      api.put(`/categories/${id}`, { isActive }, { headers: authHeaders }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] })
-    },
-  })
+  const handleToggleCategory = (id: string, currentIsActive: boolean) => {
+    updateMutation.mutate({
+      id,
+      payload: { isActive: !currentIsActive },
+    })
+  }
 
   const handleEdit = (cat: Category) => {
     setEditingCategory(cat)
@@ -210,7 +190,7 @@ export default function CategoriesPage() {
   }
 
   const handleToggle = (cat: Category) => {
-    toggleMutation.mutate({ id: cat._id, isActive: !cat.isActive })
+    handleToggleCategory(cat._id, cat.isActive)
   }
 
   const columns = buildColumns(handleEdit, handleToggle)
@@ -264,7 +244,7 @@ export default function CategoriesPage() {
               loading={createMutation.isPending}
               onClick={() => {
                 if (!addForm.title.trim()) return
-                createMutation.mutate(addForm)
+                handleCreateSubmit(addForm)
               }}
             >
               Save
@@ -307,7 +287,7 @@ export default function CategoriesPage() {
               loading={updateMutation.isPending}
               onClick={() => {
                 if (!editingCategory || !editForm.title.trim()) return
-                updateMutation.mutate({ id: editingCategory._id, form: editForm })
+                handleUpdateSubmit(editingCategory._id, editForm)
               }}
             >
               Save

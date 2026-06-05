@@ -1,37 +1,39 @@
-export const dynamic = 'force-dynamic'
+﻿'use client'
 
-import { PageHeader } from '@comfytag/ui'
-import type { BankAccount, User } from '@comfytag/types'
-import { getServerSession } from '@/lib/auth'
-import api, { authHeader } from '@/lib/api'
+import { useSession } from 'next-auth/react'
+import { PageHeader, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
+import { useBankAccount, usePartnerProfile } from '@/hooks'
 
-interface SettingsPageProps {}
+export default function SettingsPage() {
+  const { data: session } = useSession()
+  const userId = session?.user?.id
 
-export default async function SettingsPage({}: SettingsPageProps) {
-  const session = await getServerSession()
+  const { data: user, isLoading: userLoading, isError: userError, refetch: refetchUser } = usePartnerProfile()
+  const { data: banks = [], isLoading: banksLoading, isError: banksError, refetch: refetchBanks } = useBankAccount(userId || '')
 
-  let banks: BankAccount[] = []
-  let user: User | null = null
+  const isLoading = userLoading || banksLoading
 
-  try {
-    const banksRes = await api.get<BankAccount[]>(
-      '/bank/' + session?.user?.id,
-      authHeader(session?.user?.token as string)
+  if (isLoading) {
+    return (
+      <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+        <LoadingSpinner centered size="lg" />
+      </div>
     )
-    banks = banksRes.data ?? []
-  } catch {
-    banks = []
   }
 
-  try {
-    const userRes = await api.get<User>(
-      '/users/' + session?.user?.id,
-      authHeader(session?.user?.token as string)
+  if (userError || banksError) {
+    return (
+      <div style={{ padding: '32px 24px' }}>
+        <ErrorMessage
+          message="Failed to load settings."
+          onRetry={() => {
+            refetchUser()
+            refetchBanks()
+          }}
+        />
+      </div>
     )
-    user = userRes.data
-  } catch {
-    user = null
   }
 
   return (
@@ -39,8 +41,9 @@ export default async function SettingsPage({}: SettingsPageProps) {
       <PageHeader title="Settings" subtitle="Manage your profile and payment details" />
 
       <div style={{ maxWidth: '720px' }}>
-        <SettingsPanel user={user} banks={banks} />
+        <SettingsPanel user={user as any} banks={banks} />
       </div>
     </div>
   )
 }
+

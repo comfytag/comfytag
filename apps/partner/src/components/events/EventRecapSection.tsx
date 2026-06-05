@@ -1,11 +1,11 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { MediaUploader } from '@comfytag/ui'
 import type { Event } from '@comfytag/types'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface EventRecapSectionProps {
   eventId: string
@@ -18,7 +18,7 @@ export function EventRecapSection({ eventId }: EventRecapSectionProps) {
 
   const eventQuery = useQuery<Event>({
     queryKey: ['event', eventId],
-    queryFn: () => api.get<Event>('/events/' + eventId, authHeader(session?.user.token)).then(r => r.data),
+    queryFn: () => api.get<Event>('/events/' + eventId).then(r => r.data),
     enabled: !!eventId && eventId !== 'undefined' && !!session?.user?.token,
   })
 
@@ -33,7 +33,7 @@ export function EventRecapSection({ eventId }: EventRecapSectionProps) {
       const formData = new FormData()
       formData.append('file', file)
       const response = await api.post('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data', ...authHeader(session?.user.token).headers },
+        headers: { 'Content-Type': 'multipart/form-data' },
       })
       return response.data.url
     },
@@ -41,7 +41,7 @@ export function EventRecapSection({ eventId }: EventRecapSectionProps) {
 
   const updateRecapPhotosMutation = useMutation({
     mutationFn: (photos: string[]) =>
-      api.patch('/events/' + eventId, { recapPhotos: photos }, authHeader(session?.user.token)).then(r => r.data),
+      api.patch('/events/' + eventId, { recapPhotos: photos }).then(r => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['event', eventId] })
     },
@@ -87,3 +87,4 @@ export function EventRecapSection({ eventId }: EventRecapSectionProps) {
     </div>
   )
 }
+

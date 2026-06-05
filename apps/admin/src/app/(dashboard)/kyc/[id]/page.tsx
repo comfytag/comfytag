@@ -2,45 +2,19 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
 import { LoadingSpinner, ErrorMessage, Badge } from '@comfytag/ui'
 import type { User } from '@comfytag/types'
-import api from '@/lib/api'
 import { PageHeader } from '@comfytag/ui'
 import { ProfileCard } from '@/components/ui/ProfileCard'
-
-// ─── Fetch functions ───────────────────────────────────
-const fetchUser = async (id: string): Promise<User> => {
-  const { data } = await api.get<User>(`/admin/users/${id}`)
-  return data
-}
-
-const verifyKyc = async (id: string, field: string, token: string): Promise<void> => {
-  await api.put(`/admin/auth/${id}/verifykyc/${field}`, {}, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-}
+import { useUserById, useVerifyKyc } from '@/hooks'
 
 // ─── Page ──────────────────────────────────────────────
 export default function KycDetailPage() {
-  const { data: session } = useSession({ required: true })
   const params = useParams<{ id: string }>()
   const id = params?.id ?? ''
 
-  const queryClient = useQueryClient()
-
-  const { data: user, isLoading, isError } = useQuery({
-    queryKey: ['admin', 'user', id],
-    queryFn: () => fetchUser(id),
-    enabled: !!id,
-  })
-
-  const verifyMutation = useMutation({
-    mutationFn: ({ field }: { field: string }) =>
-      verifyKyc(id, field, session?.user?.token ?? ''),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'user', id] }),
-  })
+  const { data: user, isLoading, isError } = useUserById(id)
+  const verifyMutation = useVerifyKyc()
 
   if (isLoading) return <LoadingSpinner size="lg" centered />
 
@@ -120,7 +94,7 @@ export default function KycDetailPage() {
             <div style={{ marginBottom: 12 }}><Badge status={verified ? 'verified' : 'pending'} /></div>
             {!verified && field !== 'email' && (
               <button
-                onClick={() => verifyMutation.mutate({ field })}
+                onClick={() => verifyMutation.mutate({ id, field })}
                 disabled={verifyMutation.isPending}
                 style={{
                   padding: '6px 14px',

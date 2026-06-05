@@ -1,21 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
 import { Badge, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { formatNaira, formatDate } from '@comfytag/utils'
 import type { Event } from '@comfytag/types'
-import api from '@/lib/api'
 import { DataTable } from '@comfytag/ui'
 import type { ColumnDef } from '@comfytag/ui'
 import { PageHeader } from '@comfytag/ui'
-
-// ─── Query fetch function ──────────────────────────────
-const fetchEvents = async (): Promise<Event[]> => {
-  const { data } = await api.get<Event[]>('/admin/event')
-  return data
-}
+import { useAllAdminEvents } from '@/hooks'
 
 // ─── Table columns ─────────────────────────────────────
 const columns: ColumnDef<Event>[] = [
@@ -51,13 +43,7 @@ const columns: ColumnDef<Event>[] = [
 ]
 
 export default function EventsPage() {
-  const { data: session } = useSession()
-  void session
-
-  const { data: events, isLoading, isError } = useQuery({
-    queryKey: ['admin', 'events'],
-    queryFn: fetchEvents,
-  })
+  const { data: events, isLoading, isError } = useAllAdminEvents()
 
   return (
     <div>

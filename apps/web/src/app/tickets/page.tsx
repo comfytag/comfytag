@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 const TICKETS_PAGE_STYLES = `
   .__ct_tickets_heading {
@@ -24,7 +24,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { TicketListItem } from '@/components/tickets/TicketListItem'
 import { FaceEnrollmentBanner } from '@/components/tickets/FaceEnrollmentBanner'
 import { TabBar } from '@/components/ui/TabBar'
-import api from '@/lib/api'
+import { useMyTickets } from '@/hooks/useTickets'
 
 type Tab = 'upcoming' | 'past'
 
@@ -32,18 +32,8 @@ type Tab = 'upcoming' | 'past'
 export default function TicketsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [tickets, setTickets] = useState<Ticket[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { data: tickets = [], isLoading } = useMyTickets()
   const [activeTab, setActiveTab] = useState<Tab>('upcoming')
-
-  useEffect(() => {
-    if (!session) return
-    api
-      .get(`/audience/user/${session.user.id}`, authHeader(session.user.token))
-      .then((r) => setTickets(Array.isArray(r.data) ? r.data : (r.data?.data ?? [])))
-      .catch(() => {})
-      .finally(() => setIsLoading(false))
-  }, [session])
 
   if (status === 'loading') {
     return <LoadingSpinner size="lg" centered />

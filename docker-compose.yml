@@ -38,6 +38,8 @@ services:
       - "4002:4002"
     environment:
       - NODE_ENV=development
+      - MONGO=mongodb://admin:changeme@mongodb:27017/comfytag?authSource=admin
+      - REDIS_URL=redis://comfytag-redis:6379
       - MONGODB_URI=mongodb://admin:changeme@mongodb:27017/comfytag?authSource=admin
       - PORT=4002
     env_file:

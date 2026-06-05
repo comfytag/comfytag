@@ -8,7 +8,7 @@ import { useAuthGate } from '@/hooks/useAuthGate'
 import { EmptyState } from '@comfytag/ui'
 import type { Event } from '@comfytag/types'
 import { formatDate, isToday, isUpcoming } from '@comfytag/utils'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 import { authHeader } from '@comfytag/utils'
 
 const PAGE_SIZE = 12
@@ -58,7 +58,7 @@ export function EventFeedSection({
       return
     }
     try {
-      await api.post(`/events/${eventId}/like`, null, authHeader(session.user.token))
+      await api.post(`/events/${eventId}/like`, null)
       setLikedIds((prev) => {
         const next = new Set(prev)
         if (next.has(eventId)) next.delete(eventId)

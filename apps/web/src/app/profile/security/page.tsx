@@ -12,11 +12,13 @@ import {
   InfoField,
   LoadingSpinner,
 } from '@comfytag/ui'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 import { authHeader } from '@comfytag/utils'
+import { useProfile } from '@/hooks/useProfile'
 
 export default function SecurityPage() {
   const { data: session, status } = useSession()
+  const { data: user } = useProfile()
 
   // Change password state
   const [currentPassword, setCurrentPassword] = useState('')
@@ -69,7 +71,6 @@ export default function SecurityPage() {
       await api.post(
         `/auth/change-password`,
         { currentPassword, newPassword },
-        authHeader(session.user.token),
       )
       setChangeSuccess(true)
       setCurrentPassword('')
@@ -93,7 +94,6 @@ export default function SecurityPage() {
       await api.post(
         `/auth/resend-verification`,
         { email: session.user.email },
-        authHeader(session.user.token),
       )
       setResendSuccess(true)
       setTimeout(() => setResendSuccess(false), 4000)

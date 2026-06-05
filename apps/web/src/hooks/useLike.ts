@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { authHeader } from '@comfytag/utils'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface UseLikeOptions {
   eventId: string
@@ -31,7 +31,6 @@ export function useLike(eventId: string, initialLiked = false, initialCount?: nu
       const res = await api.post<{ liked: boolean; likeCount: number }>(
         `/events/${eventId}/like`,
         null,
-        authHeader(session.user.token),
       )
       setIsLiked(res.data.liked)
       if (initialCount !== undefined) {

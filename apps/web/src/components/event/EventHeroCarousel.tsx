@@ -14,6 +14,60 @@ const AUTO_ADVANCE_MS = 5000
 const MAX_DOTS = 5
 const SWIPE_THRESHOLD = 50
 
+interface ArrowButtonProps {
+  direction: 'prev' | 'next'
+  onClick: () => void
+  ariaLabel: string
+}
+
+function ArrowButton({ direction, onClick, ariaLabel }: ArrowButtonProps) {
+  const [hovered, setHovered] = React.useState(false)
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position: 'absolute',
+        [direction === 'prev' ? 'left' : 'right']: '12px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: '36px',
+        height: '36px',
+        borderRadius: 'var(--radius-full)',
+        border: 'none',
+        background: hovered ? 'rgba(0, 0, 0, 0.65)' : 'rgba(0, 0, 0, 0.5)',
+        color: 'var(--color-text-on-brand)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        zIndex: 5,
+        flexShrink: 0,
+        transition: 'background var(--duration-fast) ease',
+      }}
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        aria-hidden="true"
+      >
+        {direction === 'prev'
+          ? <polyline points="15 18 9 12 15 6" />
+          : <polyline points="9 18 15 12 9 6" />
+        }
+      </svg>
+    </button>
+  )
+}
+
 export function EventHeroCarousel({
   images,
   name,
@@ -93,6 +147,8 @@ export function EventHeroCarousel({
       style={{ position: 'relative', width: '100%' }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -108,7 +164,6 @@ export function EventHeroCarousel({
         }}
       >
         <Image
-          key={current}
           src={slides[current]}
           alt={`${name} — image ${current + 1} of ${total}`}
           fill
@@ -117,106 +172,37 @@ export function EventHeroCarousel({
           sizes="(max-width: 768px) 100vw, 720px"
         />
 
+        <div
+          aria-live="polite"
+          aria-atomic="true"
+          style={{
+            position: 'absolute',
+            width: '1px',
+            height: '1px',
+            overflow: 'hidden',
+            clip: 'rect(0,0,0,0)',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {`Image ${current + 1} of ${total}: ${name}`}
+        </div>
+
         {/* Left arrow */}
         {total > 1 && (
-          <button
-            type="button"
-            onClick={prev}
-            aria-label="Previous image"
-            style={{
-              position: 'absolute',
-              left: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: '36px',
-              height: '36px',
-              borderRadius: 'var(--radius-full)',
-              border: 'none',
-              background: 'rgba(0, 0, 0, 0.5)',
-              color: 'var(--color-text-on-brand)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              zIndex: 5,
-              flexShrink: 0,
-              transition: 'background var(--duration-fast) ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(0, 0, 0, 0.65)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(0, 0, 0, 0.5)'
-            }}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              aria-hidden="true"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
+          <ArrowButton direction="prev" onClick={prev} ariaLabel="Previous image" />
         )}
 
         {/* Right arrow */}
         {total > 1 && (
-          <button
-            type="button"
-            onClick={next}
-            aria-label="Next image"
-            style={{
-              position: 'absolute',
-              right: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: '36px',
-              height: '36px',
-              borderRadius: 'var(--radius-full)',
-              border: 'none',
-              background: 'rgba(0, 0, 0, 0.5)',
-              color: 'var(--color-text-on-brand)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              zIndex: 5,
-              flexShrink: 0,
-              transition: 'background var(--duration-fast) ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(0, 0, 0, 0.65)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(0, 0, 0, 0.5)'
-            }}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              aria-hidden="true"
-            >
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
+          <ArrowButton direction="next" onClick={next} ariaLabel="Next image" />
         )}
       </div>
 
       {/* Dot pagination */}
       {total > 1 && (
         <div
-          role="tablist"
-          aria-label="Image navigation"
+          role="group"
+          aria-label="Slide navigation"
           style={{
             display: 'flex',
             justifyContent: 'center',
@@ -228,9 +214,8 @@ export function EventHeroCarousel({
             <button
               key={idx}
               type="button"
-              role="tab"
-              aria-selected={idx === current}
               aria-label={`Go to image ${idx + 1}`}
+              aria-current={idx === current ? 'true' : undefined}
               onClick={() => goTo(idx)}
               style={{
                 width: idx === current ? '20px' : '8px',

@@ -4,12 +4,12 @@ import {
   verifyFace,
   removeFace
 } from '../controllers/face.js'
-import { verifyUser } from '../utils/verifyToken.js'
+import { verifyUser, verifyToken } from '../utils/verifyToken.js'
 
 const router = express.Router()
 
 router.post('/enroll/:userId', verifyUser, enrollFace)
-router.post('/verify', verifyUser, verifyFace)
+router.post('/verify', verifyToken, verifyFace)
 router.delete('/remove/:userId', verifyUser, removeFace)
 
 export default router

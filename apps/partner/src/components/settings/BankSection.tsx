@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button, Input, ErrorMessage } from '@comfytag/ui'
 import { SectionCard } from './SectionCard'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 import type { BankAccount } from '@comfytag/types'
 
 interface BankFormData {
@@ -48,15 +48,13 @@ export function BankSection({ banks: initialBanks }: Props) {
       if (mode === 'add') {
         const res = await api.post(
           `/bank/${session.user.id}`,
-          form,
-          authHeader(session.user.token)
+          form
         )
         setBanks(prev => [...prev, res.data.data ?? res.data])
       } else if (mode === 'edit' && editingBank) {
         const res = await api.put(
           `/bank/edit/${editingBank._id}`,
-          form,
-          authHeader(session.user.token)
+          form
         )
         setBanks(prev => prev.map(b => b._id === editingBank._id ? (res.data.data ?? res.data) : b))
       }
@@ -71,7 +69,7 @@ export function BankSection({ banks: initialBanks }: Props) {
   const handleDelete = async (bankId: string) => {
     if (!session?.user?.token) return
     try {
-      await api.delete(`/bank/${bankId}`, authHeader(session.user.token))
+      await api.delete(`/bank/${bankId}`)
       setBanks(prev => prev.filter(b => b._id !== bankId))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete bank account')
@@ -146,3 +144,4 @@ export function BankSection({ banks: initialBanks }: Props) {
     </SectionCard>
   )
 }
+

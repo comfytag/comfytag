@@ -25,6 +25,7 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [resendCooldown, setResendCooldown] = useState(0)
+  const [resetToken, setResetToken] = useState('')
   const otpRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null))
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -86,6 +87,8 @@ export default function ForgotPasswordPage() {
         const data = await res.json().catch(() => ({}))
         setError((data as { message?: string }).message ?? 'Invalid code. Please try again.')
       } else {
+        const data = await res.json().catch(() => ({}))
+        setResetToken((data as { resetToken?: string }).resetToken ?? '')
         setStep(3)
       }
     } catch {
@@ -105,7 +108,7 @@ export default function ForgotPasswordPage() {
       const res = await fetch(`${API_BASE}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, newPassword }),
+        body: JSON.stringify({ identifier, newPassword, resetToken }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))

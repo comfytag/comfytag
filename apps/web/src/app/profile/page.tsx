@@ -1,38 +1,36 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Image from 'next/image'
 import { Navbar } from '@/components/layout/Navbar'
 import { AvatarInitials, Button, Input, LoadingSpinner, EmptyState, ErrorMessage } from '@comfytag/ui'
 import { authHeader, formatDate } from '@comfytag/utils'
-import api from '@/lib/api'
+import { useProfile, useUpdateProfile } from '@/hooks/useProfile'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
-  const [name, setName] = useState('')
-  const [username, setUsername] = useState('')
-  const [isSaving, setIsSaving] = useState(false)
+  const { data: user } = useProfile()
+  const { mutate: updateProfile, isPending: isSaving } = useUpdateProfile()
+  const [name, setName] = useState(user?.name ?? session?.user?.name ?? '')
+  const [username, setUsername] = useState(user?.username ?? '')
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (session?.user.name) setName(session.user.name)
-    if (session?.user.username) setUsername(session.user.username)
-  }, [session])
-
   async function handleSave() {
-    if (!session) return
-    setIsSaving(true)
     setSaveError(null)
     try {
-      await api.patch(`/users/${session.user.id}`, { name, username }, authHeader(session.user.token))
-      setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 3000)
+      updateProfile({ name, username } as any, {
+        onSuccess: () => {
+          setSaveSuccess(true)
+          setTimeout(() => setSaveSuccess(false), 3000)
+        },
+        onError: () => {
+          setSaveError('Failed to save. Please try again.')
+        },
+      })
     } catch {
       setSaveError('Failed to save. Please try again.')
-    } finally {
-      setIsSaving(false)
     }
   }
 

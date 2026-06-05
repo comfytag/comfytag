@@ -193,7 +193,7 @@ export function HeroSection({ stats }: HeroSectionProps) {
             <span className="__ct_hero_eyebrow">Nigeria's #1 Event Ticketing Platform</span>
             <h1 className="__ct_hero_h1">Your face is your ticket.™</h1>
             <p className="__ct_hero_subtitle">
-              The smartest way to discover and attend the best events in Nigeria.
+              See what's happening tonight in Ilorin
             </p>
             <Link href="/events" className="__ct_hero_cta">
               Explore Events

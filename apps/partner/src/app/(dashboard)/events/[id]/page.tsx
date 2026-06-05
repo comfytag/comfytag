@@ -1,63 +1,46 @@
+'use client'
+
+import { use } from 'react'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { EventDetailClient } from '@/components/events/EventDetailClient'
-import type { Event } from '@comfytag/types'
-import { ErrorMessage } from '@comfytag/ui'
-import { getServerSession } from 'next-auth'
-import api, { authHeader } from '@/lib/api'
-
-interface TierStats {
-  _id: string
-  tierName: string
-  sold: number
-  capacity: number
-}
-
-interface TierStatsResponse {
-  eventId: string
-  tiers: TierStats[]
-}
+import { ErrorMessage, LoadingSpinner } from '@comfytag/ui'
+import { useEventById, useEventTierStats } from '@/hooks'
 
 interface EventDetailPageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function EventDetailPage({ params }: EventDetailPageProps) {
-  const session = await getServerSession()
-  const { id: eventId } = await params
+export default function EventDetailPage({ params }: EventDetailPageProps) {
+  const { id: eventId } = use(params)
+  const { data: event, isLoading: eventLoading, isError: eventError, refetch: refetchEvent } = useEventById(eventId)
+  const { data: tierStatsData, isLoading: tierStatsLoading, isError: tierStatsError } = useEventTierStats(eventId)
 
-  let event: Event | null = null
-  let tierStats: TierStatsResponse | null = null
+  const isLoading = eventLoading || tierStatsLoading
 
-  try {
-    const eventRes = await api.get<Event>(`/events/${eventId}`, authHeader(session?.user?.token as string))
-    event = eventRes.data
-  } catch {
-    event = null
-  }
-
-  if (!event) {
+  if (isLoading) {
     return (
-      <div style={{ padding: '24px' }}>
-        <ErrorMessage message="Failed to load event." />
+      <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+        <LoadingSpinner centered size="lg" />
       </div>
     )
   }
 
-  try {
-    const statsRes = await api.get<TierStatsResponse>(
-      `/events/${eventId}/tiers/stats`,
-      authHeader(session?.user?.token as string)
+  if (eventError || !event) {
+    return (
+      <div style={{ padding: '24px' }}>
+        <ErrorMessage
+          message="Failed to load event."
+          onRetry={() => refetchEvent()}
+        />
+      </div>
     )
-    tierStats = statsRes.data
-  } catch {
-    tierStats = null
   }
 
   return (
     <div style={{ padding: '28px 32px' }}>
       <Breadcrumb items={[{ label: 'Events', href: '/events' }, { label: event.name }]} />
 
-      <EventDetailClient event={event} eventId={eventId} tierStats={tierStats as any} />
+      <EventDetailClient event={event} eventId={eventId} tierStats={tierStatsData as any} />
     </div>
   )
 }

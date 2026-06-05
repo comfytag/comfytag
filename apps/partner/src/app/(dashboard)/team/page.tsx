@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
@@ -7,7 +7,7 @@ import { LoadingSpinner, ErrorMessage, Button } from '@comfytag/ui'
 import { OrganizerProfileCard } from '@/components/team/OrganizerProfileCard'
 import { OnboardingSummary } from '@/components/team/OnboardingSummary'
 import { CoOrganizerSection } from '@/components/team/CoOrganizerSection'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface IsVerify {
   email?: boolean
@@ -38,7 +38,7 @@ export default function TeamPage() {
   const { data: user, isLoading, isError } = useQuery({
     queryKey: ['partnerUser', session?.user.id],
     queryFn: () =>
-      api.get<User>(`/users/${session!.user.id}`, authHeader(session?.user.token)).then((r) => r.data),
+      api.get<User>(`/users/${session!.user.id}`).then((r) => r.data),
     enabled: !!session?.user.id,
   })
 
@@ -92,3 +92,4 @@ export default function TeamPage() {
     </div>
   )
 }
+

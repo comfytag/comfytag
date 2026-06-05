@@ -1,21 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
 import { LoadingSpinner, ErrorMessage, Badge } from '@comfytag/ui'
 import { formatDate } from '@comfytag/utils'
 import type { User } from '@comfytag/types'
-import api from '@/lib/api'
 import { DataTable } from '@comfytag/ui'
 import type { ColumnDef } from '@comfytag/ui'
 import { PageHeader } from '@comfytag/ui'
-
-// ─── Fetch function ────────────────────────────────────
-const fetchUsers = async (): Promise<User[]> => {
-  const { data } = await api.get<User[]>('/admin/users')
-  return data
-}
+import { useAllUsers } from '@/hooks'
 
 // ─── Table columns ─────────────────────────────────────
 const columns: ColumnDef<User>[] = [
@@ -47,13 +39,7 @@ const columns: ColumnDef<User>[] = [
 
 // ─── Page ──────────────────────────────────────────────
 export default function OrganizersPage() {
-  const { data: session } = useSession({ required: true })
-
-  const { data: users, isLoading, isError, refetch } = useQuery({
-    queryKey: ['admin', 'users'],
-    queryFn: fetchUsers,
-    enabled: !!session?.user,
-  })
+  const { data: users, isLoading, isError, refetch } = useAllUsers()
 
   const organizers = (users ?? []).filter((u) => u.isPartner)
 

@@ -1,10 +1,10 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Modal } from '@comfytag/ui'
 import type { BankAccount } from '@comfytag/types'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface RequestPayoutModalProps {
   isOpen: boolean
@@ -55,8 +55,7 @@ export function RequestPayoutModal({
           bankName: selectedBank.bankName,
           acctName: selectedBank.acctName,
           acctNumber: selectedBank.acctNumber,
-        },
-        authHeader(token)
+        }
       )
     },
     onSuccess: () => {
@@ -112,7 +111,7 @@ export function RequestPayoutModal({
             <option value="">Select a bank account</option>
             {activeBanks.map((bank) => (
               <option key={bank._id} value={bank._id}>
-                {bank.bankName} — {bank.acctNumber}
+                {bank.bankName} â€” {bank.acctNumber}
               </option>
             ))}
           </select>
@@ -162,7 +161,7 @@ export function RequestPayoutModal({
               color: 'var(--color-text)',
             }}
           >
-            Amount (₦)
+            Amount (â‚¦)
           </label>
           <input
             id="amount"
@@ -187,7 +186,7 @@ export function RequestPayoutModal({
               margin: 0,
             }}
           >
-            Available: ₦{(maxAmount ?? 0).toLocaleString()}
+            Available: â‚¦{(maxAmount ?? 0).toLocaleString()}
           </p>
         </div>
 
@@ -210,3 +209,4 @@ export function RequestPayoutModal({
     </Modal>
   )
 }
+

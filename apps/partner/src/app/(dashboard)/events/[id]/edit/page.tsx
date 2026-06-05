@@ -4,7 +4,7 @@ import { PageHeader, ErrorMessage } from '@comfytag/ui'
 import { ChevronLeft } from 'lucide-react'
 import type { Event } from '@comfytag/types'
 import { getServerSession } from 'next-auth'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface EditEventPageProps {
   params: Promise<{ id: string }>
@@ -17,7 +17,7 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
   let event: Event | null = null
 
   try {
-    const res = await api.get<Event>(`/events/${eventId}`, authHeader(session?.user?.token as string))
+    const res = await api.get<Event>(`/events/${eventId}`)
     event = res.data
   } catch {
     event = null

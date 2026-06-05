@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -9,7 +9,7 @@ import { ArrowLeft, Plus, Edit2 } from 'lucide-react'
 import { Button, Input, Modal, ErrorMessage, PageHeader, MediaUploader } from '@comfytag/ui'
 import { NIGERIAN_STATES, EVENT_CATEGORIES, formatDate, formatTime, formatNaira } from '@comfytag/utils'
 import type { Event } from '@comfytag/types'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 import { fieldStyle, selectStyle, labelStyle, fieldGroupStyle, twoColGrid, cardStyle } from '@/lib/formStyles'
 import { PerformerTag } from '@/components/events/PerformerTag'
 import { TierListRow } from '@/components/events/TierListRow'
@@ -62,7 +62,7 @@ export default function CreateEventPage() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: (body: object) =>
-      api.post('/events/' + session!.user.id, body, authHeader(session?.user.token)).then(r => r.data),
+      api.post('/events/' + session!.user.id, body).then(r => r.data),
     onSuccess: (data: { _id: string; status: string }) => {
       if (data.status === 'draft') {
         router.push('/events')
@@ -73,7 +73,7 @@ export default function CreateEventPage() {
     onError: () => setStepErrors('Failed to create event. Please try again.'),
   })
 
-  // ─── Step Validation ───────────────────────────────────
+  // â”€â”€â”€ Step Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function validateStep1(): boolean {
     const missing: string[] = []
     if (!form.name) missing.push('Event Name')
@@ -120,7 +120,7 @@ export default function CreateEventPage() {
     return true
   }
 
-  // ─── Navigation ───────────────────────────────────────
+  // â”€â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function nextStep() {
     if (step === 1 && validateStep1()) setStep(2)
     else if (step === 2 && validateStep2()) setStep(3)
@@ -139,12 +139,12 @@ export default function CreateEventPage() {
     }
   }
 
-  // ─── Tier Management ───────────────────────────────────
+  // â”€â”€â”€ Tier Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function handleAddTier() {
     const price = Number(currentTier.price)
     const capacity = Number(currentTier.capacity)
     if (!currentTier.name || price < 0 || capacity <= 0) {
-      setStepErrors('Please enter a valid name, price ≥ 0, and capacity > 0.')
+      setStepErrors('Please enter a valid name, price â‰¥ 0, and capacity > 0.')
       return
     }
     if (editingIndex !== null) {
@@ -176,7 +176,7 @@ export default function CreateEventPage() {
     setTiers(tiers.filter((_, i) => i !== index))
   }
 
-  // ─── Performer Management ───────────────────────────────
+  // â”€â”€â”€ Performer Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function handleAddPerformer() {
     if (!performerInput.trim()) return
     setPerformers([...performers, performerInput.trim()])
@@ -187,12 +187,12 @@ export default function CreateEventPage() {
     setPerformers(performers.filter((_, i) => i !== index))
   }
 
-  // ─── Media Upload ──────────────────────────────────────
+  // â”€â”€â”€ Media Upload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function handleUpload(file: File): Promise<string> {
     try {
       const fd = new FormData()
       fd.append('file', file)
-      const res = await api.post<{ url: string }>('/upload', fd, authHeader(session?.user.token))
+      const res = await api.post<{ url: string }>('/upload', fd)
       return res.data.url
     } catch {
       setStepErrors('Failed to upload file. Please try again.')
@@ -200,7 +200,7 @@ export default function CreateEventPage() {
     }
   }
 
-  // ─── Submit ─────────────────────────────────────────────
+  // â”€â”€â”€ Submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function handleSubmit(status: 'draft' | 'published') {
     mutate({
       name: form.name,
@@ -225,7 +225,7 @@ export default function CreateEventPage() {
     })
   }
 
-  // ─── Step Indicator Bar ─────────────────────────────────
+  // â”€â”€â”€ Step Indicator Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const stepLabels = ['Basic', 'Cover', 'Tickets', 'Details', 'Review']
 
   return (
@@ -287,7 +287,7 @@ export default function CreateEventPage() {
                   transition: 'all var(--duration-fast) ease',
                 }}
               >
-                {isComplete ? '✓' : num}
+                {isComplete ? 'âœ“' : num}
               </button>
               <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', textAlign: 'center' }}>
                 {label}
@@ -401,10 +401,10 @@ export default function CreateEventPage() {
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <Button variant="ghost" onClick={prevStep} disabled>
-                ← Back
+                â† Back
               </Button>
               <Button variant="primary" onClick={nextStep} fullWidth>
-                Next: Cover Image →
+                Next: Cover Image â†’
               </Button>
             </div>
           </div>
@@ -433,10 +433,10 @@ export default function CreateEventPage() {
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <Button variant="ghost" onClick={prevStep}>
-                ← Back
+                â† Back
               </Button>
               <Button variant="primary" onClick={nextStep} fullWidth>
-                Next: Ticket Tiers →
+                Next: Ticket Tiers â†’
               </Button>
             </div>
           </div>
@@ -486,10 +486,10 @@ export default function CreateEventPage() {
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <Button variant="ghost" onClick={prevStep}>
-                ← Back
+                â† Back
               </Button>
               <Button variant="primary" onClick={nextStep} fullWidth>
-                Next: Event Details →
+                Next: Event Details â†’
               </Button>
             </div>
           </div>
@@ -566,10 +566,10 @@ export default function CreateEventPage() {
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <Button variant="ghost" onClick={prevStep}>
-                ← Back
+                â† Back
               </Button>
               <Button variant="primary" onClick={nextStep} fullWidth>
-                Review & Publish →
+                Review & Publish â†’
               </Button>
             </div>
           </div>
@@ -623,7 +623,7 @@ export default function CreateEventPage() {
                     {form.date && form.startTime ? `${formatDate(form.date)} at ${formatTime(form.startTime)}` : 'Date & time'}
                   </p>
                   <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '4px 0 0 0' }}>
-                    {form.venue || 'Venue'} • {form.state || 'State'}
+                    {form.venue || 'Venue'} â€¢ {form.state || 'State'}
                   </p>
                 </div>
               </div>
@@ -650,7 +650,7 @@ export default function CreateEventPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {tiers.slice(0, 2).map((tier, i) => (
                       <div key={i} style={{ fontSize: '13px', color: 'var(--color-text)' }}>
-                        {tier.name} — {formatNaira(Number(tier.price))} (×{tier.capacity})
+                        {tier.name} â€” {formatNaira(Number(tier.price))} (Ã—{tier.capacity})
                       </div>
                     ))}
                     {tiers.length > 2 && (
@@ -687,7 +687,7 @@ export default function CreateEventPage() {
                   onClick={() => goToStep(4)}
                 >
                   <p style={{ fontSize: '13px', color: 'var(--color-text)', margin: 0 }}>
-                    {details.isPublic ? '🌐 Public' : '🔒 Private'}
+                    {details.isPublic ? 'ðŸŒ Public' : 'ðŸ”’ Private'}
                   </p>
                 </SummarySection>
               </div>
@@ -697,7 +697,7 @@ export default function CreateEventPage() {
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <Button variant="ghost" onClick={prevStep}>
-                ← Back
+                â† Back
               </Button>
               <Button
                 variant="ghost"
@@ -743,7 +743,7 @@ export default function CreateEventPage() {
         />
         <div style={{ ...twoColGrid, marginTop: '16px' }}>
           <Input
-            label="Price (₦)"
+            label="Price (â‚¦)"
             type="number"
             placeholder="0"
             value={currentTier.price}
@@ -767,7 +767,7 @@ export default function CreateEventPage() {
   )
 }
 
-// ─── Summary Section Component ──────────────────────────────
+// â”€â”€â”€ Summary Section Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SummarySection({
   title,
   step,
@@ -818,3 +818,4 @@ function SummarySection({
     </div>
   )
 }
+

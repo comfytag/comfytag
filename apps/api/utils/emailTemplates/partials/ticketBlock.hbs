@@ -1,0 +1,12 @@
+﻿<div style="background-color: #ffffff; border: 2px dashed #e7e5e4; border-radius: 12px; padding: 20px; margin: 16px 0; text-align: center;">
+  {{#if qrCode}}<img src="{{qrCode}}" alt="QR Code" style="width: 120px; height: 120px; margin: 0 auto 16px; display: block; border-radius: 8px;" />{{/if}}
+  <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 4px; color: #1c1917;">{{ticketType}}</h3>
+  <p style="color: #78716c; font-size: 14px; margin-bottom: 12px;">Ticket #{{ticketId}}</p>
+  <div style="background-color: #fafaf9; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+    <p style="margin: 8px 0; color: #1c1917; font-size: 14px;"><strong>Event:</strong> {{eventName}}</p>
+    <p style="margin: 8px 0; color: #1c1917; font-size: 14px;"><strong>Date:</strong> {{eventDate}}</p>
+  </div>
+  <div style="text-align: left; background-color: #ede9fe; border-radius: 8px; padding: 12px; font-size: 12px; color: #5b21b6;">
+    <p style="margin: 4px 0;"><strong>💡 Pro tip:</strong> Use your face at the gate instead of this QR code!</p>
+  </div>
+</div>

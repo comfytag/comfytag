@@ -1,11 +1,11 @@
-'use client'
+﻿'use client'
 
 import { useSession } from 'next-auth/react'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader, ErrorMessage, LoadingSpinner } from '@comfytag/ui'
 import type { Notification } from '@comfytag/types'
 import { NotificationsPanel } from '@/components/notifications/NotificationsPanel'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface NotificationsResponse {
   notifications: Notification[]
@@ -24,8 +24,7 @@ export default function NotificationsPage() {
       api
         .get<NotificationsResponse>('/notification', {
           params: { page: 1, limit: 50 },
-          ...authHeader(session?.user.token),
-        })
+          })
         .then((r) => r.data),
     enabled: !!session?.user.id,
   })
@@ -36,7 +35,7 @@ export default function NotificationsPage() {
   if (isLoading) {
     return (
       <div style={{ padding: '28px 32px' }}>
-        <PageHeader title="Notifications" subtitle="Loading…" />
+        <PageHeader title="Notifications" subtitle="Loadingâ€¦" />
         <LoadingSpinner centered size="lg" />
       </div>
     )
@@ -61,3 +60,4 @@ export default function NotificationsPage() {
     </div>
   )
 }
+

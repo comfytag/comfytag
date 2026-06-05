@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
@@ -7,7 +7,7 @@ import { Download, Search } from 'lucide-react'
 import { Badge, Button, Input, DataTable, ErrorMessage } from '@comfytag/ui'
 import type { Ticket as TicketType } from '@comfytag/types'
 import { formatNaira, formatDate } from '@comfytag/utils'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 const ATTENDEES_PER_PAGE = 25
 
@@ -66,8 +66,7 @@ export function AttendeesSection({ eventId }: AttendeesSectionProps) {
       api
         .get<{ data: TicketType[] }>('/audience/event/' + eventId, {
           params: { page: attendeesPage, limit: ATTENDEES_PER_PAGE },
-          ...authHeader(session?.user.token),
-        })
+          })
         .then((r) => r.data.data || []),
     enabled: !!eventId && eventId !== 'undefined' && !!session?.user?.token,
   })
@@ -94,7 +93,6 @@ export function AttendeesSection({ eventId }: AttendeesSectionProps) {
   const handleExportCSV = async () => {
     try {
       const response = await api.get(`/audience/events/${eventId}/audience/export`, {
-        ...authHeader(session?.user.token),
         responseType: 'text',
       })
       const csv = response.data
@@ -206,3 +204,4 @@ export function AttendeesSection({ eventId }: AttendeesSectionProps) {
     </div>
   )
 }
+

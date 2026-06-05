@@ -1,54 +1,22 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { EventCard } from '@/components/ui'
 import { EmptyState, LoadingSpinner, Skeleton } from '@comfytag/ui'
-import api from '@/lib/api'
-import { authHeader } from '@comfytag/utils'
+import { useSavedEvents } from '@/hooks/useProfile'
 import type { Event } from '@comfytag/types'
 
 const PAGE_SIZE = 12
 
 export default function SavedEventsClient() {
   const { data: session, status } = useSession()
-  const [events, setEvents] = useState<Event[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const { data: allEvents = [], isLoading, isError, error } = useSavedEvents()
   const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
-  const fetchSaved = useCallback(
-    async (pageNum: number) => {
-      if (!session?.user?.token) return
-      if (pageNum > 1) setIsLoadingMore(true)
-      try {
-        const response = await api.get<Event[]>(
-          `/events/saved`,
-          authHeader(session.user.token),
-        )
-        // API returns array directly; handle client-side pagination
-        const allEvents = response.data
-        const end = pageNum * PAGE_SIZE
-        const slice = allEvents.slice(0, end)
-        setEvents(slice)
-        setHasMore(end < allEvents.length)
-      } catch {
-        setError('Failed to load saved events. Please try again.')
-      } finally {
-        setIsLoading(false)
-        setIsLoadingMore(false)
-      }
-    },
-    [session],
-  )
-
-  useEffect(() => {
-    if (status === 'authenticated') {
-      fetchSaved(page)
-    }
-  }, [status, page, fetchSaved])
+  const events = allEvents.slice(0, page * PAGE_SIZE)
+  const hasMore = page * PAGE_SIZE < allEvents.length
+  const isLoadingMore = isLoading
 
   if (status === 'loading' || (isLoading && events.length === 0)) {
     return (
@@ -86,7 +54,7 @@ export default function SavedEventsClient() {
     )
   }
 
-  if (error) {
+  if (isError) {
     return (
       <main
         style={{
@@ -97,7 +65,7 @@ export default function SavedEventsClient() {
           justifyContent: 'center',
         }}
       >
-        <p style={{ color: 'var(--color-error)' }}>{error}</p>
+        <p style={{ color: 'var(--color-error)' }}>Failed to load saved events. Please try again.</p>
       </main>
     )
   }

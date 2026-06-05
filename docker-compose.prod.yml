@@ -60,12 +60,23 @@ services:
       - apps/api/.env
     depends_on:
       - redis
+      - mongodb
+    networks:
+      - comfytag-network
+
+  mongodb:
+    image: mongo:7.0
+    container_name: comfytag-mongodb-prod
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: changeme
     networks:
       - comfytag-network
 
   redis:
     image: redis:7.2-alpine
-    container_name: comfytag-redis
+    container_name: comfytag-redis-prod
     restart: unless-stopped
     volumes:
       - redis_data:/data

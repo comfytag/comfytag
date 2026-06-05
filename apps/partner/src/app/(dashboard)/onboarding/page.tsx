@@ -1,10 +1,10 @@
-'use client'
+﻿'use client'
 
 import { useSession } from 'next-auth/react'
 import { useQuery } from '@tanstack/react-query'
 import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface User {
   _id: string
@@ -23,7 +23,7 @@ export default function OnboardingPage() {
   const { data: user, isLoading, isError } = useQuery({
     queryKey: ['partnerUser', session?.user.id],
     queryFn: () =>
-      api.get<User>(`/users/${session!.user.id}`, authHeader(session?.user.token)).then((r) => r.data),
+      api.get<User>(`/users/${session!.user.id}`).then((r) => r.data),
     enabled: !!session?.user.id,
   })
 
@@ -49,3 +49,4 @@ export default function OnboardingPage() {
     </div>
   )
 }
+

@@ -2,35 +2,15 @@
 
 import React, { useState } from 'react'
 import { useParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2, Copy } from 'lucide-react'
 import { Button, Input, Modal, ErrorMessage, LoadingSpinner, PageHeader } from '@comfytag/ui'
 import { formatDate, formatNaira } from '@comfytag/utils'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
-import api, { authHeader } from '@/lib/api'
-
-interface PromoCode {
-  _id: string
-  code: string
-  discountType: 'percentage' | 'fixed'
-  discountValue: number
-  maxUses: number
-  usedCount: number
-  expiresAt: string
-  isActive: boolean
-}
-
-interface PromoResponse {
-  eventId: string
-  promos: PromoCode[]
-}
+import { useEventPromos, useCreatePromo, useDeletePromo } from '@/hooks'
 
 export default function PromosPage() {
   const params = useParams<{ id: string }>()
   const eventId = params.id
-  const { data: session } = useSession()
-  const queryClient = useQueryClient()
 
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({
@@ -42,38 +22,9 @@ export default function PromosPage() {
   })
   const [error, setError] = useState('')
 
-  const { data: promoData, isLoading, isError } = useQuery({
-    queryKey: ['promos', eventId],
-    queryFn: () =>
-      api
-        .get<PromoResponse>(`/events/${eventId}/promos`, authHeader(session?.user.token))
-        .then((r) => r.data),
-    enabled: !!eventId && eventId !== 'undefined',
-  })
-
-  const createPromoMutation = useMutation({
-    mutationFn: (body: typeof form & { eventId: string }) =>
-      api.post(`/events/${eventId}/promos`, body, authHeader(session?.user.token)).then((r) => r.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['promos', eventId] })
-      setShowModal(false)
-      setForm({ code: '', discountType: 'percentage', discountValue: '', maxUses: '', expiresAt: '' })
-      setError('')
-    },
-    onError: () => {
-      setError('Failed to create promo code. Please try again.')
-    },
-  })
-
-  const deletePromoMutation = useMutation({
-    mutationFn: (code: string) =>
-      api.delete(`/events/${eventId}/promos/${code}`, authHeader(session?.user.token)).then((r) => r.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['promos', eventId] })
-    },
-  })
-
-  const promos = promoData?.promos ?? []
+  const { data: promos = [], isLoading, isError, refetch: refetchPromos } = useEventPromos(eventId)
+  const createPromoMutation = useCreatePromo()
+  const deletePromoMutation = useDeletePromo()
 
   function handleAddPromo() {
     setError('')
@@ -90,9 +41,24 @@ export default function PromosPage() {
       return
     }
     createPromoMutation.mutate({
-      ...form,
       eventId,
-    } as any)
+      payload: {
+        code: form.code,
+        discountType: form.discountType,
+        discountValue: Number(form.discountValue),
+        maxUses: Number(form.maxUses),
+        expiresAt: form.expiresAt || undefined,
+      },
+    }, {
+      onSuccess: () => {
+        setShowModal(false)
+        setForm({ code: '', discountType: 'percentage', discountValue: '', maxUses: '', expiresAt: '' })
+        setError('')
+      },
+      onError: () => {
+        setError('Failed to create promo code. Please try again.')
+      },
+    })
   }
 
   function copyToClipboard(code: string) {
@@ -120,7 +86,7 @@ export default function PromosPage() {
       <Breadcrumb
         items={[
           { label: 'Events', href: '/events' },
-          { label: promoData?.eventId ?? 'Event', href: `/events/${eventId}` },
+          { label: 'Event', href: `/events/${eventId}` },
           { label: 'Promo Codes' },
         ]}
       />
@@ -178,7 +144,7 @@ export default function PromosPage() {
                       ? `${promo.discountValue}% off`
                       : `${formatNaira(promo.discountValue)} off`}
                     {' • '}
-                    {promo.usedCount}/{promo.maxUses} used
+                    {promo.usedCount}/{promo.maxUses ?? 0} used
                     {' • '}
                     Expires: {formatDate(promo.expiresAt)}
                   </div>
@@ -194,7 +160,7 @@ export default function PromosPage() {
                     >
                       {promo.isActive ? 'Active' : 'Inactive'}
                     </span>
-                    {promo.usedCount >= promo.maxUses && (
+                    {promo.usedCount >= (promo.maxUses ?? 0) && (
                       <span
                         style={{
                           fontSize: '11px',
@@ -226,7 +192,7 @@ export default function PromosPage() {
                     <Copy size={16} />
                   </button>
                   <button
-                    onClick={() => deletePromoMutation.mutate(promo.code)}
+                    onClick={() => deletePromoMutation.mutate({ eventId, code: promo.code })}
                     disabled={deletePromoMutation.isPending}
                     title="Delete code"
                     style={{

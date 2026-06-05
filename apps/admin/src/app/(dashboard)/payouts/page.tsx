@@ -1,23 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
 import { Badge, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { formatNaira, formatDate } from '@comfytag/utils'
 import type { WithdrawRequest } from '@comfytag/types'
-import api from '@/lib/api'
 import { DataTable } from '@comfytag/ui'
 import type { ColumnDef } from '@comfytag/ui'
 import { PageHeader } from '@comfytag/ui'
-
-// ─── Fetch function ────────────────────────────────────
-const fetchWithdraws = async (token: string): Promise<WithdrawRequest[]> => {
-  const { data } = await api.get<WithdrawRequest[]>('/admin/withdraw', {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  return data
-}
+import { useAllPayouts } from '@/hooks'
 
 // ─── Table columns ─────────────────────────────────────
 const columns: ColumnDef<WithdrawRequest>[] = [
@@ -47,13 +37,7 @@ const columns: ColumnDef<WithdrawRequest>[] = [
 
 // ─── Page ──────────────────────────────────────────────
 export default function PayoutsPage() {
-  const { data: session } = useSession()
-
-  const { data: withdraws, isLoading, isError } = useQuery({
-    queryKey: ['admin', 'withdraws'],
-    queryFn: () => fetchWithdraws(session?.user?.token ?? ''),
-    enabled: !!session?.user?.token,
-  })
+  const { data: withdraws, isLoading, isError } = useAllPayouts()
 
   return (
     <div>

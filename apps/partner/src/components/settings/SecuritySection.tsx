@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { Button, Input, Modal, ErrorMessage } from '@comfytag/ui'
 import { SectionCard } from './SectionCard'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 export function SecuritySection() {
   const { data: session } = useSession()
@@ -41,8 +41,7 @@ export function SecuritySection() {
     try {
       await api.post(
         '/auth/change-password',
-        { currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword },
-        authHeader(session.user.token)
+        { currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword }
       )
       setPwSuccess(true)
       setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
@@ -66,7 +65,7 @@ export function SecuritySection() {
     setDeleteError(null)
 
     try {
-      await api.delete(`/users/${session.user.id}`, authHeader(session.user.token))
+      await api.delete(`/users/${session.user.id}`)
       await signOut({ callbackUrl: '/login' })
     } catch (err) {
       setDeleteError(err instanceof Error ? err.message : 'Failed to delete account')
@@ -88,7 +87,7 @@ export function SecuritySection() {
           ) : (
             <div style={{ padding: '12px', background: 'var(--color-surface-2)', borderRadius: '6px' }}>
               {pwError && <ErrorMessage message={pwError} />}
-              {pwSuccess && <div style={{ color: 'var(--color-success)', fontSize: '12px', marginBottom: '12px' }}>✓ Password changed successfully</div>}
+              {pwSuccess && <div style={{ color: 'var(--color-success)', fontSize: '12px', marginBottom: '12px' }}>âœ“ Password changed successfully</div>}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <Input
                   type="password"
@@ -171,3 +170,4 @@ export function SecuritySection() {
     </SectionCard>
   )
 }
+

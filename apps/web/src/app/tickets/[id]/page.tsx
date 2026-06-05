@@ -10,7 +10,8 @@ import { authHeader } from '@comfytag/utils'
 import { Navbar } from '@/components/layout/Navbar'
 import { DigitalStub } from '@/components/ui'
 import { BackLink } from '@/components/ui/BackLink'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
+import { useTicketById } from '@/hooks/useTickets'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
 
@@ -20,34 +21,18 @@ export default function TicketDetailPage() {
   const { data: session, status } = useSession()
   const { id } = useParams<{ id: string }>()
 
-  const [ticket, setTicket] = useState<Ticket | null>(null)
+  const { data: ticket, isLoading } = useTicketById(id)
   const [event, setEvent] = useState<Event | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
 
   const [scanState, setScanState] = useState<ScanState>('idle')
 
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
-  // ─── Fetch ticket list, find by id ───────────────────────────────────────────
-  useEffect(() => {
-    if (!session) return
-    api
-      .get(`/audience/user/${session.user.id}`, authHeader(session.user.token))
-      .then((r) => {
-        const list: Ticket[] = Array.isArray(r.data) ? r.data : (r.data?.data ?? [])
-        const found = list.find((t) => t._id === id) ?? null
-        setTicket(found)
-        return found
-      })
-      .catch(() => {})
-      .finally(() => setIsLoading(false))
-  }, [session, id])
-
   // ─── Fetch event details once ticket is known ────────────────────────────────
   useEffect(() => {
     if (!ticket || !session) return
     api
-      .get(`/events/${ticket.event_id}`, authHeader(session.user.token))
+      .get(`/events/${ticket.event_id}`)
       .then((r) => {
         const data = r.data?.data ?? r.data
         if (data && typeof data === 'object' && '_id' in data) {
@@ -76,11 +61,8 @@ export default function TicketDetailPage() {
   }, [ticket, session])
 
   // ─── Promote SSE 'used' into ticket state ─────────────────────────────────────
-  useEffect(() => {
-    if (scanState === 'used') {
-      setTicket((prev) => (prev ? { ...prev, status: 'used' } : prev))
-    }
-  }, [scanState])
+  // Note: Ticket state is managed by React Query hook, SSE just updates scanState
+  // Component will re-render when ticket is checked in (scanState updates the display)
 
   // ─── Wake Lock ────────────────────────────────────────────────────────────────
   useEffect(() => {

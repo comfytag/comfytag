@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -11,7 +11,7 @@ import { NIGERIAN_STATES, EVENT_CATEGORIES } from '@comfytag/utils'
 import { PerformerTag } from './PerformerTag'
 import { TierListRow } from './TierListRow'
 import { fieldStyle, selectStyle, labelStyle, fieldGroupStyle, twoColGrid, cardStyleWithMargin } from '@/lib/formStyles'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface TierInput {
   name: string
@@ -29,7 +29,7 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
   const { data: session } = useSession()
   const { mutate, isPending } = useMutation({
     mutationFn: (body: object) =>
-      api.put(`/events/${eventId}`, body, authHeader(session?.user.token)).then(r => r.data),
+      api.put(`/events/${eventId}`, body).then(r => r.data),
     onSuccess: () => router.push(`/events/${eventId}`),
   })
   const [form, setForm] = useState({
@@ -89,7 +89,7 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
     const price = Number(currentTier.price)
     const capacity = Number(currentTier.capacity)
     if (!currentTier.name || price < 0 || capacity <= 0) {
-      setTierError('Please enter a valid name, price ≥ 0, and capacity > 0.')
+      setTierError('Please enter a valid name, price â‰¥ 0, and capacity > 0.')
       return
     }
     setTiers([...tiers, currentTier])
@@ -360,7 +360,7 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
         />
         <div style={{ ...twoColGrid, marginTop: '16px' }}>
           <Input
-            label="Price (₦)"
+            label="Price (â‚¦)"
             type="number"
             placeholder="0"
             value={currentTier.price}
@@ -383,3 +383,4 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
     </div>
   )
 }
+

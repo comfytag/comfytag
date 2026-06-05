@@ -68,7 +68,7 @@ export function slugify(text: string): string {
     .replace(/[^\w\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .trim()
+    .replace(/^-+|-+$/g, '')
 }
 
 export function truncate(text: string, maxLength: number): string {

@@ -2,16 +2,15 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button, Input, Modal, Skeleton, EmptyState, ErrorMessage, StatCard } from '@comfytag/ui'
-import { formatNaira, authHeader } from '@comfytag/utils'
-import { type User, type PartnerAnalytics, type Event } from '@comfytag/types'
+import { formatNaira } from '@comfytag/utils'
+import { type Event } from '@comfytag/types'
 import { Calendar, Users, TrendingUp } from 'lucide-react'
 import { ProfileCoverHeader } from '@/components/profile/ProfileCoverHeader'
 import { ImageUploadInput } from '@/components/ui/ImageUploadInput'
 import { EventFilterTabs } from '@/components/events/EventFilterTabs'
 import { EventCard } from '@/components/ui/EventCard'
-import api from '@/lib/api'
+import { usePartnerProfile, usePartnerAnalytics, useMyEvents, useUpdatePartnerProfile } from '@/hooks'
 
 interface FormData {
   name: string
@@ -22,7 +21,6 @@ interface FormData {
 
 export default function ProfilePage() {
   const { data: session } = useSession()
-  const queryClient = useQueryClient()
   const userId = session?.user?.id
 
   // State
@@ -34,47 +32,21 @@ export default function ProfilePage() {
     avatar: '',
     bgImg: '',
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
 
   // Queries
-  const profileQuery = useQuery<User | null>({
-    queryKey: ['profile', userId],
-    queryFn: async () => {
-      if (!userId || !session?.user?.token) return null
-      const response = await api.get(`/users/${userId}`, authHeader(session.user.token))
-      return response.data ?? null
-    },
-    enabled: !!userId && !!session?.user?.token,
-  })
-
-  const analyticsQuery = useQuery<PartnerAnalytics | null>({
-    queryKey: ['partnerAnalytics', userId],
-    queryFn: async () => {
-      if (!userId || !session?.user?.token) return null
-      const response = await api.get(`/partner/${userId}/analytics`, authHeader(session.user.token))
-      return response.data ?? null
-    },
-    enabled: !!userId && !!session?.user?.token,
-  })
-
-  const eventsQuery = useQuery<Event[]>({
-    queryKey: ['events-profile', userId],
-    queryFn: async () => {
-      if (!userId || !session?.user?.token) return []
-      const response = await api.get(`/events/user/${userId}`, authHeader(session.user.token))
-      return response.data ?? []
-    },
-    enabled: !!userId && !!session?.user?.token,
-  })
+  const { data: profile, isLoading: profileLoading, isError: profileError } = usePartnerProfile()
+  const { data: analytics, isLoading: analyticsLoading, isError: analyticsError } = usePartnerAnalytics()
+  const { data: eventsData = [] } = useMyEvents()
+  const updateProfileMutation = useUpdatePartnerProfile()
 
   // Handlers
   const handleEditClick = () => {
     setFormData({
-      name: profileQuery.data?.name || session?.user?.name || '',
-      phone: profileQuery.data?.phone || '',
-      avatar: profileQuery.data?.avatar ?? profileQuery.data?.image ?? '',
-      bgImg: profileQuery.data?.bgImg || '',
+      name: profile?.name || session?.user?.name || '',
+      phone: profile?.phone || '',
+      avatar: profile?.avatar ?? profile?.image ?? '',
+      bgImg: profile?.bgImg || '',
     })
     setEditError(null)
     setIsEditing(true)
@@ -84,31 +56,29 @@ export default function ProfilePage() {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = async () => {
-    if (!userId || !session?.user?.token) return
-
-    setIsSubmitting(true)
+  const handleSubmit = () => {
     setEditError(null)
-
-    try {
-      await api.patch(`/users/${userId}`, { ...formData, image: formData.avatar }, authHeader(session.user.token))
-      queryClient.invalidateQueries({ queryKey: ['profile', userId] })
-      setIsEditing(false)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update profile'
-      setEditError(message)
-    } finally {
-      setIsSubmitting(false)
-    }
+    updateProfileMutation.mutate(
+      { ...formData, image: formData.avatar },
+      {
+        onSuccess: () => {
+          setIsEditing(false)
+        },
+        onError: (err) => {
+          const message = err instanceof Error ? err.message : 'Failed to update profile'
+          setEditError(message)
+        },
+      }
+    )
   }
 
   // Filter events
-  const upcomingEvents = eventsQuery.data?.filter((e) => e.status === 'published') ?? []
-  const pastEvents = eventsQuery.data?.filter((e) => e.status === 'ended') ?? []
+  const upcomingEvents = eventsData?.filter((e) => e.status === 'published') ?? []
+  const pastEvents = eventsData?.filter((e) => e.status === 'ended') ?? []
   const displayedEvents = activeTab === 'upcoming' ? upcomingEvents : pastEvents
 
   // Render content
-  if (profileQuery.isLoading || analyticsQuery.isLoading) {
+  if (profileLoading || analyticsLoading) {
     return (
       <div className="space-y-8">
         <Skeleton className="h-[200px] w-full rounded-lg" />
@@ -117,12 +87,9 @@ export default function ProfilePage() {
     )
   }
 
-  if (profileQuery.isError || analyticsQuery.isError) {
+  if (profileError || analyticsError) {
     return <ErrorMessage message="Failed to load profile. Please try refreshing the page." />
   }
-
-  const profile = profileQuery.data
-  const analytics = analyticsQuery.data
 
   return (
     <div className="relative space-y-6">
@@ -174,7 +141,7 @@ export default function ProfilePage() {
       />
 
       {/* Event Grid */}
-      {eventsQuery.isLoading ? (
+      {false ? (
         <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <Skeleton key={i} className="h-64 w-full rounded-lg" />
@@ -211,7 +178,7 @@ export default function ProfilePage() {
               value={formData.name}
               onChange={(e) => handleFormChange('name', e.target.value)}
               placeholder="Your name"
-              disabled={isSubmitting}
+              disabled={updateProfileMutation.isPending}
               className="mt-1"
             />
           </div>
@@ -225,7 +192,7 @@ export default function ProfilePage() {
               value={formData.phone}
               onChange={(e) => handleFormChange('phone', e.target.value)}
               placeholder="Your phone number"
-              disabled={isSubmitting}
+              disabled={updateProfileMutation.isPending}
               className="mt-1"
             />
           </div>
@@ -236,7 +203,7 @@ export default function ProfilePage() {
               value={formData.avatar}
               onChange={(url) => setFormData(p => ({ ...p, avatar: url }))}
               previewShape="circle"
-              disabled={isSubmitting}
+              disabled={updateProfileMutation.isPending}
             />
           </div>
 
@@ -246,7 +213,7 @@ export default function ProfilePage() {
               value={formData.bgImg}
               onChange={(url) => setFormData(p => ({ ...p, bgImg: url }))}
               previewShape="rect"
-              disabled={isSubmitting}
+              disabled={updateProfileMutation.isPending}
             />
           </div>
 
@@ -254,7 +221,7 @@ export default function ProfilePage() {
             <Button
               variant="ghost"
               onClick={() => setIsEditing(false)}
-              disabled={isSubmitting}
+              disabled={updateProfileMutation.isPending}
               className="flex-1"
             >
               Cancel
@@ -262,10 +229,10 @@ export default function ProfilePage() {
             <Button
               variant="primary"
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={updateProfileMutation.isPending}
               className="flex-1"
             >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </div>

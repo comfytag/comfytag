@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from '@/lib/auth'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 import type { Notification } from '@comfytag/types'
 
 export async function GET() {
@@ -13,7 +13,6 @@ export async function GET() {
   try {
     const response = await api.get<{ notifications: Notification[] }>('/notification', {
       params: { page: 1, limit: 100 },
-      ...authHeader(session.user.token),
     })
     const notifications = response.data.notifications ?? []
     const count = notifications.filter((n) => !n.read).length

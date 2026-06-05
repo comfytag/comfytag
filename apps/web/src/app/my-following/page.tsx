@@ -1,13 +1,12 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useSession } from 'next-auth/react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { EventCard, OrganizerCard } from '@/components/ui'
 import { EmptyState, Skeleton } from '@comfytag/ui'
-import api from '@/lib/api'
-import { authHeader } from '@comfytag/utils'
+import { useMyFollowing } from '@/hooks/useProfile'
 import type { Event } from '@comfytag/types'
 
 interface FollowedOrganizer {
@@ -23,59 +22,10 @@ interface FollowedOrganizer {
 
 export default function MyFollowingPage() {
   const { data: session, status } = useSession()
-  const [followedOrganizers, setFollowedOrganizers] = useState<FollowedOrganizer[]>([])
-  const [events, setEvents] = useState<Event[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { data: followedOrganizers = [], isLoading } = useMyFollowing()
 
-  useEffect(() => {
-    if (status !== 'authenticated' || !session?.user?.token) return
-
-    const fetchFollowing = async () => {
-      try {
-        // Fetch followed organizers — endpoint: GET /users/:id/following
-        const orgResponse = await api.get<FollowedOrganizer[]>(
-          `/users/${session.user.id}/following`,
-          authHeader(session.user.token),
-        )
-        const orgs = Array.isArray(orgResponse.data) ? orgResponse.data : []
-        setFollowedOrganizers(orgs)
-
-        // Fetch recent events from each followed organizer
-        if (orgs.length > 0) {
-          const eventResponses = await Promise.allSettled(
-            orgs.map((org) =>
-              api.get<Event[]>(`/events/user/${org._id}`).then((r) =>
-                Array.isArray(r.data) ? r.data : [],
-              ),
-            ),
-          )
-          const merged = eventResponses.flatMap((result) =>
-            result.status === 'fulfilled' ? result.value : [],
-          )
-          // Sort by date descending and deduplicate
-          const seen = new Set<string>()
-          const deduped = merged
-            .filter((e) => {
-              if (seen.has(e._id)) return false
-              seen.add(e._id)
-              return true
-            })
-            .sort(
-              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-            )
-          setEvents(deduped)
-        }
-      } catch {
-        // Endpoint may not exist yet — render empty state gracefully
-        setFollowedOrganizers([])
-        setEvents([])
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchFollowing()
-  }, [status, session])
+  // TODO: Fetch events from followed organizers (separate hook or combined)
+  const events: Event[] = []
 
   if (status === 'unauthenticated') return null
 
@@ -149,7 +99,7 @@ export default function MyFollowingPage() {
                     gap: '12px',
                   }}
                 >
-                  {followedOrganizers.map((org) => (
+                  {followedOrganizers.map((org: FollowedOrganizer) => (
                     <OrganizerCard
                       key={org._id}
                       organizer={org}
@@ -187,7 +137,7 @@ export default function MyFollowingPage() {
                     gap: '12px',
                   }}
                 >
-                  {followedOrganizers.map((org) => (
+                  {followedOrganizers.map((org: FollowedOrganizer) => (
                     <OrganizerCard
                       key={org._id}
                       organizer={org}

@@ -1,28 +1,16 @@
-'use client'
+﻿'use client'
 
 import { useSession } from 'next-auth/react'
-import { useQuery } from '@tanstack/react-query'
 import { PageHeader, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
-import type { User } from '@comfytag/types'
 import { KycStatusHeader } from '@/components/kyc/KycStatusHeader'
 import { KycDocSection } from '@/components/kyc/KycDocSection'
-import api, { authHeader } from '@/lib/api'
+import { useKycStatus } from '@/hooks'
 
 export default function KycPage() {
   const { data: session } = useSession()
   const userId = session?.user?.id
 
-  const { data: user, isLoading, isError } = useQuery({
-    queryKey: ['kycUser', userId],
-    queryFn: () =>
-      api
-        .get<User>(
-          `/partner/users/${userId}`,
-          authHeader(session?.user?.token)
-        )
-        .then((r) => r.data),
-    enabled: !!userId && !!session?.user?.token,
-  })
+  const { data: user, isLoading, isError, refetch } = useKycStatus()
 
   if (isLoading) {
     return (
@@ -37,7 +25,10 @@ export default function KycPage() {
   if (isError || !user) {
     return (
       <div style={{ padding: '32px 24px' }}>
-        <ErrorMessage message="Failed to load KYC data." />
+        <ErrorMessage
+          message="Failed to load KYC data."
+          onRetry={() => refetch()}
+        />
       </div>
     )
   }
@@ -110,7 +101,7 @@ export default function KycPage() {
           }}
         >
           <p style={{ margin: 0, marginBottom: '8px', fontWeight: 600 }}>
-            ℹ️ Why we need this information
+            â„¹ï¸ Why we need this information
           </p>
           <p style={{ margin: 0 }}>
             We require KYC (Know Your Customer) verification for all organizers to comply with Nigerian
@@ -122,3 +113,4 @@ export default function KycPage() {
     </main>
   )
 }
+

@@ -1,8 +1,7 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useQuery } from '@tanstack/react-query'
 import { PageHeader, LoadingSpinner, ErrorMessage, EmptyState } from '@comfytag/ui'
 import { Button } from '@comfytag/ui'
 import type { BankAccount, WithdrawRequest } from '@comfytag/types'
@@ -10,21 +9,7 @@ import { WalletBalanceCard } from '@/components/payouts/WalletBalanceCard'
 import { EarningsTimeline } from '@/components/payouts/EarningsTimeline'
 import { WithdrawalRow } from '@/components/payouts/WithdrawalRow'
 import { RequestPayoutModal } from '@/components/payouts/RequestPayoutModal'
-import api, { authHeader } from '@/lib/api'
-
-interface WalletTransaction {
-  _id: string
-  type: 'credit' | 'debit'
-  amount: number
-  reason?: string
-  referenceId?: string
-  createdAt: string
-}
-
-interface WalletData {
-  balance: number
-  transactions: WalletTransaction[]
-}
+import { useWallet, useWithdrawals, useBankAccount } from '@/hooks'
 
 export default function PayoutsPage() {
   const { data: session } = useSession()
@@ -32,40 +17,13 @@ export default function PayoutsPage() {
   const userId = session?.user?.id
 
   // Fetch wallet data
-  const { data: wallet, isLoading: walletLoading, isError: walletError } = useQuery({
-    queryKey: ['wallet', userId],
-    queryFn: () =>
-      api
-        .get<WalletData>('/partner/wallet/', authHeader(session?.user?.token))
-        .then((r) => r.data),
-    enabled: !!userId && !!session?.user?.token,
-  })
+  const { data: wallet, isLoading: walletLoading, isError: walletError, refetch: refetchWallet } = useWallet()
 
   // Fetch withdrawal history
-  const { data: withdrawals, isLoading: withdrawalsLoading } = useQuery({
-    queryKey: ['withdrawals', userId],
-    queryFn: () =>
-      api
-        .get<WithdrawRequest[]>(
-          `/partner/withdraw/${userId}`,
-          authHeader(session?.user?.token)
-        )
-        .then((r) => r.data),
-    enabled: !!userId && !!session?.user?.token,
-  })
+  const { data: withdrawals = [], isLoading: withdrawalsLoading, refetch: refetchWithdrawals } = useWithdrawals(userId || '')
 
   // Fetch banks
-  const { data: banks = [] } = useQuery({
-    queryKey: ['banks', userId],
-    queryFn: () =>
-      api
-        .get<BankAccount[]>(
-          `/partner/bank/${userId}`,
-          authHeader(session?.user?.token)
-        )
-        .then((r) => r.data),
-    enabled: !!userId && !!session?.user?.token,
-  })
+  const { data: banks = [], refetch: refetchBanks } = useBankAccount(userId || '')
 
   if (walletLoading) {
     return (
@@ -80,7 +38,10 @@ export default function PayoutsPage() {
   if (walletError || !wallet) {
     return (
       <div style={{ padding: '32px 24px' }}>
-        <ErrorMessage message="Failed to load wallet data." />
+        <ErrorMessage
+          message="Failed to load wallet data."
+          onRetry={() => refetchWallet()}
+        />
       </div>
     )
   }
@@ -325,3 +286,4 @@ export default function PayoutsPage() {
     </>
   )
 }
+

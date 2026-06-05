@@ -1,47 +1,38 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+'use client'
+
+import { use } from 'react'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { EventAnalyticsClient } from '@/components/events/EventAnalyticsClient'
-import { ErrorMessage } from '@comfytag/ui'
-import api, { authHeader } from '@/lib/api'
-import type { Event } from '@comfytag/types'
-
-interface EventAnalytics {
-  eventId: string
-  eventName: string
-  totalRevenue: number
-  totalTicketsSold: number
-  totalCapacity: number
-  checkInCount: number
-  checkInRate: number
-  dailySales: Array<{ date: string; sold: number; revenue: number }>
-  tierStats: Array<{ _id: string; name: string; sold: number; capacity: number; soldPercentage: number; revenue?: number; avgPrice?: number }>
-}
+import { ErrorMessage, LoadingSpinner } from '@comfytag/ui'
+import { useEventAnalytics, useEventById } from '@/hooks'
 
 interface EventAnalyticsPageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function EventAnalyticsPage({ params }: EventAnalyticsPageProps) {
-  const session = await getServerSession(authOptions)
-  const { id: eventId } = await params
+export default function EventAnalyticsPage({ params }: EventAnalyticsPageProps) {
+  const { id: eventId } = use(params)
+  const { data: analytics, isLoading: analyticsLoading, isError: analyticsError, refetch: refetchAnalytics } = useEventAnalytics(eventId)
+  const { data: event, isLoading: eventLoading } = useEventById(eventId)
 
-  let analytics: EventAnalytics | null = null
-  let eventName = 'Event'
+  const isLoading = analyticsLoading || eventLoading
+  const eventName = event?.name || 'Event'
 
-  try {
-    const [aRes, eRes] = await Promise.all([
-      api.get<EventAnalytics>(`/events/${eventId}/analytics`, authHeader(session?.user?.token as string)),
-      api.get<Event>(`/events/${eventId}`, authHeader(session?.user?.token as string)),
-    ])
-    analytics = aRes.data
-    eventName = eRes.data.name
-  } catch {}
+  if (isLoading) {
+    return (
+      <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+        <LoadingSpinner centered size="lg" />
+      </div>
+    )
+  }
 
-  if (!analytics) {
+  if (analyticsError || !analytics) {
     return (
       <div style={{ padding: '24px' }}>
-        <ErrorMessage message="Failed to load analytics." />
+        <ErrorMessage
+          message="Failed to load analytics."
+          onRetry={() => refetchAnalytics()}
+        />
       </div>
     )
   }

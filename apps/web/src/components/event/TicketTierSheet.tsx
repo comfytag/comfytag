@@ -4,16 +4,16 @@ import React, { useState, useEffect } from 'react'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { Button } from '@comfytag/ui'
 import { formatNaira, calculatePlatformFee, calculatePaystackFee } from '@comfytag/utils'
-import type { Event, TicketTier } from '@comfytag/types'
+import type { TicketTier } from '@comfytag/types'
+
+const MAX_TICKETS_PER_ORDER = 10
 
 export interface TicketTierSheetProps {
-  event?: Event
   tiers: TicketTier[]
   isOpen: boolean
   onClose: () => void
-  onSelect?: (tierId: string, qty: number) => void
   eventName?: string
-  onCheckout?: (tierId: string, qty: number) => void
+  onCheckout: (tierId: string, qty: number) => void
 }
 
 function isSoldOut(tier: TicketTier): boolean {
@@ -30,11 +30,9 @@ function fillRatio(tier: TicketTier): number {
 }
 
 export function TicketTierSheet({
-  event,
   tiers,
   isOpen,
   onClose,
-  onSelect,
   eventName,
   onCheckout,
 }: TicketTierSheetProps) {
@@ -55,7 +53,7 @@ export function TicketTierSheet({
 
   const selectedTier = tiers.find((t) => t._id === selectedId)
   const maxQty = selectedTier
-    ? Math.min(availableCount(selectedTier), 10)
+    ? Math.min(availableCount(selectedTier), MAX_TICKETS_PER_ORDER)
     : 1
 
   // Ensure qty stays in range when tier changes
@@ -64,7 +62,7 @@ export function TicketTierSheet({
   }, [maxQty])
 
   const subtotal = selectedTier ? selectedTier.price * qty : 0
-  const platformFee = calculatePlatformFee(subtotal)
+  const platformFee = calculatePlatformFee(subtotal, 4)
   const processingFee = calculatePaystackFee(subtotal)
   const total = subtotal + platformFee + processingFee
 
@@ -75,8 +73,7 @@ export function TicketTierSheet({
     setQty((prev) => Math.min(maxQty, prev + 1))
   }
 
-  const displayEventName = eventName ?? event?.name ?? 'Event'
-  const handleCheckoutClick = onCheckout ?? onSelect
+  const displayEventName = eventName ?? 'Event'
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title={displayEventName}>
@@ -112,7 +109,7 @@ export function TicketTierSheet({
                 background: soldOut
                   ? 'var(--color-surface-2)'
                   : selected
-                    ? 'rgba(124,58,237,0.04)'
+                    ? 'var(--color-brand-alpha-4)'
                     : 'var(--color-surface)',
                 cursor: soldOut ? 'not-allowed' : 'pointer',
                 opacity: soldOut ? 0.7 : 1,
@@ -314,7 +311,7 @@ export function TicketTierSheet({
           }}
         >
           <FeeRow label="Ticket subtotal" value={formatNaira(subtotal)} />
-          <FeeRow label="Platform fee (5%)" value={formatNaira(platformFee)} muted />
+          <FeeRow label="Platform fee (4%)" value={formatNaira(platformFee)} muted />
           <FeeRow
             label="Processing fee (1.5% + ₦100)"
             value={formatNaira(processingFee)}
@@ -366,7 +363,7 @@ export function TicketTierSheet({
         fullWidth
         disabled={!selectedTier}
         onClick={() => {
-          if (selectedTier && handleCheckoutClick) handleCheckoutClick(selectedTier._id, qty)
+          if (selectedTier) onCheckout(selectedTier._id, qty)
         }}
       >
         Get Tickets

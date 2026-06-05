@@ -7,7 +7,7 @@ import { useMutation } from '@tanstack/react-query'
 import { Button, ErrorMessage, LoadingSpinner } from '@comfytag/ui'
 import { OnboardingStep } from './OnboardingStep'
 import { InterestPicker } from './InterestPicker'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface OnboardingData {
   experience?: string
@@ -44,8 +44,7 @@ export function OnboardingWizard({ initialData = {} }: OnboardingWizardProps) {
     mutationFn: (onboardingData: OnboardingData) =>
       api.put(
         `/users/onboard/${session!.user.id}`,
-        onboardingData,
-        authHeader(session?.user.token)
+        onboardingData
       ).then(r => r.data),
     onSuccess: () => {
       setError('')

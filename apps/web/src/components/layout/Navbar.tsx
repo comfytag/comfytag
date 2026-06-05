@@ -9,7 +9,7 @@ import { SearchSuggestionsOverlay } from '@/components/ui/SearchSuggestionsOverl
 import { AvatarInitials, LoadingSpinner } from '@comfytag/ui'
 import { authHeader, formatNaira } from '@comfytag/utils'
 import type { Notification, User } from '@comfytag/types'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 
 export interface NavbarProps {
   user?: User
@@ -60,7 +60,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
   useEffect(() => {
     if (!session) return
     api
-      .get('/notification?page=1&limit=5', authHeader(session.user.token))
+      .get('/notification?page=1&limit=5')
       .then((r) => {
         const list = Array.isArray(r.data)
           ? r.data
@@ -75,7 +75,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
     if (!notifOpen || !session) return
     setNotifLoading(true)
     api
-      .get('/notification?page=1&limit=5', authHeader(session.user.token))
+      .get('/notification?page=1&limit=5')
       .then((r) => {
         const list = Array.isArray(r.data)
           ? r.data
@@ -90,7 +90,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
   useEffect(() => {
     if (!dropdownOpen || !session) return
     api
-      .get('/wallet', authHeader(session.user.token))
+      .get('/wallet')
       .then((r) => {
         const bal = r.data?.data?.balance ?? r.data?.balance ?? null
         setWalletBalance(typeof bal === 'number' ? bal : null)

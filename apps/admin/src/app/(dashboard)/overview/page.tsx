@@ -1,35 +1,16 @@
 'use client'
 
 import type { CSSProperties } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { Users, Calendar, TrendingUp, Banknote } from 'lucide-react'
 import { Badge, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { formatNaira, formatDate } from '@comfytag/utils'
-import type { Event, User, WithdrawRequest } from '@comfytag/types'
-import api from '@/lib/api'
+import type { Event } from '@comfytag/types'
 import { StatCard } from '@comfytag/ui'
 import { DataTable } from '@comfytag/ui'
 import type { ColumnDef } from '@comfytag/ui'
 import { PageHeader } from '@comfytag/ui'
-
-// ─── Query fetch functions ─────────────────────────────
-const fetchUsers = async (): Promise<User[]> => {
-  const { data } = await api.get<User[]>('/admin/users')
-  return data
-}
-
-const fetchEvents = async (): Promise<Event[]> => {
-  const { data } = await api.get<Event[]>('/admin/event')
-  return data
-}
-
-const fetchWithdraws = async (token: string): Promise<WithdrawRequest[]> => {
-  const { data } = await api.get<WithdrawRequest[]>('/admin/withdraw', {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  return data
-}
+import { useAllUsers, useAllAdminEvents, useAllPayouts } from '@/hooks'
 
 // ─── Revenue derivation ────────────────────────────────
 function deriveRevenue(events: Event[]): number {
@@ -95,25 +76,11 @@ const todayDate = new Intl.DateTimeFormat('en-NG', { dateStyle: 'full' }).format
 const goldValueStyle = { '--color-text': 'var(--color-gold)' } as unknown as CSSProperties
 
 export default function OverviewPage() {
-  const { data: session, status } = useSession()
+  const usersQuery = useAllUsers()
+  const eventsQuery = useAllAdminEvents()
+  const withdrawsQuery = useAllPayouts()
 
-  const usersQuery = useQuery({
-    queryKey: ['admin', 'users'],
-    queryFn: fetchUsers,
-  })
-
-  const eventsQuery = useQuery({
-    queryKey: ['admin', 'events'],
-    queryFn: fetchEvents,
-  })
-
-  const withdrawsQuery = useQuery({
-    queryKey: ['admin', 'withdraws'],
-    queryFn: () => fetchWithdraws(session?.user?.token ?? ''),
-    enabled: !!session?.user?.token,
-  })
-
-  if (usersQuery.isLoading && eventsQuery.isLoading && status === 'loading') {
+  if (usersQuery.isLoading || eventsQuery.isLoading || withdrawsQuery.isLoading) {
     return <LoadingSpinner size="lg" centered />
   }
 

@@ -1,48 +1,24 @@
-'use client'
+﻿'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Download } from 'lucide-react'
-import { Skeleton, EmptyState, ErrorMessage, Button } from '@comfytag/ui'
-import type { Event } from '@comfytag/types'
+import { Skeleton, EmptyState, ErrorMessage } from '@comfytag/ui'
+import type { Ticket } from '@comfytag/types'
 import { EventSelectorBar } from '@/components/attendees/EventSelectorBar'
 import { AttendeeSearchFilter } from '@/components/attendees/AttendeeSearchFilter'
 import { AttendeeRow } from '@/components/attendees/AttendeeRow'
-import api, { authHeader } from '@/lib/api'
-
-interface Attendee {
-  _id: string
-  name: string
-  email: string
-  phone?: string
-  numOfTicket: number
-  ticketType?: string
-  amount?: number
-  date?: string
-  status: 'active' | 'used' | 'transferred' | 'refunded'
-  checkedIn?: boolean
-  checkInDate?: string
-}
+import { useMyEvents, useAttendees, useCheckin } from '@/hooks'
+import { api } from '@/lib/api'
 
 type StatusFilterValue = 'all' | 'active' | 'used' | 'transferred' | 'refunded'
 
 export default function AttendeesPage() {
-  const { data: session } = useSession()
-  const queryClient = useQueryClient()
   const [selectedEventId, setSelectedEventId] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('all')
 
   // Fetch organizer's events
-  const { data: events = [], isLoading: eventsLoading, isError: eventsError } = useQuery<Event[]>({
-    queryKey: ['events', session?.user.id],
-    queryFn: () =>
-      api
-        .get<Event[]>(`/events/user/${session!.user.id}`, authHeader(session?.user.token))
-        .then((r) => r.data ?? []),
-    enabled: !!session?.user.id,
-  })
+  const { data: events = [], isLoading: eventsLoading, isError: eventsError } = useMyEvents()
 
   // Set first event as default when events load
   useEffect(() => {
@@ -52,26 +28,10 @@ export default function AttendeesPage() {
   }, [events, selectedEventId])
 
   // Fetch attendees for selected event
-  const { data: attendees = [], isLoading: attendeesLoading, isError: attendeesError } = useQuery<Attendee[]>({
-    queryKey: ['attendees', selectedEventId],
-    queryFn: () =>
-      api
-        .get<Attendee[]>(`/audience/event/${selectedEventId}`, authHeader(session?.user.token))
-        .then((r) => {
-          const body = r.data as { data?: Attendee[] } | Attendee[]
-          return Array.isArray(body) ? body : (body?.data ?? [])
-        }),
-    enabled: !!selectedEventId && !!session?.user.id,
-  })
+  const { data: attendees = [], isLoading: attendeesLoading, isError: attendeesError } = useAttendees(selectedEventId)
 
-  // Check-in toggle mutation
-  const checkInMutation = useMutation({
-    mutationFn: (attendeeId: string) =>
-      api.post(`/audience/${attendeeId}/checkin`, {}, authHeader(session?.user.token)).then(r => r.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendees', selectedEventId] })
-    },
-  })
+  // Check-in mutation
+  const checkInMutation = useCheckin()
 
   // CSV export handler
   const handleExport = async () => {
@@ -80,7 +40,6 @@ export default function AttendeesPage() {
       const res = await api.get(
         `/audience/events/${selectedEventId}/audience/export`,
         {
-          ...authHeader(session?.user.token),
           responseType: 'blob',
         }
       )
@@ -97,7 +56,7 @@ export default function AttendeesPage() {
 
   // Filter attendees
   const filtered = useMemo(() => {
-    let result = attendees
+    let result = (attendees as Ticket[])
 
     if (statusFilter !== 'all') {
       result = result.filter(a => a.status === statusFilter)
@@ -220,8 +179,8 @@ export default function AttendeesPage() {
                 <AttendeeRow
                   key={attendee._id}
                   attendee={attendee}
-                  onCheckInToggle={() => checkInMutation.mutate(attendee._id)}
-                  isCheckingIn={checkInMutation.isPending && checkInMutation.variables === attendee._id}
+                  onCheckInToggle={() => checkInMutation.mutate({ attendeeId: attendee._id, payload: {} })}
+                  isCheckingIn={checkInMutation.isPending}
                 />
               ))}
             </div>
@@ -231,3 +190,4 @@ export default function AttendeesPage() {
     </div>
   )
 }
+

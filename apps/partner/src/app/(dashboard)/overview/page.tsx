@@ -1,33 +1,12 @@
-import { notFound } from 'next/navigation'
+﻿'use client'
+
 import Link from 'next/link'
-import { getServerSession } from 'next-auth'
+import { useSession } from 'next-auth/react'
 import { formatNaira } from '@comfytag/utils'
-import type { Event } from '@comfytag/types'
+import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { ChartCard } from '@/components/ui/ChartCard'
 import { EventCard } from '@/components/ui/EventCard'
-import api, { authHeader } from '@/lib/api'
-
-interface PartnerRevenue {
-  userId: string
-  totalRevenue: number
-  totalTicketsSold: number
-  totalEvents: number
-  pendingWithdrawals: number
-  approvedWithdrawals: number
-  sentWithdrawals: number
-  availableBalance: number
-}
-
-interface PartnerAnalytics {
-  userId: string
-  totalLifetimeRevenue: number
-  totalEvents: number
-  totalTicketsSold: number
-  followers: number
-  averageTicketPrice: number
-  monthlyRevenue: Array<{ month: string; revenue: number }>
-  topEvents: Array<{ eventId: string; eventName: string; revenue: number }>
-}
+import { usePartnerProfile, usePartnerRevenue, usePartnerAnalytics, useMyEvents } from '@/hooks'
 
 function getGreeting(): string {
   const now = new Date()
@@ -37,65 +16,66 @@ function getGreeting(): string {
   return 'Good evening'
 }
 
-export default async function OverviewPage() {
-  const session = await getServerSession()
-  if (!session?.user) notFound()
+export default function OverviewPage() {
+  const { data: session } = useSession()
+  const { data: organizer, isLoading: profileLoading, isError: profileError, refetch: refetchProfile } = usePartnerProfile()
+  const { data: revenue, isLoading: revenueLoading, isError: revenueError, refetch: refetchRevenue } = usePartnerRevenue()
+  const { data: analytics, isLoading: analyticsLoading, isError: analyticsError, refetch: refetchAnalytics } = usePartnerAnalytics()
+  const { data: events = [], isLoading: eventsLoading, isError: eventsError, refetch: refetchEvents } = useMyEvents()
 
-  const userId = session.user.id as string
-  const token = session.user.token as string
+  const upcomingEvents = events
+    .filter((e) => new Date(e.date) > new Date() && e.status === 'published')
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 6)
 
-  let organizer = null
-  try {
-    const res = await api.get(`/users/${userId}`, { ...authHeader(token) })
-    organizer = res.data
-  } catch {}
+  const organizerName = organizer?.name || session?.user?.name || 'Organizer'
 
-  let revenue: PartnerRevenue | null = null
-  try {
-    const res = await api.get<PartnerRevenue>(`/partner/${userId}/revenue`, { ...authHeader(token) })
-    revenue = res.data
-  } catch {}
+  const isLoading = profileLoading || revenueLoading || analyticsLoading || eventsLoading
 
-  let analytics: PartnerAnalytics | null = null
-  try {
-    const res = await api.get<PartnerAnalytics>(`/partner/${userId}/analytics`, { ...authHeader(token) })
-    analytics = res.data
-  } catch {}
+  if (isLoading) {
+    return (
+      <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+        <LoadingSpinner centered size="lg" />
+      </div>
+    )
+  }
 
-  let upcomingEvents: Event[] = []
-  try {
-    const res = await api.get<Event[]>(`/events/user/${userId}`, {
-      params: { status: 'published', limit: 6 },
-      ...authHeader(token),
-    })
-    upcomingEvents = res.data
-      .filter((e) => new Date(e.date) > new Date())
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  } catch {}
-
-  const organizerName = organizer?.name || session.user.name || 'Organizer'
+  if (profileError || revenueError || analyticsError || eventsError) {
+    return (
+      <div style={{ padding: '32px 24px' }}>
+        <ErrorMessage
+          message="Failed to load dashboard data. Please try again."
+          onRetry={() => {
+            refetchProfile()
+            refetchRevenue()
+            refetchAnalytics()
+            refetchEvents()
+          }}
+        />
+      </div>
+    )
+  }
 
   return (
-    <>
-      <main
+    <main
+      style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '0 24px',
+      }}
+    >
+      {/* Greeting */}
+      <div
         style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 24px',
+          paddingTop: '32px',
+          paddingBottom: '16px',
+          fontSize: '18px',
+          fontWeight: 600,
+          color: 'var(--color-text)',
         }}
       >
-        {/* Greeting */}
-        <div
-          style={{
-            paddingTop: '32px',
-            paddingBottom: '16px',
-            fontSize: '18px',
-            fontWeight: 600,
-            color: 'var(--color-text)',
-          }}
-        >
-          {getGreeting()}, {organizerName}.
-        </div>
+        {getGreeting()}, {organizerName}.
+      </div>
 
         {/* Stats Grid: 4 cards */}
         <div
@@ -280,9 +260,9 @@ export default async function OverviewPage() {
               </Link>
             </div>
           )}
-        </section>
+      </section>
 
-      </main>
-    </>
+    </main>
   )
 }
+

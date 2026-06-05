@@ -1,22 +1,20 @@
-'use client'
+﻿'use client'
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Copy, X } from 'lucide-react'
-import { Skeleton, EmptyState, ErrorMessage, Button } from '@comfytag/ui'
+import { Plus } from 'lucide-react'
+import { Skeleton, EmptyState, ErrorMessage } from '@comfytag/ui'
 import type { Event } from '@comfytag/types'
 import { EventCard } from '@/components/ui/EventCard'
 import { EventFilterTabs } from '@/components/events/EventFilterTabs'
 import { ViewToggle } from '@/components/ui/ViewToggle'
-import api, { authHeader } from '@/lib/api'
+import { useMyEvents, useDeleteEvent, useDuplicateEvent } from '@/hooks'
+import { useQueryClient } from '@tanstack/react-query'
 
 type FilterValue = 'all' | 'published' | 'draft' | 'ended' | 'cancelled'
 
 export default function EventsPage() {
-  const { data: session } = useSession()
   const queryClient = useQueryClient()
   const router = useRouter()
   const [filter, setFilter] = useState<FilterValue>('all')
@@ -24,33 +22,9 @@ export default function EventsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
 
-  const { data: events = [], isLoading, isError } = useQuery<Event[]>({
-    queryKey: ['events', session?.user.id],
-    queryFn: () =>
-      api
-        .get<Event[]>(`/events/user/${session!.user.id}`, {
-          ...authHeader(session?.user.token),
-        })
-        .then((r) => r.data ?? []),
-    enabled: !!session?.user.id,
-  })
-
-  const duplicateMutation = useMutation({
-    mutationFn: async (eventId: string) => {
-      const res = await api.get<Event>(`/events/${eventId}`, authHeader(session?.user.token))
-      const original = res.data
-      const { _id, createdAt, updatedAt, sold, ...rest } = original as Event & { createdAt?: string; updatedAt?: string }
-      const payload = { ...rest, name: `Copy of ${rest.name}`, status: 'draft' as const, sold: 0 }
-      return api.post<Event>(`/events/${session!.user.id}`, payload, authHeader(session?.user.token)).then(r => r.data)
-    },
-    onSuccess: (newEvent) => {
-      queryClient.invalidateQueries({ queryKey: ['events', session?.user.id] })
-      router.push(`/events/${newEvent._id}/edit`)
-    },
-    onSettled: () => {
-      setDuplicatingId(null)
-    },
-  })
+  const { data: events = [], isLoading, isError } = useMyEvents()
+  const duplicateMutation = useDuplicateEvent()
+  const deleteEventMutation = useDeleteEvent()
 
   const tabFilters = useMemo(() => [
     { value: 'all', label: events.length > 0 ? `All (${events.length})` : 'All' },
@@ -162,7 +136,7 @@ export default function EventsPage() {
                   padding: 0,
                 }}
               >
-                ×
+                Ã—
               </button>
             )}
           </div>
@@ -246,16 +220,21 @@ export default function EventsPage() {
                           } : undefined}
                           onDelete={() => {
                             if (confirm(`Delete "${event.name}"?`)) {
-                              void api.delete(`/events/${event._id}`, authHeader(session?.user.token)).then(() => {
-                                queryClient.invalidateQueries({ queryKey: ['events', session?.user.id] })
-                              })
+                              deleteEventMutation.mutate(event._id)
                             }
                           }}
                         />
                         <button
                           onClick={() => {
                             setDuplicatingId(event._id)
-                            duplicateMutation.mutate(event._id)
+                            duplicateMutation.mutate(event._id, {
+                              onSuccess: (newEvent) => {
+                                router.push(`/events/${newEvent._id}/edit`)
+                              },
+                              onSettled: () => {
+                                setDuplicatingId(null)
+                              },
+                            })
                           }}
                           disabled={!!duplicatingId}
                           style={{
@@ -393,7 +372,14 @@ export default function EventsPage() {
                           <button
                             onClick={() => {
                               setDuplicatingId(event._id)
-                              duplicateMutation.mutate(event._id)
+                              duplicateMutation.mutate(event._id, {
+                                onSuccess: (newEvent) => {
+                                  router.push(`/events/${newEvent._id}/edit`)
+                                },
+                                onSettled: () => {
+                                  setDuplicatingId(null)
+                                },
+                              })
                             }}
                             style={{
                               background: 'none',
@@ -429,3 +415,4 @@ export default function EventsPage() {
     </div>
   )
 }
+

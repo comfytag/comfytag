@@ -1,13 +1,12 @@
-'use client'
+﻿'use client'
 
 import React, { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Wallet } from 'lucide-react'
 import { Badge, Button, Input, Modal, LoadingSpinner, ErrorMessage, DataTable, ColumnDef, PageHeader } from '@comfytag/ui'
 import { formatNaira, formatDate } from '@comfytag/utils'
-import type { WithdrawRequest, BankAccount, Event } from '@comfytag/types'
-import api, { authHeader } from '@/lib/api'
+import type { WithdrawRequest } from '@comfytag/types'
+import { useWithdrawals, useBankAccount, useMyEvents, usePartnerRevenue, useRequestPayout } from '@/hooks'
 
 const withdrawColumns: ColumnDef<WithdrawRequest>[] = [
   {
@@ -39,7 +38,7 @@ const withdrawColumns: ColumnDef<WithdrawRequest>[] = [
         {row.acctName}
         <br />
         <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>
-          {row.bankName} · {row.acctNumber}
+          {row.bankName} Â· {row.acctNumber}
         </span>
       </span>
     ),
@@ -63,7 +62,7 @@ const withdrawColumns: ColumnDef<WithdrawRequest>[] = [
 
 export default function WithdrawPage() {
   const { data: session } = useSession()
-  const queryClient = useQueryClient()
+  const userId = session?.user?.id
 
   const [modal, setModal] = useState(false)
   const [selectedBankId, setSelectedBankId] = useState('')
@@ -71,50 +70,11 @@ export default function WithdrawPage() {
   const [selectedEventId, setSelectedEventId] = useState('')
   const [formError, setFormError] = useState('')
 
-  const requestsQuery = useQuery({
-    queryKey: ['withdrawals', session?.user.id],
-    queryFn: () =>
-      api.get<WithdrawRequest[]>('/withdraw/' + session!.user.id, authHeader(session?.user.token)).then((r) => r.data),
-    enabled: !!session?.user.id,
-  })
-
-  const banksQuery = useQuery({
-    queryKey: ['banks', session?.user.id],
-    queryFn: () =>
-      api.get<BankAccount[]>('/bank/' + session!.user.id, authHeader(session?.user.token)).then((r) => r.data),
-    enabled: !!session?.user.id,
-  })
-
-  const eventsQuery = useQuery({
-    queryKey: ['events', session?.user.id],
-    queryFn: () =>
-      api.get<Event[]>('/events/user/' + session!.user.id, authHeader(session?.user.token)).then((r) => r.data),
-    enabled: !!session?.user.id,
-  })
-
-  const revenueQuery = useQuery({
-    queryKey: ['partnerRevenue', session?.user.id],
-    queryFn: () =>
-      api.get<{ availableBalance: number }>(`/partner/${session!.user.id}/revenue`, authHeader(session?.user.token))
-        .then((r) => r.data),
-    enabled: !!session?.user.id,
-  })
-
-  const withdrawMutation = useMutation({
-    mutationFn: (body: object) =>
-      api.post('/withdraw/' + session!.user.id, body, authHeader(session?.user.token)).then((r) => r.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['withdrawals', session?.user.id] })
-      setModal(false)
-      setSelectedBankId('')
-      setAmount('')
-      setSelectedEventId('')
-      setFormError('')
-    },
-    onError: () => {
-      setFormError('Failed to submit request. Please try again.')
-    },
-  })
+  const requestsQuery = useWithdrawals(userId || '')
+  const banksQuery = useBankAccount(userId || '')
+  const eventsQuery = useMyEvents()
+  const revenueQuery = usePartnerRevenue()
+  const withdrawMutation = useRequestPayout()
 
   function handleSubmit() {
     const banks = banksQuery.data ?? []
@@ -130,11 +90,19 @@ export default function WithdrawPage() {
 
     setFormError('')
     withdrawMutation.mutate({
-      bankName: selectedBank.bankName,
-      acctName: selectedBank.acctName,
-      acctNumber: selectedBank.acctNumber,
-      eventName: selectedEvent.name,
+      bankAccountId: selectedBank._id,
       amount: numAmount,
+    }, {
+      onSuccess: () => {
+        setModal(false)
+        setSelectedBankId('')
+        setAmount('')
+        setSelectedEventId('')
+        setFormError('')
+      },
+      onError: () => {
+        setFormError('Failed to submit request. Please try again.')
+      },
     })
   }
 
@@ -271,7 +239,7 @@ export default function WithdrawPage() {
                 <option value="">Select a bank account</option>
                 {banks.map((b) => (
                   <option key={b._id} value={b._id}>
-                    {b.bankName} — {b.acctName} ({b.acctNumber})
+                    {b.bankName} â€” {b.acctName} ({b.acctNumber})
                   </option>
                 ))}
               </select>
@@ -325,7 +293,7 @@ export default function WithdrawPage() {
           </div>
 
           <Input
-            label="Amount (₦)"
+            label="Amount (â‚¦)"
             type="number"
             placeholder="0"
             value={amount}
@@ -338,3 +306,4 @@ export default function WithdrawPage() {
     </div>
   )
 }
+

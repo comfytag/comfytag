@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@comfytag/ui'
 import { SectionCard } from './SectionCard'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 import type { User } from '@comfytag/types'
 
 interface Props {
@@ -31,8 +31,7 @@ export function PrivacySection({ settings }: Props) {
     try {
       await api.put(
         `/users/${session.user.id}`,
-        { privacySettings: { publicProfile, showInSearch } },
-        authHeader(session.user.token)
+        { privacySettings: { publicProfile, showInSearch } }
       )
       setSaved(true)
     } finally {
@@ -44,7 +43,7 @@ export function PrivacySection({ settings }: Props) {
     <SectionCard>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h3 style={{ margin: 0, color: 'var(--color-text-primary)', fontSize: '16px', fontWeight: 600 }}>Privacy</h3>
-        {saved && <span style={{ color: 'var(--color-success)', fontSize: '12px', fontWeight: 500 }}>✓ Saved</span>}
+        {saved && <span style={{ color: 'var(--color-success)', fontSize: '12px', fontWeight: 500 }}>âœ“ Saved</span>}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -75,3 +74,4 @@ export function PrivacySection({ settings }: Props) {
     </SectionCard>
   )
 }
+

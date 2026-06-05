@@ -1,7 +1,14 @@
 import React from 'react'
+import type { Metadata } from 'next'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import ContactForm from './ContactForm'
+
+export const metadata: Metadata = {
+  title: "Contact ComfyTag — Help, Support & Feedback",
+  description: 'Contact ComfyTag for support, partnerships, or questions about events and tickets. Email, WhatsApp available. We\'re ready to help.',
+  alternates: { canonical: 'https://comfytag.com/contact' },
+}
 
 export default function ContactPage() {
   return (
@@ -34,7 +41,7 @@ export default function ContactPage() {
               marginBottom: '48px',
             }}
           >
-            Have a question or feedback? We&apos;d love to hear from you.
+            We're here to help. Reach out however works best for you.
           </p>
 
           <div

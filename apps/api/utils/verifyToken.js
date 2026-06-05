@@ -24,7 +24,8 @@ export const verifyUser = (req,res, next) =>{
     verifyToken(req,res, (err) =>{
         if(err) return next(err);
         const userId = (req.user._id ?? req.user.id ?? '').toString()
-        if(userId === req.params.id || req.user.isPartner || req.user.isAdmin){
+        const paramUserId = req.params.id ?? req.params.userId ?? req.params.uid
+        if(userId === paramUserId || req.user.isPartner || req.user.isAdmin){
             next()
         } else{
             return next(createError(403,"You are not authorized!"));

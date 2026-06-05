@@ -1,11 +1,10 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
-import { AvatarInitials, Button, LoadingSpinner } from '@comfytag/ui'
-import { authHeader } from '@comfytag/utils'
+import { AvatarInitials, Button } from '@comfytag/ui'
 import { AuthGateSheet } from '@/components/ui/AuthGateSheet'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 
 export interface Comment {
   _id: string
@@ -57,7 +56,7 @@ function CommentItem({ comment }: { comment: Comment }) {
                 fontSize: '11px',
                 fontWeight: 600,
                 color: 'var(--color-brand)',
-                background: 'rgba(124,58,237,0.08)',
+                background: 'var(--color-brand-alpha-8)',
                 padding: '1px 6px',
                 borderRadius: '99px',
               }}
@@ -101,14 +100,21 @@ export function CommentSection({
   const [text, setText] = useState('')
   const [posting, setPosting] = useState(false)
   const [gateOpen, setGateOpen] = useState(false)
+  const [hasMore, setHasMore] = useState(initialHasMore ?? false)
+  const [page, setPage] = useState(1)
+  const [loadingMore, setLoadingMore] = useState(false)
   const optimisticIdRef = useRef<string | null>(null)
 
   // Sort: pinned first, then reverse-chron (RA style: newest + pinned prominent)
-  const sorted = [...comments].sort((a, b) => {
-    if (a.isPinned && !b.isPinned) return -1
-    if (!a.isPinned && b.isPinned) return 1
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  })
+  const sorted = useMemo(
+    () =>
+      [...comments].sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1
+        if (!a.isPinned && b.isPinned) return 1
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      }),
+    [comments]
+  )
 
   async function handlePost() {
     if (!session || !text.trim()) return
@@ -132,8 +138,7 @@ export function CommentSection({
       if (onPostProp) await onPostProp(trimmed)
       const res = await api.post<Comment>(
         `/events/${eventId}/comments`,
-        { text: trimmed },
-        authHeader(session.user.token),
+        { text: trimmed }
       )
       const created = res.data
       setComments((prev) =>
@@ -152,7 +157,7 @@ export function CommentSection({
   async function handleDelete(commentId: string) {
     setComments(prev => prev.filter(c => c._id !== commentId))
     try {
-      await api.delete(`/comments/${commentId}`, authHeader(session!.user.token))
+      await api.delete(`/comments/${commentId}`)
     } catch {
       // silent — optimistic delete already applied
     }
@@ -164,7 +169,7 @@ export function CommentSection({
       return [...pinned.filter(c => c.isPinned), ...pinned.filter(c => !c.isPinned)]
     })
     try {
-      await api.post(`/comments/${commentId}/pin`, null, authHeader(session!.user.token))
+      await api.post(`/comments/${commentId}/pin`)
     } catch {
       // silent
     }
@@ -182,11 +187,26 @@ export function CommentSection({
       <div style={{ marginBottom: '24px' }}>
         {session ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value.slice(0, MAX_TEXT))}
-              placeholder="Share your thoughts about this event…"
-              rows={3}
+            <div style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
+              <label
+                htmlFor="comment-input"
+                style={{
+                  position: 'absolute',
+                  width: '1px',
+                  height: '1px',
+                  overflow: 'hidden',
+                  clip: 'rect(0,0,0,0)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Write a comment
+              </label>
+              <textarea
+                id="comment-input"
+                value={text}
+                onChange={(e) => setText(e.target.value.slice(0, MAX_TEXT))}
+                placeholder="Share your thoughts about this event…"
+                rows={3}
               style={{
                 width: '100%',
                 padding: '12px 14px',
@@ -207,7 +227,8 @@ export function CommentSection({
               onBlur={(e) =>
                 (e.currentTarget.style.borderColor = 'var(--color-border)')
               }
-            />
+              />
+            </div>
             <div
               style={{
                 display: 'flex',
@@ -300,6 +321,45 @@ export function CommentSection({
             </div>
           ))}
         </div>
+      )}
+
+      {hasMore && (
+        <button
+          type="button"
+          disabled={loadingMore}
+          onClick={async () => {
+            setLoadingMore(true)
+            try {
+              const nextPage = page + 1
+              const res = await api.get<{ comments: Comment[]; hasMore: boolean }>(
+                `/events/${eventId}/comments?page=${nextPage}&limit=20`
+              )
+              const data = res.data
+              setComments((prev) => [...prev, ...(data.comments ?? [])])
+              setHasMore(data.hasMore ?? false)
+              setPage(nextPage)
+            } catch {
+              /* silent */
+            } finally {
+              setLoadingMore(false)
+            }
+          }}
+          style={{
+            marginTop: '16px',
+            width: '100%',
+            padding: '10px',
+            background: 'none',
+            border: '1.5px solid var(--color-border)',
+            borderRadius: '8px',
+            fontSize: '14px',
+            color: 'var(--color-text-muted)',
+            cursor: loadingMore ? 'not-allowed' : 'pointer',
+            fontFamily: 'inherit',
+            opacity: loadingMore ? 0.6 : 1,
+          }}
+        >
+          {loadingMore ? 'Loading…' : 'Load more comments'}
+        </button>
       )}
 
     </>

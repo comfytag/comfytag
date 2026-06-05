@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Button, LoadingSpinner, EmptyState } from '@comfytag/ui'
 import { authHeader, formatNaira, formatDate } from '@comfytag/utils'
-import api from '@/lib/api'
+import { useProfile } from '@/hooks/useProfile'
 
 interface WalletTransaction {
   _id: string
@@ -23,18 +23,13 @@ interface WalletData {
 
 export default function HypeLinkPage() {
   const { data: session, status } = useSession()
-  const [wallet, setWallet] = useState<WalletData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { data: user, isLoading } = useProfile()
   const [copied, setCopied] = useState(false)
 
-  useEffect(() => {
-    if (!session) return
-    api
-      .get('/wallet', authHeader(session.user.token))
-      .then((r) => setWallet(r.data?.data ?? r.data))
-      .catch(() => setWallet({ balance: 0, transactions: [] }))
-      .finally(() => setIsLoading(false))
-  }, [session])
+  const wallet: WalletData = {
+    balance: 0,
+    transactions: [],
+  }
 
   if (status === 'loading') {
     return (

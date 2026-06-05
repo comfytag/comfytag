@@ -2,6 +2,18 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { EventsBrowseClient } from './EventsBrowseClient'
 import type { Event } from '@comfytag/types'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: "Events in Ilorin This Weekend | Buy Tickets — ComfyTag",
+  description: 'Discover amazing events in Ilorin and across Nigeria. Music, comedy, tech, culture. Buy tickets instantly. Your face is your ticket entry.',
+  alternates: { canonical: 'https://comfytag.com/events' },
+  openGraph: {
+    title: "Events in Ilorin This Weekend",
+    description: "Find what's happening near you. Buy tickets in seconds on ComfyTag.",
+    url: 'https://comfytag.com/events',
+  },
+}
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
 

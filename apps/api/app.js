@@ -27,13 +27,9 @@ const whitelist = ['http://localhost:3000', 'http://example2.com'];
 
 
 
-const connect = () => {
-  try {
-    mongoose.connect(process.env.MONGO)
-    console.log("Connected to MongoDB");
-  } catch (error) {
-    throw error;
-  }
+const connect = async () => {
+  await mongoose.connect(process.env.MONGO)
+  console.log("Connected to MongoDB")
 }
 const PORT = 4002;
 
@@ -77,7 +73,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser())
 const allowedOrigins = [
-  'http://localhost:3003',
+  'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:3002',
   process.env.WEB_URL,
@@ -281,12 +277,16 @@ app.post('/check-email', async (req, res, next) => {
 
 
 
-app.listen(process.env.PORT || PORT,
-  () => {
-    connect()
-    console.log(`Listening to port ${process.env.PORT}`)
-  }
-);
+connect()
+  .then(() => {
+    app.listen(process.env.PORT || PORT, () => {
+      console.log(`Listening to port ${process.env.PORT}`)
+    })
+  })
+  .catch((err) => {
+    console.error("MongoDB connection failed — server not started:", err.message)
+    process.exit(1)
+  })
 
 
 

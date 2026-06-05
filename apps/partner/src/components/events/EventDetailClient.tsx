@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
@@ -9,7 +9,7 @@ import { EventDetailStats } from './EventDetailStats'
 import { TierBreakdownSection } from './TierBreakdownSection'
 import { AttendeesSection } from './AttendeesSection'
 import { EventRecapSection } from './EventRecapSection'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface EventDetailClientProps {
   event: Event
@@ -24,7 +24,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
 
   const statusMutation = useMutation({
     mutationFn: (status: 'published' | 'draft' | 'cancelled') =>
-      api.patch('/events/' + eventId, { status }, authHeader(session?.user.token)).then(r => r.data),
+      api.patch('/events/' + eventId, { status }).then(r => r.data),
     onSuccess: (_data, status) => {
       setCurrentStatus(status)
       queryClient.invalidateQueries({ queryKey: ['event', eventId] })
@@ -58,3 +58,4 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
     </>
   )
 }
+

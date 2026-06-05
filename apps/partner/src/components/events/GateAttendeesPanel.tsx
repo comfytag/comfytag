@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Search } from 'lucide-react'
 import { Button, Input } from '@comfytag/ui'
 import { formatDate } from '@comfytag/utils'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface Attendee {
   _id: string
@@ -46,7 +46,7 @@ export function GateAttendeesPanel({ eventId }: GateAttendeesPanelProps) {
     queryKey: ['gateAttendees', eventId],
     queryFn: () =>
       api
-        .get(`/audience/event/${eventId}?limit=200`, authHeader(token))
+        .get(`/audience/event/${eventId}?limit=200`)
         .then((r) => {
           const body = r.data
           return Array.isArray(body) ? body : (body?.data ?? [])
@@ -66,7 +66,7 @@ export function GateAttendeesPanel({ eventId }: GateAttendeesPanelProps) {
   const checkInMutation = useMutation({
     mutationFn: ({ ticketId, checkedIn }: { ticketId: string; checkedIn: boolean }) =>
       api
-        .post(`/audience/${ticketId}/checkin`, { checkedIn }, authHeader(token))
+        .post(`/audience/${ticketId}/checkin`, { checkedIn })
         .then((r) => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gateAttendees', eventId] })
@@ -110,7 +110,7 @@ export function GateAttendeesPanel({ eventId }: GateAttendeesPanelProps) {
 
       {isLoading ? (
         <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', textAlign: 'center', padding: '20px' }}>
-          Loading attendees…
+          Loading attendeesâ€¦
         </p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '500px', overflowY: 'auto' }}>
@@ -142,7 +142,7 @@ export function GateAttendeesPanel({ eventId }: GateAttendeesPanelProps) {
                   {attendee.checkedIn && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '12px', color: 'var(--color-success)' }}>
-                        ✓ Checked in {attendee.checkedInAt ? formatDate(attendee.checkedInAt) : attendee.checkInDate ? formatDate(attendee.checkInDate) : 'today'}
+                        âœ“ Checked in {attendee.checkedInAt ? formatDate(attendee.checkedInAt) : attendee.checkInDate ? formatDate(attendee.checkInDate) : 'today'}
                       </span>
                       {attendee.checkedInMethod && (
                         <span
@@ -219,3 +219,4 @@ export function GateAttendeesPanel({ eventId }: GateAttendeesPanelProps) {
     </div>
   )
 }
+

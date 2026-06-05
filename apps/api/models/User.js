@@ -16,7 +16,7 @@ const UserSchema = new Schema({
             type: String,
             lowercase: true,
          },
-        phone: { type: Number },
+        phone: { type: String },
         password: { type: String, required: true, },
         events: { type: [String], },
         isAdmin: { type: Boolean, default: false },

@@ -1,10 +1,10 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, AlertCircle, AlertTriangle, Scan } from 'lucide-react'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface ScanResult {
   status: 'success' | 'already' | 'error'
@@ -88,8 +88,7 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
     try {
       const res = await api.post<CheckInByRefResponse>(
         '/audience/checkin-by-ref',
-        { reference },
-        authHeader(token)
+        { reference }
       )
       const body = res.data
 
@@ -225,7 +224,7 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value.toUpperCase())}
               onKeyDown={handleKeyDown}
-              placeholder="e.g. TKT-A1B2C3 or scan QR…"
+              placeholder="e.g. TKT-A1B2C3 or scan QRâ€¦"
               disabled={isPending}
               autoComplete="off"
               spellCheck={false}
@@ -264,7 +263,7 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
                 transition: 'background-color 0.15s ease',
               }}
             >
-              {isPending ? 'Checking in…' : 'Check In'}
+              {isPending ? 'Checking inâ€¦' : 'Check In'}
             </button>
           </form>
         </div>
@@ -296,7 +295,7 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
                 {lastResult.ticketType && (
                   <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '2px' }}>
                     {lastResult.ticketType}
-                    {lastResult.numOfTicket != null && lastResult.numOfTicket > 1 && ` × ${lastResult.numOfTicket}`}
+                    {lastResult.numOfTicket != null && lastResult.numOfTicket > 1 && ` Ã— ${lastResult.numOfTicket}`}
                   </div>
                 )}
 
@@ -390,3 +389,4 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
     </div>
   )
 }
+

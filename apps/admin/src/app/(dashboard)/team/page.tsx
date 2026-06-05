@@ -1,21 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
 import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { formatDate } from '@comfytag/utils'
 import type { User } from '@comfytag/types'
-import api from '@/lib/api'
 import { DataTable } from '@comfytag/ui'
 import type { ColumnDef } from '@comfytag/ui'
 import { PageHeader } from '@comfytag/ui'
-
-// ─── Fetch ─────────────────────────────────────────────
-const fetchUsers = async (): Promise<User[]> => {
-  const { data } = await api.get<User[]>('/admin/users')
-  return data
-}
+import { useAllUsers } from '@/hooks'
 
 // ─── Columns ───────────────────────────────────────────
 const columns: ColumnDef<User>[] = [
@@ -41,12 +33,7 @@ const columns: ColumnDef<User>[] = [
 ]
 
 export default function TeamPage() {
-  useSession()
-
-  const usersQuery = useQuery({
-    queryKey: ['admin', 'users'],
-    queryFn: fetchUsers,
-  })
+  const usersQuery = useAllUsers()
 
   const admins = (usersQuery.data ?? []).filter((u) => u.isAdmin)
 

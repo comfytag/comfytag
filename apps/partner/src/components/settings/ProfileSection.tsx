@@ -1,11 +1,11 @@
-'use client'
+﻿'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button, Input, ErrorMessage } from '@comfytag/ui'
 import { SectionCard } from './SectionCard'
 import { ImageUploadInput } from '@/components/ui/ImageUploadInput'
-import api, { authHeader } from '@/lib/api'
+import { api } from '@/lib/api'
 import type { User } from '@comfytag/types'
 
 interface Props {
@@ -38,8 +38,7 @@ export function ProfileSection({ user }: Props) {
     try {
       await api.put(
         `/users/${session.user.id}`,
-        { name: form.name, phone: form.phone, avatar: form.avatar, image: form.avatar },
-        authHeader(session.user.token)
+        { name: form.name, phone: form.phone, avatar: form.avatar, image: form.avatar }
       )
       setIsEditing(false)
       router.refresh()
@@ -63,15 +62,15 @@ export function ProfileSection({ user }: Props) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <div>
             <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Name</div>
-            <div style={{ color: 'var(--color-text-primary)' }}>{user?.name || '—'}</div>
+            <div style={{ color: 'var(--color-text-primary)' }}>{user?.name || 'â€”'}</div>
           </div>
           <div>
             <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Email</div>
-            <div style={{ color: 'var(--color-text-primary)' }}>{user?.email || '—'}</div>
+            <div style={{ color: 'var(--color-text-primary)' }}>{user?.email || 'â€”'}</div>
           </div>
           <div>
             <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Phone</div>
-            <div style={{ color: 'var(--color-text-primary)' }}>{user?.phone || '—'}</div>
+            <div style={{ color: 'var(--color-text-primary)' }}>{user?.phone || 'â€”'}</div>
           </div>
           <div>
             <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: '4px' }}>Avatar</div>
@@ -82,7 +81,7 @@ export function ProfileSection({ user }: Props) {
                 style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }}
               />
             ) : (
-              <div style={{ color: 'var(--color-text-primary)' }}>—</div>
+              <div style={{ color: 'var(--color-text-primary)' }}>â€”</div>
             )}
           </div>
         </div>
@@ -125,3 +124,4 @@ export function ProfileSection({ user }: Props) {
     </SectionCard>
   )
 }
+

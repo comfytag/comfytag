@@ -1,8 +1,16 @@
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { BackLink } from '@/components/ui/BackLink'
+import type { Metadata } from 'next'
 
 const LAST_UPDATED = 'May 18, 2026'
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | ComfyTag — NDPR Compliant",
+  description: "Privacy comes first at ComfyTag. Your face data is NDPR-compliant and encrypted on-device. We never sell biometric data anywhere.",
+  alternates: { canonical: 'https://comfytag.com/privacy' },
+  robots: { index: true, follow: false },
+}
 
 export default function PrivacyPage() {
   return (

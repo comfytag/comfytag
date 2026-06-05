@@ -5,6 +5,8 @@ packages:
 allowBuilds:
   '@parcel/watcher': true
   cpu-features: true
+  esbuild: true
+  mongodb-memory-server: true
   sharp: true
   ssh2: true
   unrs-resolver: true

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { Event } from '@comfytag/types'
 import { formatDate } from '@comfytag/utils'
-import api from '@/lib/api'
+import { api } from '@/lib/api'
 
 interface SearchSuggestionsOverlayProps {
   query: string
