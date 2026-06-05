@@ -1,7 +1,6 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
   turbopack: {},
   transpilePackages: ['@comfytag/ui', '@comfytag/utils', '@comfytag/types'],
   images: {
