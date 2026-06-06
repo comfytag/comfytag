@@ -28,6 +28,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-jwt": "^7.7.7",
+    "handlebars": "^4.7.7",
     "heroku": "^7.67.1",
     "joi": "^17.8.3",
     "joi-password-complexity": "^5.1.0",

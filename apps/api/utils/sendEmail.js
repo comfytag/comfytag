@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer";
-import { Resend } from "resend";
 import Handlebars from "handlebars";
 import fs from "fs";
 import path from "path";
@@ -8,9 +7,6 @@ import User from "../models/User.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = path.join(__dirname, "emailTemplates");
-
-// ─── Initialize Resend API ────────────────────────
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ─── Initialize Nodemailer with Resend SMTP Transport ────────────────────────
 const transporter = nodemailer.createTransport({
