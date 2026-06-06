@@ -256,7 +256,7 @@ export const adminLogin = async (req,res,next) =>{
        const isPassword = await bcrypt.compare(req.body.password, user.password); // true
        if(!isPassword) return  next(createError(400, "Password is wrong"))
 
-       const token =jwt.sign({isAdmin: user.isAdmin}, process.env.JWT)
+       const token =jwt.sign({isAdmin: user.isAdmin}, process.env.JWT_SECRET)
        const {password, isAdmin, ...OtherDetails} = user._doc
         res.cookie("access_token", token, {
             httpOnly: true
