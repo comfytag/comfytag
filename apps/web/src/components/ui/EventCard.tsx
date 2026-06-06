@@ -49,8 +49,9 @@ export function EventCard({
           display: 'block',
           height: `${height}px`,
           transform: hovered ? 'scale(1.02)' : 'scale(1)',
-          transition: `transform var(--duration-fast) ease`,
+          transition: `transform var(--duration-fast) ease, box-shadow var(--duration-fast) ease`,
           cursor: onSelect ? 'pointer' : 'default',
+          boxShadow: hovered ? '0 0 30px rgba(255, 81, 106, 0.5)' : 'none', // NEW: Fire glow on hover
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -114,12 +115,13 @@ export function EventCard({
             padding: compact ? '12px' : '16px',
           }}
         >
-          {/* Event name — bold, 17px / 700 weight */}
+          {/* Event name — Anybody font (bold headers) */}
           <div
             style={{
               color: 'var(--color-text-on-brand)',
+              fontFamily: 'var(--font-anybody), sans-serif',
               fontSize: '17px',
-              fontWeight: 700,
+              fontWeight: 800, // NEW: Anybody weight for extra boldness
               lineHeight: 1.2,
               marginBottom: '6px',
               overflow: 'hidden',

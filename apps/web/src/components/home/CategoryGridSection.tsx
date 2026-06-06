@@ -32,8 +32,9 @@ export function CategoryGridSection() {
         <div style={{ marginBottom: '40px' }}>
           <h2
             style={{
-              fontSize: '24px',
-              fontWeight: 700,
+              fontFamily: 'var(--font-anybody), sans-serif', // NEW: Anybody font
+              fontSize: '28px',
+              fontWeight: 800, // NEW: Extra bold
               color: 'var(--color-text-primary)',
               marginBottom: '12px',
               letterSpacing: '-0.01em',
@@ -92,8 +93,9 @@ export function CategoryGridSection() {
                 </div>
                 <div
                   style={{
-                    fontSize: '18px',
-                    fontWeight: 700,
+                    fontFamily: 'var(--font-anybody), sans-serif', // NEW: Anybody font
+                    fontSize: '20px',
+                    fontWeight: 800, // NEW: Extra bold
                     color: '#ffffff',
                   }}
                 >

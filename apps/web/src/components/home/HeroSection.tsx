@@ -58,8 +58,9 @@ export function HeroSection({ stats }: HeroSectionProps) {
         }
 
         .__ct_hero_h1 {
+          font-family: var(--font-anybody), sans-serif; /* NEW: Anybody font for bold hero */
           font-size: 40px;
-          font-weight: 800;
+          font-weight: 900;
           line-height: 1.2;
           color: #ffffff;
           margin: 0 0 16px 0;
@@ -93,9 +94,12 @@ export function HeroSection({ stats }: HeroSectionProps) {
         }
 
         .__ct_hero_cta:hover {
-          background: #ffffff;
-          color: #7C3AED;
+          /* NEW: Fire gradient background on hover */
+          background: linear-gradient(135deg, #a078ff 0%, #ff516a 100%);
+          color: #ffffff;
+          border-color: #ffffff;
           transform: translateY(-2px);
+          box-shadow: 0 0 30px rgba(255, 81, 106, 0.6);
         }
 
         .__ct_hero_cta:focus-visible {

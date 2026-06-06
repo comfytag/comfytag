@@ -47,8 +47,9 @@ export function EditorPicksSection({ events }: EditorPicksSectionProps) {
           </span>
           <h2
             style={{
+              fontFamily: 'var(--font-anybody), sans-serif',
               fontSize: '32px',
-              fontWeight: 700,
+              fontWeight: 800, // NEW: Anybody font weight for boldness
               color: 'var(--color-text-on-brand)',
               marginBottom: '8px',
               letterSpacing: '-0.01em',

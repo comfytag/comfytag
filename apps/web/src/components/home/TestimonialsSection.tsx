@@ -31,8 +31,9 @@ export function TestimonialsSection({ testimonials }: TestimonialsSectionProps) 
         <div style={{ textAlign: 'center', marginBottom: '56px' }}>
           <h2
             style={{
+              fontFamily: 'var(--font-anybody), sans-serif', // NEW: Anybody font
               fontSize: '36px',
-              fontWeight: 700,
+              fontWeight: 800, // NEW: Extra bold
               color: 'var(--color-text)',
               marginBottom: '12px',
               letterSpacing: '-0.01em',
