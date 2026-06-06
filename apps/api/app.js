@@ -81,28 +81,13 @@ const allowedOrigins = [
   process.env.ADMIN_URL,
 ].filter(Boolean)
 
-console.log('\n=== CORS DEBUG AT STARTUP ===')
-console.log('NODE_ENV:', process.env.NODE_ENV)
-console.log('WEB_URL:', process.env.WEB_URL)
-console.log('PARTNER_URL:', process.env.PARTNER_URL)
-console.log('ADMIN_URL:', process.env.ADMIN_URL)
-console.log('Allowed Origins Array:', allowedOrigins)
-console.log('==============================\n')
-
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, Postman during development)
-    if (!origin) {
-      console.log('[CORS] No origin header (mobile/curl)')
-      return callback(null, true)
-    }
-    console.log('[CORS] Request origin:', origin)
-    console.log('[CORS] Checking against allowed:', allowedOrigins)
+    if (!origin) return callback(null, true)
     if (allowedOrigins.includes(origin)) {
-      console.log('[CORS] ✅ ALLOWED')
       return callback(null, true)
     }
-    console.log('[CORS] ❌ DENIED')
     return callback(new Error('Not allowed by CORS'))
   },
   credentials: true,
@@ -111,17 +96,10 @@ app.use(cors({
 // Enable preflight requests for all routes
 app.options('*', cors({
   origin: function (origin, callback) {
-    console.log('[CORS OPTIONS] Preflight request origin:', origin)
-    if (!origin) {
-      console.log('[CORS OPTIONS] ✅ No origin, allowing')
-      return callback(null, true)
-    }
-    console.log('[CORS OPTIONS] Checking against:', allowedOrigins)
+    if (!origin) return callback(null, true)
     if (allowedOrigins.includes(origin)) {
-      console.log('[CORS OPTIONS] ✅ ALLOWED')
       return callback(null, true)
     }
-    console.log('[CORS OPTIONS] ❌ DENIED - NOT IN ALLOWED ORIGINS')
     return callback(new Error('Not allowed by CORS'))
   },
   credentials: true,
