@@ -155,5 +155,14 @@ export const validatRegister = (data) => {
 	return schema.validate(data);
 };
 
+export const validatePasswordReset = (data) => {
+	const schema = Joi.object({
+		identifier: Joi.string().required().label("Email or phone"),
+		resetToken: Joi.string().required().label("Reset token"),
+		newPassword: passwordComplexity().required().label("New password"),
+	});
+	return schema.validate(data);
+};
+
 // module.exports = { User, validate };
 // export default { User, validate };

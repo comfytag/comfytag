@@ -1,6 +1,6 @@
 import express from "express";
 import User from "../models/User.js";
-import {validatRegister} from "../models/User.js";
+import {validatRegister, validatePasswordReset} from "../models/User.js";
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import Token from '../models/token.js'
@@ -410,10 +410,12 @@ export const verifyOtp = async (req, res, next) => {
 // Reset Password using reset token
 export const resetPassword = async (req, res, next) => {
   try {
-    const { identifier, resetToken, newPassword } = req.body
-    if (!identifier || !resetToken || !newPassword) {
-      return res.status(400).json({ message: 'Identifier, reset token, and new password are required' })
+    const { error } = validatePasswordReset(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
     }
+
+    const { identifier, resetToken, newPassword } = req.body
 
     // Verify JWT reset token
     let decoded
