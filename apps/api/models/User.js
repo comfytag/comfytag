@@ -125,7 +125,7 @@ UserSchema.methods.generateAuthToken = function () {
 			isPartner: !!this.isPartner,
 			isAdmin: !!this.isAdmin,
 		},
-		process.env.JWT,
+		process.env.JWT_SECRET,
 		{ expiresIn: "7d" }
 	);
 	return token;
