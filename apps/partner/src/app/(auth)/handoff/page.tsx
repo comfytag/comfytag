@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { LoadingSpinner } from '@comfytag/ui'
 
 export const dynamic = 'force-dynamic'
 
-export default function HandoffPage() {
+function HandoffContent() {
   const router = useRouter()
   const params = useSearchParams()
 
@@ -31,5 +31,13 @@ export default function HandoffPage() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <LoadingSpinner size="lg" />
     </div>
+  )
+}
+
+export default function HandoffPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LoadingSpinner size="lg" /></div>}>
+      <HandoffContent />
+    </Suspense>
   )
 }
