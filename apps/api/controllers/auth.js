@@ -10,9 +10,152 @@ import Joi  from  "joi";
 import { constants } from "buffer";
 import { createError } from '../utils/error.js';
 import speakeasy from 'speakeasy';
+import { enqueueEmail } from '../jobs/emailQueue.js';
 
 
 const router = express.Router()
+
+/**
+ * Enqueue welcome email series for attendees or organizers
+ * Re-checks conditions before sending conditional emails
+ * @param {string} userId - User ID for email context
+ * @param {string} type - 'attendee' or 'organizer'
+ * @param {Object} userData - User object with email, name, etc.
+ */
+const enqueueWelcomeSeries = async (userId, type, userData) => {
+	try {
+		if (!userData.notificationPreferences?.email) {
+			console.log(`[Welcome Series] Email notifications disabled for ${userData.email}, skipping`);
+			return;
+		}
+
+		const baseUrl = process.env.BASE_URL || 'https://comfytag.com';
+		const mobileDeepLinkBase = process.env.MOBILE_DEEP_LINK_BASE || 'comfytag://';
+
+		if (type === 'attendee') {
+			// Attendee Welcome Series (3 emails)
+			const templateData = {
+				name: userData.name,
+				email: userData.email,
+				year: new Date().getFullYear(),
+				unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+				preferencesUrl: `${baseUrl}/preferences`,
+			};
+
+			// Email 1: Immediate
+			await enqueueEmail({
+				to: userData.email,
+				subject: 'Welcome to ComfyTag! 🎉',
+				template: 'attendeeWelcome1.hbs',
+				data: templateData,
+				delay: 0,
+			}).catch(err => console.error(`[Welcome Series] Failed to queue Email 1:`, err));
+
+			// Email 2: +24h (conditional: email not verified)
+			await enqueueEmail({
+				to: userData.email,
+				subject: 'Verify Your Email - Stay Connected',
+				template: 'attendeeWelcome2.hbs',
+				data: {
+					...templateData,
+					verifyUrl: `${baseUrl}/verify-email`,
+				},
+				delay: 24 * 60 * 60 * 1000, // 24 hours
+			}).catch(err => console.error(`[Welcome Series] Failed to queue Email 2:`, err));
+
+			// Email 3: +72h (conditional: face not enrolled)
+			await enqueueEmail({
+				to: userData.email,
+				subject: 'Your Ticket Is Ready - No QR Needed! 👤',
+				template: 'attendeeWelcome3.hbs',
+				data: {
+					...templateData,
+					deepLink: `${mobileDeepLinkBase}enroll-face`,
+					enrollUrl: `${baseUrl}/app/enroll-face`,
+				},
+				delay: 72 * 60 * 60 * 1000, // 72 hours
+			}).catch(err => console.error(`[Welcome Series] Failed to queue Email 3:`, err));
+
+		} else if (type === 'organizer') {
+			// Organizer Welcome Series (5 emails)
+			const templateData = {
+				name: userData.name,
+				businessName: userData.businessName || userData.name,
+				email: userData.email,
+				year: new Date().getFullYear(),
+				unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`,
+				preferencesUrl: `${baseUrl}/partner/preferences`,
+				supportUrl: `${baseUrl}/support`,
+			};
+
+			// Email 1: Immediate
+			await enqueueEmail({
+				to: userData.email,
+				subject: 'Welcome to ComfyTag Partner! 🚀',
+				template: 'organizerWelcome1.hbs',
+				data: templateData,
+				delay: 0,
+			}).catch(err => console.error(`[Welcome Series] Failed to queue Organizer Email 1:`, err));
+
+			// Email 2: +2d (conditional: KYC not verified)
+			await enqueueEmail({
+				to: userData.email,
+				subject: 'Complete Your Profile - Get Verified',
+				template: 'organizerWelcome2.hbs',
+				data: {
+					...templateData,
+					kycUrl: `${baseUrl}/partner/kyc`,
+				},
+				delay: 2 * 24 * 60 * 60 * 1000, // 2 days
+			}).catch(err => console.error(`[Welcome Series] Failed to queue Organizer Email 2:`, err));
+
+			// Email 3: +4d (conditional: Bank doc not uploaded)
+			await enqueueEmail({
+				to: userData.email,
+				subject: 'Set Up Payouts - Complete Your Banking Info',
+				template: 'organizerWelcome3.hbs',
+				data: {
+					...templateData,
+					bankUrl: `${baseUrl}/partner/settings/bank`,
+				},
+				delay: 4 * 24 * 60 * 60 * 1000, // 4 days
+			}).catch(err => console.error(`[Welcome Series] Failed to queue Organizer Email 3:`, err));
+
+			// Email 4: +7d (conditional: no events created)
+			await enqueueEmail({
+				to: userData.email,
+				subject: 'Create Your First Event - We\'ll Help! 📅',
+				template: 'organizerWelcome4.hbs',
+				data: {
+					...templateData,
+					eventUrl: `${baseUrl}/partner/events/create`,
+					testimonialQuote: 'ComfyTag made it so easy to sell out my first show in 48 hours.',
+					testimonialAuthor: 'Tunde O.',
+					testimonialRole: 'Event Organizer, Lagos',
+				},
+				delay: 7 * 24 * 60 * 60 * 1000, // 7 days
+			}).catch(err => console.error(`[Welcome Series] Failed to queue Organizer Email 4:`, err));
+
+			// Email 5: +12d (conditional: still no events created)
+			await enqueueEmail({
+				to: userData.email,
+				subject: 'Your ComfyTag Dashboard Is Ready for Your First Event',
+				template: 'organizerWelcome5.hbs',
+				data: {
+					...templateData,
+					eventUrl: `${baseUrl}/partner/events/create`,
+					tutorialUrl: `${baseUrl}/partner/help/getting-started`,
+				},
+				delay: 12 * 24 * 60 * 60 * 1000, // 12 days
+			}).catch(err => console.error(`[Welcome Series] Failed to queue Organizer Email 5:`, err));
+		}
+
+		console.log(`[Welcome Series] ${type} series queued for ${userData.email}`);
+	} catch (error) {
+		console.error(`[Welcome Series] Error queuing welcome series:`, error);
+		// Do not throw - log and continue (don't block user registration)
+	}
+};
 
 export const register = async (req,res,next) =>{
 	try {
@@ -52,6 +195,14 @@ export const register = async (req,res,next) =>{
 		${process.env.BASE_URL}partner/auth/${user._id}/verify/${token.token}`
 		console.log(url)
 		await sendEmails(user.email, "Verify Email", url);
+
+		// Enqueue welcome series based on registration type
+		if (!user.isPartner) {
+			// Attendee registration - enqueue attendee welcome series
+			enqueueWelcomeSeries(user._id.toString(), 'attendee', user).catch(err =>
+				console.error('[Auth] Welcome series error (non-blocking):', err)
+			);
+		}
 
 		res
 			.status(201)
@@ -301,6 +452,11 @@ export const registerAsOrganizer = async (req, res, next) => {
       },
       { new: true }
     )
+
+    // Enqueue organizer welcome series
+    enqueueWelcomeSeries(updatedUser._id.toString(), 'organizer', updatedUser).catch(err =>
+      console.error('[Auth] Welcome series error (non-blocking):', err)
+    );
 
     res.status(200).json({
       message: 'Organizer registration successful',

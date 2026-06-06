@@ -1,0 +1,21 @@
+﻿<h1>Your Ticket Is Ready 👤</h1>
+
+<p>Hi {{name}},</p>
+
+<p>Ready to ditch the QR codes? In just 30 seconds, you can enroll your face in the ComfyTag app. Once it's done, your face IS your ticket—no scanning, no printing, no stress.</p>
+
+<h2 style="font-size: 18px; margin-top: 24px;">Enroll Your Face</h2>
+
+<p>Open the ComfyTag app and go to "Face Setup." We'll walk you through it:</p>
+
+<ol style="color: #78716c; line-height: 1.8;">
+  <li>Look at the camera</li>
+  <li>We capture and encrypt your face (on your device)</li>
+  <li>Done. Your ticket lives on your face.</li>
+</ol>
+
+{{> ctaButton text="Enroll Face Now" url="{{enrollUrl}}" }}
+
+{{> faceNudge firstTime="true" }}
+
+<p style="color: #a8a29e; font-size: 14px; margin-top: 32px;">Security note: Your face template is encrypted and stored only on your device. We never see or store raw biometric data.</p>
