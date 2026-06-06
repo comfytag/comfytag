@@ -39,7 +39,7 @@ interface InitialProfile {
 export function OrganizerClient({ slug, initialProfile }: { slug: string; initialProfile: InitialProfile }) {
   const { data: session } = useSession()
 
-  const { data: organizer } = useOrganizerProfile(slug, initialProfile)
+  const { data: organizer = initialProfile?.organizer } = useOrganizerProfile(slug)
   const { mutate: followMutate } = useFollowOrganizer()
   const { mutate: likeMutate } = useLikeEvent()
 
