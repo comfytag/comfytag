@@ -266,6 +266,17 @@ export const adminLogin = async (req,res,next) =>{
     }
 }
 
+export const getMe = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password')
+    if (!user) return res.status(404).json({ message: 'User not found' })
+    const { isAdmin, ...details } = user._doc
+    res.status(200).json({ user: details, token: user.generateAuthToken() })
+  } catch (err) {
+    next(err)
+  }
+}
+
 export const registerAsOrganizer = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId)
@@ -273,7 +284,8 @@ export const registerAsOrganizer = async (req, res, next) => {
     if (user.isPartner) {
       return res.status(200).json({
         message: 'Already an organizer',
-        user
+        user,
+        token: user.generateAuthToken()
       })
     }
 
@@ -292,7 +304,8 @@ export const registerAsOrganizer = async (req, res, next) => {
 
     res.status(200).json({
       message: 'Organizer registration successful',
-      user: updatedUser
+      user: updatedUser,
+      token: updatedUser.generateAuthToken()
     })
   } catch (err) {
     next(err)

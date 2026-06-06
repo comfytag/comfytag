@@ -1,10 +1,10 @@
 'use client'
 
+import { useSession } from 'next-auth/react'
 import { BottomTabBar } from '@/components/layout/BottomTabBar'
 
 export function BottomTabBarWrapper() {
-  // BottomTabBar already calls usePathname() internally.
-  // This wrapper exists so layout.tsx (a Server Component) can
-  // import a named client boundary without passing currentPath.
+  const { status } = useSession()
+  if (status !== 'authenticated') return null
   return <BottomTabBar currentPath="" />
 }

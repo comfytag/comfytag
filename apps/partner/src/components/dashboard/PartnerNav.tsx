@@ -447,6 +447,31 @@ export default function PartnerNav() {
                 View Public Profile
               </Link>
 
+              {/* Attendee View link */}
+              <a
+                href={`${process.env.NEXT_PUBLIC_WEB_URL}/handoff?t=${session?.user?.token}`}
+                role="menuitem"
+                onClick={() => setDropdownOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '10px 16px',
+                  fontSize: 14,
+                  color: 'var(--color-text)',
+                  textDecoration: 'none',
+                  transition: `background var(--duration-fast) ease`,
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'var(--color-border)'
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLAnchorElement).style.background =
+                    'transparent'
+                }}
+              >
+                Attendee View →
+              </a>
+
               {/* Divider */}
               <div style={{ borderBottom: '1px solid var(--color-border)' }} />
 

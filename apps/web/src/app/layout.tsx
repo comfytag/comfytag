@@ -53,8 +53,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body suppressHydrationWarning>
-        <Providers>{children}</Providers>
-        <BottomTabBarWrapper />
+        <Providers>
+          {children}
+          <BottomTabBarWrapper />
+        </Providers>
       </body>
     </html>
   )

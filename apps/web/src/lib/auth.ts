@@ -96,6 +96,36 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
+    CredentialsProvider({
+      id: 'token',
+      name: 'Token',
+      credentials: {
+        backendToken: { label: 'Token', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.backendToken) return null
+        try {
+          const res = await fetch(`${API_BASE}/auth/me`, {
+            headers: { Authorization: `Bearer ${credentials.backendToken}` },
+          })
+          if (!res.ok) return null
+          const { user } = await res.json()
+          return {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            token: credentials.backendToken,
+            isPartner: user.isPartner,
+            isAdmin: user.isAdmin,
+            image: user.image ?? null,
+            username: user.username,
+            createdAt: user.createdAt,
+          }
+        } catch {
+          return null
+        }
+      },
+    }),
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? [
           GoogleProvider({

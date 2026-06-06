@@ -9,7 +9,7 @@ export function useProfile() {
   const id = session?.user?.id
   return useQuery({
     queryKey: profileKeys.me,
-    queryFn: () => api.get<ApiResponse<User>>(`/users/${id}`).then(r => r.data.data),
+    queryFn: () => api.get(`/users/${id}`).then(r => r.data),
     staleTime: 300_000,
     enabled: !!id,
   })
@@ -21,7 +21,7 @@ export function useUpdateProfile() {
   const id = session?.user?.id
   return useMutation({
     mutationFn: (updates: Partial<User>) =>
-      api.patch(`/users/${id}`, updates).then(r => r.data.data),
+      api.patch(`/users/${id}`, updates).then(r => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: profileKeys.me })
     },

@@ -85,6 +85,35 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
+    CredentialsProvider({
+      id: 'token',
+      name: 'Token',
+      credentials: {
+        backendToken: { label: 'Token', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.backendToken) return null
+        try {
+          const res = await fetch(`${API_BASE}/auth/me`, {
+            headers: { Authorization: `Bearer ${credentials.backendToken}` },
+          })
+          if (!res.ok) return null
+          const { user, token: freshToken } = await res.json()
+          if (!user.isPartner && !user.isAdmin) return null
+          return {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            token: freshToken,
+            logo: user.image ?? null,
+            isVerified: user.isVerify?.email ?? false,
+            isPartner: user.isPartner,
+          }
+        } catch {
+          return null
+        }
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user }) {

@@ -2,20 +2,24 @@
 
 import React, { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Navbar } from '@/components/layout/Navbar'
 import { AvatarInitials, Button, Input, LoadingSpinner, EmptyState, ErrorMessage } from '@comfytag/ui'
 import { authHeader, formatDate } from '@comfytag/utils'
+import { api } from '@/lib/api'
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile'
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
+  const router = useRouter()
   const { data: user } = useProfile()
   const { mutate: updateProfile, isPending: isSaving } = useUpdateProfile()
   const [name, setName] = useState(user?.name ?? session?.user?.name ?? '')
   const [username, setUsername] = useState(user?.username ?? '')
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [isUpgrading, setIsUpgrading] = useState(false)
 
   async function handleSave() {
     setSaveError(null)
@@ -31,6 +35,19 @@ export default function ProfilePage() {
       })
     } catch {
       setSaveError('Failed to save. Please try again.')
+    }
+  }
+
+  async function handleBecomePartner() {
+    setIsUpgrading(true)
+    try {
+      const res = await api.put(`/auth/register-organizer/${session?.user?.id}`)
+      const { token } = res.data
+      const partnerUrl = process.env.NEXT_PUBLIC_PARTNER_URL || 'http://localhost:3001'
+      router.push(`${partnerUrl}/handoff?t=${token}`)
+    } catch {
+      setSaveError('Failed to upgrade. Please try again.')
+      setIsUpgrading(false)
     }
   }
 
@@ -194,6 +211,30 @@ export default function ProfilePage() {
             <span style={{ color: 'var(--color-text)' }}>
               {session.user.isPartner ? 'Organizer' : 'Attendee'}
             </span>
+          </div>
+
+          <div style={{ marginBottom: '12px' }}>
+            {session.user.isPartner ? (
+              <Button
+                variant="primary"
+                fullWidth
+                onClick={() => {
+                  const partnerUrl = process.env.NEXT_PUBLIC_PARTNER_URL || 'http://localhost:3001'
+                  router.push(`${partnerUrl}/handoff?t=${session.user.token}`)
+                }}
+              >
+                Go to Partner Dashboard
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                fullWidth
+                loading={isUpgrading}
+                onClick={handleBecomePartner}
+              >
+                Become a Partner
+              </Button>
+            )}
           </div>
 
           <div
