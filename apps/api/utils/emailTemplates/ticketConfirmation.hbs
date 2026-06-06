@@ -1,0 +1,48 @@
+﻿<h1>Your ticket is confirmed ✓</h1>
+
+<p>Hi {{attendeeName}},</p>
+
+<p>Your ticket to <strong>{{eventName}}</strong> is ready and waiting!</p>
+
+<div style="background-color: #fafaf9; border: 2px solid #7c3aed; border-radius: 12px; padding: 20px; margin: 24px 0;">
+  <h3 style="margin-top: 0; color: #7c3aed;">Event Details</h3>
+  <p><strong>{{eventName}}</strong></p>
+  <p style="margin-bottom: 8px;">📅 {{eventDate}}</p>
+  <p style="margin-bottom: 8px;">🕐 {{eventTime}}</p>
+  <p style="margin-bottom: 0;">🎫 {{qty}}x {{ticketTier}} ticket{{#if qty > 1}}s{{/if}}</p>
+
+  {{#if qrCodeUrl}}
+  <hr style="border: none; border-top: 1px solid #e7e5e4; margin: 16px 0;">
+  <p style="text-align: center; margin: 16px 0;">
+    <img src="{{qrCodeUrl}}" alt="Your QR Code" style="width: 180px; height: 180px; border-radius: 8px;">
+  </p>
+  {{/if}}
+
+  <p style="margin-bottom: 0; font-size: 18px; font-weight: 600; color: #1c1917; border-top: 1px solid #e7e5e4; padding-top: 16px;">Total Paid: <span style="color: #7c3aed;">{{totalPrice}}</span></p>
+</div>
+
+{{#unless faceEnrolled}}
+<div style="background-color: #ede9fe; border-left: 4px solid #7c3aed; padding: 16px; margin: 20px 0; border-radius: 4px;">
+  <h3 style="margin-top: 0; color: #7c3aed;">Next Step: Enroll Your Face</h3>
+  <p>Your face is your ticket—no QR code needed at the gate. Enroll your face in 30 seconds to get the frictionless check-in experience.</p>
+  {{> ctaButton text="Enroll Your Face Now" url=enrollFaceLink }}
+</div>
+{{/unless}}
+
+{{#unless isPartner}}
+<div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 4px;">
+  <h3 style="margin-top: 0; color: #10b981;">Organize Your Own Events?</h3>
+  <p>Create your first event with ComfyTag and reach thousands of attendees. Set your own prices, check in your audience with face recognition, and grow your business.</p>
+  {{> ctaButton text="Become an Organizer" url=createEventLink }}
+</div>
+{{/unless}}
+
+<div style="background-color: #fafaf9; border: 1px solid #e7e5e4; border-radius: 8px; padding: 16px; margin: 24px 0;">
+  <h3 style="margin-top: 0; font-size: 16px;">Share & Earn</h3>
+  <p style="margin-bottom: 12px;">Know someone who should be at {{eventName}}? Share your ticket link and earn rewards when they grab a ticket.</p>
+  {{> ctaButton text="Share This Event" url=shareLink }}
+</div>
+
+<p style="color: #a8a29e; margin-top: 32px;">See you at the gate! 🎉</p>
+
+<p style="color: #a8a29e; font-size: 14px; margin-top: 32px;">Questions? Check out our <a href="https://comfytag.com/support/faq" style="color: #7c3aed;">FAQ</a> or reply to this email anytime.</p>

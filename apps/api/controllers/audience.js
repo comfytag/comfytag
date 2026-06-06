@@ -4,6 +4,7 @@ import Audience from '../models/Audience.js';
 import User from '../models/User.js';
 import { createError } from '../utils/error.js'
 import { sendTicket } from '../utils/sendEmail.js';
+import { enqueueEmail } from '../jobs/emailQueue.js';
 import moment from 'moment/moment.js';
 import { QR } from '../utils/QRCode.js';
 import { generateSecret } from 'otplib'
@@ -132,18 +133,32 @@ export const createAudience = async (req, res, next) => {
 
         res.status(200).json(savedAudience)
 
-        const text = 'Please download your ticket'
-        const details = (`<div>
-        <p style={{fontSize : bold}}>Download your ticket</p>
-        Name : ${savedAudience.name} <br/>
-        Event : ${savedAudience.eventname} <br/>
-        Number of tickets : ${savedAudience.numOfTicket} <br/>
-        Ticket type : ${savedAudience.type} <br/>
-        Amount paid :  ${savedAudience.amount} <br/>
-        Date : ${moment(savedAudience.createdAt).format("YYYY-MM-DD")} <br/>
-        ${qrCode ? `<img src="${qrCode}" alt="Ticket QR Code" width="200" height="200" />` : ''}</div>`)
+        const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+        const buyer = await User.findById(userId)
 
-        await sendTicket(savedAudience.email, savedAudience.eventname +" ticket", text, details);
+        // Enqueue ticket confirmation email (non-blocking)
+        enqueueEmail({
+          to: savedAudience.email,
+          subject: `${savedAudience.eventname} — Your ticket is confirmed ✓`,
+          template: 'ticketConfirmation.hbs',
+          data: {
+            eventName: savedAudience.eventname,
+            eventDate: savedAudience.date ? moment(savedAudience.date).format('ddd, MMM D, YYYY') : 'TBA',
+            eventTime: savedAudience.time || 'TBA',
+            attendeeName: savedAudience.name,
+            ticketTier: savedAudience.type,
+            qty: savedAudience.numOfTicket,
+            totalPrice: `₦${savedAudience.amount.toLocaleString()}`,
+            faceEnrolled: buyer?.faceEnrolled || false,
+            isPartner: buyer?.userType === 'organizer' || false,
+            enrollFaceLink: `${baseUrl}/app/enroll-face`,
+            createEventLink: `${baseUrl}/register-organizer`,
+            shareLink: `${baseUrl}/share?ticket=${savedAudience.reference}`,
+            qrCodeUrl: qrCode || null,
+            year: new Date().getFullYear(),
+          },
+          from: 'tickets@comfytag.com',
+        }).catch(err => console.error('[Ticket Confirmation] Queue failed:', err.message));
     } catch (err) {
         next(err)
     }

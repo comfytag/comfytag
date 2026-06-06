@@ -2,6 +2,7 @@
 import Bank from '../models/Bank.js';
 import Withdraw from '../models/Withdraw.js';
 import User from '../models/User.js';
+import { enqueueEmail } from '../jobs/emailQueue.js';
 
 
 // CREATE Bank
@@ -117,11 +118,59 @@ export const createWithdraw = async (req, res, next) => {
 // UPDATE
 export const updateWithdraw = async (req,res,next) =>{
     try{
+        const withdrawId = req.params.id
+        const { status, rejectionReason } = req.body
+
+        const withdraw = await Withdraw.findById(withdrawId)
+        if (!withdraw) return res.status(404).json({ message: 'Withdrawal request not found' })
+
+        const user = await User.findById(withdraw.user_id)
+        const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+
         const updatedWithdraw = await Withdraw.findByIdAndUpdate(
-            req.params.id,
+            withdrawId,
            { $set: req.body},
            {new: true}
         )
+
+        // Enqueue status-change emails (non-blocking)
+        if (status === 'approved' || status === 'sent') {
+            // PAYOUT APPROVED/SENT
+            enqueueEmail({
+              to: user.email,
+              subject: `Your ₦${withdraw.amount?.toLocaleString()} payout is on the way`,
+              template: 'payoutApproved.hbs',
+              data: {
+                organizerName: user.name,
+                amount: `₦${withdraw.amount?.toLocaleString()}`,
+                bankName: withdraw.bankName || 'Your bank',
+                last4Digits: withdraw.acctNumber?.slice(-4) || '****',
+                payoutReference: withdrawId.toString(),
+                arrivalTime: '24–48 hours',
+                dashboardLink: `${baseUrl}/partner/payouts`,
+                year: new Date().getFullYear(),
+              },
+              from: 'payouts@comfytag.com',
+            }).catch(err => console.error('[Payout Approved] Queue failed:', err.message))
+        } else if (status === 'rejected') {
+            // PAYOUT REJECTED
+            enqueueEmail({
+              to: user.email,
+              subject: 'Payout request needs attention',
+              template: 'payoutRejected.hbs',
+              data: {
+                organizerName: user.name,
+                amount: `₦${withdraw.amount?.toLocaleString()}`,
+                rejectionReason: rejectionReason || 'Please review your bank details',
+                actionStep: 'Review your bank details and resubmit',
+                resubmitLink: `${baseUrl}/partner/payouts/${withdrawId}/resubmit`,
+                year: new Date().getFullYear(),
+              },
+              from: 'payouts@comfytag.com',
+              replyTo: 'payouts@comfytag.com',
+            }).catch(err => console.error('[Payout Rejected] Queue failed:', err.message))
+        }
+
         res.status(200).json(updatedWithdraw)
     }catch(err){
         next(err)

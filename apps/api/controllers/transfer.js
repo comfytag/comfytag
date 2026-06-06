@@ -1,6 +1,9 @@
 import Audience from '../models/Audience.js'
 import User from '../models/User.js'
+import Event from '../models/Event.js'
 import { createError } from '../utils/error.js'
+import { enqueueEmail } from '../jobs/emailQueue.js'
+import moment from 'moment/moment.js'
 import crypto from 'crypto'
 
 // POST /tickets/transfer/initiate
@@ -55,6 +58,30 @@ export const initiateTransfer = async (req, res, next) => {
       recipientName: recipient.name,
       ticketId,
     })
+
+    // Enqueue transfer initiated email to recipient (non-blocking)
+    const sender = await User.findById(senderId)
+    const event = await Event.findById(ticket.event_id)
+    const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+
+    enqueueEmail({
+      to: recipient.email,
+      subject: `${sender?.name || 'Someone'} sent you a ${event?.title || 'ticket'} ticket`,
+      template: 'transferInitiated.hbs',
+      data: {
+        recipientName: recipient.name,
+        senderName: sender?.name || 'A friend',
+        eventName: event?.title || ticket.eventname || 'Event',
+        eventDate: event?.startDate ? moment(event.startDate).format('ddd, MMM D, YYYY') : 'TBA',
+        eventTime: event?.startTime || 'TBA',
+        ticketTier: ticket.type,
+        expiryDate: moment().add(7, 'days').format('ddd, MMM D, YYYY'),
+        acceptLink: `${baseUrl}/tickets/transfer/${ticketId}/accept?token=${transferToken}`,
+        declineLink: `${baseUrl}/tickets/transfer/${ticketId}/decline?token=${transferToken}`,
+        year: new Date().getFullYear(),
+      },
+      from: 'tickets@comfytag.com',
+    }).catch(err => console.error('[Transfer Initiated] Queue failed:', err.message))
   } catch (err) {
     next(err)
   }
@@ -101,6 +128,29 @@ export const acceptTransfer = async (req, res, next) => {
       message: 'Ticket transfer accepted',
       ticketId,
     })
+
+    // Enqueue transfer accepted email to original owner (non-blocking)
+    const sender = await User.findById(previousOwner)
+    const recipient2 = await User.findById(recipientId)
+    const event = await Event.findById(ticket.event_id)
+    const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+
+    enqueueEmail({
+      to: sender?.email,
+      subject: `Transfer accepted ✓ ${event?.title || 'ticket'}`,
+      template: 'transferAccepted.hbs',
+      data: {
+        senderName: sender?.name || 'You',
+        recipientName: recipient2?.name || 'Someone',
+        eventName: event?.title || ticket.eventname || 'Event',
+        eventDate: event?.startDate ? moment(event.startDate).format('ddd, MMM D, YYYY') : 'TBA',
+        eventTime: event?.startTime || 'TBA',
+        ticketTier: ticket.type,
+        dashboardLink: `${baseUrl}/tickets`,
+        year: new Date().getFullYear(),
+      },
+      from: 'tickets@comfytag.com',
+    }).catch(err => console.error('[Transfer Accepted] Queue failed:', err.message))
   } catch (err) {
     next(err)
   }
@@ -130,6 +180,30 @@ export const declineTransfer = async (req, res, next) => {
       message: 'Transfer declined',
       ticketId
     })
+
+    // Enqueue transfer declined email to original owner (non-blocking)
+    const sender = await User.findById(ticket.user_id)
+    const recipient2 = await User.findById(recipientId)
+    const event = await Event.findById(ticket.event_id)
+    const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+
+    enqueueEmail({
+      to: sender?.email,
+      subject: `${recipient2?.name || 'Someone'} couldn't accept your ticket`,
+      template: 'transferDeclined.hbs',
+      data: {
+        senderName: sender?.name || 'You',
+        recipientName: recipient2?.name || 'Someone',
+        eventName: event?.title || ticket.eventname || 'Event',
+        eventDate: event?.startDate ? moment(event.startDate).format('ddd, MMM D, YYYY') : 'TBA',
+        eventTime: event?.startTime || 'TBA',
+        ticketTier: ticket.type,
+        transferLink: `${baseUrl}/tickets/${ticketId}/transfer`,
+        sellLink: `${baseUrl}/tickets/${ticketId}/sell`,
+        year: new Date().getFullYear(),
+      },
+      from: 'tickets@comfytag.com',
+    }).catch(err => console.error('[Transfer Declined] Queue failed:', err.message))
   } catch (err) {
     next(err)
   }

@@ -1,0 +1,32 @@
+﻿<h1>Payout request needs attention ⚠️</h1>
+
+<p>Hi {{organizerName}},</p>
+
+<p>Your payout request couldn't be processed. The good news: it's an easy fix!</p>
+
+<div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin: 24px 0; border-radius: 4px;">
+  <h3 style="margin-top: 0; color: #991b1b;">What Happened</h3>
+  <p style="margin: 0;">{{rejectionReason}}</p>
+</div>
+
+<div style="background-color: #fafaf9; border: 1px solid #e7e5e4; border-radius: 8px; padding: 16px; margin: 24px 0;">
+  <h3 style="margin-top: 0; font-size: 16px;">Payout Summary</h3>
+  <p style="margin: 12px 0 0 0;"><strong>Amount:</strong> {{amount}}</p>
+  <p style="margin: 0; font-size: 14px; color: #78716c;">Review your bank details and resubmit.</p>
+</div>
+
+<h3 style="margin-top: 24px;">How to Fix It</h3>
+
+<ol style="color: #78716c; line-height: 1.8; margin: 12px 0;">
+  <li>Check your account number and bank name</li>
+  <li>Make sure your account holder name matches your ID</li>
+  <li>Resubmit with the corrected details</li>
+</ol>
+
+{{> ctaButton text="Resubmit Payout" url=resubmitLink }}
+
+<h3 style="margin-top: 24px;">Need Help?</h3>
+
+<p>If you're not sure what's wrong, reply to this email and we'll help you get it sorted quickly.</p>
+
+<p style="color: #a8a29e; margin-top: 32px;">Let's get your money out! 💪</p>

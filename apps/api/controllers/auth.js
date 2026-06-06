@@ -332,26 +332,76 @@ export const sendVerifyEmail = async (req,res,next) =>{
 export const verifyID = async (req,res,next) =>{
 	try {
 		const verify = req.params.kyc
+		const { rejectionReason } = req.body || {}
 		console.log(verify)
 		const user = await User.findOne({ _id: req.params.id });
 		if (!user) return res.status(400).send({ message: "User does not exist" });
 
-			// type.toLowerCase()
-			await User.findByIdAndUpdate({ _id: req.params.id},
-				{
-				$set: verify == "photo" ? {
-					isVerify: {photo: true }} :
-				verify == "idcard" ? {			
-						isVerify: {idCard: true }} :
-				verify == "address" && {
-						isVerify: {address: true}},
-						 new: true}
-				
-			)
-		console.log(verify)
+		const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
 
-		// }))
-		res.status(200).send({ message: `${verify} verified successfully` });
+		if (verify === 'reject' || rejectionReason) {
+			// KYC REJECTED
+			await User.findByIdAndUpdate({ _id: req.params.id}, {
+				$set: {
+					kycStatus: 'rejected',
+					kycRejectionReason: rejectionReason || 'Document clarity issue',
+					kycRejectedAt: new Date(),
+				}
+			})
+
+			// Enqueue KYC rejected email (non-blocking)
+			enqueueEmail({
+				to: user.email,
+				subject: "We need clearer documents — here's how",
+				template: 'kycRejected.hbs',
+				data: {
+					organizerName: user.name,
+					rejectionReason: rejectionReason || 'Your documents need to be clearer for verification',
+					reuploadLink: `${baseUrl}/partner/kyc`,
+					supportChatLink: `${baseUrl}/support/chat`,
+					year: new Date().getFullYear(),
+				},
+				from: 'support@comfytag.com',
+				replyTo: 'support@comfytag.com',
+			}).catch(err => console.error('[KYC Rejected] Queue failed:', err.message))
+
+			res.status(200).send({ message: 'KYC rejection email sent' });
+		} else {
+			// KYC APPROVED
+			// type.toLowerCase()
+			await User.findByIdAndUpdate({ _id: req.params.id}, {
+				$set: verify == "photo" ? {
+					isVerify: {photo: true },
+					kycStatus: 'verified' } :
+				verify == "idcard" ? {
+						isVerify: {idCard: true },
+						kycStatus: 'verified' } :
+				verify == "address" && {
+						isVerify: {address: true},
+						kycStatus: 'verified'},
+						 new: true}
+
+			)
+			console.log(verify)
+
+			// Enqueue KYC approved email (non-blocking)
+			enqueueEmail({
+				to: user.email,
+				subject: "Identity verified ✓ You're ready",
+				template: 'kycApproved.hbs',
+				data: {
+					organizerName: user.name,
+					bankSetupLink: `${baseUrl}/partner/settings/bank`,
+					supportEmail: 'support@comfytag.com',
+					year: new Date().getFullYear(),
+				},
+				from: 'support@comfytag.com',
+				replyTo: 'support@comfytag.com',
+			}).catch(err => console.error('[KYC Approved] Queue failed:', err.message))
+
+			// }))
+			res.status(200).send({ message: `${verify} verified successfully` });
+		}
 	} catch (error) {
 		res.status(500).send({ message: "Internal Server Error" });
 	}

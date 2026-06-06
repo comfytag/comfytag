@@ -1,0 +1,28 @@
+﻿<h1>Ticket transfer declined 💔</h1>
+
+<p>Hi {{senderName}},</p>
+
+<p>Unfortunately, <strong>{{recipientName}}</strong> couldn't accept your ticket to <strong>{{eventName}}</strong>. No worries—here's what you can do next.</p>
+
+<div style="background-color: #fafaf9; border: 1px solid #e7e5e4; border-radius: 8px; padding: 16px; margin: 24px 0;">
+  <h3 style="margin-top: 0; font-size: 16px;">Event Details</h3>
+  <p><strong>{{eventName}}</strong></p>
+  <p style="margin-bottom: 8px;">📅 {{eventDate}}</p>
+  <p style="margin: 0; font-size: 14px; color: #78716c;">🎫 {{ticketTier}} Tier</p>
+</div>
+
+<h3 style="margin-top: 24px;">What's Next?</h3>
+
+<div style="margin: 20px 0;">
+  <h4 style="margin-bottom: 12px; font-size: 14px;">Option 1: Send to Someone Else</h4>
+  <p style="margin: 0 0 12px 0; color: #78716c;">Have another friend who'd love to go? Transfer it to them instead.</p>
+  {{> ctaButton text="Transfer to Someone Else" url=transferLink }}
+</div>
+
+<div style="margin: 20px 0;">
+  <h4 style="margin-bottom: 12px; font-size: 14px;">Option 2: Sell Your Ticket</h4>
+  <p style="margin: 0 0 12px 0; color: #78716c;">Put it up for sale on ComfyTag and earn money. We'll handle the rest.</p>
+  {{> ctaButton text="Sell This Ticket" url=sellLink }}
+</div>
+
+<p style="color: #a8a29e; font-size: 14px; margin-top: 32px;">Need help? Reply to this email or check our <a href="https://comfytag.com/support/faq" style="color: #7c3aed;">FAQ</a>.</p>

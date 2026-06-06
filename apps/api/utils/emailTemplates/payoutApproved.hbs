@@ -1,0 +1,35 @@
+﻿<h1>Your payout is on the way! 💸</h1>
+
+<p>Hi {{organizerName}},</p>
+
+<p>Great news! Your payout request has been approved and is being processed.</p>
+
+<div style="background-color: #fafaf9; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 24px 0;">
+  <h3 style="margin-top: 0; color: #d97706;">Payout Details</h3>
+  <p style="font-size: 28px; font-weight: 700; margin: 0 0 12px 0; color: #1c1917;">{{amount}}</p>
+
+  <hr style="border: none; border-top: 1px solid #e7e5e4; margin: 12px 0;">
+
+  <p style="margin: 12px 0 4px 0; color: #78716c;">Going to</p>
+  <p style="margin: 4px 0; font-weight: 600; color: #1c1917;">{{bankName}}</p>
+  <p style="margin: 0; font-size: 14px; color: #78716c;">Ending in {{last4Digits}}</p>
+
+  <hr style="border: none; border-top: 1px solid #e7e5e4; margin: 12px 0;">
+
+  <p style="margin: 8px 0 0 0; font-size: 14px;">
+    <strong>Reference:</strong> <code style="background-color: #fff; border: 1px solid #e7e5e4; padding: 4px 8px; border-radius: 4px;">{{payoutReference}}</code>
+  </p>
+
+  <p style="margin: 12px 0 0 0; font-size: 14px; color: #78716c;">
+    <strong>Expected arrival:</strong> {{arrivalTime}}
+  </p>
+</div>
+
+<div style="background-color: #ede9fe; border-left: 4px solid #7c3aed; padding: 16px; margin: 24px 0; border-radius: 4px;">
+  <h3 style="margin-top: 0; color: #7c3aed;">What's Next?</h3>
+  <p style="margin: 0;">The money will hit your bank account within {{arrivalTime}}. You can track all your payouts in your dashboard.</p>
+</div>
+
+{{> ctaButton text="View All Payouts" url=dashboardLink }}
+
+<p style="color: #a8a29e; font-size: 14px; margin-top: 32px;">Thank you for using ComfyTag! Keep growing your events 🚀</p>
