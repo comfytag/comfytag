@@ -20,8 +20,8 @@ describe('Auth Middleware', () => {
     app.use(express.json())
     app.use(cookieParser())
 
-    // Mock process.env.JWT to use our test secret
-    process.env.JWT = TEST_JWT_SECRET
+    // Mock process.env.JWT_SECRET to use our test secret
+    process.env.JWT_SECRET = TEST_JWT_SECRET
   })
 
   // Helper function to add error handler (called after routes are set up)
@@ -36,7 +36,7 @@ describe('Auth Middleware', () => {
   }
 
   afterEach(() => {
-    delete process.env.JWT
+    delete process.env.JWT_SECRET
   })
 
   // ============================================================================

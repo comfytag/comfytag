@@ -37,7 +37,7 @@ vi.mock('../../utils/QRCode', () => ({
 // ============================================================================
 
 let app: Express
-const TEST_JWT_SECRET = process.env.JWT || 'test-secret-key'
+const TEST_JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key'
 const TEST_SALT = 10
 
 async function createTestUser(overrides = {}) {
@@ -126,7 +126,7 @@ function signTestToken(userId: string | mongoose.Types.ObjectId, isPartner = fal
 // ============================================================================
 
 beforeAll(async () => {
-  process.env.JWT = TEST_JWT_SECRET
+  process.env.JWT_SECRET = TEST_JWT_SECRET
   await connectTestDB()
 
   app = express()
