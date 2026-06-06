@@ -43,12 +43,16 @@ function RegisterInner() {
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        setError((data as { message?: string }).message ?? 'Could not create account. Please try again.')
+        if (res.status === 409) {
+          setError('An account with this email already exists. Please sign in instead.')
+        } else {
+          setError((data as { message?: string }).message ?? 'Could not create account. Please try again.')
+        }
         return
       }
       const result = await signIn('credentials', { redirect: false, email, password })
       if (result?.error) {
-        router.push('/login')
+        setError('Account created! Please sign in with your credentials.')
       } else {
         router.push(callbackUrl)
         router.refresh()
