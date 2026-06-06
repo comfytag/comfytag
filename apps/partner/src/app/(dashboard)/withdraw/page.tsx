@@ -63,6 +63,7 @@ const withdrawColumns: ColumnDef<WithdrawRequest>[] = [
 export default function WithdrawPage() {
   const { data: session } = useSession()
   const userId = session?.user?.id
+  const token = session?.user?.token
 
   const [modal, setModal] = useState(false)
   const [selectedBankId, setSelectedBankId] = useState('')
@@ -70,8 +71,8 @@ export default function WithdrawPage() {
   const [selectedEventId, setSelectedEventId] = useState('')
   const [formError, setFormError] = useState('')
 
-  const requestsQuery = useWithdrawals(userId || '')
-  const banksQuery = useBankAccount(userId || '')
+  const requestsQuery = useWithdrawals(userId || '', token)
+  const banksQuery = useBankAccount(userId || '', token)
   const eventsQuery = useMyEvents()
   const revenueQuery = usePartnerRevenue()
   const withdrawMutation = useRequestPayout()

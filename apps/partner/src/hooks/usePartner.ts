@@ -9,6 +9,7 @@ import type { PartnerRevenue, PartnerAnalytics, User } from '@comfytag/types'
 export function usePartnerRevenue() {
   const { data: session } = useSession()
   const userId = session?.user?.id
+  const token = session?.user?.token
 
   return useQuery({
     queryKey: partnerKeys.revenue,
@@ -17,13 +18,14 @@ export function usePartnerRevenue() {
         .get<PartnerRevenue>(`/partner/${userId}/revenue`)
         .then((r) => r.data),
     staleTime: 120_000,
-    enabled: !!userId,
+    enabled: !!userId && !!token,
   })
 }
 
 export function usePartnerAnalytics() {
   const { data: session } = useSession()
   const userId = session?.user?.id
+  const token = session?.user?.token
 
   return useQuery({
     queryKey: partnerKeys.analytics,
@@ -32,19 +34,20 @@ export function usePartnerAnalytics() {
         .get<PartnerAnalytics>(`/partner/${userId}/analytics`)
         .then((r) => r.data),
     staleTime: 300_000,
-    enabled: !!userId,
+    enabled: !!userId && !!token,
   })
 }
 
 export function usePartnerProfile() {
   const { data: session } = useSession()
   const userId = session?.user?.id
+  const token = session?.user?.token
 
   return useQuery({
     queryKey: partnerKeys.profile,
     queryFn: () => api.get<User>(`/users/${userId}`).then((r) => r.data),
     staleTime: 300_000,
-    enabled: !!userId,
+    enabled: !!userId && !!token,
   })
 }
 

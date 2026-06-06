@@ -1,11 +1,15 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 import { api } from '@/lib/api'
 import { attendeeKeys } from './queryKeys'
 import type { Ticket } from '@comfytag/types'
 
 export function useAttendees(eventId: string) {
+  const { data: session } = useSession()
+  const token = session?.user?.token
+
   return useQuery({
     queryKey: attendeeKeys.list(eventId),
     queryFn: () =>
@@ -13,7 +17,7 @@ export function useAttendees(eventId: string) {
         .get<Ticket[]>(`/audience/event/${eventId}`)
         .then((r) => r.data ?? []),
     staleTime: 30_000,
-    enabled: !!eventId,
+    enabled: !!eventId && !!token,
   })
 }
 

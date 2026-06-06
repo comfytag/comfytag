@@ -15,6 +15,7 @@ import type {
 export function useMyEvents() {
   const { data: session } = useSession()
   const userId = session?.user?.id
+  const token = session?.user?.token
 
   return useQuery({
     queryKey: partnerEventKeys.list(),
@@ -25,7 +26,7 @@ export function useMyEvents() {
         })
         .then((r) => r.data ?? []),
     staleTime: 60_000,
-    enabled: !!userId,
+    enabled: !!userId && !!token,
   })
 }
 

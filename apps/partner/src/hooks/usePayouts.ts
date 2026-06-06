@@ -20,17 +20,18 @@ interface WalletData {
 
 export function useWallet() {
   const { data: session } = useSession()
+  const token = session?.user?.token
 
   return useQuery({
     queryKey: payoutKeys.wallet,
     queryFn: () =>
       api.get<WalletData>('/partner/wallet/').then((r) => r.data),
     staleTime: 60_000,
-    enabled: !!session?.user?.id,
+    enabled: !!session?.user?.id && !!token,
   })
 }
 
-export function useWithdrawals(id: string) {
+export function useWithdrawals(id: string, token?: string) {
   return useQuery({
     queryKey: payoutKeys.withdrawals,
     queryFn: () =>
@@ -38,17 +39,17 @@ export function useWithdrawals(id: string) {
         .get<WithdrawRequest[]>(`/withdraw/${id}`)
         .then((r) => r.data ?? []),
     staleTime: 60_000,
-    enabled: !!id,
+    enabled: !!id && !!token,
   })
 }
 
-export function useBankAccount(id: string) {
+export function useBankAccount(id: string, token?: string) {
   return useQuery({
     queryKey: payoutKeys.bank,
     queryFn: () =>
       api.get<BankAccount[]>(`/bank/${id}`).then((r) => r.data ?? []),
     staleTime: 300_000,
-    enabled: !!id,
+    enabled: !!id && !!token,
   })
 }
 
