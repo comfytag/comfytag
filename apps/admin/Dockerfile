@@ -19,11 +19,12 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
-COPY --from=builder /app /app
+COPY --from=builder /app/apps/admin/.next/standalone ./
+COPY --from=builder /app/apps/admin/.next/static ./.next/static
+COPY --from=builder /app/apps/admin/public ./public
 RUN chown -R nextjs:nodejs /app
 USER nextjs
-WORKDIR /app/apps/admin
 EXPOSE 3002
 ENV PORT=3002
 ENV HOSTNAME="0.0.0.0"
-CMD ["pnpm", "exec", "next", "start"]
+CMD ["node", "server.js"]
