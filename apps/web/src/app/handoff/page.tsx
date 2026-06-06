@@ -6,7 +6,6 @@ import { signIn } from 'next-auth/react'
 import { LoadingSpinner } from '@comfytag/ui'
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
 export default function HandoffPage() {
   const router = useRouter()
