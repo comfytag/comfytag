@@ -69,8 +69,9 @@ export default function OverviewPage() {
         style={{
           paddingTop: '32px',
           paddingBottom: '16px',
-          fontSize: '18px',
-          fontWeight: 600,
+          fontFamily: 'var(--font-anybody), sans-serif', // NEW: Bold Anybody font
+          fontSize: '24px',
+          fontWeight: 800,
           color: 'var(--color-text)',
         }}
       >
@@ -155,9 +156,10 @@ export default function OverviewPage() {
           >
             <h2
               style={{
+                fontFamily: 'var(--font-anybody), sans-serif', // NEW: Bold Anybody font
                 margin: 0,
-                fontSize: '18px',
-                fontWeight: 700,
+                fontSize: '20px',
+                fontWeight: 800,
                 color: 'var(--color-text)',
               }}
             >

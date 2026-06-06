@@ -41,13 +41,14 @@ export function DataTable<T extends object>({
               <th
                 key={col.key}
                 style={{
+                  fontFamily: 'var(--font-label), sans-serif', // NEW: Space Grotesk labels
                   padding: '10px 16px',
                   textAlign: 'left',
                   fontSize: '12px',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   color: 'var(--color-text-muted)',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
+                  letterSpacing: '0.05em',
                   width: col.width,
                 }}
               >

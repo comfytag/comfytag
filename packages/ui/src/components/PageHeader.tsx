@@ -31,11 +31,30 @@ export function PageHeader({
       }}
     >
       <div>
-        <h1 style={{ fontSize: titleFontSize, fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>
+        <h1
+          style={{
+            fontFamily: 'var(--font-anybody), sans-serif', // NEW: Bold Anybody font
+            fontSize: titleFontSize,
+            fontWeight: 800,
+            color: 'var(--color-text)',
+            margin: 0,
+          }}
+        >
           {title}
         </h1>
         {subtitle && (
-          <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', marginTop: '4px', marginBottom: 0 }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-label), sans-serif', // NEW: Space Grotesk labels
+              fontSize: '12px',
+              fontWeight: 600,
+              color: 'var(--color-text-muted)',
+              marginTop: '6px',
+              marginBottom: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+            }}
+          >
             {subtitle}
           </p>
         )}
