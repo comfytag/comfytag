@@ -108,7 +108,7 @@ function signTestToken(userId: string | mongoose.Types.ObjectId, isPartner = fal
 
 beforeAll(async () => {
   // Set JWT secret for tests
-  process.env.JWT = TEST_JWT_SECRET
+  process.env.JWT_SECRET = TEST_JWT_SECRET
 
   await connectTestDB()
 
