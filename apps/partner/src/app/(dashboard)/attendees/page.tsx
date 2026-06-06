@@ -179,7 +179,7 @@ export default function AttendeesPage() {
                 <AttendeeRow
                   key={attendee._id}
                   attendee={attendee}
-                  onCheckInToggle={() => checkInMutation.mutate({ attendeeId: attendee._id, payload: {} })}
+                  onCheckInToggle={() => checkInMutation.mutate({ attendeeId: attendee._id, eventId: selectedEventId, payload: {} })}
                   isCheckingIn={checkInMutation.isPending}
                 />
               ))}

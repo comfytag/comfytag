@@ -25,10 +25,10 @@ export function useCheckin() {
   const qc = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ attendeeId, payload }: { attendeeId: string; payload: CheckinPayload }) =>
+    mutationFn: ({ attendeeId, eventId, payload }: { attendeeId: string; eventId: string; payload: CheckinPayload }) =>
       api.post(`/audience/${attendeeId}/checkin`, payload).then((r) => r.data),
-    onSuccess: (_, { attendeeId }) => {
-      qc.invalidateQueries({ queryKey: attendeeKeys.list(attendeeId) })
+    onSuccess: (_, { eventId }) => {
+      qc.invalidateQueries({ queryKey: attendeeKeys.list(eventId) })
     },
   })
 }
