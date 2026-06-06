@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { LoadingSpinner } from '@comfytag/ui'
 
+export const dynamic = 'force-dynamic'
+
 export default function HandoffPage() {
   const router = useRouter()
   const params = useSearchParams()
