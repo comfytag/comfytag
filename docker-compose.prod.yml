@@ -16,6 +16,12 @@ services:
       - api
     networks:
       - comfytag-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   web:
     build:
@@ -27,6 +33,12 @@ services:
       - apps/web/.env
     networks:
       - comfytag-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   partner:
     build:
@@ -38,6 +50,12 @@ services:
       - apps/partner/.env
     networks:
       - comfytag-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   admin:
     build:
@@ -49,6 +67,12 @@ services:
       - apps/admin/.env
     networks:
       - comfytag-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3002"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   api:
     build:
@@ -63,6 +87,12 @@ services:
       - mongodb
     networks:
       - comfytag-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4002/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   mongodb:
     image: mongo:7.0
@@ -73,6 +103,12 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: changeme
     networks:
       - comfytag-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand({ping:1})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   redis:
     image: redis:7.2-alpine
@@ -82,6 +118,12 @@ services:
       - redis_data:/data
     networks:
       - comfytag-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   redis_data:

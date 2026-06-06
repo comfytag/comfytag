@@ -371,6 +371,28 @@ pnpm build
 pnpm build --filter=web
 ```
 
+### Production Docker Testing
+
+**REQUIRED before pushing Dockerfile changes:**
+```bash
+./scripts/test-docker-builds.sh
+```
+
+This script:
+- ✓ Builds all Docker images
+- ✓ Validates docker-compose.prod.yml
+- ✓ Starts containers
+- ✓ Checks containers stay running (no restart loop)
+- ✓ Verifies critical files exist (server.js)
+- ✓ Tests all endpoints respond
+
+**Do NOT push to GitHub if this script fails!**
+
+Related docs:
+- `docs/DOCKER_SETUP.md` — Docker & monorepo explained
+- `docs/DEPLOYMENT_GUIDE.md` — Deployment procedures
+- `docs/MONITORING_SETUP.md` — Monitoring & alerting
+
 ---
 
 ## 📚 KEY DOCUMENTATION FILES
@@ -407,6 +429,7 @@ See `project-session.md` for detailed kanban.
 - **NEVER log sensitive data** — no tokens, passwords, face data in logs
 - **NEVER push untyped endpoints** — all routes must have request/response types
 - **NEVER modify memory rules** — these are sacred (ask before changing)
+- **NEVER push Dockerfile changes without testing** — run `./scripts/test-docker-builds.sh` before every Docker change (incident: June 6, 2026)
 
 ---
 

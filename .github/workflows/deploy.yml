@@ -51,12 +51,66 @@ jobs:
       - name: Component tests — web + partner
         run: pnpm --filter "@comfytag/web" --filter "@comfytag/partner" test
 
-  deploy:
-    name: SSH Deploy
+  docker-validate:
+    name: Docker Build & Validation
     needs: [test]
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: docker compose -f docker-compose.prod.yml build
+
+      - name: Validate docker-compose configuration
+        run: docker compose -f docker-compose.prod.yml config > /dev/null
+
+      - name: Start containers for health check
+        run: docker compose -f docker-compose.prod.yml up -d
+
+      - name: Wait for services to be healthy
+        run: sleep 15
+
+      - name: Check container status
+        run: |
+          echo "Checking container health..."
+          docker compose -f docker-compose.prod.yml ps
+
+          # Verify no containers are in "Restarting" state
+          if docker compose -f docker-compose.prod.yml ps | grep -i "restarting"; then
+            echo "ERROR: Containers are in restart loop!"
+            docker compose -f docker-compose.prod.yml logs
+            exit 1
+          fi
+
+      - name: Verify critical files in Docker images
+        run: |
+          echo "Verifying critical files..."
+          docker run --rm comfytag-web ls -la /app/apps/web/server.js
+          docker run --rm comfytag-partner ls -la /app/apps/partner/server.js
+          docker run --rm comfytag-admin ls -la /app/apps/admin/server.js
+          echo "✓ All critical files present"
+
+      - name: Test endpoints
+        run: |
+          echo "Testing endpoints..."
+          curl -f http://localhost:3000 > /dev/null && echo "✓ Web responds" || exit 1
+          curl -f http://localhost:3001 > /dev/null && echo "✓ Partner responds" || exit 1
+          curl -f http://localhost:3002 > /dev/null && echo "✓ Admin responds" || exit 1
+          echo "✓ All endpoints healthy"
+
+      - name: Cleanup
+        if: always()
+        run: docker compose -f docker-compose.prod.yml down
+
+  deploy:
+    name: SSH Deploy
+    needs: [test, docker-validate]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Deploy to Hetzner VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -72,3 +126,27 @@ jobs:
             docker compose -f docker-compose.prod.yml build admin
             docker compose -f docker-compose.prod.yml up -d
             docker image prune -f
+
+      - name: Post-deployment verification
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            cd /home/deploy/comfytag
+
+            echo "Waiting for containers to stabilize..."
+            sleep 10
+
+            echo "Verifying deployment health..."
+            docker compose -f docker-compose.prod.yml ps
+
+            # Check for restart loops
+            if docker compose -f docker-compose.prod.yml ps | grep -i "restarting"; then
+              echo "ERROR: Containers in restart loop after deployment!"
+              docker compose -f docker-compose.prod.yml logs --tail 50
+              exit 1
+            fi
+
+            echo "✓ Deployment verification passed"
