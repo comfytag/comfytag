@@ -68,12 +68,15 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
     setError('')
     try {
       const devices = await Html5Qrcode.getCameras()
-      if (!devices || devices.length === 0) {
+      if (!Array.isArray(devices) || devices.length === 0) {
         throw new Error('No cameras found')
       }
       setCameras(devices)
 
-      const targetCameraId = cameraId ?? selectedCameraId ?? devices[0].id
+      const targetCameraId = cameraId ?? selectedCameraId ?? devices[0]?.id
+      if (!targetCameraId) {
+        throw new Error('No valid camera ID found')
+      }
       setSelectedCameraId(targetCameraId)
 
       const scanner = new Html5Qrcode(containerId)
@@ -332,7 +335,7 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
 
       {/* Controls */}
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
-        {cameras.length > 1 && (
+        {Array.isArray(cameras) && cameras.length > 1 && (
           <select
             value={selectedCameraId}
             onChange={(e) => void handleCameraChange(e.target.value)}

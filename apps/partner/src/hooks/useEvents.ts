@@ -74,14 +74,14 @@ interface CheckInStats {
   byMethod: Record<string, number>
 }
 
-export function useEventCheckinStats(id: string) {
+export function useEventCheckinStats(id: string, token?: string) {
   return useQuery({
     queryKey: partnerEventKeys.checkin(id),
     queryFn: () =>
       api.get<CheckInStats>(`/events/${id}/checkin-stats`).then((r) => r.data),
     staleTime: 0,
     refetchInterval: 5000,
-    enabled: !!id,
+    enabled: !!id && !!token,
   })
 }
 

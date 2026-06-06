@@ -1,6 +1,7 @@
 'use client'
 
 import { use, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { GateStats } from '@/components/events/GateStats'
 import { GateScannerPanel } from '@/components/events/GateScannerPanel'
@@ -16,13 +17,15 @@ interface GatePageProps {
 
 export default function GatePage({ params }: GatePageProps) {
   const { id: eventId } = use(params)
+  const { data: session } = useSession()
+  const token = session?.user?.token as string | undefined
   const [activeTab, setActiveTab] = useState<TabId>('scanner')
 
   const {
     data: rawStats,
     isLoading: statsLoading,
     isError: statsError,
-  } = useEventCheckinStats(eventId)
+  } = useEventCheckinStats(eventId, token)
 
   // Map API shape → GateStats component shape
   const stats = rawStats
