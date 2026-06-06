@@ -449,7 +449,7 @@ export default function PartnerNav() {
 
               {/* Attendee View link */}
               <a
-                href={`${process.env.NEXT_PUBLIC_WEB_URL}/handoff?t=${session?.user?.token}`}
+                href={`https://comfytag.com/handoff?t=${session?.user?.token}`}
                 role="menuitem"
                 onClick={() => setDropdownOpen(false)}
                 style={{

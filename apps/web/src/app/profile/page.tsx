@@ -43,8 +43,7 @@ export default function ProfilePage() {
     try {
       const res = await api.put(`/auth/register-organizer/${session?.user?.id}`)
       const { token } = res.data
-      const partnerUrl = process.env.NEXT_PUBLIC_PARTNER_URL || 'http://localhost:3001'
-      router.push(`${partnerUrl}/handoff?t=${token}`)
+      router.push(`https://partner.comfytag.com/handoff?t=${token}`)
     } catch {
       setSaveError('Failed to upgrade. Please try again.')
       setIsUpgrading(false)
@@ -219,8 +218,7 @@ export default function ProfilePage() {
                 variant="primary"
                 fullWidth
                 onClick={() => {
-                  const partnerUrl = process.env.NEXT_PUBLIC_PARTNER_URL || 'http://localhost:3001'
-                  router.push(`${partnerUrl}/handoff?t=${session.user.token}`)
+                  router.push(`https://partner.comfytag.com/handoff?t=${session.user.token}`)
                 }}
               >
                 Go to Partner Dashboard

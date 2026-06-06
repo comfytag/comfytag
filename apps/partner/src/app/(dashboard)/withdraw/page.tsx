@@ -109,7 +109,7 @@ export default function WithdrawPage() {
   const requests = requestsQuery.data ?? []
   const banks = banksQuery.data ?? []
   const events = eventsQuery.data ?? []
-  const availableBalance = revenueQuery.data?.availableBalance ?? 0
+  const availableBalance = typeof revenueQuery.data?.availableBalance === 'number' ? revenueQuery.data.availableBalance : 0
 
   function closeModal() {
     setModal(false)
