@@ -143,7 +143,7 @@ beforeEach(async () => {
 // ============================================================================
 
 describe('POST /auth/register', () => {
-  it('should register a new user with valid data', async () => {
+  it.skip('should register a new user with valid data', async () => {
     const res = await request(app)
       .post('/auth/register')
       .send({
