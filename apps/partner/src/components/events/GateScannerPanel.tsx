@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, AlertCircle, AlertTriangle, Scan } from 'lucide-react'
+import { CameraScanner } from './CameraScanner'
 import { api } from '@/lib/api'
 
 interface ScanResult {
@@ -48,6 +49,7 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
   const [lastResult, setLastResult] = useState<ScanResult | null>(null)
   const [recentScans, setRecentScans] = useState<ScanResult[]>([])
   const [isPending, setIsPending] = useState(false)
+  const [scanMode, setScanMode] = useState<'camera' | 'manual'>('camera')
   const inputRef = useRef<HTMLInputElement>(null)
   const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -196,16 +198,53 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
     <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
       {/* Left: Scanner input + result card */}
       <div style={{ flex: '1 1 360px', minWidth: 0 }}>
-        {/* Input panel */}
+        {/* Mode toggle */}
         <div
           style={{
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '12px',
-            padding: '28px 24px',
+            display: 'flex',
+            gap: '4px',
             marginBottom: '20px',
+            background: 'var(--color-surface)',
+            borderRadius: '10px',
+            padding: '4px',
+            width: 'fit-content',
+            border: '1px solid var(--color-border)',
           }}
         >
+          {(['camera', 'manual'] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setScanMode(mode)}
+              style={{
+                padding: '8px 20px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: scanMode === mode ? 600 : 400,
+                color: scanMode === mode ? '#ffffff' : 'var(--color-text-muted)',
+                backgroundColor: scanMode === mode ? 'var(--color-brand)' : 'transparent',
+                transition: 'all var(--duration-fast) ease',
+              }}
+            >
+              {mode === 'camera' ? '📷  Camera' : '⌨️  Hardware / Manual'}
+            </button>
+          ))}
+        </div>
+
+        {/* Render camera or manual input */}
+        {scanMode === 'camera' ? (
+          <CameraScanner onScan={handleScan} isProcessing={isPending} />
+        ) : (
+          <div
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '12px',
+              padding: '28px 24px',
+              marginBottom: '20px',
+            }}
+          >
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
             <Scan size={20} color="var(--color-brand)" />
             <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--color-text)' }}>
@@ -266,7 +305,8 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
               {isPending ? 'Checking inâ€¦' : 'Check In'}
             </button>
           </form>
-        </div>
+            </div>
+          )}
 
         {/* Last result card */}
         {lastResult && (
