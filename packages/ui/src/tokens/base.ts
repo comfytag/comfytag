@@ -64,6 +64,8 @@ export const colors = {
   gradients: {
     hero: 'linear-gradient(135deg, #7C3AED, #C026D3)',
     cardOverlay: 'linear-gradient(to top, rgba(28,25,23,0.85) 0%, transparent 60%)',
+    // NEW: Fire gradient for buttons and featured cards
+    fire: 'linear-gradient(135deg, #a078ff 0%, #ff516a 100%)',
   },
 
   // Chart data series
@@ -167,6 +169,8 @@ export const motion = {
 export const typography = {
   fontFamily: {
     sans: ['Inter Variable', 'Inter', 'sans-serif'],
+    display: ['Anybody Variable', 'Anybody', 'sans-serif'], // NEW: Bold headers
+    label: ['Space Grotesk', 'Space Mono', 'sans-serif'],   // NEW: Labels + buttons
     mono: ['JetBrains Mono', 'monospace'],
   },
   fontSize: {
@@ -186,6 +190,7 @@ export const typography = {
     semibold:  600,
     bold:      700,
     extrabold: 800,
+    black:     900, // NEW: For Anybody headers
   },
 } as const
 

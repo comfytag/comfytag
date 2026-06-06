@@ -1,11 +1,15 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, JetBrains_Mono } from 'next/font/google'
+import { Inter, JetBrains_Mono, Anybody, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { BottomTabBarWrapper } from '@/components/layout/BottomTabBarWrapper'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono', display: 'swap' })
+// NEW: Anybody for bold headers
+const anybody = Anybody({ subsets: ['latin'], variable: '--font-anybody', weight: ['700', '800', '900'], display: 'swap' })
+// NEW: Space Grotesk for labels
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk', weight: ['500', '600', '700'], display: 'swap' })
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://comfytag.com'),
@@ -51,7 +55,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} ${anybody.variable} ${spaceGrotesk.variable}`}>
       <body suppressHydrationWarning>
         <Providers>
           {children}
