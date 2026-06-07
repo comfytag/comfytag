@@ -38,8 +38,8 @@ router.delete("/:id/tiers/:tierId", verifyToken, deleteTicketTier)
 router.put("/:id", verifyUser, updateEvent)
 // PATCH (partial update — used by cancel, status changes)
 router.patch("/:id", verifyUser, updateEvent)
-// DELETE
-router.delete("/:id/:userId", verifyAdmin, deleteEvent)
+// DELETE (allow event creator to delete their own event)
+router.delete("/:id", verifyUser, deleteEvent)
 // GET single event
 router.get("/:id", getEvent)
 // GET ALL

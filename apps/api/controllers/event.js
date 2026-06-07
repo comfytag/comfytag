@@ -255,21 +255,34 @@ export const updateEvent = async (req, res, next) => {
 
 // DELETE
 export const deleteEvent = async (req, res, next) => {
-    const userId = req.params.userId;
+    const userId = req.user.id || req.session?.user?.id;
+    const eventId = req.params.id;
+
+    if (!userId) return next(createError(401, 'User not authenticated'));
+
     try {
-        await Event.findByIdAndDelete(
-            req.params.id
-        )
+        // Verify user owns the event
+        const event = await Event.findById(eventId);
+        if (!event) return next(createError(404, 'Event not found'));
+        if (event.planner_id.toString() !== userId.toString() && req.user.role !== 'admin') {
+            return next(createError(403, 'You can only delete your own events'));
+        }
+
+        // Delete the event
+        await Event.findByIdAndDelete(eventId);
+
+        // Remove from user's event list
         try {
             await User.findByIdAndUpdate(userId, {
-                 $pull: { events: req.params.id },
-                 });
+                $pull: { events: eventId },
+            });
         } catch (err) {
-            next(err)
+            next(err);
         }
-        res.status(200).json('Event has been deleted')
+
+        res.status(200).json({ success: true, message: 'Event has been deleted' });
     } catch (err) {
-        next(err)
+        next(err);
     }
 }
 

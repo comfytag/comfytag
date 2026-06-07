@@ -89,10 +89,10 @@ export const createAudience = async (req, res, next) => {
     const userId = req.params.userId;
 
     try {
-        // Check for duplicate ticket
+        // Check for duplicate ticket (1 ticket per user per event, even for free)
         const existing = await Audience.findOne({ event_id: eventId, user_id: userId })
         if (existing) {
-            return res.status(400).json({ success: false, message: 'You already have a ticket for this event.' })
+            return res.status(400).json({ success: false, message: 'You already have a ticket for this event. Free events are limited to 1 ticket per person.' })
         }
 
         // Check tier capacity
@@ -105,11 +105,18 @@ export const createAudience = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'This ticket tier is sold out.' })
         }
 
+        // Allow free tickets (amount = 0, no Paystack reference needed)
+        const isFreeTicket = req.body.amount === 0 || req.body.amount === '0';
+        if (!isFreeTicket && !req.body.reference) {
+            return res.status(400).json({ success: false, message: 'Paid tickets require a Paystack reference.' })
+        }
+
         const newAudience = new Audience({
             ...req.body,
             event_id: eventId,
             user_id: userId,
             totpSecret: generateSecret(),
+            isFreeTicket: isFreeTicket, // Track if this is a free ticket
         });
 
         const savedAudience = await newAudience.save()

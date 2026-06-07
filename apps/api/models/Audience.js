@@ -23,6 +23,10 @@ const AudienceSchema = new Schema({
         type: Number,
         require: true,
     },
+    isFreeTicket:{
+        type: Boolean,
+        default: false, // true if amount is 0 (free event ticket)
+    },
     numOfTicket:{
         type: Number,
         require: true,
