@@ -40,7 +40,7 @@ export const useSocket = (): Socket | null => {
 
     const newSocket = io(apiUrl, {
       auth: {
-        token: session?.accessToken || session?.user?.token,
+        token: session?.user?.token,
       },
       reconnection: true,
       reconnectionDelay: 1000,
