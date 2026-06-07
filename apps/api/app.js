@@ -6,34 +6,19 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import http from 'http'
 import { initializeSocket, setGlobalIoInstance } from './socket/index.js'
+import { validateEnvironment } from './startup.js'
+import config from './config.js'
 const app = express();
 import dns from 'dns'
-// const telnet = require('telnet-client');
-// import net from 'net'
 
-const whitelist = ['http://localhost:3000', 'http://example2.com'];
-
-// ✅ Enable pre-flight requests
-// app.options('*', cors());
-
-// const corsOptions = {
-//   credentials: true,
-//   origin: (origin, callback) => {
-//     if (whitelist.indexOf(origin) !== -1 || !origin) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-// };
-
-
+// Validate environment at startup (fail fast if missing env vars)
+await validateEnvironment()
 
 const connect = async () => {
-  await mongoose.connect(process.env.MONGO)
-  console.log("Connected to MongoDB")
+  await mongoose.connect(config.mongodb.uri)
+  console.log(`✅ Connected to MongoDB`)
 }
-const PORT = 4002;
+const PORT = config.port;
 
 
 import authRouter from "./routes/auth.js"
@@ -74,14 +59,7 @@ import promosRouter from './routes/promos.js'
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser())
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:3002',
-  process.env.WEB_URL,
-  process.env.PARTNER_URL,
-  process.env.ADMIN_URL,
-].filter(Boolean)
+const allowedOrigins = config.cors.origins
 
 app.use(cors({
   origin: function (origin, callback) {

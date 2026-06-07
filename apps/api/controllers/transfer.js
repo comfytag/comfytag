@@ -233,7 +233,6 @@ export const declineTransfer = async (req, res, next) => {
 
     // Enqueue transfer declined email to original owner (non-blocking)
     const sender = await User.findById(ticket.user_id)
-    const recipient2 = await User.findById(recipientId)
     const event = await Event.findById(ticket.event_id)
     const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
 
