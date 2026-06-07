@@ -84,27 +84,10 @@ services:
       - apps/api/.env
     depends_on:
       - redis
-      - mongodb
     networks:
       - comfytag-network
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:4002/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  mongodb:
-    image: mongo:7.0
-    container_name: comfytag-mongodb-prod
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: changeme
-    networks:
-      - comfytag-network
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand({ping:1})"]
       interval: 30s
       timeout: 10s
       retries: 3
