@@ -22,9 +22,8 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Copy the entire app directory from builder (includes all node_modules and built files)
 COPY --from=builder /app .
 RUN chown -R nextjs:nodejs /app
+WORKDIR /app/apps/partner
 USER nextjs
 EXPOSE 3001
 ENV PORT=3001
-ENV HOSTNAME="0.0.0.0"
-# Use pnpm to run next start from the app directory
-CMD ["pnpm", "--cwd", "apps/partner", "next", "start"]
+CMD ["node_modules/.bin/next", "start"]

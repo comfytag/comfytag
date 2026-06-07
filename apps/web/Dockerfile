@@ -25,8 +25,8 @@ COPY --from=builder /app/apps/web/.next/standalone .
 COPY --from=builder /app/apps/web/.next/static ./.next/static
 COPY --from=builder /app/apps/web/public ./public
 RUN chown -R nextjs:nodejs /app
+WORKDIR /app/apps/web
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-CMD ["pnpm", "--cwd", "apps/web", "next", "start"]
+CMD ["node_modules/.bin/next", "start"]
