@@ -19,15 +19,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
-# Copy ONLY the necessary files from builder's standalone output
-# The standalone build outputs to /app/apps/web/.next/standalone/
-# We need: server.js, package.json, node_modules/, public/, .next/static/
-COPY --from=builder /app/apps/web/.next/standalone/server.js ./
-COPY --from=builder /app/apps/web/.next/standalone/package.json ./
-COPY --from=builder /app/apps/web/.next/standalone/package-lock.json* ./
-COPY --from=builder /app/apps/web/.next/standalone/node_modules/ ./node_modules/
-COPY --from=builder /app/apps/web/.next/static/ ./.next/static/
-COPY --from=builder /app/apps/web/public/ ./public/
+# Copy the entire standalone output directory
+COPY --from=builder /app/apps/web/.next/standalone .
+# Overlay static assets and public files
+COPY --from=builder /app/apps/web/.next/static ./.next/static
+COPY --from=builder /app/apps/web/public ./public
 RUN chown -R nextjs:nodejs /app
 USER nextjs
 EXPOSE 3000
