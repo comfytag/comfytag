@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useContext } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
+import { NotificationContext } from '@/contexts/NotificationContext'
+import { useNotificationSocket } from '@/hooks/useNotificationSocket'
 
 interface NavItem {
   label: string
@@ -21,27 +23,12 @@ const NAV_ITEMS: NavItem[] = [
 export default function PartnerNav() {
   const { data: session } = useSession()
   const pathname = usePathname()
-  const [unreadCount, setUnreadCount] = useState<number>(0)
+  const { unreadCount } = useContext(NotificationContext)
   const [dropdownOpen, setDropdownOpen] = useState<boolean>(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Fetch unread notification count
-  useEffect(() => {
-    async function fetchUnread() {
-      try {
-        const res = await fetch('/api/notifications/unread-count')
-        if (res.ok) {
-          const json = (await res.json()) as { data: { count: number } }
-          setUnreadCount(json.data?.count ?? 0)
-        }
-      } catch {
-        // Silently fail — unread count is non-critical
-      }
-    }
-    if (session) {
-      void fetchUnread()
-    }
-  }, [session])
+  // Initialize real-time notification listener
+  useNotificationSocket()
 
   // Close dropdown when clicking outside
   useEffect(() => {
