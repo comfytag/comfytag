@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Plus } from 'lucide-react'
@@ -9,7 +9,7 @@ import type { Event } from '@comfytag/types'
 import { EventCard } from '@/components/ui/EventCard'
 import { EventFilterTabs } from '@/components/events/EventFilterTabs'
 import { ViewToggle } from '@/components/ui/ViewToggle'
-import { useMyEvents, useDeleteEvent, useDuplicateEvent } from '@/hooks'
+import { useMyEvents, useDeleteEvent, useDuplicateEvent, useSocket } from '@/hooks'
 import { useQueryClient } from '@tanstack/react-query'
 
 type FilterValue = 'all' | 'published' | 'draft' | 'ended' | 'cancelled'
@@ -17,6 +17,7 @@ type FilterValue = 'all' | 'published' | 'draft' | 'ended' | 'cancelled'
 export default function EventsPage() {
   const queryClient = useQueryClient()
   const router = useRouter()
+  const socket = useSocket()
   const [filter, setFilter] = useState<FilterValue>('all')
   const [view, setView] = useState<'table' | 'grid'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
@@ -25,6 +26,39 @@ export default function EventsPage() {
   const { data: events = [], isLoading, isError } = useMyEvents()
   const duplicateMutation = useDuplicateEvent()
   const deleteEventMutation = useDeleteEvent()
+
+  // Listen for real-time event changes via Socket.io
+  useEffect(() => {
+    if (!socket) return
+
+    // When event is deleted by this organizer or another session
+    socket.on('event:deleted', (data) => {
+      console.log('[Socket.io] Event deleted:', data.eventId)
+      // Invalidate the events query to refetch
+      queryClient.invalidateQueries({ queryKey: ['myEvents'] })
+    })
+
+    // When event is created
+    socket.on('event:created', (data) => {
+      console.log('[Socket.io] Event created:', data.eventData)
+      queryClient.invalidateQueries({ queryKey: ['myEvents'] })
+    })
+
+    // When event is updated
+    socket.on('event:updated', (data) => {
+      console.log('[Socket.io] Event updated:', data.eventData)
+      queryClient.setQueryData(['myEvents'], (old: Event[] | undefined) =>
+        old?.map((e) => (e._id === data.eventData._id ? data.eventData : e)) || []
+      )
+    })
+
+    // Cleanup
+    return () => {
+      socket.off('event:deleted')
+      socket.off('event:created')
+      socket.off('event:updated')
+    }
+  }, [socket, queryClient])
 
   const tabFilters = useMemo(() => [
     { value: 'all', label: events.length > 0 ? `All (${events.length})` : 'All' },
