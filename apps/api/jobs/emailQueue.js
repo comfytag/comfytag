@@ -1,4 +1,4 @@
-﻿import Queue from "bullmq";
+﻿import { Queue } from "bullmq";
 import { sendEmail } from "../utils/sendEmail.js";
 
 const redisConnection = {
