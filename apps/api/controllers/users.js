@@ -205,16 +205,44 @@ export const getAllUsers = async (req,res,next) =>{
 // Organizer uploads KYC documents
 export const uploadKYC = async (req, res, next) => {
     try {
-        const { photo, idCardFront, idCardBack, address } = req.body
+        // Handle both JSON body and multipart form data
+        const { docType } = req.body
+        const file = req.file
+
+        if (!file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file uploaded'
+            })
+        }
+
+        if (!docType) {
+            return res.status(400).json({
+                success: false,
+                message: 'Document type (docType) is required'
+            })
+        }
+
+        // Map document type to verify field
+        const docMap = {
+            photo: 'verify.photo',
+            idCard: 'verify.idCard.front',
+            address: 'verify.address'
+        }
+
+        const updateField = docMap[docType]
+        if (!updateField) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid document type'
+            })
+        }
 
         const updatedUser = await Users.findByIdAndUpdate(
             req.params.id,
             {
                 $set: {
-                    'verify.photo': photo || undefined,
-                    'verify.idCard.front': idCardFront || undefined,
-                    'verify.idCard.back': idCardBack || undefined,
-                    'verify.address': address || undefined,
+                    [updateField]: file.filename || file.path,
                 }
             },
             { new: true }

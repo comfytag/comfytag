@@ -427,7 +427,24 @@ export const verifyPaystackPayment = async (req, res, next) => {
       request.end()
     })
 
+    // Validate Paystack response structure
+    if (!data || !data.data) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid response from Paystack',
+        data: data
+      })
+    }
+
     const { status, amount, paid_at } = data.data
+
+    if (!status || amount === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Incomplete payment data from Paystack'
+      })
+    }
+
     const amountNaira = amount / 100
 
     res.status(200).json({
