@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { SearchInput } from '@/components/ui/SearchInput'
@@ -187,7 +188,8 @@ export function Navbar({ user, onSearch }: NavbarProps) {
       `}</style>
       <nav className="__ct_navbar" aria-label="Main navigation">
         {/* Logo */}
-        <Link href="/" style={{ fontWeight: 700, fontSize: '18px', color: 'var(--color-brand)', textDecoration: 'none', letterSpacing: '-0.3px' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '18px', color: 'var(--color-brand)', textDecoration: 'none', letterSpacing: '-0.3px' }}>
+          <Image src="/logo.svg" alt="ComfyTag" width={24} height={24} style={{ flexShrink: 0 }} />
           ComfyTag
         </Link>
 

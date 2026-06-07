@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useContext } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { NotificationContext } from '@/contexts/NotificationContext'
@@ -84,6 +85,9 @@ export default function PartnerNav() {
       <Link
         href="/overview"
         style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
           fontWeight: 700,
           fontSize: 18,
           color: 'var(--color-brand)',
@@ -92,6 +96,7 @@ export default function PartnerNav() {
           flexShrink: 0,
         }}
       >
+        <Image src="/logo.svg" alt="ComfyTag" width={24} height={24} style={{ flexShrink: 0 }} />
         ComfyTag
       </Link>
 

@@ -32,6 +32,10 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "ComfyTag Admin",
   description: "Event platform admin dashboard",
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
@@ -108,14 +109,20 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
             padding: '20px 16px',
             borderBottom: '1px solid var(--color-border)',
             flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
           }}
         >
-          <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-brand)' }}>
-            ComfyTag
-          </span>
-          <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginLeft: '6px' }}>
-            Admin
-          </span>
+          <Image src="/logo.svg" alt="ComfyTag" width={24} height={24} style={{ flexShrink: 0 }} />
+          <div>
+            <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-brand)' }}>
+              ComfyTag
+            </span>
+            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginLeft: '6px' }}>
+              Admin
+            </span>
+          </div>
         </div>
 
         <nav style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
