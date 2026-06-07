@@ -28,7 +28,7 @@ export function KycDocSection({
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
 
-  const { mutate: uploadDoc, isPending: isUploading } = useMutation({
+  const { mutate: uploadDoc, isPending: isUploading, isError: uploadError } = useMutation({
     mutationFn: async () => {
       if (!selectedFile) throw new Error('No file selected')
 
@@ -36,15 +36,21 @@ export function KycDocSection({
       formData.append('file', selectedFile)
       formData.append('docType', docType)
 
-      return api.put<{ success: boolean }>(
-        `/partner/users/${userId}/kyc`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      )
+      // Ensure auth header is set
+      if (token) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      }
+
+      try {
+        const response = await api.put<{ success: boolean }>(
+          `/partner/users/${userId}/kyc`,
+          formData
+        )
+        return response
+      } catch (err) {
+        console.error('[KYC Upload Error]', err)
+        throw err
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kycUser', userId] })
@@ -219,13 +225,29 @@ export function KycDocSection({
 
           {/* Upload Button */}
           {selectedFile && (
-            <Button
-              onClick={handleUpload}
-              disabled={isUploading || !selectedFile}
-              fullWidth
-            >
-              {isUploading ? 'Uploading...' : 'Upload Document'}
-            </Button>
+            <>
+              <Button
+                onClick={handleUpload}
+                disabled={isUploading || !selectedFile}
+                fullWidth
+              >
+                {isUploading ? 'Uploading...' : 'Upload Document'}
+              </Button>
+              {uploadError && (
+                <div
+                  style={{
+                    padding: '12px',
+                    backgroundColor: '#fee',
+                    border: '1px solid #fcc',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    color: '#c33',
+                  }}
+                >
+                  Upload failed. Check your connection and try again.
+                </div>
+              )}
+            </>
           )}
         </div>
       ) : (

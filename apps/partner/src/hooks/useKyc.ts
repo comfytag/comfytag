@@ -9,11 +9,29 @@ import type { User } from '@comfytag/types'
 export function useKycStatus() {
   const { data: session } = useSession()
   const userId = session?.user?.id
+  const token = session?.user?.token
 
   return useQuery({
     queryKey: kycKeys.status,
-    queryFn: () => api.get<User>(`/partner/users/${userId}`).then((r) => r.data),
+    queryFn: async () => {
+      if (!userId) throw new Error('No user ID')
+
+      // Set auth header
+      if (token) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      }
+
+      try {
+        const response = await api.get<User>(`/partner/users/${userId}`)
+        return response.data
+      } catch (err) {
+        console.error('[KYC Status Error]', err)
+        throw err
+      }
+    },
     staleTime: 60_000,
-    enabled: !!userId,
+    enabled: !!userId && !!token,
+    retry: 2,
+    retryDelay: 1000,
   })
 }
