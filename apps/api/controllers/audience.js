@@ -191,6 +191,7 @@ export const createAudience = async (req, res, next) => {
           data: {
             firstName: savedAudience.name.split(' ')[0],
             eventName: event.name,
+            eventId: eventId,
             eventDate: moment(event.date).format('ddd, MMM D, YYYY'),
             eventTime: event.startTime || 'TBA',
             eventVenue: event.venue || 'TBA',
@@ -199,6 +200,8 @@ export const createAudience = async (req, res, next) => {
           },
           delay: delay48h,
           from: 'tickets@comfytag.com',
+          userId: userId,
+          notificationType: 'event_reminder',
         }).catch(err => console.error('[Reminder 48h] Queue failed:', err.message));
 
         // Email 2: 4 hours before event
@@ -209,6 +212,7 @@ export const createAudience = async (req, res, next) => {
           data: {
             firstName: savedAudience.name.split(' ')[0],
             eventName: event.name,
+            eventId: eventId,
             eventTime: event.startTime || 'TBA',
             eventAddress: event.address || 'TBA',
             eventVenue: event.venue || 'TBA',
@@ -219,6 +223,8 @@ export const createAudience = async (req, res, next) => {
           },
           delay: delay4h,
           from: 'tickets@comfytag.com',
+          userId: userId,
+          notificationType: 'event_reminder',
         }).catch(err => console.error('[Reminder 4h] Queue failed:', err.message));
     } catch (err) {
         next(err)

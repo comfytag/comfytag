@@ -1,5 +1,7 @@
 ﻿import { Queue } from "bullmq";
 import { sendEmail } from "../utils/sendEmail.js";
+import { getGlobalIoInstance, emitNotification, emitUnreadCountUpdate } from "../socket/index.js";
+import Notification from "../models/Notification.js";
 
 const redisConnection = {
   host: process.env.REDIS_HOST || "localhost",
@@ -30,7 +32,7 @@ export const emailQueue = new Queue("email", {
  * Process email jobs from the queue
  */
 emailQueue.process(async (job) => {
-  const { to, subject, template, data = {}, from, replyTo } = job.data;
+  const { to, subject, template, data = {}, from, replyTo, userId, notificationType } = job.data;
 
   try {
     const result = await sendEmail({
@@ -46,11 +48,58 @@ emailQueue.process(async (job) => {
       throw new Error(result.error || "Email send failed");
     }
 
+    // Create real-time notification for event reminders and recaps
+    if (userId && notificationType && (notificationType === 'event_reminder' || notificationType === 'event_recap')) {
+      try {
+        const io = getGlobalIoInstance();
+
+        // Create notification in database
+        const notification = await Notification.create({
+          user_id: userId,
+          type: notificationType,
+          title: notificationType === 'event_reminder' ? 'Event Reminder' : 'Event Recap',
+          message: data.firstName
+            ? (notificationType === 'event_reminder'
+              ? `${data.eventName} is coming up!`
+              : `Thanks for attending ${data.eventName}!`)
+            : 'Event update',
+          data: {
+            eventName: data.eventName,
+            eventId: data.eventId,
+          },
+        });
+
+        // Emit real-time notification if user is online
+        if (io) {
+          emitNotification(io, userId, {
+            _id: notification._id,
+            type: notification.type,
+            title: notification.title,
+            message: notification.message,
+            data: notification.data,
+            read: notification.read,
+            createdAt: notification.createdAt,
+          });
+
+          // Update unread count
+          const unreadCount = await Notification.countDocuments({
+            user_id: userId,
+            read: false,
+          });
+          emitUnreadCountUpdate(io, userId, unreadCount);
+        }
+      } catch (notifErr) {
+        console.error('[Job Processor] Failed to create notification:', notifErr.message);
+        // Don't fail the job if notification fails — email was sent successfully
+      }
+    }
+
     return {
       success: true,
       messageId: result.messageId,
       email: to,
       timestamp: new Date().toISOString(),
+      notificationCreated: userId && notificationType ? true : false,
     };
   } catch (error) {
     throw new Error(`Email send error: ${error.message}`);

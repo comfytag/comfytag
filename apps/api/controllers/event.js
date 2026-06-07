@@ -94,11 +94,14 @@ export const updateEvent = async (req, res, next) => {
                 data: {
                   firstName: attendee.name.split(' ')[0],
                   eventName: updatedEvent.name,
+                  eventId: updatedEvent._id,
                   attendeeCount,
                   rateLink: `${baseUrl}/events/${updatedEvent._id}/rate`,
                   year: new Date().getFullYear(),
                 },
                 from: 'events@comfytag.com',
+                userId: attendee.user_id.toString(),
+                notificationType: 'event_recap',
               }).catch(err => console.error('[Recap Email 1] Queue failed:', err.message));
 
               // Email 2: +5 days discovery recommendations (scheduled)
@@ -117,6 +120,7 @@ export const updateEvent = async (req, res, next) => {
                 data: {
                   firstName: attendee.name.split(' ')[0],
                   eventName: updatedEvent.name,
+                  eventId: updatedEvent._id,
                   interestCategory: updatedEvent.category,
                   state: updatedEvent.state,
                   recommendedEvents: similarEvents.map(e => ({
@@ -132,6 +136,8 @@ export const updateEvent = async (req, res, next) => {
                 delay: 5 * 24 * 60 * 60 * 1000,
                 from: 'hello@comfytag.com',
                 replyTo: 'hello@comfytag.com',
+                userId: attendee.user_id.toString(),
+                notificationType: 'event_recap',
               }).catch(err => console.error('[Recap Email 2] Queue failed:', err.message));
             }
 

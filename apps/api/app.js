@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import http from 'http'
-import { initializeSocket } from './socket/index.js'
+import { initializeSocket, setGlobalIoInstance } from './socket/index.js'
 const app = express();
 import dns from 'dns'
 // const telnet = require('telnet-client');
@@ -307,10 +307,14 @@ connect()
     // Attach io instance to app for use in controllers
     app.locals.io = io
 
+    // Store io instance globally for use in job processors
+    setGlobalIoInstance(io)
+
     // Start listening on configured port
     httpServer.listen(process.env.PORT || PORT, () => {
       console.log(`Listening to port ${process.env.PORT || PORT}`)
       console.log('✓ Socket.io server running alongside Express')
+      console.log('✓ Global io instance available for job processors')
     })
   })
   .catch((err) => {

@@ -203,3 +203,28 @@ export const emitAllNotificationsRead = (io, userId) => {
     readAt: new Date().toISOString(),
   })
 }
+
+/**
+ * Global io instance for use in job processors and other non-request contexts
+ * Set during server initialization, accessed by BullMQ jobs
+ */
+let globalIoInstance = null
+
+/**
+ * Store the io instance for access from jobs and other modules
+ * Called during server startup in app.js
+ * @param {Socket.io.Server} io - The Socket.io server instance
+ */
+export const setGlobalIoInstance = (io) => {
+  globalIoInstance = io
+  console.log('[Socket.io] Global io instance set for job processors')
+}
+
+/**
+ * Get the io instance from anywhere in the app
+ * Useful for BullMQ job processors that can't access req.app.locals.io
+ * @returns {Socket.io.Server | null}
+ */
+export const getGlobalIoInstance = () => {
+  return globalIoInstance
+}
