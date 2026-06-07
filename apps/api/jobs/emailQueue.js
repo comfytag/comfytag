@@ -1,4 +1,4 @@
-﻿import { Queue } from "bullmq";
+﻿import { Queue, Worker } from "bullmq";
 import { sendEmail } from "../utils/sendEmail.js";
 import { getGlobalIoInstance, emitNotification, emitUnreadCountUpdate } from "../socket/index.js";
 import Notification from "../models/Notification.js";
@@ -29,9 +29,9 @@ export const emailQueue = new Queue("email", {
 });
 
 /**
- * Process email jobs from the queue
+ * Process email jobs from the queue (BullMQ v5+ Worker pattern)
  */
-emailQueue.process(async (job) => {
+const emailWorker = new Worker("email", async (job) => {
   const { to, subject, template, data = {}, from, replyTo, userId, notificationType } = job.data;
 
   try {
@@ -104,32 +104,32 @@ emailQueue.process(async (job) => {
   } catch (error) {
     throw new Error(`Email send error: ${error.message}`);
   }
-});
+}, { connection: redisConnection });
 
 /**
- * Queue event listeners
+ * Worker event listeners
  */
-emailQueue.on("waiting", (job) => {
+emailWorker.on("waiting", (job) => {
   console.log(`[Email Queue] Job ${job.id} waiting`);
 });
 
-emailQueue.on("active", (job) => {
+emailWorker.on("active", (job) => {
   console.log(`[Email Queue] Job ${job.id} processing`);
 });
 
-emailQueue.on("completed", (job) => {
+emailWorker.on("completed", (job) => {
   console.log(`[Email Queue] Job ${job.id} completed`);
 });
 
-emailQueue.on("failed", (job, err) => {
+emailWorker.on("failed", (job, err) => {
   console.error(
     `[Email Queue] Job ${job.id} failed after ${job.attemptsMade} attempts:`,
     err.message
   );
 });
 
-emailQueue.on("error", (err) => {
-  console.error("[Email Queue] Queue error:", err);
+emailWorker.on("error", (err) => {
+  console.error("[Email Queue] Worker error:", err);
 });
 
 /**
