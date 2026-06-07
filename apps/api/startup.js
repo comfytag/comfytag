@@ -35,16 +35,17 @@ export async function validateEnvironment() {
     if (!process.env.WEB_URL) process.env.WEB_URL = 'http://localhost:3000'
     if (!process.env.PARTNER_URL) process.env.PARTNER_URL = 'http://localhost:3001'
     if (!process.env.ADMIN_URL) process.env.ADMIN_URL = 'http://localhost:3002'
+
+    // For dev, accept MONGO variable name
+    if (!process.env.MONGODB_URI && process.env.MONGO) {
+      process.env.MONGODB_URI = process.env.MONGO
+    }
   }
 
   // ========== PRODUCTION ONLY ==========
   if (env === 'production') {
-    // Check for database URI (accepts either MONGODB_URI or MONGO)
-    if (!process.env.MONGODB_URI && !process.env.MONGO) {
-      errors.push(`Missing production env var: MONGODB_URI or MONGO`)
-    }
-
     const prodRequired = [
+      'MONGO',  // Accept MONGO for MongoDB URI
       'REDIS_URL',
       'WEB_URL',
       'PARTNER_URL',
@@ -58,6 +59,11 @@ export async function validateEnvironment() {
       if (!process.env[key]) {
         errors.push(`Missing production env var: ${key}`)
       }
+    }
+
+    // Normalize: copy MONGO to MONGODB_URI for consistency
+    if (!process.env.MONGODB_URI && process.env.MONGO) {
+      process.env.MONGODB_URI = process.env.MONGO
     }
   }
 
