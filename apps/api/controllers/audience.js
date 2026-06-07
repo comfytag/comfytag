@@ -5,6 +5,7 @@ import User from '../models/User.js';
 import { createError } from '../utils/error.js'
 import { sendTicket } from '../utils/sendEmail.js';
 import { enqueueEmail } from '../jobs/emailQueue.js';
+import { createNotification } from './notification.js'
 import moment from 'moment/moment.js';
 import { QR } from '../utils/QRCode.js';
 import { generateSecret } from 'otplib'
@@ -135,6 +136,22 @@ export const createAudience = async (req, res, next) => {
 
         const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
         const buyer = await User.findById(userId)
+
+        // Create in-app notification with real-time emission
+        const io = req.app.locals.io
+        await createNotification({
+          userId,
+          type: 'ticket_confirmed',
+          title: 'Ticket confirmed ✓',
+          message: `Your ticket to ${savedAudience.eventname} is ready`,
+          data: {
+            ticketId: savedAudience._id,
+            eventId: eventId,
+            eventName: savedAudience.eventname,
+            reference: savedAudience.reference,
+          },
+          io,
+        }).catch(err => console.error('[Notification] In-app creation failed:', err.message))
 
         // Enqueue ticket confirmation email (non-blocking)
         enqueueEmail({

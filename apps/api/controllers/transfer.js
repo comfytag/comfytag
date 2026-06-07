@@ -3,6 +3,7 @@ import User from '../models/User.js'
 import Event from '../models/Event.js'
 import { createError } from '../utils/error.js'
 import { enqueueEmail } from '../jobs/emailQueue.js'
+import { createNotification } from './notification.js'
 import moment from 'moment/moment.js'
 import crypto from 'crypto'
 
@@ -59,8 +60,24 @@ export const initiateTransfer = async (req, res, next) => {
       ticketId,
     })
 
-    // Enqueue transfer initiated email to recipient (non-blocking)
+    // Create in-app notification for recipient
+    const io = req.app.locals.io
     const sender = await User.findById(senderId)
+
+    await createNotification({
+      userId: recipient._id.toString(),
+      type: 'transfer_received',
+      title: 'You received a ticket',
+      message: `${sender?.name || 'Someone'} sent you a ticket`,
+      data: {
+        ticketId,
+        senderName: sender?.name,
+        senderId: senderId,
+      },
+      io,
+    }).catch(err => console.error('[Notification] Transfer received failed:', err.message))
+
+    // Enqueue transfer initiated email to recipient (non-blocking)
     const event = await Event.findById(ticket.event_id)
     const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
 
@@ -129,6 +146,23 @@ export const acceptTransfer = async (req, res, next) => {
       ticketId,
     })
 
+    // Create in-app notification for original owner
+    const io = req.app.locals.io
+    const recipient2 = await User.findById(recipientId)
+
+    await createNotification({
+      userId: previousOwner.toString(),
+      type: 'transfer_accepted',
+      title: 'Transfer accepted ✓',
+      message: `${recipient2?.name || 'Someone'} accepted your ticket`,
+      data: {
+        ticketId,
+        recipientName: recipient2?.name,
+        recipientId: recipientId,
+      },
+      io,
+    }).catch(err => console.error('[Notification] Transfer accepted failed:', err.message))
+
     // Enqueue transfer accepted email to original owner (non-blocking)
     const sender = await User.findById(previousOwner)
     const recipient2 = await User.findById(recipientId)
@@ -180,6 +214,23 @@ export const declineTransfer = async (req, res, next) => {
       message: 'Transfer declined',
       ticketId
     })
+
+    // Create in-app notification for original owner
+    const io = req.app.locals.io
+    const recipient2 = await User.findById(recipientId)
+
+    await createNotification({
+      userId: ticket.user_id.toString(),
+      type: 'transfer_declined',
+      title: 'Transfer declined',
+      message: `${recipient2?.name || 'Someone'} declined your ticket`,
+      data: {
+        ticketId,
+        recipientName: recipient2?.name,
+        recipientId: recipientId,
+      },
+      io,
+    }).catch(err => console.error('[Notification] Transfer declined failed:', err.message))
 
     // Enqueue transfer declined email to original owner (non-blocking)
     const sender = await User.findById(ticket.user_id)

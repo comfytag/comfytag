@@ -11,6 +11,7 @@ import { constants } from "buffer";
 import { createError } from '../utils/error.js';
 import speakeasy from 'speakeasy';
 import { enqueueEmail } from '../jobs/emailQueue.js';
+import { createNotification } from './notification.js';
 
 
 const router = express.Router()
@@ -349,6 +350,20 @@ export const verifyID = async (req,res,next) =>{
 				}
 			})
 
+			// Create in-app notification
+			const io = req.app.locals.io
+			await createNotification({
+				userId: req.params.id,
+				type: 'kyc_rejected',
+				title: 'KYC verification not approved',
+				message: 'Please resubmit clearer documents',
+				data: {
+					rejectionReason: rejectionReason || 'Document clarity issue',
+					reuploadLink: `${baseUrl}/partner/kyc`,
+				},
+				io,
+			}).catch(err => console.error('[Notification] KYC rejected failed:', err.message))
+
 			// Enqueue KYC rejected email (non-blocking)
 			enqueueEmail({
 				to: user.email,
@@ -383,6 +398,20 @@ export const verifyID = async (req,res,next) =>{
 
 			)
 			console.log(verify)
+
+			// Create in-app notification
+			const io = req.app.locals.io
+			await createNotification({
+				userId: req.params.id,
+				type: 'kyc_approved',
+				title: 'Identity verified ✓',
+				message: 'You are now verified and can receive payouts',
+				data: {
+					verifyType: verify,
+					bankSetupLink: `${baseUrl}/partner/settings/bank`,
+				},
+				io,
+			}).catch(err => console.error('[Notification] KYC approved failed:', err.message))
 
 			// Enqueue KYC approved email (non-blocking)
 			enqueueEmail({

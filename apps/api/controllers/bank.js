@@ -3,6 +3,7 @@ import Bank from '../models/Bank.js';
 import Withdraw from '../models/Withdraw.js';
 import User from '../models/User.js';
 import { enqueueEmail } from '../jobs/emailQueue.js';
+import { createNotification } from './notification.js';
 
 
 // CREATE Bank
@@ -133,9 +134,24 @@ export const updateWithdraw = async (req,res,next) =>{
            {new: true}
         )
 
-        // Enqueue status-change emails (non-blocking)
+        // Create in-app notifications and enqueue emails (non-blocking)
+        const io = req.app.locals.io
+
         if (status === 'approved' || status === 'sent') {
             // PAYOUT APPROVED/SENT
+            await createNotification({
+              userId: withdraw.user_id.toString(),
+              type: 'payout_approved',
+              title: 'Payout approved ✓',
+              message: `Your ₦${withdraw.amount?.toLocaleString()} payout is on the way`,
+              data: {
+                amount: withdraw.amount,
+                bankName: withdraw.bankName,
+                withdrawId: withdrawId.toString(),
+              },
+              io,
+            }).catch(err => console.error('[Notification] Payout approved failed:', err.message))
+
             enqueueEmail({
               to: user.email,
               subject: `Your ₦${withdraw.amount?.toLocaleString()} payout is on the way`,
@@ -154,6 +170,19 @@ export const updateWithdraw = async (req,res,next) =>{
             }).catch(err => console.error('[Payout Approved] Queue failed:', err.message))
         } else if (status === 'rejected') {
             // PAYOUT REJECTED
+            await createNotification({
+              userId: withdraw.user_id.toString(),
+              type: 'payout_rejected',
+              title: 'Payout request needs attention',
+              message: rejectionReason || 'Please review your bank details',
+              data: {
+                amount: withdraw.amount,
+                rejectionReason: rejectionReason || 'Please review your bank details',
+                withdrawId: withdrawId.toString(),
+              },
+              io,
+            }).catch(err => console.error('[Notification] Payout rejected failed:', err.message))
+
             enqueueEmail({
               to: user.email,
               subject: 'Payout request needs attention',
