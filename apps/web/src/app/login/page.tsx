@@ -13,9 +13,11 @@ function LoginInner() {
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') ?? '/'
   const didReset = searchParams.get('success') === '1'
+  const didRegister = searchParams.get('registered') === 'true'
+  const registeredEmail = searchParams.get('email') ?? ''
 
   const [mode, setMode] = useState<'credentials' | 'magic-link'>('credentials')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(registeredEmail)
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -66,6 +68,13 @@ function LoginInner() {
 
   return (
     <AuthLayout>
+      {/* Registration success banner */}
+      {didRegister && (
+        <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)', borderRadius: '8px', padding: '10px 14px', marginBottom: '24px', fontSize: '13px', color: 'var(--color-success)' }}>
+          Welcome! Check your email to verify your account, then sign in.
+        </div>
+      )}
+
       {/* Password-reset success banner */}
       {didReset && (
         <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid color-mix(in srgb, var(--color-success) 30%, transparent)', borderRadius: '8px', padding: '10px 14px', marginBottom: '24px', fontSize: '13px', color: 'var(--color-success)' }}>

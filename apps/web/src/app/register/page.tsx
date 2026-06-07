@@ -50,13 +50,11 @@ function RegisterInner() {
         }
         return
       }
-      const result = await signIn('credentials', { redirect: false, email, password })
-      if (result?.error) {
-        setError('Account created! Please sign in with your credentials.')
-      } else {
-        router.push(callbackUrl)
-        router.refresh()
-      }
+      // Registration successful - redirect to login with success message
+      setError('')
+      // Store success message in URL for login page to display
+      router.push(`/login?registered=true&email=${encodeURIComponent(email)}`)
+      router.refresh()
     } catch {
       setError('Network error. Please check your connection.')
     } finally {

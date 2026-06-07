@@ -68,21 +68,10 @@ export default function RegisterPage() {
       }
 
       setSuccess(true)
-
-      // Auto sign in
-      const signInResult = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      })
-
       setIsLoading(false)
 
-      if (signInResult?.error) {
-        setError('Registration successful but login failed. Please sign in manually.')
-      } else if (signInResult?.ok) {
-        router.push('/overview')
-      }
+      // Registration successful - redirect to login with success message
+      router.push(`/login?registered=true&email=${encodeURIComponent(email)}`)
     } catch (err) {
       setIsLoading(false)
       setError('An error occurred. Please try again.')

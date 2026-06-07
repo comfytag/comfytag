@@ -8,7 +8,10 @@ import { Button, Input, ErrorMessage } from '@comfytag/ui'
 function LoginInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [email, setEmail] = useState('')
+  const didRegister = searchParams.get('registered') === 'true'
+  const registeredEmail = searchParams.get('email') ?? ''
+
+  const [email, setEmail] = useState(registeredEmail)
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -65,6 +68,13 @@ function LoginInner() {
             Partner Dashboard
           </p>
         </div>
+
+        {/* Registration success banner */}
+        {didRegister && (
+          <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '8px', padding: '10px 14px', marginBottom: '24px', fontSize: '13px', color: 'var(--color-success)' }}>
+            Welcome! Check your email to verify your account, then sign in.
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '20px' }}>
