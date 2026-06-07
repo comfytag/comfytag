@@ -133,6 +133,11 @@ app.use('/face', faceRouter)
 // Ticket transfers
 app.use('/tickets/transfer', transferRouter)
 
+// Health check — for Docker & monitoring
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
 // Notifications
 app.use('/notifications', notificationRouter)
 app.use('/notification', notificationRouter)

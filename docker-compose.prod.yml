@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   nginx:
     image: nginx:1.27-alpine
@@ -17,7 +15,7 @@ services:
     networks:
       - comfytag-network
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
+      test: ["CMD", "nc", "-z", "localhost", "80"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -34,7 +32,7 @@ services:
     networks:
       - comfytag-network
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      test: ["CMD", "nc", "-z", "localhost", "3000"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -51,7 +49,7 @@ services:
     networks:
       - comfytag-network
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001"]
+      test: ["CMD", "nc", "-z", "localhost", "3001"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -68,7 +66,7 @@ services:
     networks:
       - comfytag-network
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3002"]
+      test: ["CMD", "nc", "-z", "localhost", "3002"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -87,7 +85,7 @@ services:
     networks:
       - comfytag-network
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4002/api/health"]
+      test: ["CMD", "nc", "-z", "localhost", "4002"]
       interval: 30s
       timeout: 10s
       retries: 3
