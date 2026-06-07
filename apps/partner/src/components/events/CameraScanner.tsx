@@ -46,19 +46,26 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
 
   function handleError(err: unknown) {
     const msg = (err instanceof Error ? err.message + (err.name ? ' ' + err.name : '') : String(err)).toLowerCase()
+    const originalError = err instanceof Error ? err.message : String(err)
 
     if (/notallowed|permission|denied/.test(msg)) {
       setError('Camera access denied. Enable camera permission in your browser settings.')
-    } else if (/notfound|no camera/.test(msg)) {
-      setError('No camera found on this device.')
+    } else if (/notfound|no camera|no supported/.test(msg)) {
+      setError('No camera found on this device. Check that a camera is connected and working.')
     } else if (
       location.protocol !== 'https:' &&
       location.hostname !== 'localhost' &&
       location.hostname !== '127.0.0.1'
     ) {
       setError('Camera scanning requires HTTPS (localhost is exempt).')
+    } else if (/notreadable|insecure|browser/.test(msg)) {
+      setError('Browser does not support camera access. Try Chrome, Edge, or Firefox.')
+    } else if (/aborted|timeout/.test(msg)) {
+      setError('Camera request timed out. Please refresh and try again.')
     } else {
-      setError('Failed to start camera. Please refresh and try again.')
+      // Fallback: show a bit more detail if possible
+      const detail = originalError ? ` (${originalError})` : ''
+      setError(`Failed to start camera${detail}. Try refreshing the page or checking camera permissions.`)
     }
     setCameraState('error')
   }
@@ -67,9 +74,14 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
     setCameraState('starting')
     setError('')
     try {
+      // Check if browser supports camera access
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Your browser does not support camera access. Please use Chrome, Edge, or Firefox.')
+      }
+
       const devices = await Html5Qrcode.getCameras()
       if (!Array.isArray(devices) || devices.length === 0) {
-        throw new Error('No cameras found')
+        throw new Error('No cameras found on this device')
       }
       setCameras(devices)
 
