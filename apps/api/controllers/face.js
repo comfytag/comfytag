@@ -1,6 +1,7 @@
 import User from '../models/User.js'
 import Audience from '../models/Audience.js'
 import { createError } from '../utils/error.js'
+import { createNotification } from './notification.js'
 
 // POST /face/enroll/:userId
 // Stores encrypted face template for a user
@@ -32,6 +33,20 @@ export const enrollFace = async (req, res, next) => {
       faceEnrolled: true,
       faceEnrolledAt: user.faceEnrolledAt,
     })
+
+    // Create real-time notification confirming face enrollment
+    const io = req.app.locals.io
+    await createNotification({
+      userId: req.params.userId,
+      type: 'face_enrolled',
+      title: 'Your face is ready ✓',
+      message: 'Skip the queue at events — your face is your ticket now',
+      data: {
+        enrolledAt: user.faceEnrolledAt,
+        deviceId: deviceId || 'unknown',
+      },
+      io,
+    }).catch(err => console.error('[Notification] Face enrolled failed:', err.message))
   } catch (err) {
     next(err)
   }

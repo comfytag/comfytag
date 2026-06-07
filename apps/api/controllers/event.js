@@ -8,6 +8,7 @@ import Audience from '../models/Audience.js'
 import Withdraw from '../models/Withdraw.js'
 import { createError } from '../utils/error.js'
 import { enqueueEmail, enqueueBulkEmails } from '../jobs/emailQueue.js'
+import { createNotification } from './notification.js'
 
 function toSlug(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -170,16 +171,26 @@ export const updateEvent = async (req, res, next) => {
         if (newStatus === 'published') {
           const followers = await Follow.find({ organizer_id: updatedEvent.planner_id }).lean();
 
-          // Notify in-app
+          // Create real-time in-app notifications for followers
+          const io = req.app.locals.io
           if (followers.length > 0) {
-            const notifications = followers.map(f => ({
-                user_id: f.follower_id,
-                type: 'new_event_from_following',
-                title: 'New Event',
-                message: `${updatedEvent.planner} just posted a new event: ${updatedEvent.name}`,
-                data: { event_id: updatedEvent._id }
-            }))
-            await Notification.insertMany(notifications)
+            // Use Promise.allSettled to emit all notifications in parallel (non-blocking)
+            await Promise.allSettled(
+              followers.map(f =>
+                createNotification({
+                  userId: f.follower_id.toString(),
+                  type: 'new_event_from_following',
+                  title: 'New Event',
+                  message: `${updatedEvent.planner} just posted: ${updatedEvent.name}`,
+                  data: {
+                    event_id: updatedEvent._id,
+                    eventName: updatedEvent.name,
+                    organizerName: updatedEvent.planner,
+                  },
+                  io,
+                }).catch(err => console.error('[Notification] New event alert failed:', err.message))
+              )
+            )
           }
 
           // Email followers
