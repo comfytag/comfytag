@@ -29,4 +29,4 @@ WORKDIR /app/apps/admin
 USER nextjs
 EXPOSE 3002
 ENV PORT=3002
-CMD ["node_modules/.bin/next", "start"]
+CMD ["node", ".next/standalone/server.js"]
