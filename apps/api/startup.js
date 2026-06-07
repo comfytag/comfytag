@@ -39,8 +39,12 @@ export async function validateEnvironment() {
 
   // ========== PRODUCTION ONLY ==========
   if (env === 'production') {
+    // Check for database URI (accepts either MONGODB_URI or MONGO)
+    if (!process.env.MONGODB_URI && !process.env.MONGO) {
+      errors.push(`Missing production env var: MONGODB_URI or MONGO`)
+    }
+
     const prodRequired = [
-      'MONGODB_URI',
       'REDIS_URL',
       'WEB_URL',
       'PARTNER_URL',

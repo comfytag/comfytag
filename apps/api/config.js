@@ -19,9 +19,7 @@ export const config = {
   // Database configuration
   // Dev uses local MongoDB, Prod uses external MongoDB Atlas
   mongodb: {
-    uri: process.env.NODE_ENV === 'development'
-      ? process.env.MONGO                    // Local: mongodb://localhost:27018/...
-      : process.env.MONGODB_URI,              // Prod: mongodb+srv://...
+    uri: process.env.MONGODB_URI || process.env.MONGO || '',
   },
 
   // Redis configuration
