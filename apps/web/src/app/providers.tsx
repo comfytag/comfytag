@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useState } from 'react'
 import { ApiTokenSync } from '@/components/layout/ApiTokenSync'
+import { NotificationProvider } from '@/contexts/NotificationContext'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -23,8 +24,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       <ApiTokenSync />
       <QueryClientProvider client={queryClient}>
-        {children}
-        {process.env.NODE_ENV === 'development' && <ReactQueryDevtools />}
+        <NotificationProvider>
+          {children}
+          {process.env.NODE_ENV === 'development' && <ReactQueryDevtools />}
+        </NotificationProvider>
       </QueryClientProvider>
     </SessionProvider>
   )
