@@ -33,16 +33,14 @@ export const createEvent = async (req, res, next) => {
      });
     try {
         const savedEvent = await newEvent.save()
-        // Push eventId to user evet list
-        try {
-            await User.findByIdAndUpdate(userId, {
-                 $push: { events: savedEvent._id },
-                 });
-        } catch (err) {
-            next(err)
-        }
-        res.status(200).json(savedEvent)
-        console.log(savedEvent)
+        // Push eventId to user event list
+        await User.findByIdAndUpdate(userId, {
+             $push: { events: savedEvent._id },
+        }).catch(err => {
+            console.error('[Event Create] Failed to update user events:', err.message);
+        });
+
+        res.status(201).json(savedEvent)
     } catch (err) {
         next(err)
     }
@@ -271,13 +269,18 @@ export const deleteEvent = async (req, res, next) => {
         // Delete the event
         await Event.findByIdAndDelete(eventId);
 
-        // Remove from user's event list
-        try {
-            await User.findByIdAndUpdate(userId, {
-                $pull: { events: eventId },
-            });
-        } catch (err) {
-            next(err);
+        // Remove from user's event list (non-blocking)
+        User.findByIdAndUpdate(userId, {
+            $pull: { events: eventId },
+        }).catch(err => {
+            console.error('[Event Delete] Failed to update user events:', err.message);
+        });
+
+        // Emit Socket.io event for real-time event deletion
+        const io = req.app.locals.io;
+        if (io) {
+            io.to(`organizer:${userId}`).emit('event:deleted', { eventId: eventId });
+            console.log(`[Socket.io] Emitted event:deleted for organizer ${userId}, event ${eventId}`);
         }
 
         res.status(200).json({ success: true, message: 'Event has been deleted' });

@@ -14,8 +14,6 @@ const router = express.Router()
 
 
 
-router.post("/:userId", verifyToken, createEvent)
-
 // Static GET routes (must be before /:id wildcard)
 router.get("/feed", getEventFeed)
 router.get("/nearby", getEventsByState)
@@ -27,6 +25,9 @@ router.get("/pick/sold", eventsBySales)
 router.get("/state/byState", eventsByState)
 router.get("/payment/byPayment", eventsByPayment)
 router.get("/user/:userId", getPlannerEvents)
+
+// POST must come after static routes to avoid conflicts
+router.post("/:userId", verifyUser, createEvent)
 
 // Ticket tier management
 router.get("/:id/tiers/stats", getTicketTierStats)

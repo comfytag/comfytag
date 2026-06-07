@@ -233,7 +233,9 @@ function findDomainIp(domain) {
   })
 }
 
-app.post('/check-email', async (req, res, next) => {
+// Email validation endpoint - disabled due to connection pooling issues
+// Re-enable and fix if needed in future
+/*app.post('/check-email', async (req, res, next) => {
   try {
     const { email } = req.body;
     const results = [];
@@ -264,7 +266,7 @@ app.post('/check-email', async (req, res, next) => {
     res.send('Server errors', error)
   }
 
-})
+})*/
 
 
 
