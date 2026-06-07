@@ -108,7 +108,7 @@ const EventSchema = new Schema({
     promos: {
         type: [
             {
-                code: { type: String, required: true, unique: true },
+                code: { type: String, required: true },
                 discountType: { type: String, enum: ['percentage', 'fixed'], required: true },
                 discountValue: { type: Number, required: true },
                 maxUses: { type: Number },
