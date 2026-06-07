@@ -19,14 +19,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
-# Copy the entire standalone output directory
-COPY --from=builder /app/apps/web/.next/standalone .
-# Overlay static assets and public files
-COPY --from=builder /app/apps/web/.next/static ./.next/static
-COPY --from=builder /app/apps/web/public ./public
+# Copy the entire app directory from builder (includes all node_modules and built files)
+COPY --from=builder /app .
 RUN chown -R nextjs:nodejs /app
-WORKDIR /app/apps/web
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
-CMD ["node", ".next/standalone/server.js"]
+CMD ["node", "apps/web/.next/standalone/apps/web/server.js"]

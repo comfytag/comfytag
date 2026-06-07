@@ -22,8 +22,8 @@ RUN addgroup --system --gid 1001 nodejs && \
 # Copy the entire app directory from builder (includes all node_modules and built files)
 COPY --from=builder /app .
 RUN chown -R nextjs:nodejs /app
-WORKDIR /app/apps/partner
+WORKDIR /app
 USER nextjs
 EXPOSE 3001
 ENV PORT=3001
-CMD ["node", ".next/standalone/server.js"]
+CMD ["node", "apps/partner/.next/standalone/apps/partner/server.js"]
