@@ -4,6 +4,8 @@ import mongoose from "mongoose"
 import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import http from 'http'
+import { initializeSocket } from './socket/index.js'
 const app = express();
 import dns from 'dns'
 // const telnet = require('telnet-client');
@@ -296,8 +298,19 @@ app.post('/check-email', async (req, res, next) => {
 
 connect()
   .then(() => {
-    app.listen(process.env.PORT || PORT, () => {
-      console.log(`Listening to port ${process.env.PORT}`)
+    // Create HTTP server wrapper for Express app
+    const httpServer = http.createServer(app)
+
+    // Initialize Socket.io for real-time notifications
+    const io = initializeSocket(httpServer)
+
+    // Attach io instance to app for use in controllers
+    app.locals.io = io
+
+    // Start listening on configured port
+    httpServer.listen(process.env.PORT || PORT, () => {
+      console.log(`Listening to port ${process.env.PORT || PORT}`)
+      console.log('✓ Socket.io server running alongside Express')
     })
   })
   .catch((err) => {
