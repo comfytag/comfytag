@@ -1,7 +1,8 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
-RUN npm install --omit=dev
+RUN corepack enable
+COPY package.json ./
+RUN npm install --omit=dev --legacy-peer-deps
 COPY . .
 
 FROM node:22-alpine AS runner
