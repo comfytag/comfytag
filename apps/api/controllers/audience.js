@@ -159,6 +159,50 @@ export const createAudience = async (req, res, next) => {
           },
           from: 'tickets@comfytag.com',
         }).catch(err => console.error('[Ticket Confirmation] Queue failed:', err.message));
+
+        // ─── FLOW 3A: EVENT REMINDER SERIES ────────────────────────────────────
+        // Schedule 48h and 4h reminders based on event start time
+        const hoursUntilEvent = (event.date - new Date()) / (1000 * 60 * 60);
+        const delay48h = Math.max(0, (hoursUntilEvent - 48) * 60 * 60 * 1000);
+        const delay4h = Math.max(0, (hoursUntilEvent - 4) * 60 * 60 * 1000);
+
+        // Email 1: 48 hours before event
+        enqueueEmail({
+          to: savedAudience.email,
+          subject: `You're going to ${event.name} in 2 days`,
+          template: 'eventReminder48h.hbs',
+          data: {
+            firstName: savedAudience.name.split(' ')[0],
+            eventName: event.name,
+            eventDate: moment(event.date).format('ddd, MMM D, YYYY'),
+            eventTime: event.startTime || 'TBA',
+            eventVenue: event.venue || 'TBA',
+            viewTicketLink: `${baseUrl}/tickets/${savedAudience._id}`,
+            year: new Date().getFullYear(),
+          },
+          delay: delay48h,
+          from: 'tickets@comfytag.com',
+        }).catch(err => console.error('[Reminder 48h] Queue failed:', err.message));
+
+        // Email 2: 4 hours before event
+        enqueueEmail({
+          to: savedAudience.email,
+          subject: `${event.name} starts in 4 hours — here's what you need`,
+          template: 'eventReminder4h.hbs',
+          data: {
+            firstName: savedAudience.name.split(' ')[0],
+            eventName: event.name,
+            eventTime: event.startTime || 'TBA',
+            eventAddress: event.address || 'TBA',
+            eventVenue: event.venue || 'TBA',
+            faceEnrolled: buyer?.faceEnrolled || false,
+            appLink: `${baseUrl}/app`,
+            ticketLink: `${baseUrl}/tickets/${savedAudience._id}`,
+            year: new Date().getFullYear(),
+          },
+          delay: delay4h,
+          from: 'tickets@comfytag.com',
+        }).catch(err => console.error('[Reminder 4h] Queue failed:', err.message));
     } catch (err) {
         next(err)
     }

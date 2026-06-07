@@ -1,0 +1,39 @@
+﻿<h1>New Event Alert! 🎪</h1>
+
+<p>Hey {{firstName}},</p>
+
+<p><strong>{{organizerName}}</strong> just dropped a new event, and it's looking 🔥</p>
+
+<div style="background-color: #fafaf9; border: 1px solid #e7e5e4; border-radius: 12px; padding: 24px; margin: 24px 0;">
+  <h2 style="margin-top: 0; margin-bottom: 12px; color: #1c1917;">{{eventName}}</h2>
+  
+  {{#if urgencyBadge}}
+  <div style="display: inline-block; background-color: #f59e0b; color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 12px;">
+    ⚡ Selling Fast
+  </div>
+  {{/if}}
+  
+  <p style="margin-bottom: 8px; color: #78716c;"><strong>📅 {{eventDate}}</strong></p>
+  <p style="margin-bottom: 8px; color: #78716c;"><strong>🕐 {{eventTime}}</strong></p>
+  <p style="margin-bottom: 12px; color: #78716c;"><strong>📍 {{eventVenue}}</strong></p>
+  
+  <p style="margin: 16px 0; color: #78716c;"><strong>Starting {{ticketPrice}}</strong></p>
+  
+  {{> ctaButton text="Get Your Ticket" url=eventLink }}
+</div>
+
+<div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 4px;">
+  <h3 style="margin-top: 0; color: #10b981;">Following {{organizerName}}</h3>
+  <p style="margin-bottom: 0;">You're following this organizer, so you're the first to know about their events. Spread the word!</p>
+</div>
+
+<p style="margin-top: 24px; margin-bottom: 8px;"><strong>What You Should Know:</strong></p>
+<ul style="margin: 12px 0; padding-left: 20px; color: #78716c;">
+  <li style="margin-bottom: 8px;">Early birds get best prices — act fast</li>
+  <li style="margin-bottom: 8px;">Enroll your face for instant check-in</li>
+  <li style="margin-bottom: 8px;">Transfer your ticket if plans change</li>
+</ul>
+
+<p style="color: #a8a29e; margin-top: 32px;">Not interested? <a href="{{unsubscribeLink}}" style="color: #7c3aed;">Unfollow {{organizerName}}</a> or <a href="{{preferencesLink}}" style="color: #7c3aed;">update your notification settings</a>.</p>
+
+<p style="color: #a8a29e; font-size: 14px;">Don't miss out! 🎉</p>

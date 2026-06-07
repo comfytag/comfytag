@@ -1,0 +1,38 @@
+﻿<h1>Let's Go! 🚀 {{eventName}} Starts in 4 Hours</h1>
+
+<p>Hey {{firstName}},</p>
+
+<p>The moment's here. {{eventName}} kicks off in just <strong>4 hours</strong>. Time to get ready!</p>
+
+<div style="background-color: #fafaf9; border-left: 4px solid #ef4444; padding: 16px; margin: 20px 0; border-radius: 4px;">
+  <h3 style="margin-top: 0; color: #ef4444;">Go-Time Checklist</h3>
+  <p style="margin-bottom: 8px;">🕐 <strong>Event Time:</strong> {{eventTime}}</p>
+  <p style="margin-bottom: 8px;">📍 <strong>Location:</strong> {{eventVenue}}</p>
+  <p style="margin-bottom: 0;">🗺️ <strong>Address:</strong> {{eventAddress}}</p>
+</div>
+
+{{#if faceEnrolled}}
+<div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 4px;">
+  <h3 style="margin-top: 0; color: #10b981;">Your Face = Your Ticket ✓</h3>
+  <p style="margin-bottom: 0;">You've already enrolled your face — just show up and scan! No QR codes needed.</p>
+</div>
+{{else}}
+<div style="background-color: #ede9fe; border-left: 4px solid #7c3aed; padding: 16px; margin: 20px 0; border-radius: 4px;">
+  <h3 style="margin-top: 0; color: #7c3aed;">Quick Enroll Your Face (2 min)</h3>
+  <p style="margin-bottom: 16px;">Enroll your face now so you can skip the line at the gate — no QR code needed, just scan your face.</p>
+  {{> ctaButton text="Enroll Now" url=appLink }}
+</div>
+{{/if}}
+
+<p style="margin-top: 24px; margin-bottom: 8px;"><strong>Before You Leave Home:</strong></p>
+<ul style="margin: 12px 0; padding-left: 20px; color: #78716c;">
+  <li style="margin-bottom: 8px;">Screenshot your ticket or save your reference (just in case)</li>
+  <li style="margin-bottom: 8px;">Charge your phone (face scanning needs battery 🔋)</li>
+  <li style="margin-bottom: 8px;">Plan your travel time (don't be late!)</li>
+</ul>
+
+{{> ctaButton text="View Ticket" url=ticketLink }}
+
+<p style="color: #a8a29e; margin-top: 24px;">Having issues? <a href="https://comfytag.com/support" style="color: #7c3aed;">Contact support</a> immediately.</p>
+
+<p style="color: #a8a29e; font-size: 14px;">Let's make this unforgettable! 🎊</p>

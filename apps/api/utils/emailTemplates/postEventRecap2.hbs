@@ -1,0 +1,28 @@
+﻿<h1>You Loved {{eventName}} — Here's More Like It</h1>
+
+<p>Hey {{firstName}},</p>
+
+<p>Since you had such an amazing time at {{eventName}}, we thought you'd love to check out these {{interestCategory}} events happening soon in {{state}}.</p>
+
+<div style="margin: 32px 0;">
+  {{#each recommendedEvents}}
+  <div style="background-color: #fafaf9; border: 1px solid #e7e5e4; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+    <h3 style="margin-top: 0; margin-bottom: 8px; color: #1c1917;">{{this.name}}</h3>
+    <p style="margin-bottom: 4px; color: #78716c;"><strong>📅</strong> {{this.date}}</p>
+    <p style="margin-bottom: 4px; color: #78716c;"><strong>💰</strong> {{this.price}}</p>
+    <p style="margin-bottom: 12px; color: #78716c;"><strong>📍</strong> {{this.location}}</p>
+    {{> ctaButton text="View Event" url=this.link }}
+  </div>
+  {{/each}}
+</div>
+
+<p style="margin-top: 24px; margin-bottom: 12px;"><strong>Want to See More?</strong></p>
+
+{{> ctaButton text="Browse All {{interestCategory}} Events" url=browseLink }}
+
+<div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 4px;">
+  <h3 style="margin-top: 0; color: #10b981;">Turn On Alerts</h3>
+  <p style="margin-bottom: 0;">Want us to let you know the moment a new {{interestCategory}} event drops? Update your preferences to get notified first.</p>
+</div>
+
+<p style="color: #a8a29e; margin-top: 32px;">Happy event hunting! Let's make more memories together. 🎪</p>

@@ -5,7 +5,9 @@ import User from '../models/User.js';
 import Follow from '../models/Follow.js'
 import Notification from '../models/Notification.js'
 import Audience from '../models/Audience.js'
+import Withdraw from '../models/Withdraw.js'
 import { createError } from '../utils/error.js'
+import { enqueueEmail, enqueueBulkEmails } from '../jobs/emailQueue.js'
 
 function toSlug(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -54,20 +56,178 @@ export const updateEvent = async (req, res, next) => {
             { $set: req.body },
             { new: true }
         )
+        const baseUrl = process.env.BASE_URL || 'https://comfytag.com';
+        const newStatus = req.body.status;
 
-        // Notify all followers when an event is published
-        if (req.body.status === 'published') {
-            const followers = await Follow.find({ organizer_id: updatedEvent.planner_id })
-            if (followers.length > 0) {
-                const notifications = followers.map(f => ({
-                    user_id: f.follower_id,
-                    type: 'new_event_from_following',
-                    title: 'New Event',
-                    message: `${updatedEvent.planner} just posted a new event: ${updatedEvent.name}`,
-                    data: { event_id: updatedEvent._id }
-                }))
-                await Notification.insertMany(notifications)
+        // ─── FLOW 3B & 3C: POST-EVENT RECAP + ORGANIZER REPORT ────────────────
+        if (newStatus === 'ended') {
+          const attendees = await Audience.find({ event_id: updatedEvent._id, status: 'active' });
+          const organizer = await User.findById(updatedEvent.planner_id);
+
+          if (organizer && attendees.length > 0) {
+            const attendeeCount = attendees.length;
+            const checkedInCount = attendees.filter(a => a.checkedIn).length;
+            const attendanceRate = attendeeCount > 0 ? Math.round((checkedInCount / attendeeCount) * 100) : 0;
+
+            // Check-in method breakdown
+            const faceCheckIns = attendees.filter(a => a.checkedInMethod === 'face').length;
+            const qrCheckIns = attendees.filter(a => a.checkedInMethod === 'qr').length;
+            const manualCheckIns = attendees.filter(a => a.checkedInMethod === 'manual').length;
+
+            const facePercent = attendeeCount > 0 ? Math.round((faceCheckIns / attendeeCount) * 100) : 0;
+            const qrPercent = attendeeCount > 0 ? Math.round((qrCheckIns / attendeeCount) * 100) : 0;
+            const manualPercent = attendeeCount > 0 ? Math.round((manualCheckIns / attendeeCount) * 100) : 0;
+
+            // Revenue calculation
+            const grossRevenue = attendees.reduce((sum, a) => sum + (a.amount || 0), 0);
+            const platformFee = Math.round(grossRevenue * 0.04);
+            const netRevenue = grossRevenue - platformFee;
+
+            // ─── FLOW 3B: Attendee Recap Emails ────────────────────────
+            for (const attendee of attendees) {
+              // Email 1: Immediate recap (fire-and-forget)
+              enqueueEmail({
+                to: attendee.email,
+                subject: `That was amazing — thanks for coming 🎉`,
+                template: 'postEventRecap1.hbs',
+                data: {
+                  firstName: attendee.name.split(' ')[0],
+                  eventName: updatedEvent.name,
+                  attendeeCount,
+                  rateLink: `${baseUrl}/events/${updatedEvent._id}/rate`,
+                  year: new Date().getFullYear(),
+                },
+                from: 'events@comfytag.com',
+              }).catch(err => console.error('[Recap Email 1] Queue failed:', err.message));
+
+              // Email 2: +5 days discovery recommendations (scheduled)
+              const similarEvents = await Event.find({
+                category: updatedEvent.category,
+                state: updatedEvent.state,
+                date: { $gt: new Date() },
+                status: 'published',
+                _id: { $ne: updatedEvent._id },
+              }).limit(3).lean();
+
+              enqueueEmail({
+                to: attendee.email,
+                subject: `Similar events you'd love (based on ${updatedEvent.category})`,
+                template: 'postEventRecap2.hbs',
+                data: {
+                  firstName: attendee.name.split(' ')[0],
+                  eventName: updatedEvent.name,
+                  interestCategory: updatedEvent.category,
+                  state: updatedEvent.state,
+                  recommendedEvents: similarEvents.map(e => ({
+                    name: e.name,
+                    date: moment(e.date).format('MMM D'),
+                    price: e.ticketType?.length > 0 ? `₦${e.ticketType[0].price}` : 'TBA',
+                    location: e.venue || 'TBA',
+                    link: `${baseUrl}/events/${e._id}`,
+                  })),
+                  browseLink: `${baseUrl}/events?category=${updatedEvent.category}&state=${updatedEvent.state}`,
+                  year: new Date().getFullYear(),
+                },
+                delay: 5 * 24 * 60 * 60 * 1000,
+                from: 'hello@comfytag.com',
+                replyTo: 'hello@comfytag.com',
+              }).catch(err => console.error('[Recap Email 2] Queue failed:', err.message));
             }
+
+            // ─── FLOW 3C: Organizer Performance Report ────────────────────────
+            const hasPendingWithdraw = await Withdraw.findOne({
+              user_id: organizer._id,
+              status: 'pending',
+            });
+
+            enqueueEmail({
+              to: organizer.email,
+              subject: `Your ${updatedEvent.name} recap — ${attendeeCount} tickets, ₦${grossRevenue.toLocaleString()} earned`,
+              template: 'organizerPerformanceReport.hbs',
+              data: {
+                organizerName: organizer.name || organizer.email,
+                eventName: updatedEvent.name,
+                totalTicketsSold: attendeeCount,
+                grossRevenue: `₦${grossRevenue.toLocaleString()}`,
+                platformFee: `₦${platformFee.toLocaleString()}`,
+                netRevenue: `₦${netRevenue.toLocaleString()}`,
+                checkedInCount,
+                attendanceRate,
+                faceCheckIns: `${facePercent}%`,
+                qrCheckIns: `${qrPercent}%`,
+                manualCheckIns: `${manualPercent}%`,
+                payoutLink: hasPendingWithdraw ? null : `${baseUrl}/partner/withdraw`,
+                state: organizer.state || 'Nigeria',
+                year: new Date().getFullYear(),
+              },
+              from: 'payouts@comfytag.com',
+              replyTo: 'payouts@comfytag.com',
+            }).catch(err => console.error('[Performance Report] Queue failed:', err.message));
+          }
+        }
+
+        // ─── FLOW 3D: NEW EVENT ALERT (Follower Notification) ────────────────
+        if (newStatus === 'published') {
+          const followers = await Follow.find({ organizer_id: updatedEvent.planner_id }).lean();
+
+          // Notify in-app
+          if (followers.length > 0) {
+            const notifications = followers.map(f => ({
+                user_id: f.follower_id,
+                type: 'new_event_from_following',
+                title: 'New Event',
+                message: `${updatedEvent.planner} just posted a new event: ${updatedEvent.name}`,
+                data: { event_id: updatedEvent._id }
+            }))
+            await Notification.insertMany(notifications)
+          }
+
+          // Email followers
+          if (followers.length > 0) {
+            const remainingCapacity = (updatedEvent.ticketType?.reduce((sum, t) => sum + (t.capacity || 0), 0) || 100) - (updatedEvent.ticketType?.reduce((sum, t) => sum + (t.sold || 0), 0) || 0);
+            const totalCapacity = updatedEvent.ticketType?.reduce((sum, t) => sum + (t.capacity || 0), 0) || 100;
+            const capacityPercent = (remainingCapacity / totalCapacity) * 100;
+            const isUrgent = capacityPercent < 20;
+
+            const batchSize = 50;
+            for (let i = 0; i < followers.length; i += batchSize) {
+              const batch = followers.slice(i, i + batchSize);
+
+              await Promise.allSettled(
+                batch.map(async follower => {
+                  // Re-query follower's user to check notification preference
+                  const followerUser = await User.findById(follower.follower_id);
+                  if (followerUser?.notificationPreferences?.email === false) {
+                    return;
+                  }
+
+                  const ticketPrice = updatedEvent.ticketType?.length > 0 ? updatedEvent.ticketType[0].price : 0;
+
+                  return enqueueEmail({
+                    to: followerUser?.email,
+                    subject: `${updatedEvent.planner} just dropped: ${updatedEvent.name}`,
+                    template: 'newEventAlert.hbs',
+                    data: {
+                      firstName: (followerUser?.name || followerUser?.email).split(' ')[0],
+                      organizerName: updatedEvent.planner,
+                      eventName: updatedEvent.name,
+                      eventDate: moment(updatedEvent.date).format('ddd, MMM D'),
+                      eventTime: updatedEvent.startTime || 'TBA',
+                      eventVenue: updatedEvent.venue || 'TBA',
+                      ticketPrice: `₦${ticketPrice}`,
+                      urgencyBadge: isUrgent,
+                      remainingCapacity,
+                      ticketLink: `${baseUrl}/events/${updatedEvent._id}`,
+                      year: new Date().getFullYear(),
+                    },
+                    from: 'events@comfytag.com',
+                  }).catch(err => console.error('[New Event Alert] Queue failed:', err.message));
+                })
+              );
+            }
+
+            console.log(`[New Event Alert] Queued ${followers.length} emails for followers`);
+          }
         }
 
         res.status(200).json(updatedEvent)

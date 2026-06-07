@@ -1,0 +1,75 @@
+﻿<h1>{{eventName}} — Event Complete! 🎊</h1>
+
+<p>Hey {{organizerName}},</p>
+
+<p>Your event wrapped up, and the numbers look great! Here's the full breakdown of {{eventName}}.</p>
+
+<h2 style="color: #1c1917; margin-top: 32px;">Revenue Snapshot</h2>
+
+<div style="background-color: #fafaf9; border: 2px solid #d97706; border-radius: 12px; padding: 20px; margin: 24px 0; text-align: center;">
+  <p style="color: #78716c; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Total Tickets Sold</p>
+  <p style="font-size: 32px; font-weight: 700; margin: 0; color: #1c1917;">{{totalTicketsSold}}</p>
+</div>
+
+<div style="background-color: #fafaf9; border: 2px solid #d97706; border-radius: 12px; padding: 20px; margin: 24px 0; text-align: center;">
+  <p style="color: #78716c; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Gross Revenue</p>
+  <p style="font-size: 32px; font-weight: 700; margin: 0; color: #d97706;">{{grossRevenue}}</p>
+</div>
+
+<div style="background-color: #fafaf9; border: 1px solid #e7e5e4; border-radius: 12px; padding: 20px; margin: 24px 0;">
+  <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e7e5e4;">
+    <span style="color: #78716c;">Gross Revenue</span>
+    <span style="color: #1c1917; font-weight: 600;">{{grossRevenue}}</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e7e5e4;">
+    <span style="color: #78716c;">ComfyTag Platform Fee (4%)</span>
+    <span style="color: #1c1917; font-weight: 600;">−{{platformFee}}</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; padding: 16px 0; border-top: 2px solid #d97706;">
+    <span style="color: #1c1917; font-weight: 700; font-size: 16px;">Your Net Earnings</span>
+    <span style="color: #d97706; font-weight: 700; font-size: 18px;">{{netRevenue}}</span>
+  </div>
+</div>
+
+<h2 style="color: #1c1917; margin-top: 32px;">Attendance Metrics</h2>
+
+<div style="background-color: #fafaf9; border: 2px solid #10b981; border-radius: 12px; padding: 20px; margin: 24px 0; text-align: center;">
+  <p style="color: #78716c; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Check-In Rate</p>
+  <p style="font-size: 32px; font-weight: 700; margin: 0; color: #1c1917;">{{attendanceRate}}%</p>
+</div>
+
+<p style="margin-top: 24px; margin-bottom: 12px;"><strong>Check-In Method Breakdown:</strong></p>
+
+<div style="background-color: #fafaf9; border: 1px solid #e7e5e4; border-radius: 12px; padding: 20px;">
+  <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e7e5e4;">
+    <span style="color: #78716c;">🔍 Face Recognition</span>
+    <span style="color: #1c1917; font-weight: 600;">{{faceCheckIns}}</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e7e5e4;">
+    <span style="color: #78716c;">📱 QR Code</span>
+    <span style="color: #1c1917; font-weight: 600;">{{qrCheckIns}}</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; padding: 12px 0;">
+    <span style="color: #78716c;">✋ Manual Check-In</span>
+    <span style="color: #1c1917; font-weight: 600;">{{manualCheckIns}}</span>
+  </div>
+</div>
+
+<p style="color: #78716c; font-size: 14px; margin-top: 16px;">Face recognition adoption shows your attendees loved the ComfyTag experience!</p>
+
+{{#if payoutLink}}
+{{> ctaButton text="Withdraw Your Earnings" url=payoutLink }}
+{{/if}}
+
+<div style="background-color: #fafaf9; border: 1px solid #e7e5e4; border-radius: 12px; padding: 20px; margin: 24px 0;">
+  <h3 style="margin-top: 0; color: #d97706;">💡 Pro Tips for Your Next Event</h3>
+  <ul style="margin: 12px 0; padding-left: 20px; color: #78716c;">
+    <li style="margin-bottom: 8px;">Face recognition adoption is key — encourage more attendees to enroll before your next event</li>
+    <li style="margin-bottom: 8px;">Your {{attendanceRate}}% attendance rate is solid — great job!</li>
+    <li style="margin-bottom: 8px;">Promote early bird tickets to drive pre-event momentum</li>
+  </ul>
+</div>
+
+<p style="margin-top: 24px; margin-bottom: 0;"><strong>Questions?</strong> Reply to this email or visit your dashboard for detailed analytics.</p>
+
+<p style="color: #78716c; margin-top: 16px;">Thanks for making ComfyTag a success. See you at the next one! 🚀</p>
