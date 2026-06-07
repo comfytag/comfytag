@@ -165,7 +165,6 @@ export const acceptTransfer = async (req, res, next) => {
 
     // Enqueue transfer accepted email to original owner (non-blocking)
     const sender = await User.findById(previousOwner)
-    const recipient2 = await User.findById(recipientId)
     const event = await Event.findById(ticket.event_id)
     const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
 
