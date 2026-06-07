@@ -172,6 +172,7 @@ export const createAudience = async (req, res, next) => {
             attendeeName: savedAudience.name,
             ticketTier: savedAudience.type,
             qty: savedAudience.numOfTicket,
+            ticketLabel: savedAudience.numOfTicket > 1 ? 'tickets' : 'ticket',
             totalPrice: `₦${savedAudience.amount.toLocaleString()}`,
             faceEnrolled: buyer?.faceEnrolled || false,
             isPartner: buyer?.userType === 'organizer' || false,
