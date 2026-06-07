@@ -200,7 +200,7 @@ export const register = async (req,res,next) =>{
 		// Enqueue welcome series based on registration type
 		if (!user.isPartner) {
 			// Attendee registration - enqueue attendee welcome series
-			enqueueWelcomeSeries(user._id.toString(), 'attendee', user).catch(err =>
+			enqueueWelcomeSeries(user._id.toString(), 'attendee', user.toObject()).catch(err =>
 				console.error('[Auth] Welcome series error (non-blocking):', err)
 			);
 		}
@@ -533,7 +533,7 @@ export const registerAsOrganizer = async (req, res, next) => {
     )
 
     // Enqueue organizer welcome series
-    enqueueWelcomeSeries(updatedUser._id.toString(), 'organizer', updatedUser).catch(err =>
+    enqueueWelcomeSeries(updatedUser._id.toString(), 'organizer', updatedUser.toObject()).catch(err =>
       console.error('[Auth] Welcome series error (non-blocking):', err)
     );
 
