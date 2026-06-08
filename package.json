@@ -7,10 +7,16 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "typecheck": "turbo run typecheck"
+    "test:ci": "turbo run test -- --run",
+    "typecheck": "turbo run typecheck",
+    "prepare": "husky install"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
     "@playwright/test": "^1.60.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
     "turbo": "latest"
   },
   "packageManager": "pnpm@11.0.9",
