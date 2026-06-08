@@ -103,6 +103,8 @@ jobs:
           host: ${{ secrets.PRODUCTION_HOST }}
           username: ${{ secrets.PRODUCTION_USER }}
           key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          timeout: 30m
+          command_timeout: 30m
           script: |
             cd /home/deploy/comfytag
             echo "📡 Pulling latest code..."
@@ -156,6 +158,8 @@ jobs:
           host: ${{ secrets.PRODUCTION_HOST }}
           username: ${{ secrets.PRODUCTION_USER }}
           key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          timeout: 10m
+          command_timeout: 10m
           script: |
             cd /home/deploy/comfytag
 
