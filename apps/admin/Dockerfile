@@ -3,12 +3,12 @@ RUN corepack enable
 
 FROM base AS deps
 WORKDIR /app
+ENV NODE_OPTIONS="--http-timeout=900000"
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json turbo.json ./
 COPY packages/ ./packages/
 COPY apps/admin ./apps/admin
-RUN echo "fetch-timeout=600000" > /root/.npmrc && \
-    echo "fetch-retry-mintimeout=30000" >> /root/.npmrc && \
-    echo "fetch-retry-maxtimeout=300000" >> /root/.npmrc && \
+RUN npm config set fetch-timeout 900000 && \
+    npm config set network-timeout 900000 && \
     pnpm install --frozen-lockfile
 
 FROM base AS builder
