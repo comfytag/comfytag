@@ -1,7 +1,7 @@
 'use client'
 
 interface AttendeeStatusBadgeProps {
-  status: 'active' | 'used' | 'transferred' | 'refunded'
+  status: 'active' | 'used' | 'transferred' | 'refunded' | 'ended'
 }
 
 export function AttendeeStatusBadge({ status }: AttendeeStatusBadgeProps) {
@@ -25,6 +25,11 @@ export function AttendeeStatusBadge({ status }: AttendeeStatusBadgeProps) {
       bg: 'rgba(239, 68, 68, 0.15)',
       color: 'var(--color-error)',
       label: 'Refunded',
+    },
+    ended: {
+      bg: 'rgba(156, 163, 175, 0.15)',
+      color: 'rgb(107, 114, 128)',
+      label: 'Ended',
     },
   }
 
