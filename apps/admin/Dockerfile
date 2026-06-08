@@ -25,4 +25,4 @@ RUN chown -R nextjs:nodejs /app
 USER nextjs
 EXPOSE 3002
 ENV PORT=3002
-CMD ["node", "apps/admin/.next/standalone/apps/admin/server.js"]
+CMD ["node", "apps/admin/.next/standalone/server.js"]

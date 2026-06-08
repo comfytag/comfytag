@@ -25,4 +25,4 @@ RUN chown -R nextjs:nodejs /app
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
-CMD ["node", "apps/web/.next/standalone/apps/web/server.js"]
+CMD ["node", "apps/web/.next/standalone/server.js"]

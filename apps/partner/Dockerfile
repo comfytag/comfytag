@@ -26,4 +26,4 @@ WORKDIR /app
 USER nextjs
 EXPOSE 3001
 ENV PORT=3001
-CMD ["node", "apps/partner/.next/standalone/apps/partner/server.js"]
+CMD ["node", "apps/partner/.next/standalone/server.js"]
