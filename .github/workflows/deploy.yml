@@ -313,5 +313,4 @@ jobs:
                 }
               ]
             }
-        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
         continue-on-error: true
