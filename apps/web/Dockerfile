@@ -3,11 +3,13 @@ RUN corepack enable
 
 FROM base AS deps
 WORKDIR /app
-ENV PNPM_FETCH_TIMEOUT=120000
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json turbo.json ./
 COPY packages/ ./packages/
 COPY apps/web ./apps/web
-RUN pnpm install --frozen-lockfile
+RUN echo "fetch-timeout=600000" > /root/.npmrc && \
+    echo "fetch-retry-mintimeout=30000" >> /root/.npmrc && \
+    echo "fetch-retry-maxtimeout=300000" >> /root/.npmrc && \
+    pnpm install --frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
