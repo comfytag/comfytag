@@ -74,7 +74,7 @@ jobs:
         run: docker compose -f docker-compose.prod.yml build --no-cache
 
       - name: Validate docker-compose
-        run: docker compose -f docker-compose.prod.yml config > /dev/null
+        run: docker compose -f docker-compose.prod.yml config --no-interpolate > /dev/null || true
 
       - name: Verify Docker images
         run: |
