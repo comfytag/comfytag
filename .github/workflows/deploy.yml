@@ -71,7 +71,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Docker images
-        run: docker compose -f docker-compose.prod.yml build --no-cache
+        run: docker compose -f docker-compose.prod.yml build
 
       - name: Validate docker-compose
         run: docker compose -f docker-compose.prod.yml config --no-interpolate > /dev/null || true
@@ -111,7 +111,7 @@ jobs:
             git pull origin main
 
             echo "🐳 Building Docker images..."
-            docker compose -f docker-compose.prod.yml build --no-cache api web partner admin
+            docker compose -f docker-compose.prod.yml build api web partner admin
 
             echo "🔄 Starting containers..."
             docker compose -f docker-compose.prod.yml up -d
