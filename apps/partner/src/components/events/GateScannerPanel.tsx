@@ -49,7 +49,7 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
   const [lastResult, setLastResult] = useState<ScanResult | null>(null)
   const [recentScans, setRecentScans] = useState<ScanResult[]>([])
   const [isPending, setIsPending] = useState(false)
-  const [scanMode, setScanMode] = useState<'camera' | 'manual'>('camera')
+  const [scanMode, setScanMode] = useState<'manual' | 'qr' | 'face'>('manual')
   const inputRef = useRef<HTMLInputElement>(null)
   const clearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -198,44 +198,54 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
     <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
       {/* Left: Scanner input + result card */}
       <div style={{ flex: '1 1 360px', minWidth: 0 }}>
-        {/* Mode toggle */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '4px',
-            marginBottom: '20px',
-            background: 'var(--color-surface)',
-            borderRadius: '10px',
-            padding: '4px',
-            width: 'fit-content',
-            border: '1px solid var(--color-border)',
-          }}
-        >
-          {(['camera', 'manual'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => setScanMode(mode)}
+        {/* Mode selector - segmented buttons */}
+        {(() => {
+          const modes = [
+            { id: 'manual' as const, label: '⌨️  Manual', disabled: false },
+            { id: 'qr' as const, label: '📷  QR Code', disabled: false },
+            { id: 'face' as const, label: '🔐  Face', disabled: true },
+          ]
+          return (
+            <div
               style={{
-                padding: '8px 20px',
-                borderRadius: '8px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: scanMode === mode ? 600 : 400,
-                color: scanMode === mode ? '#ffffff' : 'var(--color-text-muted)',
-                backgroundColor: scanMode === mode ? 'var(--color-brand)' : 'transparent',
-                transition: 'all var(--duration-fast) ease',
+                display: 'flex',
+                gap: '4px',
+                marginBottom: '20px',
+                background: 'var(--color-surface)',
+                borderRadius: '10px',
+                padding: '4px',
+                width: 'fit-content',
+                border: '1px solid var(--color-border)',
               }}
             >
-              {mode === 'camera' ? '📷  Camera' : '⌨️  Hardware / Manual'}
-            </button>
-          ))}
-        </div>
+              {modes.map((mode) => (
+                <button
+                  key={mode.id}
+                  onClick={() => !mode.disabled && setScanMode(mode.id)}
+                  disabled={mode.disabled}
+                  title={mode.disabled ? 'Coming soon' : undefined}
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: mode.disabled ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    fontWeight: scanMode === mode.id ? 600 : 400,
+                    color: scanMode === mode.id ? '#ffffff' : 'var(--color-text-muted)',
+                    backgroundColor: scanMode === mode.id ? 'var(--color-brand)' : 'transparent',
+                    opacity: mode.disabled ? 0.5 : 1,
+                    transition: 'all var(--duration-fast) ease',
+                  }}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+          )
+        })()}
 
-        {/* Render camera or manual input */}
-        {scanMode === 'camera' ? (
-          <CameraScanner onScan={handleScan} isProcessing={isPending} />
-        ) : (
+        {/* Manual Entry Mode */}
+        {scanMode === 'manual' && (
           <div
             style={{
               background: 'var(--color-surface)',
@@ -245,68 +255,106 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
               marginBottom: '20px',
             }}
           >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <Scan size={20} color="var(--color-brand)" />
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--color-text)' }}>
-              Scan or Enter Reference
-            </h3>
-          </div>
-
-          <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--color-text-muted)' }}>
-            Aim a barcode scanner at the ticket QR code, or type the reference manually and press Enter.
-          </p>
-
-          <form onSubmit={handleSubmit}>
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value.toUpperCase())}
-              onKeyDown={handleKeyDown}
-              placeholder="e.g. TKT-A1B2C3 or scan QRâ€¦"
-              disabled={isPending}
-              autoComplete="off"
-              spellCheck={false}
-              style={{
-                width: '100%',
-                fontSize: '22px',
-                fontFamily: 'monospace',
-                letterSpacing: '0.05em',
-                padding: '14px 16px',
-                borderRadius: '8px',
-                border: '2px solid var(--color-border)',
-                background: 'var(--color-surface-2, #111)',
-                color: 'var(--color-text)',
-                outline: 'none',
-                boxSizing: 'border-box',
-                transition: 'border-color 0.15s ease',
-              }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--color-brand)' }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)' }}
-            />
-
-            <button
-              type="submit"
-              disabled={isPending || !inputValue.trim()}
-              style={{
-                marginTop: '12px',
-                width: '100%',
-                padding: '12px',
-                fontSize: '14px',
-                fontWeight: 600,
-                borderRadius: '8px',
-                border: 'none',
-                cursor: isPending || !inputValue.trim() ? 'not-allowed' : 'pointer',
-                backgroundColor: isPending || !inputValue.trim() ? 'var(--color-border)' : 'var(--color-brand)',
-                color: '#fff',
-                transition: 'background-color 0.15s ease',
-              }}
-            >
-              {isPending ? 'Checking inâ€¦' : 'Check In'}
-            </button>
-          </form>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+              <Scan size={20} color="var(--color-brand)" />
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--color-text)' }}>
+                Scan or Enter Reference
+              </h3>
             </div>
-          )}
+
+            <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--color-text-muted)' }}>
+              Aim a barcode scanner at the ticket QR code, or type the reference manually and press Enter.
+            </p>
+
+            <form onSubmit={handleSubmit}>
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value.toUpperCase())}
+                onKeyDown={handleKeyDown}
+                placeholder="e.g. TKT-A1B2C3 or scan QR…"
+                disabled={isPending}
+                autoComplete="off"
+                spellCheck={false}
+                style={{
+                  width: '100%',
+                  fontSize: '22px',
+                  fontFamily: 'monospace',
+                  letterSpacing: '0.05em',
+                  padding: '14px 16px',
+                  borderRadius: '8px',
+                  border: '2px solid var(--color-border)',
+                  background: 'var(--color-surface-2, #111)',
+                  color: 'var(--color-text)',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.15s ease',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--color-brand)'
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--color-border)'
+                }}
+              />
+
+              <button
+                type="submit"
+                disabled={isPending || !inputValue.trim()}
+                style={{
+                  marginTop: '12px',
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: isPending || !inputValue.trim() ? 'not-allowed' : 'pointer',
+                  backgroundColor: isPending || !inputValue.trim() ? 'var(--color-border)' : 'var(--color-brand)',
+                  color: '#fff',
+                  transition: 'background-color 0.15s ease',
+                }}
+              >
+                {isPending ? 'Checking in…' : 'Check In'}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* QR Code Scanner Mode */}
+        {scanMode === 'qr' && (
+          <CameraScanner onScan={handleScan} isProcessing={isPending} />
+        )}
+
+        {/* Face Verification Coming Soon */}
+        {scanMode === 'face' && (
+          <div
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '12px',
+              padding: '40px 24px',
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '20px',
+            }}
+          >
+            <div style={{ fontSize: '48px' }}>🔐</div>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: 'var(--color-text)' }}>
+              Face Verification Coming Soon
+            </h3>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-text-muted)', maxWidth: '300px' }}>
+              Once our KBY-AI license is active, you&apos;ll be able to verify attendees by facial recognition for added security.
+            </p>
+            <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: 'var(--color-brand)', fontWeight: 500 }}>
+              For now, use Manual or QR Code scanning.
+            </p>
+          </div>
+        )}
 
         {/* Last result card */}
         {lastResult && (

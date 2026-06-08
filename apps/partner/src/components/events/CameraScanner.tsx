@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback, useId } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Camera, AlertCircle, Loader2 } from 'lucide-react'
-import { Html5Qrcode } from 'html5-qrcode'
-import type { CameraDevice } from 'html5-qrcode'
+import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library'
 
 interface CameraScannerProps {
   onScan: (reference: string) => void
@@ -13,20 +12,28 @@ interface CameraScannerProps {
 type CameraState = 'idle' | 'starting' | 'scanning' | 'error'
 
 export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
-  const containerId = `qr-scanner-${useId()}`
-  const scannerRef = useRef<Html5Qrcode | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const readerRef = useRef<BrowserMultiFormatReader | null>(null)
   const lastScannedRef = useRef<{ value: string; at: number }>({ value: '', at: 0 })
 
   const [cameraState, setCameraState] = useState<CameraState>('idle')
   const [error, setError] = useState<string>('')
-  const [cameras, setCameras] = useState<CameraDevice[]>([])
-  const [selectedCameraId, setSelectedCameraId] = useState<string>('')
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {})
+      if (readerRef.current) {
+        try {
+          readerRef.current.reset()
+        } catch {
+          // Ignore cleanup errors
+        }
+        readerRef.current = null
+      }
+      if (videoRef.current?.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream
+        stream.getTracks().forEach(track => track.stop())
+        videoRef.current.srcObject = null
       }
     }
   }, [])
@@ -45,64 +52,70 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
   )
 
   function handleError(err: unknown) {
-    const msg = (err instanceof Error ? err.message + (err.name ? ' ' + err.name : '') : String(err)).toLowerCase()
-    const originalError = err instanceof Error ? err.message : String(err)
+    const msg = (err instanceof Error ? err.message : String(err)).toLowerCase()
 
-    if (/notallowed|permission|denied/.test(msg)) {
-      setError('Camera access denied. Enable camera permission in your browser settings.')
-    } else if (/notfound|no camera|no supported/.test(msg)) {
-      setError('No camera found on this device. Check that a camera is connected and working.')
+    if (/notallowed|permission|denied|not allowed/.test(msg)) {
+      setError('Camera access denied. Enable camera permission in browser settings.')
+    } else if (/notfound|no camera|no device|overconstrained/.test(msg)) {
+      setError(
+        'Camera not available. Ensure:\n' +
+        '1. Camera is connected and working\n' +
+        '2. No other app is using it\n' +
+        '3. Camera permissions are granted in browser settings\n' +
+        '4. Use Manual mode as fallback'
+      )
     } else if (
       location.protocol !== 'https:' &&
       location.hostname !== 'localhost' &&
       location.hostname !== '127.0.0.1'
     ) {
       setError('Camera scanning requires HTTPS (localhost is exempt).')
-    } else if (/notreadable|insecure|browser/.test(msg)) {
+    } else if (/notreadable|insecure|browser|unsupported/.test(msg)) {
       setError('Browser does not support camera access. Try Chrome, Edge, or Firefox.')
-    } else if (/aborted|timeout/.test(msg)) {
-      setError('Camera request timed out. Please refresh and try again.')
     } else {
-      // Fallback: show a bit more detail if possible
-      const detail = originalError ? ` (${originalError})` : ''
-      setError(`Failed to start camera${detail}. Try refreshing the page or checking camera permissions.`)
+      setError('Camera error. Try refreshing the page or use Manual mode.')
     }
     setCameraState('error')
   }
 
-  async function startCamera(cameraId?: string) {
+  async function startCamera() {
     setCameraState('starting')
     setError('')
     try {
-      // Check if browser supports camera access
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      // Check browser support
+      if (!navigator.mediaDevices?.getUserMedia) {
         throw new Error('Your browser does not support camera access. Please use Chrome, Edge, or Firefox.')
       }
 
-      const devices = await Html5Qrcode.getCameras()
-      if (!Array.isArray(devices) || devices.length === 0) {
-        throw new Error('No cameras found on this device')
+      const videoElement = videoRef.current
+      if (!videoElement) {
+        throw new Error('Video element not found')
       }
-      setCameras(devices)
 
-      const targetCameraId = cameraId ?? selectedCameraId ?? devices[0]?.id
-      if (!targetCameraId) {
-        throw new Error('No valid camera ID found')
-      }
-      setSelectedCameraId(targetCameraId)
+      // Initialize reader
+      const reader = new BrowserMultiFormatReader()
+      readerRef.current = reader
 
-      const scanner = new Html5Qrcode(containerId)
-      scannerRef.current = scanner
+      // Start continuous QR code scanning
+      // This will prompt for camera permission and start decoding frames
+      reader.decodeFromConstraints(
+        { audio: false, video: { facingMode: 'environment' } },
+        videoElement,
+        (result, error) => {
+          // Suppress per-frame errors (expected when no QR in frame)
+          if (error instanceof NotFoundException) {
+            return
+          }
 
-      await scanner.start(
-        targetCameraId,
-        {
-          fps: 10,
-          qrbox: { width: 240, height: 240 },
-          aspectRatio: 1.0,
-        },
-        onDecoded,
-        () => {} // Ignore per-frame errors (noise)
+          if (error) {
+            handleError(error)
+            return
+          }
+
+          if (result) {
+            onDecoded(result.getText())
+          }
+        }
       )
 
       setCameraState('scanning')
@@ -112,30 +125,33 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
   }
 
   async function stopCamera() {
-    if (scannerRef.current) {
+    if (readerRef.current) {
       try {
-        await scannerRef.current.stop()
+        readerRef.current.reset()
       } catch {
         // Ignore cleanup errors
       }
-      scannerRef.current = null
+      readerRef.current = null
+    }
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream
+      stream.getTracks().forEach(track => track.stop())
+      videoRef.current.srcObject = null
     }
     setCameraState('idle')
   }
 
-  async function handleCameraChange(newCameraId: string) {
-    setSelectedCameraId(newCameraId)
-    // Stop current camera
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop()
-      } catch {
-        //
-      }
-      scannerRef.current = null
-    }
-    // Start new camera
-    await startCamera(newCameraId)
+  // Always render video element (hidden when not scanning)
+  const videoContainerStyle: React.CSSProperties = {
+    position: 'relative',
+    width: '100%',
+    aspectRatio: '1',
+    maxWidth: '360px',
+    margin: '0 auto 20px',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    background: '#000',
+    display: cameraState === 'scanning' ? 'block' : 'none', // Hidden when not scanning
   }
 
   if (cameraState === 'idle') {
@@ -159,7 +175,7 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
           Position ticket QR codes in the camera frame to check in attendees
         </p>
         <button
-          onClick={() => startCamera()}
+          onClick={() => void startCamera()}
           style={{
             padding: '12px 28px',
             fontSize: '14px',
@@ -180,6 +196,14 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
         >
           Start Camera
         </button>
+
+        {/* Hidden video element - always in DOM for startCamera() to access */}
+        <video
+          ref={videoRef}
+          style={{
+            display: 'none',
+          }}
+        />
       </div>
     )
   }
@@ -203,6 +227,14 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
         <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', margin: 0 }}>
           Requesting camera access…
         </p>
+
+        {/* Hidden video element - always in DOM */}
+        <video
+          ref={videoRef}
+          style={{
+            display: 'none',
+          }}
+        />
       </div>
     )
   }
@@ -223,9 +255,11 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
             <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-error)', margin: '0 0 4px' }}>
               Camera Error
             </h3>
-            <p style={{ fontSize: '13px', color: 'var(--color-error)', margin: '0 0 12px' }}>{error}</p>
+            <p style={{ fontSize: '13px', color: 'var(--color-error)', margin: '0 0 12px', whiteSpace: 'pre-line' }}>
+              {error}
+            </p>
             <button
-              onClick={() => startCamera()}
+              onClick={() => void startCamera()}
               style={{
                 padding: '8px 16px',
                 fontSize: '13px',
@@ -241,6 +275,14 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
             </button>
           </div>
         </div>
+
+        {/* Hidden video element - always in DOM */}
+        <video
+          ref={videoRef}
+          style={{
+            display: 'none',
+          }}
+        />
       </div>
     )
   }
@@ -255,19 +297,8 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
         padding: '24px',
       }}
     >
-      {/* Scanner container with overlay */}
-      <div
-        style={{
-          position: 'relative',
-          width: '100%',
-          aspectRatio: '1',
-          maxWidth: '360px',
-          margin: '0 auto 20px',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          background: '#000',
-        }}
-      >
+      {/* Video container */}
+      <div style={videoContainerStyle}>
         <style>{`
           @keyframes scanLine {
             0% { top: 0%; }
@@ -299,9 +330,22 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
           .scan-corner-tr { top: 0; right: 0; border-width: 3px 3px 0 0; }
           .scan-corner-bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
           .scan-corner-br { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+          video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
         `}</style>
 
-        <div id={containerId} style={{ width: '100%', height: '100%' }} />
+        {/* Video element - displayed when scanning */}
+        <video
+          ref={videoRef}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+          }}
+        />
 
         {/* Scan frame overlay */}
         <div className="scan-frame">
@@ -346,57 +390,32 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
       </div>
 
       {/* Controls */}
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
-        {Array.isArray(cameras) && cameras.length > 1 && (
-          <select
-            value={selectedCameraId}
-            onChange={(e) => void handleCameraChange(e.target.value)}
-            style={{
-              flex: 1,
-              minWidth: '200px',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-surface-2)',
-              color: 'var(--color-text)',
-              fontSize: '13px',
-              outline: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            {cameras.map((cam) => (
-              <option key={cam.id} value={cam.id}>
-                {cam.label || `Camera ${cameras.indexOf(cam) + 1}`}
-              </option>
-            ))}
-          </select>
-        )}
-        <button
-          onClick={() => void stopCamera()}
-          style={{
-            padding: '8px 16px',
-            fontSize: '13px',
-            fontWeight: 600,
-            borderRadius: '6px',
-            border: '1px solid var(--color-border)',
-            background: 'var(--color-surface-2)',
-            color: 'var(--color-text)',
-            cursor: 'pointer',
-            transition: 'background-color var(--duration-fast) ease',
-          }}
-          onMouseEnter={(e) => {
-            ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--color-border)'
-          }}
-          onMouseLeave={(e) => {
-            ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface-2)'
-          }}
-        >
-          Stop Camera
-        </button>
-      </div>
+      <button
+        onClick={() => void stopCamera()}
+        style={{
+          width: '100%',
+          padding: '12px',
+          fontSize: '13px',
+          fontWeight: 600,
+          borderRadius: '8px',
+          border: '1px solid var(--color-border)',
+          background: 'var(--color-surface-2)',
+          color: 'var(--color-text)',
+          cursor: 'pointer',
+          transition: 'background-color var(--duration-fast) ease',
+        }}
+        onMouseEnter={(e) => {
+          ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--color-border)'
+        }}
+        onMouseLeave={(e) => {
+          ;(e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface-2)'
+        }}
+      >
+        Stop Camera
+      </button>
 
-      <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: 0, textAlign: 'center' }}>
-        Position QR codes in the frame above to scan
+      <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '16px 0 0', textAlign: 'center' }}>
+        Position QR codes in the frame to scan
       </p>
     </div>
   )
