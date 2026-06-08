@@ -1,3 +1,5 @@
-module.exports = {
-  extends: ['next/core-web-vitals']
-};
+export default [
+  {
+    ignores: ['.next/**', 'node_modules/**', '.turbo/**'],
+  },
+];
