@@ -32,13 +32,13 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4.2
+      - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
           version: 11.0.9
 
-      - uses: actions/setup-node@v4.1
+      - uses: actions/setup-node@v4
         with:
           node-version: '22.13'
           cache: 'pnpm'
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.2
+      - uses: actions/checkout@v4
 
       - name: Build Docker images
         run: docker compose -f docker-compose.prod.yml build --no-cache
@@ -95,7 +95,7 @@ jobs:
     environment: staging
 
     steps:
-      - uses: actions/checkout@v4.2
+      - uses: actions/checkout@v4
 
       - name: Deploy to staging environment
         uses: appleboy/ssh-action@v1.0.3
@@ -142,13 +142,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.2
+      - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
           version: 11.0.9
 
-      - uses: actions/setup-node@v4.1
+      - uses: actions/setup-node@v4
         with:
           node-version: '22.13'
           cache: 'pnpm'
@@ -183,7 +183,7 @@ jobs:
     environment: production
 
     steps:
-      - uses: actions/checkout@v4.2
+      - uses: actions/checkout@v4
 
       - name: Deploy to production environment
         uses: appleboy/ssh-action@v1.0.3
@@ -236,7 +236,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.2
+      - uses: actions/checkout@v4
 
       - name: Verify production is healthy
         uses: appleboy/ssh-action@v1.0.3
