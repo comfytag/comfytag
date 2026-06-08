@@ -13,7 +13,7 @@ interface Attendee {
   ticketType?: string
   amount?: number
   date?: string
-  status: 'active' | 'used' | 'transferred' | 'refunded'
+  status: 'active' | 'used' | 'transferred' | 'refunded' | 'ended'
   checkedIn?: boolean
   checkInDate?: string
 }
