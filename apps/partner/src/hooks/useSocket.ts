@@ -53,15 +53,15 @@ export const useSocket = (): Socket | null => {
      * Connection event handlers
      */
     newSocket.on('connect', () => {
-      console.log('[Socket.io] Connected:', newSocket.id)
+      // Connected
     })
 
     newSocket.on('connected', (data) => {
-      console.log('[Socket.io] Server confirmed connection:', data)
+      // Server confirmed connection
     })
 
     newSocket.on('disconnect', (reason) => {
-      console.log('[Socket.io] Disconnected:', reason)
+      // Disconnected
     })
 
     newSocket.on('error', (error) => {

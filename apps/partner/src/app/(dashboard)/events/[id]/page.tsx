@@ -40,7 +40,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
     <div style={{ padding: '28px 32px' }}>
       <Breadcrumb items={[{ label: 'Events', href: '/events' }, { label: event.name }]} />
 
-      <EventDetailClient event={event} eventId={eventId} tierStats={tierStatsData as any} />
+      <EventDetailClient event={event} eventId={eventId} tierStats={tierStatsData ?? null} />
     </div>
   )
 }

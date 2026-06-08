@@ -33,6 +33,12 @@ export interface User {
   updatedAt: string
 }
 
+// Session user extends User with auth-specific fields
+export interface SessionUser extends User {
+  token: string
+  logo?: string
+}
+
 export interface AuthResponse {
   user: User
   token: string
@@ -101,9 +107,14 @@ export interface Ticket {
   qrCode?: string
   faceOwner?: string
   faceLinkedAt?: string
-  status: 'active' | 'used' | 'transferred' | 'refunded'
+  status: 'active' | 'used' | 'transferred' | 'refunded' | 'ended'
   transferredTo?: string
   transferredAt?: string
+  // Backend-enriched event details:
+  eventDate?: string                // Event start date (ISO 8601 string)
+  eventTime?: string                // Event start time (HH:MM format)
+  eventVenue?: string               // Event venue name
+  eventSlug?: string                // Event slug for routing
 }
 
 // ─── Bank & Payouts ────────────────────────────────────
@@ -270,7 +281,7 @@ export interface PartnerRevenue {
 }
 
 export interface PartnerAnalytics {
-  userId: string
+  userId?: string
   totalLifetimeRevenue: number
   totalEvents: number
   totalTicketsSold: number
@@ -278,6 +289,7 @@ export interface PartnerAnalytics {
   averageTicketPrice: number
   monthlyRevenue: Array<{ month: string; revenue: number }>
   topEvents: Array<{ eventId: string; eventName: string; revenue: number }>
+  ticketTypes?: Array<{ name: string; sold: number; capacity: number; revenue: number }>
 }
 
 export interface CheckInStats {

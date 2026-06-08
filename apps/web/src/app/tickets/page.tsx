@@ -19,7 +19,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import type { Ticket, User } from '@comfytag/types'
 import { LoadingSpinner, EmptyState } from '@comfytag/ui'
-import { authHeader, isUpcoming } from '@comfytag/utils'
+import { authHeader } from '@comfytag/utils'
 import { Navbar } from '@/components/layout/Navbar'
 import { TicketListItem } from '@/components/tickets/TicketListItem'
 import { FaceEnrollmentBanner } from '@/components/tickets/FaceEnrollmentBanner'
@@ -48,6 +48,9 @@ export default function TicketsPage() {
     )
   }
 
+  // Categorize tickets by status only — the backend cron job transitions
+  // expired tickets from 'active' to 'ended' each hour, so status is the
+  // single source of truth for upcoming vs. past.
   const upcoming = tickets.filter((t) => t.status === 'active')
   const past = tickets.filter((t) => t.status !== 'active')
 

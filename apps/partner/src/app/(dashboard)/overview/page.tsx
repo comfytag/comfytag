@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { formatNaira } from '@comfytag/utils'
 import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
@@ -17,6 +18,7 @@ function getGreeting(): string {
 }
 
 export default function OverviewPage() {
+  const router = useRouter()
   const { data: session } = useSession()
   const { data: organizer, isLoading: profileLoading, isError: profileError, refetch: refetchProfile } = usePartnerProfile()
   const { data: revenue, isLoading: revenueLoading, isError: revenueError, refetch: refetchRevenue } = usePartnerRevenue()
@@ -183,7 +185,7 @@ export default function OverviewPage() {
                   event={event}
                   status={event.status === 'published' ? 'live' : 'draft'}
                   onEdit={() => {
-                    window.location.href = `/events/${event._id}/edit`
+                    router.push(`/events/${event._id}/edit`)
                   }}
                 />
               ))}

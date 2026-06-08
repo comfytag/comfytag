@@ -1,5 +1,5 @@
 import express from 'express'
-import { deleteUser, getAllUsers, getUser, isUserVerified, onboardUser, updateUser, userVerification, uploadKYC } from '../controllers/users.js'
+import { deleteUser, getAllUsers, getUser, getUserStats, isUserVerified, onboardUser, updateUser, userVerification, uploadKYC } from '../controllers/users.js'
 // import { verifyAdmin } from '../utils/admin/verifyToken.js'
 import { verifyUser, verifyAdmin, verifyToken  } from '../utils/verifyToken.js'
 
@@ -22,11 +22,13 @@ router.put("/isverify/:id", verifyAdmin, isUserVerified)
 // KYC upload
 router.put("/:id/kyc", verifyUser, uploadKYC)
 
+// GET stats (must come before /:id route)
+router.get("/:id/stats", getUserStats)
+
 // DELETE
 router.delete("/:id", verifyUser, deleteUser) //  verifyUser,
-// GET
-router.get("/:id", verifyUser,  getUser) // verifyUser,
-// router.get("/:id", getUser)
+// GET - Public endpoint for user profile (no auth required)
+router.get("/:id", getUser)
 
 // GET ALL
 router.get("/", verifyAdmin, getAllUsers)

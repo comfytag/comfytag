@@ -37,7 +37,7 @@ export function TicketListItem({ ticket, isPast, onAction }: TicketListItemProps
 
   return (
     <Link
-      href={`/tickets/${ticket._id}`}
+      href={ticket.eventSlug ? `/events/${ticket.eventSlug}` : '#'}
       style={{
         display: 'flex',
         alignItems: 'stretch',
@@ -46,15 +46,15 @@ export function TicketListItem({ ticket, isPast, onAction }: TicketListItemProps
         border: `1px solid var(--color-border)`,
         borderRadius: 'var(--radius-md)',
         marginBottom: '12px',
-        cursor: 'pointer',
         background: 'var(--color-surface)',
         opacity: isPast || isExpired ? 0.65 : 1,
         textDecoration: 'none',
         color: 'inherit',
+        cursor: ticket.eventSlug ? 'pointer' : 'default',
         transition: `all var(--duration-fast)`,
       }}
       onMouseEnter={(e) => {
-        if (!isExpired) {
+        if (!isExpired && ticket.eventSlug) {
           ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--color-brand)'
           ;(e.currentTarget as HTMLAnchorElement).style.background = 'var(--color-surface-2)'
         }
@@ -83,7 +83,7 @@ export function TicketListItem({ ticket, isPast, onAction }: TicketListItemProps
 
         <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: '1.3' }}>
           <div>{ticket.type}</div>
-          <div>{formatDate(ticket.date)}</div>
+          <div>{formatDate(ticket.eventDate || ticket.date)}</div>
         </div>
 
         <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-brand)' }}>

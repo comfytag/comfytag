@@ -5,9 +5,10 @@ import { EventLineup } from '@/components/event/EventLineup'
 import { EventLocation } from '@/components/event/EventLocation'
 import { EventMediaGallery } from '@/components/event/EventMediaGallery'
 import { EventRelatedSection } from '@/components/event/EventRelatedSection'
+import { OrganizerCard } from '@/components/ui/OrganizerCard'
 import { Divider } from '@/components/events/EventIcons'
 import { JsonLd } from '@/components/seo/JsonLd'
-import type { Event as EventType } from '@comfytag/types'
+import type { Event as EventType, User } from '@comfytag/types'
 import type { Comment } from '@/components/event/CommentSection'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
@@ -51,6 +52,42 @@ async function getRelatedEvents(category: string, excludeId: string): Promise<Ev
       .slice(0, 4)
   } catch {
     return []
+  }
+}
+
+async function getOrganizer(organizerId: string): Promise<User | null> {
+  try {
+    const res = await fetch(`${API}/users/${organizerId}`, {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return null
+    const data = (await res.json()) as unknown
+    const obj = data as Record<string, unknown>
+    if (obj.success !== undefined && obj.data) return obj.data as User
+    return data as User
+  } catch {
+    return null
+  }
+}
+
+async function getOrganizerStats(organizerId: string): Promise<{ followers: number; upcomingEvents: number } | null> {
+  try {
+    const res = await fetch(`${API}/users/${organizerId}/stats`, {
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) return null
+    const data = (await res.json()) as unknown
+    const obj = data as Record<string, unknown>
+    if (obj.success !== undefined && obj.data) {
+      const statsData = obj.data as Record<string, unknown>
+      return {
+        followers: (statsData.followers as number) || 0,
+        upcomingEvents: (statsData.upcomingEvents as number) || 0,
+      }
+    }
+    return data as { followers: number; upcomingEvents: number }
+  } catch {
+    return null
   }
 }
 
@@ -116,10 +153,13 @@ export default async function EventDetailPage({
   }
 
   // Parallel fetch of secondary data
-  const [relatedEvents, { comments, hasMore }] = await Promise.all([
+  const [relatedEvents, { comments, hasMore }, organizer, organizerStats] = await Promise.all([
     getRelatedEvents(event.category, event._id),
     getInitialComments(event._id),
+    event.planner_id ? getOrganizer(event.planner_id) : Promise.resolve(null),
+    event.planner_id ? getOrganizerStats(event.planner_id) : Promise.resolve(null),
   ])
+
 
   const lowestPrice = Math.min(...(event.ticketType ?? []).map((t: { price?: number }) => t.price ?? 0))
 
@@ -176,8 +216,74 @@ export default async function EventDetailPage({
       ) : null}
       <EventMediaGallery event={event} />
       <EventLocation event={event} />
+
+      {/* Organizer Profile */}
+      {event.planner_id && (
+        <>
+          <Divider />
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)', marginBottom: '16px' }}>
+              About the Organizer
+            </h3>
+            {organizer ? (
+              <>
+                <OrganizerCard
+                  organizer={{
+                    _id: organizer._id,
+                    name: organizer.name,
+                    image: organizer.avatar,
+                    isPartner: organizer.isPartner || false,
+                    isVerify: organizer.isVerify || { email: false, photo: false, idCard: false, address: false },
+                  }}
+                  followerCount={organizerStats?.followers ?? 0}
+                  upcomingEventCount={organizerStats?.upcomingEvents ?? 0}
+                />
+                <div style={{ marginTop: '16px' }}>
+                  <a
+                    href={`/organizer/${organizer.username || organizer._id}`}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '12px 16px',
+                      backgroundColor: 'var(--color-brand)',
+                      color: 'var(--color-text-on-brand)',
+                      border: 'none',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      textDecoration: 'none',
+                      transition: 'background-color var(--duration-fast)',
+                    }}
+                    className="organizer-profile-button"
+                  >
+                    View Profile
+                  </a>
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: '16px', background: 'var(--color-surface)', borderRadius: '8px', textAlign: 'center' }}>
+                <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>Organizer profile</p>
+                {organizerStats && (
+                  <p style={{ color: 'var(--color-text)', margin: '8px 0 0', fontWeight: 600 }}>
+                    {organizerStats.followers} followers • {organizerStats.upcomingEvents} upcoming events
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
       <EventRelatedSection events={relatedEvents} />
     </EventInteractiveSection>
+
+    <style>{`
+      .organizer-profile-button:hover {
+        background-color: var(--color-brand-dark);
+      }
+    `}</style>
     </>
   )
 }

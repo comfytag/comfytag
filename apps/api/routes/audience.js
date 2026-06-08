@@ -1,5 +1,5 @@
 import express from 'express'
-import { createAudience, createFreeAudience, deleteAudience, getAllAudience, getAudience, getAudienceByReference, getEventAudience, getUserAudience, updateAudience, manualCheckIn, exportEventAudienceCSV, checkInByReference } from '../controllers/audience.js';
+import { createAudience, createFreeAudience, deleteAudience, getAllAudience, getAudience, getAudienceByReference, getEventAudience, getUserAudience, getMyTickets, updateAudience, manualCheckIn, exportEventAudienceCSV, checkInByReference } from '../controllers/audience.js';
 import { verifyAdmin, verifyUser, verifyToken } from '../utils/verifyToken.js';
 
 const router = express.Router()
@@ -15,6 +15,9 @@ router.post("/:id/checkin", verifyUser, manualCheckIn)
 
 // Ticket purchase (must come after routes with static segments)
 router.post("/:userId/:eventId", verifyToken, createAudience)
+
+// GET /audience/my — user's tickets with event enrichment (static route before wildcard)
+router.get("/my", verifyToken, getMyTickets)
 
 // GET ALL BY A PLANNER (static routes before wildcard)
 router.get("/user/:userId", verifyToken, getUserAudience)

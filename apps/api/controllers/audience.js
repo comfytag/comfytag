@@ -332,6 +332,44 @@ export const getUserAudience = async (req, res, next) => {
     }
 }
 
+// GET /tickets/my - user's purchased tickets with event enrichment
+export const getMyTickets = async (req, res, next) => {
+    try {
+        const userId = req.user._id || req.user.id
+        const userEmail = req.user?.email
+
+        // Query by user_id OR email (support guest ticket migration)
+        const query = userEmail
+            ? { $or: [{ user_id: userId }, { email: userEmail }] }
+            : { user_id: userId }
+
+        // Fetch user's tickets
+        const tickets = await Audience.find(query).lean()
+
+        if (!tickets || tickets.length === 0) {
+            return res.status(200).json([])
+        }
+
+        // Batch-fetch event details to avoid N+1 queries
+        const eventIds = [...new Set(tickets.map(t => t.event_id))]
+        const events = await Event.find({ _id: { $in: eventIds } }).lean()
+        const eventMap = Object.fromEntries(events.map(e => [e._id.toString(), e]))
+
+        // Enrich tickets with event metadata
+        const enriched = tickets.map(t => ({
+            ...t,
+            eventDate: eventMap[t.event_id?.toString?.()]?.date || t.date,
+            eventTime: eventMap[t.event_id?.toString?.()]?.startTime,
+            eventVenue: eventMap[t.event_id?.toString?.()]?.venue,
+            eventSlug: eventMap[t.event_id?.toString?.()]?.slug,
+        }))
+
+        res.status(200).json(enriched)
+    } catch (err) {
+        next(err)
+    }
+}
+
 // GET ALL with pagination
 export const getEventAudience = async (req, res, next) => {
     try {

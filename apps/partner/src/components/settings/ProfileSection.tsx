@@ -9,7 +9,7 @@ import { api } from '@/lib/api'
 import type { User } from '@comfytag/types'
 
 interface Props {
-  user: User | null
+  user: User | null | undefined
 }
 
 export function ProfileSection({ user }: Props) {

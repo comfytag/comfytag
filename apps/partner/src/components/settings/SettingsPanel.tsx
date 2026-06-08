@@ -7,7 +7,7 @@ import { SecuritySection } from './SecuritySection'
 import type { User, BankAccount } from '@comfytag/types'
 
 interface Props {
-  user: User | null
+  user: User | undefined
   banks: BankAccount[]
 }
 

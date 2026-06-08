@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button, Input, Modal, Skeleton, EmptyState, ErrorMessage, StatCard } from '@comfytag/ui'
 import { formatNaira } from '@comfytag/utils'
@@ -20,6 +21,7 @@ interface FormData {
 }
 
 export default function ProfilePage() {
+  const router = useRouter()
   const { data: session } = useSession()
   const userId = session?.user?.id
 
@@ -157,7 +159,7 @@ export default function ProfilePage() {
               event={event}
               href={`/events/${event._id}`}
               onEdit={() => {
-                window.location.href = `/events/${event._id}/edit`
+                router.push(`/events/${event._id}/edit`)
               }}
             />
           ))}

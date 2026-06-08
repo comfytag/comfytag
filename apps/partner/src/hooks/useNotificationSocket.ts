@@ -24,8 +24,6 @@ export const useNotificationSocket = () => {
      * Add to React Query cache and update unread count
      */
     const handleNotificationReceived = (notification: Notification) => {
-      console.log('[Socket.io] New notification received:', notification.title)
-
       // Update React Query cache
       queryClient.setQueryData(
         ['notifications'],
@@ -48,8 +46,6 @@ export const useNotificationSocket = () => {
      * Update context and React Query cache
      */
     const handleUnreadCountUpdate = (data: { unreadCount: number; updatedAt: string }) => {
-      console.log('[Socket.io] Unread count updated:', data.unreadCount)
-
       // Update global context
       setUnreadCount(data.unreadCount)
 
@@ -71,8 +67,6 @@ export const useNotificationSocket = () => {
      * Update cache and unread count
      */
     const handleNotificationRead = (data: { notificationId: string; read: boolean; readAt: string }) => {
-      console.log('[Socket.io] Notification marked as read:', data.notificationId)
-
       // Update React Query cache
       queryClient.setQueryData(
         ['notifications'],
@@ -96,8 +90,6 @@ export const useNotificationSocket = () => {
      * Reset unread count and update cache
      */
     const handleAllNotificationsRead = () => {
-      console.log('[Socket.io] All notifications marked as read')
-
       // Update global context
       setUnreadCount(0)
 
@@ -126,7 +118,6 @@ export const useNotificationSocket = () => {
      * (Optional: if server sends initial state)
      */
     const handleConnected = (data: any) => {
-      console.log('[Socket.io] Connected with data:', data)
       // Optionally fetch initial unread count here
     }
 

@@ -1,24 +1,30 @@
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { getServerSession as nextAuthGetServerSession } from 'next-auth'
 import type { NextAuthOptions } from 'next-auth'
+import type { SessionUser } from '@comfytag/types'
 
 declare module 'next-auth' {
   interface Session {
-    user: {
+    user: SessionUser & {
       id: string
-      name?: string | null
-      email?: string | null
-      token: string
-      logo?: string | null
-      isVerified: boolean
-      isPartner: boolean
     }
   }
   interface User {
+    id: string
     token: string
-    logo?: string | null
-    isVerified: boolean
+    name: string
+    email: string
+    username?: string
+    image?: string
+    avatar?: string
+    phone?: string
+    bgImg?: string
     isPartner: boolean
+    isAdmin: boolean
+    faceEnrolled?: boolean
+    onboarding?: { completed: boolean }
+    isVerify?: { email?: boolean; photo?: boolean; idCard?: boolean; address?: boolean }
+    logo?: string | null
   }
 }
 
@@ -27,7 +33,6 @@ declare module 'next-auth/jwt' {
     id: string
     token: string
     logo?: string | null
-    isVerified: boolean
     isPartner: boolean
   }
 }
@@ -60,10 +65,12 @@ export const authOptions: NextAuthOptions = {
               _id: string
               name: string
               email: string
+              username?: string
               image?: string
+              avatar?: string
               isPartner: boolean
               isAdmin: boolean
-              isVerify?: { email?: boolean }
+              isVerify?: { email?: boolean; photo?: boolean; idCard?: boolean; address?: boolean }
             }
             token: string
           } = await res.json()
@@ -76,9 +83,22 @@ export const authOptions: NextAuthOptions = {
             name: data.user.name,
             email: data.user.email,
             token: data.token,
-            logo: data.user.image ?? null,
-            isVerified: data.user.isVerify?.email ?? false,
+            username: data.user.username ?? data.user.name,
+            image: data.user.image,
+            avatar: data.user.avatar,
+            phone: undefined,
+            bgImg: undefined,
             isPartner: data.user.isPartner,
+            isAdmin: data.user.isAdmin,
+            faceEnrolled: false,
+            onboarding: { completed: false },
+            isVerify: data.user.isVerify ?? {
+              email: false,
+              photo: false,
+              idCard: false,
+              address: false,
+            },
+            logo: data.user.image ?? null,
           }
         } catch {
           return null
@@ -104,10 +124,23 @@ export const authOptions: NextAuthOptions = {
             id: user._id,
             name: user.name,
             email: user.email,
+            username: user.username ?? user.name,
+            image: user.image,
+            avatar: user.avatar,
+            phone: user.phone,
+            bgImg: user.bgImg,
             token: freshToken,
-            logo: user.image ?? null,
-            isVerified: user.isVerify?.email ?? false,
             isPartner: user.isPartner,
+            isAdmin: user.isAdmin,
+            faceEnrolled: user.faceEnrolled ?? false,
+            onboarding: user.onboarding ?? { completed: false },
+            isVerify: user.isVerify ?? {
+              email: false,
+              photo: false,
+              idCard: false,
+              address: false,
+            },
+            logo: user.image ?? null,
           }
         } catch {
           return null
@@ -121,7 +154,6 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.token = user.token
         token.logo = user.logo
-        token.isVerified = user.isVerified
         token.isPartner = user.isPartner
       }
       return token
@@ -129,8 +161,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       session.user.id = token.id as string
       session.user.token = token.token
-      session.user.logo = token.logo ?? null
-      session.user.isVerified = token.isVerified
+      if (token.logo) session.user.logo = token.logo
       session.user.isPartner = token.isPartner
       return session
     },
@@ -143,7 +174,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 7 * 24 * 60 * 60,   // 7 days
     updateAge: 24 * 60 * 60,    // refresh cookie daily (sliding window)
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'dev-secret',
 }
 
 export const getServerSession = () => nextAuthGetServerSession(authOptions)

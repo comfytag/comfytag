@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { ErrorMessage } from '@comfytag/ui'
 import type { Event, TierStats } from '@comfytag/types'
 import { EventDetailHeader } from './EventDetailHeader'
 import { EventDetailStats } from './EventDetailStats'
@@ -11,16 +12,21 @@ import { AttendeesSection } from './AttendeesSection'
 import { EventRecapSection } from './EventRecapSection'
 import { api } from '@/lib/api'
 
+interface TierStatsResponse {
+  tiers: TierStats[]
+}
+
 interface EventDetailClientProps {
   event: Event
   eventId: string
-  tierStats: { eventId: string; tiers: TierStats[] } | null
+  tierStats: TierStatsResponse | null
 }
 
 export function EventDetailClient({ event, eventId, tierStats }: EventDetailClientProps) {
   const { data: session } = useSession()
   const queryClient = useQueryClient()
   const [currentStatus, setCurrentStatus] = useState(event.status as Event['status'])
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const statusMutation = useMutation({
     mutationFn: (status: 'published' | 'draft' | 'cancelled') =>
@@ -31,7 +37,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
       queryClient.invalidateQueries({ queryKey: ['events', session?.user?.id] })
     },
     onError: () => {
-      alert('Failed to update event status. Please try again.')
+      setErrorMessage('Failed to update event status. Please try again.')
     },
   })
 
@@ -39,6 +45,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
 
   return (
     <>
+      {errorMessage && <ErrorMessage message={errorMessage} onRetry={() => setErrorMessage(null)} />}
       <EventDetailHeader
         event={liveEvent}
         eventId={eventId}

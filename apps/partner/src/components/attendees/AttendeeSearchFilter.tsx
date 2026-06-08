@@ -82,15 +82,15 @@ export function AttendeeSearchFilter({
       {/* Status filter tabs */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         {[
-          { value: 'all', label: 'All' },
-          { value: 'active', label: 'Active' },
-          { value: 'used', label: 'Used' },
-          { value: 'transferred', label: 'Transferred' },
-          { value: 'refunded', label: 'Refunded' },
+          { value: 'all' as const, label: 'All' },
+          { value: 'active' as const, label: 'Active' },
+          { value: 'used' as const, label: 'Used' },
+          { value: 'transferred' as const, label: 'Transferred' },
+          { value: 'refunded' as const, label: 'Refunded' },
         ].map(tab => (
           <button
             key={tab.value}
-            onClick={() => onStatusFilterChange(tab.value as any)}
+            onClick={() => onStatusFilterChange(tab.value)}
             style={{
               padding: '8px 14px',
               backgroundColor: statusFilter === tab.value ? 'var(--color-brand)' : 'var(--color-surface)',

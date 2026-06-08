@@ -60,7 +60,7 @@ export default function AnalyticsPage() {
     )
   }
 
-  const ticketTypes = (analytics as any)?.ticketTypes ?? []
+  const ticketTypes = analytics?.ticketTypes ?? []
 
   return (
     <div>

@@ -41,7 +41,7 @@ export default function SettingsPage() {
       <PageHeader title="Settings" subtitle="Manage your profile and payment details" />
 
       <div style={{ maxWidth: '720px' }}>
-        <SettingsPanel user={user as any} banks={banks} />
+        <SettingsPanel user={user} banks={banks} />
       </div>
     </div>
   )

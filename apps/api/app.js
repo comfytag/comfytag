@@ -48,6 +48,8 @@ import testimonialRouter from './routes/testimonial.js'
 import uploadRouter from './routes/upload.js'
 import analyticsRouter from './routes/analytics.js'
 import promosRouter from './routes/promos.js'
+import cron from 'node-cron'
+import { updateExpiredTickets } from './jobs/updateExpiredTickets.js'
 
 
 
@@ -289,6 +291,13 @@ connect()
 
     // Store io instance globally for use in job processors
     setGlobalIoInstance(io)
+
+    // Schedule ticket status update job — runs every hour at minute 0
+    cron.schedule('0 * * * *', updateExpiredTickets)
+    console.log('[Jobs] Ticket status update job scheduled to run every hour')
+
+    // Run once on startup to catch any missed updates from downtime
+    updateExpiredTickets().catch(console.error)
 
     // Start listening on configured port
     httpServer.listen(process.env.PORT || PORT, () => {

@@ -3,19 +3,12 @@ import GoogleProvider from 'next-auth/providers/google'
 import AppleProvider from 'next-auth/providers/apple'
 import { getServerSession as nextAuthGetServerSession } from 'next-auth'
 import type { NextAuthOptions } from 'next-auth'
+import type { SessionUser } from '@comfytag/types'
 
 declare module 'next-auth' {
   interface Session {
-    user: {
+    user: SessionUser & {
       id: string
-      name: string
-      email: string
-      token: string
-      isPartner: boolean
-      isAdmin: boolean
-      image?: string
-      username?: string
-      createdAt?: string
     }
   }
   interface User {
@@ -161,9 +154,9 @@ export const authOptions: NextAuthOptions = {
       session.user.token = token.token
       session.user.isPartner = token.isPartner
       session.user.isAdmin = token.isAdmin
-      session.user.image = token.image
-      session.user.username = token.username
-      session.user.createdAt = token.createdAt
+      if (token.image) session.user.image = token.image
+      if (token.username) session.user.username = token.username
+      if (token.createdAt) session.user.createdAt = token.createdAt
       return session
     },
   },

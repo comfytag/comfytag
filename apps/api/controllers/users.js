@@ -181,11 +181,39 @@ export const getUser = async (req,res,next) =>{
         const getUser = await Users.findById(
             req.params.id
             )
-      
+
             const {password, isAdmin, ...OtherDetails} = getUser._doc
             res.status(200).json({...OtherDetails})
         // res.status(200).json(getUser)
     }catch(err){
+        next(err)
+    }
+}
+
+// GET /users/:id/stats - Get organizer statistics
+export const getUserStats = async (req, res, next) => {
+    try {
+        const userId = req.params.id
+
+        // Import models here to avoid circular dependencies
+        const Follow = (await import('../models/Follow.js')).default
+        const Event = (await import('../models/Event.js')).default
+
+        // Count followers
+        const followerCount = await Follow.countDocuments({ followingId: userId })
+
+        // Count upcoming events
+        const upcomingEventCount = await Event.countDocuments({
+            organizer_id: userId,
+            date: { $gt: new Date() },
+            status: 'published'
+        })
+
+        res.status(200).json({
+            followers: followerCount,
+            upcomingEvents: upcomingEventCount
+        })
+    } catch (err) {
         next(err)
     }
 }

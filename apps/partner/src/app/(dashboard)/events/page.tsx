@@ -216,7 +216,7 @@ export default function EventsPage() {
                           }
                           href={event.status === 'draft' ? `/events/${event._id}/edit` : `/events/${event._id}`}
                           onEdit={event.status !== 'ended' && event.status !== 'cancelled' ? () => {
-                            window.location.href = `/events/${event._id}/edit`
+                            router.push(`/events/${event._id}/edit`)
                           } : undefined}
                           onDelete={() => {
                             if (confirm(`Delete "${event.name}"?`)) {

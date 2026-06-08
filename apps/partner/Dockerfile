@@ -5,13 +5,12 @@ FROM base AS deps
 WORKDIR /app
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json turbo.json ./
 COPY packages/ ./packages/
-COPY apps/partner/package.json ./apps/partner/package.json
+COPY apps/partner ./apps/partner
 RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app ./
-COPY apps/partner ./apps/partner
 RUN pnpm --filter @comfytag/partner build
 
 FROM base AS runner

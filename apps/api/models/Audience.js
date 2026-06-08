@@ -56,7 +56,7 @@ const AudienceSchema = new Schema({
     // ─── Ticket Status ─────────────────────────────
     status: {
         type: String,
-        enum: ['active', 'used', 'transferred', 'refunded'],
+        enum: ['active', 'used', 'transferred', 'refunded', 'ended'],
         default: 'active',
     },
 

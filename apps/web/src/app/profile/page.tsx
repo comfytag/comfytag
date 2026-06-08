@@ -24,7 +24,7 @@ export default function ProfilePage() {
   async function handleSave() {
     setSaveError(null)
     try {
-      updateProfile({ name, username } as any, {
+      updateProfile({ name, username }, {
         onSuccess: () => {
           setSaveSuccess(true)
           setTimeout(() => setSaveSuccess(false), 3000)
