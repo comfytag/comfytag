@@ -1,69 +1,63 @@
 name: Deploy Pipeline (Staging → Production)
-on:  
-  push:    
-    branches:      
+
+on:
+  push:
+    branches:
       - main
 
-concurrency:  
-  group: deployment  
+concurrency:
+  group: deployment
   cancel-in-progress: false
 
-# CRITICAL: Required for pushing Docker images to GitHub Container Registry
 permissions:
   contents: read
   packages: write
   issues: write
 
-jobs:  
-  # ============================================================================  
-  # STAGE 1: Quality Gate  
-  # ============================================================================  
-  quality-gate:    
-    name: 🔍 Quality Gate (TypeScript + Lint + Build)    
-    runs-on: ubuntu-latest    
-    services:      
-      mongodb:        
-        image: mongo:7.0        
-        ports:          
-          - 27018:27017        
-        env:          
-          MONGO_INITDB_ROOT_USERNAME: admin          
-          MONGO_INITDB_ROOT_PASSWORD: changeme        
-        options: >-          
-          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1})'"          
-          --health-interval 10s          
-          --health-timeout 5s          
-          --health-retries 5    
-    steps:      
-      - uses: actions/checkout@v4      
-      - uses: pnpm/action-setup@v4        
-        with:          
-          version: 11.0.9      
-      - uses: actions/setup-node@v4        
-        with:          
-          node-version: '22.13'          
-          cache: 'pnpm'      
-      - name: Install dependencies        
-        run: pnpm install --frozen-lockfile      
-      - name: ✅ TypeScript Check        
-        run: pnpm typecheck      
-      - name: ✅ Linting        
-        run: pnpm --filter !@comfytag/partner lint      
-      - name: ✅ Build All Apps        
-        run: pnpm build      
-      - name: ✅ Unit & Integration Tests        
-        run: pnpm test:ci        
-        continue-on-error: true  
+jobs:
+  quality-gate:
+    name: 🔍 Quality Gate
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27018:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: changeme
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.0.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.13'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: ✅ TypeScript Check
+        run: pnpm typecheck
+      - name: ✅ Linting
+        run: pnpm --filter !@comfytag/partner lint
+      - name: ✅ Build All Apps
+        run: pnpm build
+      - name: ✅ Unit & Integration Tests
+        run: pnpm test:ci
+        continue-on-error: true
 
-  # ============================================================================  
-  # STAGE 2: Docker Build & Push to GHCR
-  # ============================================================================  
-  docker-build:    
-    name: 🐳 Docker Build & Validation    
-    needs: quality-gate    
-    runs-on: ubuntu-latest    
-    steps:      
-      - uses: actions/checkout@v4      
+  docker-build:
+    name: 🐳 Docker Build & Push to GHCR
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       
       - name: 🔐 Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -71,13 +65,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+          
       - name: 🔨 Build Docker images
         run: docker compose -f docker-compose.prod.yml build
-      
+        
       - name: 🏷️ Tag Images for GHCR
         run: |
-          # Convert repository owner to lowercase to avoid Docker naming errors
           REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           docker tag comfytag-api ghcr.io/$REPO_OWNER/comfytag-api:latest
           docker tag comfytag-web ghcr.io/$REPO_OWNER/comfytag-web:latest
@@ -92,132 +85,154 @@ jobs:
           docker push ghcr.io/$REPO_OWNER/comfytag-partner:latest
           docker push ghcr.io/$REPO_OWNER/comfytag-admin:latest
 
-      - name: ✅ Validate docker-compose        
-        run: docker compose -f docker-compose.prod.yml config --no-interpolate > /dev/null || true      
-      
-      - name: ✅ Verify Docker images        
-        run: |          
-          echo "Verifying Docker images..."          
-          docker run --rm comfytag-api node -e "console.log('API OK')" || exit 1          
-          docker run --rm comfytag-web node -e "console.log('Web OK')" || exit 1          
-          docker run --rm comfytag-partner node -e "console.log('Partner OK')" || exit 1          
-          docker run --rm comfytag-admin node -e "console.log('Admin OK')" || exit 1          
-          echo "✅ All Docker images valid"  
+      - name: ✅ Validate docker-compose
+        run: docker compose -f docker-compose.prod.yml config --no-interpolate > /dev/null || true
+        
+      - name: ✅ Verify Docker images
+        run: |
+          echo "Verifying Docker images..."
+          docker run --rm comfytag-api node -e "console.log('API OK')" || exit 1
+          docker run --rm comfytag-web node -e "console.log('Web OK')" || exit 1
+          docker run --rm comfytag-partner node -e "console.log('Partner OK')" || exit 1
+          docker run --rm comfytag-admin node -e "console.log('Admin OK')" || exit 1
+          echo "✅ All Docker images valid"
 
-  # ============================================================================  
-  # STAGE 3: Deploy to Production  
-  # ============================================================================  
-  deploy-production:    
-    name: 🚀 Deploy to Production    
-    needs: [quality-gate, docker-build]    
-    runs-on: ubuntu-latest    
-    steps:      
-      - uses: actions/checkout@v4      
+  deploy-production:
+    name: 🚀 Deploy to Production
+    needs: [quality-gate, docker-build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       
-      - name: Deploy to production environment        
-        uses: appleboy/ssh-action@v1.0.3        
+      - name: Deploy to production environment
+        uses: appleboy/ssh-action@v1.0.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_OWNER: ${{ github.repository_owner }}
-        with:          
-          host: ${{ secrets.PRODUCTION_HOST }}          
-          username: ${{ secrets.PRODUCTION_USER }}          
-          key: ${{ secrets.PRODUCTION_SSH_KEY }}          
-          timeout: 60m          
-          command_timeout: 60m          
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          timeout: 60m
+          command_timeout: 60m
           envs: GITHUB_TOKEN,REPO_OWNER
-          script: |            
-            cd /home/deploy/comfytag            
-            echo "📡 Pulling latest code..."            
-            git pull origin main            
-
+          script: |
+            cd /home/deploy/comfytag
+            echo "📡 Pulling latest code..."
+            git pull origin main
+            
             echo "🔐 Logging into GitHub Container Registry..."
-            # Convert owner to lowercase
             OWNER_LOWER=$(echo "$REPO_OWNER" | tr '[:upper:]' '[:lower:]')
             echo $GITHUB_TOKEN | docker login ghcr.io -u $OWNER_LOWER --password-stdin
-
+            
             echo "📥 Pulling pre-built Docker images..."
             docker pull ghcr.io/$OWNER_LOWER/comfytag-api:latest
             docker pull ghcr.io/$OWNER_LOWER/comfytag-web:latest
             docker pull ghcr.io/$OWNER_LOWER/comfytag-partner:latest
             docker pull ghcr.io/$OWNER_LOWER/comfytag-admin:latest
-
+            
             echo "🏷️ Re-tagging images so local compose recognizes them..."
             docker tag ghcr.io/$OWNER_LOWER/comfytag-api:latest comfytag-api:latest
             docker tag ghcr.io/$OWNER_LOWER/comfytag-web:latest comfytag-web:latest
             docker tag ghcr.io/$OWNER_LOWER/comfytag-partner:latest comfytag-partner:latest
             docker tag ghcr.io/$OWNER_LOWER/comfytag-admin:latest comfytag-admin:latest
-
-            echo "🔄 Starting containers..."            
-            # --no-build guarantees the server will never try to compile anything
+            
+            echo "🔄 Starting containers..."
             docker compose -f docker-compose.prod.yml up -d --no-build
             
-            echo "⏳ Waiting for services to stabilize..."            
-            sleep 15            
+            echo "⏳ Waiting for services to stabilize..."
+            sleep 15
             
-            echo "🏥 Health checks..."            
-            for i in {1..10}; do              
-              if curl -f http://localhost 2>/dev/null; then                
-                echo "✅ Production services healthy"                
-                break              
-              fi              
-              if [ $i -eq 10 ]; then                
-                echo "❌ Health check failed after 10 attempts"                
-                exit 1              
-              fi              
-              echo "Attempt $i/10..."              
-              sleep 3            
-            done            
+            echo "🏥 Health checks..."
+            for i in {1..10}; do
+              if curl -f http://localhost 2>/dev/null; then
+                echo "✅ Production services healthy"
+                break
+              fi
+              if [ $i -eq 10 ]; then
+                echo "❌ Health check failed after 10 attempts"
+                exit 1
+              fi
+              echo "Attempt $i/10..."
+              sleep 3
+            done
             
-            echo "🧹 Cleaning up old images..."            
-            docker image prune -a -f      
-            
-      - name: ✅ Production deployed successfully        
-        run: |          
-          echo "✅ Deployment complete!"          
-          echo "📍 Live at: http://${{ secrets.PRODUCTION_HOST }}"  
+            echo "🧹 Cleaning up old images..."
+            docker image prune -a -f
 
-  # ============================================================================  
-  # STAGE 4: Post-Deployment Monitoring  
-  # ============================================================================  
-  production-health:    
-    name: 🏥 Production Health Check    
-    needs: deploy-production    
-    runs-on: ubuntu-latest    
-    steps:      
-      - uses: actions/checkout@v4      
-      - name: Verify production is healthy        
-        uses: appleboy/ssh-action@v1.0.3        
-        with:          
-          host: ${{ secrets.PRODUCTION_HOST }}          
-          username: ${{ secrets.PRODUCTION_USER }}          
-          key: ${{ secrets.PRODUCTION_SSH_KEY }}          
-          timeout: 10m          
-          command_timeout: 10m          
-          script: |            
-            cd /home/deploy/comfytag            
-            echo "🏥 Running production health checks..."            
-            echo "Checking containers..."            
-            docker compose -f docker-compose.prod.yml ps            
-            if docker compose -f docker-compose.prod.yml ps | grep -i "restarting"; then              
-              echo "❌ ERROR: Containers in restart loop!"              
-              docker compose -f docker-compose.prod.yml logs --tail 50              
-              exit 1            
-            fi            
-            echo ""            
-            echo "Checking logs for errors..."            
-            ERROR_COUNT=$(docker compose -f docker-compose.prod.yml logs --tail 100 2>&1 | grep -i "error\|critical" | wc -l)            
-            if [ "$ERROR_COUNT" -gt 5 ]; then              
-              echo "⚠️  High error count: $ERROR_COUNT"              
-              docker compose -f docker-compose.prod.yml logs --tail 20 2>&1 | grep -i "error\|critical"            
-            else              
-              echo "✅ Error count normal: $ERROR_COUNT"            
-            fi            
-            echo ""            
-            echo "✅ Production health check passed"  
+      - name: ✅ Production deployed successfully
+        run: |
+          echo "✅ Deployment complete!"
+          echo "📍 Live at: http://${{ secrets.PRODUCTION_HOST }}"
 
-  # ============================================================================  
-  # STAGE 5: Failure Notification  
-  # ============================================================================  
-  notify-failure:    
-    name: 📢 Notify
+  production-health:
+    name: 🏥 Production Health Check
+    needs: deploy-production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify production is healthy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          timeout: 10m
+          command_timeout: 10m
+          script: |
+            cd /home/deploy/comfytag
+            echo "🏥 Running production health checks..."
+            echo "Checking containers..."
+            docker compose -f docker-compose.prod.yml ps
+            if docker compose -f docker-compose.prod.yml ps | grep -i "restarting"; then
+              echo "❌ ERROR: Containers in restart loop!"
+              docker compose -f docker-compose.prod.yml logs --tail 50
+              exit 1
+            fi
+            echo ""
+            echo "Checking logs for errors..."
+            ERROR_COUNT=$(docker compose -f docker-compose.prod.yml logs --tail 100 2>&1 | grep -i "error\|critical" | wc -l)
+            if [ "$ERROR_COUNT" -gt 5 ]; then
+              echo "⚠️  High error count: $ERROR_COUNT"
+              docker compose -f docker-compose.prod.yml logs --tail 20 2>&1 | grep -i "error\|critical"
+            else
+              echo "✅ Error count normal: $ERROR_COUNT"
+            fi
+            echo ""
+            echo "✅ Production health check passed"
+
+  notify-failure:
+    name: 📢 Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [quality-gate, docker-build, deploy-production, production-health]
+    if: failure()
+    steps:
+      - name: Create failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `❌ Deployment failed: ${context.sha.substring(0, 7)}`,
+              body: `**Deployment pipeline failed**\n\nCommit: ${context.sha}\nAuthor: ${context.actor}\n\n[View workflow logs](${context.server_url}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})\n\n**Action Required:**\n1. Check the workflow logs\n2. Fix the failing stage\n3. Push a new commit to retry`,
+              labels: ['deployment', 'urgent']
+            })
+      - name: Slack notification
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "❌ ComfyTag Deployment Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*❌ Deployment Pipeline Failed*\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>"
+                  }
+                }
+              ]
+            }
+        continue-on-error: true
