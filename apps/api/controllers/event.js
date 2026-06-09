@@ -326,6 +326,12 @@ export const getAllEvents = async (req, res, next) => {
           ]
         }
 
+        if (req.query.priceMin || req.query.priceMax) {
+          query['ticketType.price'] = {}
+          if (req.query.priceMin) query['ticketType.price'].$gte = parseFloat(req.query.priceMin)
+          if (req.query.priceMax) query['ticketType.price'].$lte = parseFloat(req.query.priceMax)
+        }
+
         const page = Math.max(1, parseInt(req.query.page) || 1)
         const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 20))
         const skip = (page - 1) * limit

@@ -406,11 +406,12 @@ export function EventsBrowseClient({
       else setIsLoadingMore(true)
 
       try {
-        // /events/search is only needed for full-text (q) or price-range queries.
-        // For category/state/date/tab filtering, getAllEvents handles it natively
-        // and includes events with null dates (important for dev + draft events).
-        const needsSearch = !!f.searchQuery.trim() || !!f.minPrice || !!f.maxPrice
-        const endpoint = needsSearch || t === 'past' ? '/events/search' : '/events'
+        // /events/search is only needed for full-text (q) or date-preset queries
+        // (today/tomorrow/weekend). getAllEvents natively handles category, state,
+        // price range, showPast, and is lenient about dates (includes null-dated
+        // events), so all other filter combos route there.
+        const needsSearch = !!f.searchQuery.trim() || !!f.date
+        const endpoint = needsSearch ? '/events/search' : '/events'
         const response = await api.get(`${endpoint}?${buildParams(f, p, t)}`)
         const data = response.data as Record<string, unknown>
         const list: Event[] = Array.isArray(data)
