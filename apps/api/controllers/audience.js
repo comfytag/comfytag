@@ -160,8 +160,8 @@ export const createAudience = async (req, res, next) => {
           io,
         }).catch(err => console.error('[Notification] In-app creation failed:', err.message))
 
-        // Enqueue ticket confirmation email (non-blocking)
-        enqueueEmail({
+        // Enqueue ticket confirmation email (CRITICAL PATH — must succeed)
+        const ticketEmailResult = await enqueueEmail({
           to: savedAudience.email,
           subject: `${savedAudience.eventname} — Your ticket is confirmed ✓`,
           template: 'ticketConfirmation.hbs',
@@ -183,7 +183,11 @@ export const createAudience = async (req, res, next) => {
             year: new Date().getFullYear(),
           },
           from: 'tickets@comfytag.com',
-        }).catch(err => console.error('[Ticket Confirmation] Queue failed:', err.message));
+        });
+
+        if (!ticketEmailResult.success) {
+          console.error(`[Audience] ERROR: Ticket confirmation email queue failed for ${savedAudience.email}: ${ticketEmailResult.error}`);
+        }
 
         // ─── FLOW 3A: EVENT REMINDER SERIES ────────────────────────────────────
         // Schedule 48h and 4h reminders based on event start time
@@ -192,7 +196,7 @@ export const createAudience = async (req, res, next) => {
         const delay4h = Math.max(0, (hoursUntilEvent - 4) * 60 * 60 * 1000);
 
         // Email 1: 48 hours before event
-        enqueueEmail({
+        const reminder48hResult = await enqueueEmail({
           to: savedAudience.email,
           subject: `You're going to ${event.name} in 2 days`,
           template: 'eventReminder48h.hbs',
@@ -210,10 +214,14 @@ export const createAudience = async (req, res, next) => {
           from: 'tickets@comfytag.com',
           userId: userId,
           notificationType: 'event_reminder',
-        }).catch(err => console.error('[Reminder 48h] Queue failed:', err.message));
+        });
+
+        if (!reminder48hResult.success) {
+          console.error(`[Audience] ERROR: 48h reminder queue failed for ${savedAudience.email}: ${reminder48hResult.error}`);
+        }
 
         // Email 2: 4 hours before event
-        enqueueEmail({
+        const reminder4hResult = await enqueueEmail({
           to: savedAudience.email,
           subject: `${event.name} starts in 4 hours — here's what you need`,
           template: 'eventReminder4h.hbs',
@@ -233,7 +241,11 @@ export const createAudience = async (req, res, next) => {
           from: 'tickets@comfytag.com',
           userId: userId,
           notificationType: 'event_reminder',
-        }).catch(err => console.error('[Reminder 4h] Queue failed:', err.message));
+        });
+
+        if (!reminder4hResult.success) {
+          console.error(`[Audience] ERROR: 4h reminder queue failed for ${savedAudience.email}: ${reminder4hResult.error}`);
+        }
     } catch (err) {
         next(err)
     }
@@ -290,8 +302,13 @@ export const getAudienceByReference = async (req, res, next) => {
 // GET
 export const getAudience = async (req, res, next) => {
     try {
-        const getAudience = await Audience.findById({ _id: req.params.id })
-        res.status(200).json(getAudience)
+        const ticket = await Audience.findById(req.params.id)
+        if (!ticket) return next(createError(404, 'Ticket not found'))
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (ticket.user_id !== requesterId) {
+            return next(createError(403, 'Not authorized'))
+        }
+        res.status(200).json(ticket)
     } catch (err) {
         next(err)
     }
@@ -364,7 +381,7 @@ export const getMyTickets = async (req, res, next) => {
             eventSlug: eventMap[t.event_id?.toString?.()]?.slug,
         }))
 
-        res.status(200).json(enriched)
+        res.status(200).json({ success: true, data: enriched })
     } catch (err) {
         next(err)
     }

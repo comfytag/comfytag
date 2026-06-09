@@ -47,7 +47,7 @@ export default function TicketDetailPage() {
   useEffect(() => {
     if (!ticket || !session) return
     const url = `${API}/tickets/${ticket._id}/status`
-    const es = new EventSource(url)
+    const es = new EventSource(url, { withCredentials: true })
     es.onmessage = (e) => {
       try {
         const payload = JSON.parse(e.data) as { checkedIn?: boolean }

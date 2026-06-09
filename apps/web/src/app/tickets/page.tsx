@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 const TICKETS_PAGE_STYLES = `
   .__ct_tickets_heading {
@@ -20,6 +21,7 @@ import { useRouter } from 'next/navigation'
 import type { Ticket, User } from '@comfytag/types'
 import { LoadingSpinner, EmptyState } from '@comfytag/ui'
 import { authHeader } from '@comfytag/utils'
+import { api } from '@/lib/api'
 import { Navbar } from '@/components/layout/Navbar'
 import { TicketListItem } from '@/components/tickets/TicketListItem'
 import { FaceEnrollmentBanner } from '@/components/tickets/FaceEnrollmentBanner'
@@ -34,6 +36,13 @@ export default function TicketsPage() {
   const router = useRouter()
   const { data: tickets = [], isLoading } = useMyTickets()
   const [activeTab, setActiveTab] = useState<Tab>('upcoming')
+
+  const { data: profileData } = useQuery({
+    queryKey: ['profile', session?.user?.id],
+    queryFn: () => api.get(`/users/${session!.user.id}`).then(r => r.data?.data ?? r.data),
+    enabled: !!session?.user?.id,
+    staleTime: 60_000,
+  })
 
   if (status === 'loading') {
     return <LoadingSpinner size="lg" centered />
@@ -68,7 +77,7 @@ export default function TicketsPage() {
     avatar: session.user.image,
     isVerify: { email: false, photo: false, idCard: false, address: false },
     onboarding: { completed: false },
-    faceEnrolled: false,
+    faceEnrolled: profileData?.faceEnrolled ?? false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   } as User

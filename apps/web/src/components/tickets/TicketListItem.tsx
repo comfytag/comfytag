@@ -37,7 +37,7 @@ export function TicketListItem({ ticket, isPast, onAction }: TicketListItemProps
 
   return (
     <Link
-      href={ticket.eventSlug ? `/events/${ticket.eventSlug}` : '#'}
+      href={`/tickets/${ticket._id}`}
       style={{
         display: 'flex',
         alignItems: 'stretch',
@@ -50,11 +50,11 @@ export function TicketListItem({ ticket, isPast, onAction }: TicketListItemProps
         opacity: isPast || isExpired ? 0.65 : 1,
         textDecoration: 'none',
         color: 'inherit',
-        cursor: ticket.eventSlug ? 'pointer' : 'default',
+        cursor: 'pointer',
         transition: `all var(--duration-fast)`,
       }}
       onMouseEnter={(e) => {
-        if (!isExpired && ticket.eventSlug) {
+        if (!isExpired) {
           ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--color-brand)'
           ;(e.currentTarget as HTMLAnchorElement).style.background = 'var(--color-surface-2)'
         }

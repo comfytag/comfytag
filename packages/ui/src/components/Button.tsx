@@ -9,6 +9,7 @@ export interface ButtonProps {
   loading?: boolean
   disabled?: boolean
   type?: 'button' | 'submit' | 'reset'
+  form?: string
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
   fullWidth?: boolean
   className?: string
@@ -34,6 +35,7 @@ export function Button({
   loading = false,
   disabled = false,
   type = 'button',
+  form,
   onClick,
   fullWidth = false,
   className,
@@ -76,6 +78,7 @@ export function Button({
       <style>{`.__ct_btn:focus-visible{outline:2px solid var(--color-brand);outline-offset:2px}`}</style>
       <button
         type={type}
+        form={form}
         disabled={isDisabled}
         onClick={onClick}
         className={`__ct_btn${className ? ` ${className}` : ''}`}

@@ -17,7 +17,6 @@ const AudienceSchema = new Schema({
     eventname: {
         type: String,
         require: true,
-        lowercase: true,
     },
     amount:{
         type: Number,
