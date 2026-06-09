@@ -122,6 +122,7 @@ function StateFilterDropdown({ value, states, onChange }: StateFilterDropdownPro
             zIndex: 50,
           }}
           role="listbox"
+          aria-label="State options"
         >
           <input
             type="text"
@@ -304,6 +305,7 @@ function PriceDropdown({ minPrice, maxPrice, onChange }: PriceDropdownProps) {
             overflow: 'hidden',
           }}
           role="listbox"
+          aria-label="Price range options"
         >
           {presets.map((preset) => (
             <button
@@ -404,7 +406,12 @@ export function EventsBrowseClient({
       else setIsLoadingMore(true)
 
       try {
-        const response = await api.get(`/events/search?${buildParams(f, p, t)}`)
+        // /events/search is only needed for full-text (q) or price-range queries.
+        // For category/state/date/tab filtering, getAllEvents handles it natively
+        // and includes events with null dates (important for dev + draft events).
+        const needsSearch = !!f.searchQuery.trim() || !!f.minPrice || !!f.maxPrice
+        const endpoint = needsSearch || t === 'past' ? '/events/search' : '/events'
+        const response = await api.get(`${endpoint}?${buildParams(f, p, t)}`)
         const data = response.data as Record<string, unknown>
         const list: Event[] = Array.isArray(data)
           ? (data as Event[])
