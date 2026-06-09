@@ -258,9 +258,12 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
       fd.append('file', file)
       const res = await api.post<{ url: string }>('/upload', fd)
       return res.data.url
-    } catch {
-      setStepErrors('Failed to upload file. Please try again.')
-      throw new Error('Upload failed')
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        'Failed to upload file. Please try again.'
+      setStepErrors(message)
+      throw new Error(message)
     }
   }
 

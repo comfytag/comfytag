@@ -11,20 +11,40 @@ cloudinary.config({
 
 const router = express.Router()
 
-const UPLOAD_TIMEOUT_MS = 30_000
+const UPLOAD_TIMEOUT_MS = 60_000
+const REQUIRED_CLOUDINARY_VARS = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET']
+
+function checkCloudinaryConfig(req, res, next) {
+  const missing = REQUIRED_CLOUDINARY_VARS.filter(v => !process.env[v])
+  if (missing.length > 0) {
+    return res.status(503).json({
+      success: false,
+      message: `Upload service not configured. Missing: ${missing.join(', ')}`,
+    })
+  }
+  next()
+}
 
 function uploadToCloudinary(buffer, options) {
   const uploadPromise = new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(options, (err, result) =>
-      err ? reject(err) : resolve(result)
-    )
-    stream.on('error', reject)
+    const stream = cloudinary.uploader.upload_stream(options, (err, result) => {
+      if (err) {
+        console.error('[Upload] Cloudinary stream error:', err.message, err.http_code)
+        reject(err)
+      } else {
+        resolve(result)
+      }
+    })
+    stream.on('error', (err) => {
+      console.error('[Upload] Stream pipe error:', err.message)
+      reject(err)
+    })
     stream.end(buffer)
   })
 
   const timeoutPromise = new Promise((_, reject) =>
     setTimeout(
-      () => reject(Object.assign(new Error('Upload timed out after 30s'), { status: 504 })),
+      () => reject(Object.assign(new Error('Upload timed out after 60s. Check your connection or try a smaller file.'), { status: 504 })),
       UPLOAD_TIMEOUT_MS
     )
   )
@@ -32,7 +52,7 @@ function uploadToCloudinary(buffer, options) {
   return Promise.race([uploadPromise, timeoutPromise])
 }
 
-router.post('/', verifyToken, upload.single('file'), async (req, res, next) => {
+router.post('/', checkCloudinaryConfig, verifyToken, upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' })
 
