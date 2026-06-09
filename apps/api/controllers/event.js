@@ -326,12 +326,20 @@ export const getAllEvents = async (req, res, next) => {
           ]
         }
 
-        const getEvents = await Event.find(query).sort({ date: 1 }).lean();
+        const page = Math.max(1, parseInt(req.query.page) || 1)
+        const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 20))
+        const skip = (page - 1) * limit
+
+        const [getEvents, total] = await Promise.all([
+            Event.find(query).sort({ date: 1 }).skip(skip).limit(limit).lean(),
+            Event.countDocuments(query),
+        ])
+
         const normalized = getEvents.map(e => ({
           ...e,
           date: e.date ?? e.event_date ?? null
         }));
-        res.status(200).json(normalized);
+        res.status(200).json({ success: true, data: normalized, total, page, hasMore: skip + normalized.length < total });
     } catch (err) {
         next(err)
     }

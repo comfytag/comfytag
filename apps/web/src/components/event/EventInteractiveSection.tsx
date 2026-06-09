@@ -194,7 +194,9 @@ export function EventInteractiveSection({
     event.ticketType.length > 0
       ? Math.min(...event.ticketType.map((t) => t.price))
       : 0
-  const allSoldOut = event.ticketType.every((t) => t.sold >= t.capacity)
+  const allSoldOut =
+    event.ticketType.length > 0 &&
+    event.ticketType.every((t) => t.capacity > 0 && t.sold >= t.capacity)
   const isFollowing = followData?.following ?? false
   const organizer = {
     _id: event.planner_id,

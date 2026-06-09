@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import { EventCard } from '@/components/ui/EventCard'
 import { FilterPill } from '@/components/search/FilterPill'
 import { MapView } from '@/components/search/MapView'
@@ -355,7 +354,6 @@ export function EventsBrowseClient({
   states,
 }: EventsBrowseClientProps) {
   const router = useRouter()
-  const { data: session } = useSession()
   const searchParams = useSearchParams()
 
   const [events, setEvents] = useState<Event[]>(initialEvents)
@@ -406,10 +404,7 @@ export function EventsBrowseClient({
       else setIsLoadingMore(true)
 
       try {
-        const hasSearch =
-          f.searchQuery.trim() || f.types.length > 0 || f.state || f.minPrice || f.maxPrice || f.date
-        const endpoint = (hasSearch || t === 'past') ? '/events/search' : '/events'
-        const response = await api.get(`${endpoint}?${buildParams(f, p, t)}`)
+        const response = await api.get(`/events/search?${buildParams(f, p, t)}`)
         const data = response.data as Record<string, unknown>
         const list: Event[] = Array.isArray(data)
           ? (data as Event[])
@@ -428,7 +423,7 @@ export function EventsBrowseClient({
         else setIsLoadingMore(false)
       }
     },
-    [session, buildParams]
+    [buildParams]
   )
 
   // Debounce filter changes
@@ -799,7 +794,7 @@ export function EventsBrowseClient({
         /* ── List view (flat grid) ── */
         <>
           <div className="events-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px', marginBottom: '40px' }}>
-            {events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((event) => (
+            {[...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((event) => (
               <EventCard
                 key={event._id}
                 event={event}

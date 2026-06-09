@@ -50,8 +50,8 @@ export function EventCard({
           height: `${height}px`,
           transform: hovered ? 'scale(1.02)' : 'scale(1)',
           transition: `transform var(--duration-fast) ease, box-shadow var(--duration-fast) ease`,
-          cursor: onSelect ? 'pointer' : 'default',
-          boxShadow: hovered ? '0 0 30px rgba(255, 81, 106, 0.5)' : 'none', // NEW: Fire glow on hover
+          cursor: onSelect ?? href ? 'pointer' : 'default',
+          boxShadow: hovered ? '0 0 24px rgba(124, 58, 237, 0.45)' : 'none',
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}

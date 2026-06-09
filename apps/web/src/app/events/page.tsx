@@ -30,7 +30,7 @@ async function fetchInitialEvents(): Promise<Event[]> {
 
 async function fetchEventTypes(): Promise<string[]> {
   try {
-    const res = await fetch(`${API}/filter/byType`, { next: { revalidate: 3600 } })
+    const res = await fetch(`${API}/events/filter/byType`, { next: { revalidate: 3600 } })
     if (!res.ok) return []
     const data = (await res.json()) as unknown
     if (Array.isArray(data)) return data as string[]
@@ -41,7 +41,7 @@ async function fetchEventTypes(): Promise<string[]> {
 
 async function fetchStates(): Promise<string[]> {
   try {
-    const res = await fetch(`${API}/state/byState`, { next: { revalidate: 3600 } })
+    const res = await fetch(`${API}/events/state/byState`, { next: { revalidate: 3600 } })
     if (!res.ok) return []
     const data = (await res.json()) as unknown
     if (Array.isArray(data)) return data as string[]

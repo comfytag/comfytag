@@ -7,7 +7,7 @@ import type { Event, ApiResponse, PaginatedResponse } from '@comfytag/types'
 export function useEventBySlug(slug: string) {
   return useQuery({
     queryKey: eventKeys.detail(slug),
-    queryFn: () => api.get<ApiResponse<Event>>(`/events/slug/${slug}`).then(r => r.data.data),
+    queryFn: () => api.get<ApiResponse<Event>>(`/events/${slug}`).then(r => r.data.data),
     staleTime: 120_000,
     enabled: !!slug,
   })
@@ -16,7 +16,7 @@ export function useEventBySlug(slug: string) {
 export function useEventComments(eventId: string) {
   return useQuery({
     queryKey: eventKeys.comments(eventId),
-    queryFn: () => api.get(`/events/${eventId}/comments`).then(r => r.data.data ?? []),
+    queryFn: () => api.get(`/events/${eventId}/comments`).then(r => r.data.comments ?? []),
     staleTime: 30_000,
     enabled: !!eventId,
   })
@@ -34,8 +34,8 @@ export function useOrganizerProfile(slug: string) {
 export function useRelatedEvents(category: string, excludeSlug: string) {
   return useQuery({
     queryKey: eventKeys.list({ category, excludeSlug }),
-    queryFn: () => api.get(`/events?category=${encodeURIComponent(category)}`).then(r => {
-      const list: Event[] = r.data.data ?? []
+    queryFn: () => api.get(`/events?category=${encodeURIComponent(category)}&limit=8`).then(r => {
+      const list: Event[] = r.data.data ?? (Array.isArray(r.data) ? r.data : [])
       return list.filter(e => e.slug !== excludeSlug).slice(0, 4)
     }),
     staleTime: 120_000,
