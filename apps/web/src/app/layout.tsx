@@ -59,7 +59,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} ${anybody.variable} ${spaceGrotesk.variable}`}>
+    <html suppressHydrationWarning lang="en" className={`${inter.variable} ${jetbrainsMono.variable} ${anybody.variable} ${spaceGrotesk.variable}`}>
       <body suppressHydrationWarning>
         <Providers>
           {children}
