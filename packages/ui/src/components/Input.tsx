@@ -63,7 +63,7 @@ export function Input({
   }
 
   return (
-    <div className={className} style={{ display: 'flex', flexDirection: 'column' }}>
+    <div suppressHydrationWarning className={className} style={{ display: 'flex', flexDirection: 'column' }}>
       {label && (
         <label
           htmlFor={id}
@@ -79,7 +79,7 @@ export function Input({
         </label>
       )}
 
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+      <div suppressHydrationWarning style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
         {leftIcon && (
           <span
             style={{

@@ -11,6 +11,7 @@ interface AuthLayoutProps {
 export function AuthLayout({ children, title }: AuthLayoutProps) {
   return (
     <div
+      suppressHydrationWarning
       style={{
         minHeight: '100vh',
         background: 'var(--color-bg)',
@@ -22,6 +23,7 @@ export function AuthLayout({ children, title }: AuthLayoutProps) {
     >
       {/* Centered card with brand gradient strip at top */}
       <div
+        suppressHydrationWarning
         style={{
           width: '100%',
           maxWidth: '480px',
@@ -33,6 +35,7 @@ export function AuthLayout({ children, title }: AuthLayoutProps) {
       >
         {/* Brand gradient strip at top */}
         <div
+          suppressHydrationWarning
           style={{
             height: '4px',
             background: 'linear-gradient(90deg, #7C3AED 0%, #5B21B6 100%)',
@@ -41,7 +44,7 @@ export function AuthLayout({ children, title }: AuthLayoutProps) {
         />
 
         {/* Logo & heading */}
-        <div style={{ padding: '32px 24px' }}>
+        <div suppressHydrationWarning style={{ padding: '32px 24px' }}>
           <Link
             href="/"
             style={{
@@ -53,6 +56,7 @@ export function AuthLayout({ children, title }: AuthLayoutProps) {
             }}
           >
             <div
+              suppressHydrationWarning
               style={{
                 width: '32px',
                 height: '32px',
@@ -108,7 +112,7 @@ export function AuthLayout({ children, title }: AuthLayoutProps) {
           )}
 
           {/* Form content */}
-          <div style={{ marginTop: '24px' }}>{children}</div>
+          <div suppressHydrationWarning style={{ marginTop: '24px' }}>{children}</div>
         </div>
       </div>
     </div>
