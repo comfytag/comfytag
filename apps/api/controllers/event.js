@@ -292,14 +292,14 @@ export const deleteEvent = async (req, res, next) => {
 // GET
 export const getEvent = async (req, res, next) => {
     const { id } = req.params
-    if (!id || id === 'undefined') return res.status(404).json({ message: 'Event not found' })
+    if (!id || id === 'undefined') return res.status(404).json({ success: false, message: 'Event not found' })
     try {
         let event = await Event.findOne({ slug: id })
         if (!event) {
             event = await Event.findById(id).catch(() => null)
         }
-        if (!event) return res.status(404).json({ message: 'Event not found' })
-        res.status(200).json(event)
+        if (!event) return res.status(404).json({ success: false, message: 'Event not found' })
+        res.status(200).json({ success: true, data: event })
     } catch (err) {
         next(err)
     }

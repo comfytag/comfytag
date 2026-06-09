@@ -51,7 +51,7 @@ export function useCheckout(
     queryFn: async () => {
       const res = await api.get<ApiResponse<Event>>(`/events/${eventId}`)
       const eventData = res.data.data
-      const foundTier = eventData.ticketType.find((t) => t._id === tierId)
+      const foundTier = (eventData.ticketType ?? []).find((t) => t._id === tierId)
       if (!foundTier) throw new Error('Ticket tier not found')
       return eventData
     },
@@ -60,7 +60,7 @@ export function useCheckout(
     enabled: !!eventId && !!tierId,
   })
 
-  const tier = event?.ticketType.find((t) => t._id === tierId) ?? null
+  const tier = event?.ticketType?.find((t) => t._id === tierId) ?? null
 
   // Update status based on query state
   useEffect(() => {

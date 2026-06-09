@@ -152,7 +152,7 @@ function CheckoutInner() {
       amount: checkout.fees.total * 100,
       ref,
       currency: 'NGN',
-      firstname: session.user.name.split(' ')[0],
+      firstname: (session.user.name ?? '').split(' ')[0],
       onClose() {
         // Return to ready state when modal closes
       },
@@ -173,6 +173,7 @@ function CheckoutInner() {
   if (checkout.status === 'loading') {
     return (
       <div
+        suppressHydrationWarning
         style={{
           minHeight: '100vh',
           display: 'flex',
