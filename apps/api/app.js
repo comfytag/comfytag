@@ -10,9 +10,20 @@ import { validateEnvironment } from './startup.js'
 import config from './config.js'
 const app = express();
 import dns from 'dns'
+import { testRedisConnection } from './jobs/emailQueue.js'
 
 // Validate environment at startup (fail fast if missing env vars)
 await validateEnvironment()
+
+// Test Redis connectivity if email queue is enabled (production)
+if (process.env.NODE_ENV === 'production') {
+  try {
+    await testRedisConnection()
+  } catch (err) {
+    console.error(`\n❌ Startup failed: ${err.message}\n`)
+    process.exit(1)
+  }
+}
 
 const connect = async () => {
   await mongoose.connect(config.mongodb.uri)

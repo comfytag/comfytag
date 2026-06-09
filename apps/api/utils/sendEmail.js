@@ -8,6 +8,10 @@ import User from "../models/User.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = path.join(__dirname, "emailTemplates");
 
+// ─── Email sender addresses (configurable via env, with defaults) ────────────
+const RESEND_FROM_DEFAULT = process.env.RESEND_FROM_DEFAULT || "noreply@comfytag.com";
+const RESEND_FROM_TICKETS = process.env.RESEND_FROM_TICKETS || "tickets@comfytag.com";
+
 // ─── Initialize Nodemailer with Resend SMTP Transport ────────────────────────
 const transporter = nodemailer.createTransport({
   host: "smtp.resend.com",
@@ -49,13 +53,13 @@ const checkNotificationPreference = async (email) => {
     // Check if email notifications are enabled
     return user.notificationPreferences?.email !== false;
   } catch (error) {
-    // Log error but don't block send
+    // CRITICAL: Fail-safe on database errors — default to NOT sending
+    // If DB is down, we should not flood users with emails
     console.error(
-      `Error checking notification preference for ${email}:`,
-      error.message
+      `[SendEmail] ERROR checking notification preference for ${email}: ${error.message}`
     );
-    // Default to allowing send if there's a database error
-    return true;
+    // Default to NOT sending if there's a database error (fail-safe)
+    return false;
   }
 };
 
@@ -76,7 +80,7 @@ export const sendEmail = async ({
   subject,
   template,
   data = {},
-  from = "noreply@comfytag.com",
+  from = RESEND_FROM_DEFAULT,
   replyTo = null,
   text = null,
 }) => {
@@ -139,10 +143,8 @@ export const sendEmail = async ({
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
-    // Log error but don't throw — email failures should not block the request
     console.error(
-      `Email send failed for ${to}:`,
-      error.message
+      `[SendEmail] ERROR sending to ${to}: ${error.message}`
     );
 
     return {
@@ -171,7 +173,7 @@ export const sendEmails = async (email, subject, text, html) => {
     subject,
     text,
     data: { text, html }, // Legacy compatibility
-    from: "noreply@comfytag.com",
+    from: RESEND_FROM_DEFAULT,
   });
 };
 
@@ -191,7 +193,7 @@ export const sendTicket = async (email, subject, text, html) => {
     text,
     template: "ticketConfirmation.hbs", // Uses dedicated ticket template
     data: { text, html },
-    from: "tickets@comfytag.com",
+    from: RESEND_FROM_TICKETS,
   });
 };
 
@@ -212,7 +214,7 @@ export const sendOTP = async (
     subject: "Your ComfyTag One-Time Password",
     template: templateName,
     data: { otp },
-    from: "noreply@comfytag.com",
+    from: RESEND_FROM_DEFAULT,
   });
 };
 
@@ -233,6 +235,6 @@ export const sendWelcome = async (
     subject: "Welcome to ComfyTag",
     template: templateName,
     data: { name },
-    from: "noreply@comfytag.com",
+    from: RESEND_FROM_DEFAULT,
   });
 };

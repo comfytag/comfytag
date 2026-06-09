@@ -7,7 +7,8 @@ export function ApiTokenSync() {
   const { data: session } = useSession()
 
   useEffect(() => {
-    setupInterceptors(() => signOut({ callbackUrl: '/login' }))
+    const eject = setupInterceptors(() => signOut({ callbackUrl: '/login' }))
+    return eject
   }, [])
 
   useEffect(() => {

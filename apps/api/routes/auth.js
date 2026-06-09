@@ -9,6 +9,10 @@ const router = express.Router()
 
 // CREATE
 router.post("/register", register)
+router.post("/register-partner", (req, res, next) => {
+  req.body.isPartner = true
+  register(req, res, next)
+})
 router.post("/login", login)
 router.post("/google-signin", googleSignIn)
 router.get("/me", verifyUser, getMe)

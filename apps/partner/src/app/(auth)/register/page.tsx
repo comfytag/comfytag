@@ -43,7 +43,7 @@ export default function RegisterPage() {
 
     try {
       // Register with isPartner: true
-      const registerRes = await fetch(`${API}/auth/register`, {
+      const registerRes = await fetch(`${API}/auth/register-partner`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -52,7 +52,6 @@ export default function RegisterPage() {
           email,
           password,
           confirm_password: confirmPassword,
-          isPartner: true,
         }),
       })
 

@@ -10,6 +10,25 @@ const redisConnection = {
 };
 
 /**
+ * Test Redis connectivity at startup
+ * Fails fast with clear error if Redis unreachable
+ */
+export const testRedisConnection = async () => {
+  try {
+    const testQueue = new Queue("test-connection", { connection: redisConnection });
+    await testQueue.client.ping();
+    await testQueue.close();
+    console.log(`[Email Queue] ✅ Redis connection verified (${redisConnection.host}:${redisConnection.port})`);
+    return true;
+  } catch (error) {
+    console.error(
+      `[Email Queue] ❌ ERROR: Cannot reach Redis at ${redisConnection.host}:${redisConnection.port} - ${error.message}`
+    );
+    throw new Error(`Email queue initialization failed: Redis unreachable`);
+  }
+};
+
+/**
  * Initialize BullMQ email queue
  * Job format: { to, subject, template, data, from, replyTo, delay }
  */
@@ -124,13 +143,12 @@ emailWorker.on("completed", (job) => {
 
 emailWorker.on("failed", (job, err) => {
   console.error(
-    `[Email Queue] Job ${job.id} failed after ${job.attemptsMade} attempts:`,
-    err.message
+    `[Email Queue] ERROR: Job ${job.id} failed after ${job.attemptsMade} attempts - ${err.message}`
   );
 });
 
 emailWorker.on("error", (err) => {
-  console.error("[Email Queue] Worker error:", err);
+  console.error(`[Email Queue] ERROR: Worker error - ${err.message}`);
 });
 
 /**
@@ -143,22 +161,32 @@ emailWorker.on("error", (err) => {
  * @param {string} options.from - Sender address (optional, defaults to noreply@comfytag.com)
  * @param {string} options.replyTo - Reply-to address (optional)
  * @param {number} options.delay - Delay in milliseconds (optional)
- * @returns {Promise<Job>} Bull job instance
+ * @returns {Promise<Object>} Result object with success flag and job details
  */
 export const enqueueEmail = async (options) => {
-  const { to, subject, template, data = {}, from, replyTo, delay = 0 } = options;
+  const { to, subject, template, data = {}, from, replyTo, delay = 0, userId, notificationType } = options;
 
   try {
     const job = await emailQueue.add(
-      { to, subject, template, data, from, replyTo },
+      { to, subject, template, data, from, replyTo, userId, notificationType },
       { delay }
     );
 
     console.log(`[Email Queue] Email queued - Job ${job.id} (to: ${to})`);
-    return job;
+    return {
+      success: true,
+      jobId: job.id,
+      email: to,
+      subject,
+    };
   } catch (error) {
-    console.error(`[Email Queue] Failed to queue email:`, error);
-    throw error;
+    console.error(`[Email Queue] ERROR: Failed to queue email for ${to} - ${error.message}`);
+    return {
+      success: false,
+      email: to,
+      subject,
+      error: error.message,
+    };
   }
 };
 

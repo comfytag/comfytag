@@ -2,3 +2,41 @@ node_modules
 .env
 telnet.js
 app copy.js
+
+.claude_history
+.claude_history.json
+.claude/*
+docs
+tests
+.env*
+files
+
+
+
+# AI Agent Worktrees and Cache
+.claude/
+
+# Generated Documentation & Notes (Root level)
+/*_SUMMARY.md
+/AGENT_*.md
+/*_GUIDE.md
+/*_REPORT*.md
+/ARCHITECTURE_*.md
+/CI_*.md
+/DEPLOYMENT_*.md
+/FIRST_*.md
+/IMPLEMENTATION_*.md
+/MONITORING_*.md
+/PREVENTION_*.md
+/PROJECT_*.md
+/QA_*.md
+/QUALITY_*.md
+/TEST_*.md
+/design.md
+/project-session.md
+/project-structure.txt
+/system_overview.md
+
+# Untracked Local Assets & Docs
+docs/OAUTH_SETUP.md
+files/

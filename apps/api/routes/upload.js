@@ -64,7 +64,14 @@ router.post('/', checkCloudinaryConfig, verifyToken, upload.single('file'), asyn
 
     res.json({ success: true, url: result.secure_url, publicId: result.public_id })
   } catch (err) {
-    if (!err.status && err.http_code) err.status = err.http_code
+    // Cloudinary uses http_code 401/403 for invalid credentials.
+    // Never forward these as HTTP 401 — the client interprets that as session expiry.
+    if (err.http_code === 401 || err.http_code === 403) {
+      err.status = 503
+      err.message = 'Upload service is not configured. Contact support.'
+    } else if (!err.status && err.http_code) {
+      err.status = err.http_code
+    }
     next(err)
   }
 })

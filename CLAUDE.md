@@ -433,6 +433,29 @@ See `project-session.md` for detailed kanban.
 
 ---
 
+## 🔑 AUTHENTICATION & OAUTH
+
+### Email/Password Login
+- Already implemented and working
+- Uses NextAuth.js credentials provider
+- All endpoints protected by JWT verification
+- See: `apps/api/controllers/auth.js` (register, login, password reset)
+
+### Gmail OAuth (Social Login)
+- **Status:** ✅ Ready for setup (NextAuth GoogleProvider pre-configured)
+- **Credential Setup:** [See `docs/OAUTH_SETUP.md`](./docs/OAUTH_SETUP.md)
+- **Applies to:** Web app (attendees) + Partner dashboard (organizers)
+- **Not in mobile app:** Use email/password login only
+- **Env Vars Required:**
+  - `GOOGLE_CLIENT_ID` — Get from Google Cloud Console
+  - `GOOGLE_CLIENT_SECRET` — Get from Google Cloud Console (NEVER commit this)
+  - `NEXTAUTH_SECRET` — Strong random 32+ char string (NEVER commit this)
+- **Deployment:** Both redirect URIs must be registered in Google Cloud before production launch
+  - Dev: `http://localhost:3000/api/auth/callback/google` and `http://localhost:3001/api/auth/callback/google`
+  - Prod: `https://yourdomain.com/api/auth/callback/google` and `https://partner.yourdomain.com/api/auth/callback/google`
+
+---
+
 ## 🔗 HOW TO GET HELP
 
 **For Code Questions:**

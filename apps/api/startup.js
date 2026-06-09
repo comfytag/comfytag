@@ -53,6 +53,7 @@ export async function validateEnvironment() {
       'CLOUDINARY_CLOUD_NAME',
       'CLOUDINARY_API_KEY',
       'CLOUDINARY_API_SECRET',
+      'RESEND_API_KEY',  // Email service (production required)
     ]
 
     for (const key of prodRequired) {

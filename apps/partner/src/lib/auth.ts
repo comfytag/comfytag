@@ -166,7 +166,7 @@ export const authOptions: NextAuthOptions = {
           const res = await fetch(`${API_BASE}/auth/google-signin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: user.email }),
+            body: JSON.stringify({ email: user.email, isPartner: true }),
           })
           if (!res.ok) {
             const err = await res.json().catch(() => ({}))

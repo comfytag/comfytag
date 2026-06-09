@@ -311,14 +311,42 @@ export const login = async (req,res,next) =>{
 
 export const googleSignIn = async (req, res) => {
 	try {
-		const { email } = req.body
+		const { email, isPartner: partnerIntent, name, image } = req.body
 		if (!email) return res.status(400).json({ message: 'Email is required' })
 
-		const user = await User.findOne({ email: email.toLowerCase() })
-		if (!user) return res.status(404).json({ message: 'No account found for this Google email. Please register first.' })
+		let user = await User.findOne({ email: email.toLowerCase() })
 
-		if (!user.isPartner && !user.isAdmin) {
-			return res.status(403).json({ message: 'This account does not have partner access.' })
+		if (!user) {
+			if (!partnerIntent) {
+				return res.status(404).json({ message: 'No account found for this Google email. Please register first.' })
+			}
+			// Create a new partner account from Google data
+			const salt = await bcrypt.genSalt(parseInt(process.env.SALT ?? '12', 10))
+			const tempPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), salt)
+			user = await new User({
+				name: name ?? email.split('@')[0],
+				username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Date.now(),
+				email: email.toLowerCase(),
+				password: tempPassword,
+				isPartner: true,
+				image: image ?? null,
+			}).save()
+			enqueueWelcomeSeries(user._id.toString(), 'organizer', user.toObject()).catch(err =>
+				console.error('[Auth] Google partner welcome series error:', err)
+			)
+		} else if (!user.isPartner && !user.isAdmin) {
+			if (!partnerIntent) {
+				return res.status(403).json({ message: 'This account does not have partner access.' })
+			}
+			// Upgrade existing attendee to partner
+			user = await User.findByIdAndUpdate(
+				user._id,
+				{ isPartner: true, 'onboarding.organizerRegisteredAt': new Date() },
+				{ new: true }
+			)
+			enqueueWelcomeSeries(user._id.toString(), 'organizer', user.toObject()).catch(err =>
+				console.error('[Auth] Google partner upgrade welcome series error:', err)
+			)
 		}
 
 		const token = user.generateAuthToken()
