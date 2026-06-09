@@ -406,8 +406,29 @@ export const eventsBySales = async (req, res, next) => {
 }
 
 
+// GET /events/categories — distinct published event categories
+export const getEventCategories = async (req, res, next) => {
+    try {
+        const categories = await Event.distinct('category', { status: 'published' })
+        res.status(200).json({ success: true, data: categories.filter(Boolean).sort() })
+    } catch (err) {
+        next(err)
+    }
+}
+
+// GET /events/states — distinct states that have published events
+export const getEventStates = async (req, res, next) => {
+    try {
+        const states = await Event.distinct('state', { status: 'published' })
+        res.status(200).json({ success: true, data: states.filter(Boolean).sort() })
+    } catch (err) {
+        next(err)
+    }
+}
+
 // GET
 export const eventsByFilter = async (req, res, next) => {
+    if (!req.query.filterType) return res.status(200).json([])
     const filterType = req.query.filterType.split(",")
     try {
         const filter = await Promise.all(filterType.map(type=>{

@@ -1,5 +1,5 @@
 import express from 'express'
-import { createEvent, deleteEvent, eventsByCategory, eventsByPayment, eventsByState, getAllEvents, getEvent, getPlannerEvents, updateEvent, eventsByPick, eventsBySales, eventsByFilter, eventsBySingleFilter, getEventFeed, getEventsByState, updateTicketTier, deleteTicketTier, getTicketTierStats } from '../controllers/event.js';
+import { createEvent, deleteEvent, eventsByCategory, eventsByPayment, eventsByState, getAllEvents, getEvent, getPlannerEvents, updateEvent, eventsByPick, eventsBySales, eventsByFilter, eventsBySingleFilter, getEventFeed, getEventsByState, updateTicketTier, deleteTicketTier, getTicketTierStats, getEventCategories, getEventStates } from '../controllers/event.js';
 import { verifyAdmin, verifyUser, verifyToken } from '../utils/verifyToken.js';
 
 const router = express.Router()
@@ -17,6 +17,8 @@ const router = express.Router()
 // Static GET routes (must be before /:id wildcard)
 router.get("/feed", getEventFeed)
 router.get("/nearby", getEventsByState)
+router.get("/categories", getEventCategories)
+router.get("/states", getEventStates)
 router.get("/category/byCategory", eventsByCategory)
 router.get("/filter/byType", eventsByFilter)
 router.get("/filter/single", eventsBySingleFilter)

@@ -30,22 +30,18 @@ async function fetchInitialEvents(): Promise<Event[]> {
 
 async function fetchEventTypes(): Promise<string[]> {
   try {
-    const res = await fetch(`${API}/events/filter/byType`, { next: { revalidate: 3600 } })
+    const res = await fetch(`${API}/events/categories`, { next: { revalidate: 3600 } })
     if (!res.ok) return []
-    const data = (await res.json()) as unknown
-    if (Array.isArray(data)) return data as string[]
-    const obj = data as Record<string, unknown>
+    const obj = (await res.json()) as Record<string, unknown>
     return (Array.isArray(obj.data) ? obj.data : []) as string[]
   } catch { return [] }
 }
 
 async function fetchStates(): Promise<string[]> {
   try {
-    const res = await fetch(`${API}/events/state/byState`, { next: { revalidate: 3600 } })
+    const res = await fetch(`${API}/events/states`, { next: { revalidate: 3600 } })
     if (!res.ok) return []
-    const data = (await res.json()) as unknown
-    if (Array.isArray(data)) return data as string[]
-    const obj = data as Record<string, unknown>
+    const obj = (await res.json()) as Record<string, unknown>
     return (Array.isArray(obj.data) ? obj.data : []) as string[]
   } catch { return [] }
 }
