@@ -5,6 +5,9 @@ export const api = axios.create({
   withCredentials: true,
 })
 
+let _interceptorId: number | null = null
+let _loggingOut = false
+
 export function setApiToken(token: string | null) {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`
@@ -14,17 +17,23 @@ export function setApiToken(token: string | null) {
 }
 
 export function setupInterceptors(onUnauthorized: () => void) {
-  api.interceptors.response.use(
+  if (_interceptorId !== null) return
+
+  _interceptorId = api.interceptors.response.use(
     (response) => response,
     (error: unknown) => {
-      if (
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        (error as { response?: { status?: number } }).response?.status === 401
-      ) {
+      const axiosError = error as {
+        response?: { status?: number }
+        config?: { headers?: Record<string, string> }
+      }
+      const is401 = axiosError?.response?.status === 401
+      const hadAuthHeader = !!axiosError?.config?.headers?.['Authorization']
+
+      if (is401 && hadAuthHeader && !_loggingOut) {
+        _loggingOut = true
         onUnauthorized()
       }
+
       return Promise.reject(error)
     }
   )

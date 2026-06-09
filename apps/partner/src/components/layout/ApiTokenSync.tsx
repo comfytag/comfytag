@@ -4,15 +4,19 @@ import { useSession, signOut } from 'next-auth/react'
 import { setApiToken, setupInterceptors } from '@/lib/api'
 
 export function ApiTokenSync() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
 
   useEffect(() => {
     setupInterceptors(() => signOut({ callbackUrl: '/login' }))
   }, [])
 
   useEffect(() => {
-    setApiToken(session?.user?.token ?? null)
-  }, [session?.user?.token])
+    if (status === 'authenticated' && session?.user?.token) {
+      setApiToken(session.user.token)
+    } else if (status === 'unauthenticated') {
+      setApiToken(null)
+    }
+  }, [session?.user?.token, status])
 
   return null
 }
