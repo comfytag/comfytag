@@ -37,7 +37,7 @@ export function GuestDetailsForm({ onSubmit, loading = false }: GuestDetailsForm
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form id="guest-checkout-form" onSubmit={handleSubmit}>
       <div
         style={{
           background: 'var(--color-surface)',

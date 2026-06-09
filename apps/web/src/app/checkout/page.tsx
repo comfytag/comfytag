@@ -348,21 +348,26 @@ function CheckoutInner() {
 
         {/* CTA button */}
         {isFree ? (
-          <Button
-            variant="primary"
-            size="lg"
-            fullWidth
-            onClick={() => {
-              if (!session) {
-                setGuestDetails({ name: '', email: '', phone: '' })
-                // Let GuestDetailsForm handle submission
-              } else {
-                handleFreeTicket(guestDetails)
-              }
-            }}
-          >
-            Get Free Ticket
-          </Button>
+          session ? (
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={() => handleFreeTicket(guestDetails)}
+            >
+              Get Free Ticket
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              type="submit"
+              form="guest-checkout-form"
+            >
+              Get Free Ticket
+            </Button>
+          )
         ) : (
           <Button variant="primary" size="lg" fullWidth onClick={initPaystack}>
             Pay {formatNaira(checkout.fees.total)} Now
