@@ -195,13 +195,24 @@ export const register = async (req,res,next) =>{
 		const url =`Please click on the click below to verify your email \n
 		${process.env.BASE_URL}partner/auth/${user._id}/verify/${token.token}`
 		console.log(url)
-		await sendEmails(user.email, "Verify Email", url);
+
+		// Send verification email with error handling
+		try {
+			const emailResult = await sendEmails(user.email, "Verify Email", url);
+			if (!emailResult.success) {
+				console.error(`[Auth] ERROR: Verification email failed for ${user.email}: ${emailResult.error}`);
+				return res.status(500).json({ message: "Failed to send verification email. Please try again." });
+			}
+		} catch (err) {
+			console.error(`[Auth] ERROR: Exception sending verification email - ${err.message}`);
+			return res.status(500).json({ message: "Failed to send verification email. Please try again." });
+		}
 
 		// Enqueue welcome series based on registration type
 		if (!user.isPartner) {
 			// Attendee registration - enqueue attendee welcome series
 			enqueueWelcomeSeries(user._id.toString(), 'attendee', user.toObject()).catch(err =>
-				console.error('[Auth] Welcome series error (non-blocking):', err)
+				console.error('[Auth] ERROR: Welcome series error (non-blocking) - ' + err.message)
 			);
 		}
 
@@ -298,6 +309,38 @@ export const login = async (req,res,next) =>{
 	}
 };
 
+export const googleSignIn = async (req, res) => {
+	try {
+		const { email } = req.body
+		if (!email) return res.status(400).json({ message: 'Email is required' })
+
+		const user = await User.findOne({ email: email.toLowerCase() })
+		if (!user) return res.status(404).json({ message: 'No account found for this Google email. Please register first.' })
+
+		if (!user.isPartner && !user.isAdmin) {
+			return res.status(403).json({ message: 'This account does not have partner access.' })
+		}
+
+		const token = user.generateAuthToken()
+		res.status(200).json({
+			status: true,
+			user: {
+				_id: user._id,
+				email: user.email,
+				name: user.name,
+				image: user.image,
+				isPartner: user.isPartner,
+				isAdmin: user.isAdmin,
+				isVerify: user.isVerify,
+			},
+			token,
+			message: 'Google sign-in successful',
+		})
+	} catch (error) {
+		res.status(500).json({ message: 'Internal Server Error: ' + error.message })
+	}
+};
+
 export const sendVerifyEmail = async (req,res,next) =>{
 
 	try {
@@ -317,15 +360,27 @@ export const sendVerifyEmail = async (req,res,next) =>{
 		// const url = `${process.env.BASE_URL}partner/auth/${user._id}/verify/${token.token}`;
 		const url =`Please click on the click below to verify your email \n
 		${process.env.BASE_URL}partner/auth/${token.userId}/verify/${token.token}`
-		await sendEmails(user.email, "Verify Email", url);
+
+		// Send verification email with error handling
+		try {
+			const emailResult = await sendEmails(user.email, "Verify Email", url);
+			if (!emailResult.success) {
+				console.error(`[Auth] ERROR: Resend verify email failed for ${user.email}: ${emailResult.error}`);
+				return res.status(500).json({ message: "Failed to send verification email. Please try again." });
+			}
+		} catch (err) {
+			console.error(`[Auth] ERROR: Exception sending resend verify email - ${err.message}`);
+			return res.status(500).json({ message: "Failed to send verification email. Please try again." });
+		}
+
 		console.log(url)
 		res
 			.status(201)
 			.send({ message: "An Email sent to " + user.email + " please verify", data: user });
 
 	} catch (error) {
-			console.log(error);
-			res.status(500).send({ message: "Internal Server Error" + error});
+			console.error(`[Auth] ERROR: Resend verify email endpoint - ${error.message}`);
+			res.status(500).send({ message: "Internal Server Error" });
 		}
 };
 
@@ -584,9 +639,18 @@ export const forgotPassword = async (req, res, next) => {
       type: 'reset'
     }).save()
 
-    // Send OTP email
+    // Send OTP email with error handling
     const emailContent = `Your password reset OTP is: ${otp}\n\nThis OTP is valid for 1 hour.`
-    await sendEmails(user.email, 'Password Reset OTP', emailContent)
+    try {
+      const emailResult = await sendEmails(user.email, 'Password Reset OTP', emailContent);
+      if (!emailResult.success) {
+        console.error(`[Auth] ERROR: Password reset OTP email failed for ${user.email}: ${emailResult.error}`);
+        return res.status(500).json({ message: "Failed to send OTP email. Please try again." });
+      }
+    } catch (err) {
+      console.error(`[Auth] ERROR: Exception sending password reset OTP - ${err.message}`);
+      return res.status(500).json({ message: "Failed to send OTP email. Please try again." });
+    }
 
     res.status(200).json({
       message: 'OTP sent to email',

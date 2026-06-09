@@ -16,11 +16,6 @@ export function useKycStatus() {
     queryFn: async () => {
       if (!userId) throw new Error('No user ID')
 
-      // Set auth header
-      if (token) {
-        api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      }
-
       try {
         const response = await api.get<User>(`/partner/users/${userId}`)
         return response.data

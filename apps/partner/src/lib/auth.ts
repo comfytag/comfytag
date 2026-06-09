@@ -1,4 +1,5 @@
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
 import { getServerSession as nextAuthGetServerSession } from 'next-auth'
 import type { NextAuthOptions } from 'next-auth'
 import type { SessionUser } from '@comfytag/types'
@@ -41,6 +42,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
 
 export const authOptions: NextAuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -49,6 +54,23 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
+
+        let data: {
+          status: boolean
+          user: {
+            _id: string
+            name: string
+            email: string
+            username?: string
+            image?: string
+            avatar?: string
+            isPartner: boolean
+            isAdmin: boolean
+            isVerify?: { email?: boolean; photo?: boolean; idCard?: boolean; address?: boolean }
+          }
+          token: string
+        }
+
         try {
           const res = await fetch(`${API_BASE}/auth/login`, {
             method: 'POST',
@@ -59,49 +81,38 @@ export const authOptions: NextAuthOptions = {
             }),
           })
           if (!res.ok) return null
-          const data: {
-            status: boolean
-            user: {
-              _id: string
-              name: string
-              email: string
-              username?: string
-              image?: string
-              avatar?: string
-              isPartner: boolean
-              isAdmin: boolean
-              isVerify?: { email?: boolean; photo?: boolean; idCard?: boolean; address?: boolean }
-            }
-            token: string
-          } = await res.json()
-          if (!data.user) return null
-          if (!data.user.isPartner && !data.user.isAdmin) {
-            throw new Error('This account does not have partner access. Please register at /register.')
-          }
-          return {
-            id: data.user._id,
-            name: data.user.name,
-            email: data.user.email,
-            token: data.token,
-            username: data.user.username ?? data.user.name,
-            image: data.user.image,
-            avatar: data.user.avatar,
-            phone: undefined,
-            bgImg: undefined,
-            isPartner: data.user.isPartner,
-            isAdmin: data.user.isAdmin,
-            faceEnrolled: false,
-            onboarding: { completed: false },
-            isVerify: data.user.isVerify ?? {
-              email: false,
-              photo: false,
-              idCard: false,
-              address: false,
-            },
-            logo: data.user.image ?? null,
-          }
+          data = await res.json()
         } catch {
           return null
+        }
+
+        if (!data.user) return null
+
+        if (!data.user.isPartner && !data.user.isAdmin) {
+          throw new Error('This account does not have partner access. Please register at /register.')
+        }
+
+        return {
+          id: data.user._id,
+          name: data.user.name,
+          email: data.user.email,
+          token: data.token,
+          username: data.user.username ?? data.user.name,
+          image: data.user.image,
+          avatar: data.user.avatar,
+          phone: undefined,
+          bgImg: undefined,
+          isPartner: data.user.isPartner,
+          isAdmin: data.user.isAdmin,
+          faceEnrolled: false,
+          onboarding: { completed: false },
+          isVerify: data.user.isVerify ?? {
+            email: false,
+            photo: false,
+            idCard: false,
+            address: false,
+          },
+          logo: data.user.image ?? null,
         }
       },
     }),
@@ -149,6 +160,31 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        try {
+          const res = await fetch(`${API_BASE}/auth/google-signin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: user.email }),
+          })
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return `/login?error=${encodeURIComponent(err.message ?? 'GoogleSignInFailed')}`
+          }
+          const data = await res.json()
+          user.id = data.user._id
+          user.token = data.token
+          user.isPartner = data.user.isPartner
+          user.isAdmin = data.user.isAdmin
+          user.logo = data.user.image ?? null
+          return true
+        } catch {
+          return '/login?error=GoogleSignInFailed'
+        }
+      }
+      return true
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
