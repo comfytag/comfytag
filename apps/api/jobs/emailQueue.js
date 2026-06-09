@@ -16,10 +16,12 @@ const redisConnection = {
 export const testRedisConnection = async () => {
   try {
     const testQueue = new Queue("test-connection", { connection: redisConnection });
-    await testQueue.client.ping();
+   // ✅ Safely resolve the client promise before pinging
+    const redisClient = await testQueue.client;
+    await redisClient.ping();
     await testQueue.close();
     console.log(`[Email Queue] ✅ Redis connection verified (${redisConnection.host}:${redisConnection.port})`);
-    return true;
+    return true;;
   } catch (error) {
     console.error(
       `[Email Queue] ❌ ERROR: Cannot reach Redis at ${redisConnection.host}:${redisConnection.port} - ${error.message}`
