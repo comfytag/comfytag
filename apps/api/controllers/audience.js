@@ -364,7 +364,7 @@ export const getMyTickets = async (req, res, next) => {
         const tickets = await Audience.find(query).lean()
 
         if (!tickets || tickets.length === 0) {
-            return res.status(200).json([])
+            return res.status(200).json({ success: true, data: [] })
         }
 
         // Batch-fetch event details to avoid N+1 queries
