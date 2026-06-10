@@ -3,11 +3,12 @@ import { api } from '@/lib/api'
 import { notificationKeys } from './queryKeys'
 import type { Notification, ApiResponse } from '@comfytag/types'
 
-export function useNotifications() {
+export function useNotifications(session?: any) {
   return useQuery({
     queryKey: notificationKeys.list,
     queryFn: () => api.get<ApiResponse<Notification[]>>('/notification').then(r => r.data.data ?? []),
     staleTime: 30_000,
+    enabled: !!session?.user?.token,
   })
 }
 

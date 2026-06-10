@@ -29,17 +29,21 @@ export function useUpdateProfile() {
 }
 
 export function useMyFollowing() {
+  const { data: session } = useSession()
   return useQuery({
     queryKey: profileKeys.following,
     queryFn: () => api.get('/organizer/following').then(r => r.data.data ?? []),
     staleTime: 60_000,
+    enabled: !!session?.user?.token,
   })
 }
 
 export function useSavedEvents() {
+  const { data: session } = useSession()
   return useQuery({
     queryKey: profileKeys.saved,
     queryFn: () => api.get<ApiResponse<Event[]>>('/events/saved').then(r => r.data.data ?? []),
     staleTime: 60_000,
+    enabled: !!session?.user?.token,
   })
 }

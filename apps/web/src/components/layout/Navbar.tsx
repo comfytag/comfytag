@@ -59,7 +59,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
 
   // Prefetch unread count on session load so dot shows on cold load
   useEffect(() => {
-    if (!session) return
+    if (!session?.user?.token) return
     api
       .get('/notification?page=1&limit=5')
       .then((r) => {
@@ -73,7 +73,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
 
   // Refresh notifications when panel opens
   useEffect(() => {
-    if (!notifOpen || !session) return
+    if (!notifOpen || !session?.user?.token) return
     setNotifLoading(true)
     api
       .get('/notification?page=1&limit=5')

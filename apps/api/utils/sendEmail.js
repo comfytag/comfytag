@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import Handlebars from "handlebars";
 import fs from "fs";
 import path from "path";
@@ -8,20 +8,20 @@ import User from "../models/User.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = path.join(__dirname, "emailTemplates");
 
+// ─── Register all Handlebars partials at startup ────────────────────────
+const PARTIALS_DIR = path.join(TEMPLATES_DIR, "partials");
+fs.readdirSync(PARTIALS_DIR).forEach((file) => {
+  const name = path.basename(file, ".hbs");
+  const content = fs.readFileSync(path.join(PARTIALS_DIR, file), "utf-8");
+  Handlebars.registerPartial(name, content);
+});
+
 // ─── Email sender addresses (configurable via env, with defaults) ────────────
 const RESEND_FROM_DEFAULT = process.env.RESEND_FROM_DEFAULT || "noreply@comfytag.com";
 const RESEND_FROM_TICKETS = process.env.RESEND_FROM_TICKETS || "tickets@comfytag.com";
 
-// ─── Initialize Nodemailer with Resend SMTP Transport ────────────────────────
-const transporter = nodemailer.createTransport({
-  host: "smtp.resend.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: "resend",
-    pass: process.env.RESEND_API_KEY,
-  },
-});
+// ─── Initialize Resend HTTP API Client ────────────────────────
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * Load and compile a Handlebars template from the emailTemplates directory
@@ -131,15 +131,19 @@ export const sendEmail = async ({
       mailOptions.replyTo = replyTo;
     }
 
-    // ─── Send via Nodemailer + Resend ────────────────────────
-    const info = await transporter.sendMail(mailOptions);
+    // ─── Send via Resend HTTP API ────────────────────────
+    const result = await resend.emails.send(mailOptions);
+
+    if (result.error) {
+      throw new Error(result.error.message || "Resend API error");
+    }
 
     return {
       success: true,
       message: `Email sent successfully to ${to}`,
       email: to,
       subject,
-      messageId: info.messageId,
+      messageId: result.id,
       timestamp: new Date().toISOString(),
     };
   } catch (error) {

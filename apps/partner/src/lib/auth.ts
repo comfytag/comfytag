@@ -210,7 +210,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 7 * 24 * 60 * 60,   // 7 days
     updateAge: 24 * 60 * 60,    // refresh cookie daily (sliding window)
   },
-  secret: process.env.NEXTAUTH_SECRET || 'dev-secret',
+  secret: process.env.NEXTAUTH_SECRET,
 }
 
 export const getServerSession = () => nextAuthGetServerSession(authOptions)
