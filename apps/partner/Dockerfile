@@ -21,8 +21,15 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
+
 # Copy the entire app directory from builder (includes all node_modules and built files)
 COPY --from=builder /app .
+
+# 🛠️ THE FIX: Copy the static files into the standalone directory
+RUN cp -r apps/partner/.next/static apps/partner/.next/standalone/apps/partner/.next/
+RUN cp -r apps/partner/public apps/partner/.next/standalone/apps/partner/ 2>/dev/null || true
+
+# Apply permissions AFTER copying so Next.js can read the files
 RUN chown -R nextjs:nodejs /app
 WORKDIR /app
 USER nextjs
