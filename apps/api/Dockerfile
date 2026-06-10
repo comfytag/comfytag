@@ -10,8 +10,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 apiuser
+
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app .
+
+# 🛠️ THE FIX: Explicitly copy the entire templates directory (including partials/ and layouts/)
+COPY --from=builder /app/utils/emailTemplates ./utils/emailTemplates
+
 RUN chown -R apiuser:nodejs /app
 USER apiuser
 EXPOSE 4002
