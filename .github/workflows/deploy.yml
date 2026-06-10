@@ -150,12 +150,16 @@ jobs:
             echo "🔄 Starting containers..."
             docker compose -f docker-compose.prod.yml up -d --no-build
             
+            # 🛠️ FIX 1: Automatically restart Nginx to clear the IP cache
+            echo "♻️ Restarting Nginx..."
+            docker compose -f docker-compose.prod.yml restart nginx
+
             echo "⏳ Waiting for services to stabilize..."
             sleep 15
             
             echo "🏥 Health checks..."
             for i in {1..10}; do
-              if curl -f http://localhost 2>/dev/null; then
+              if curl -f https://comfytag.com 2>/dev/null; then
                 echo "✅ Production services healthy"
                 break
               fi
