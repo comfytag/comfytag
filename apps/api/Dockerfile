@@ -2,7 +2,11 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 RUN corepack enable
 COPY package.json ./
-RUN npm install --omit=dev --legacy-peer-deps
+RUN npm config set fetch-timeout 900000 && \
+    npm config set fetch-retry-mintimeout 30000 && \
+    npm config set fetch-retry-maxtimeout 300000 && \
+    npm config set fetch-retries 5 && \
+    npm install --omit=dev --legacy-peer-deps
 COPY . .
 
 FROM node:22-alpine AS runner

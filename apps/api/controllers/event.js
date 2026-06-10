@@ -23,10 +23,16 @@ export const createEvent = async (req, res, next) => {
     const getUser = await User.findById(userId)
     if (!getUser) return next(createError(404, 'User not found'))
     const {username} = getUser._doc
-        
-        //  Add new event and fetch plannerId and planner name
+
+    // Sanitize promos: filter out entries without a valid code
+    let eventData = { ...req.body };
+    if (eventData.promos && Array.isArray(eventData.promos)) {
+        eventData.promos = eventData.promos.filter(promo => promo && promo.code);
+    }
+
+    //  Add new event and fetch plannerId and planner name
     const newEvent = new Event({
-        ...req.body,
+        ...eventData,
          planner_id: userId,
          planner: username,
          slug: toSlug(req.body.name) + '-' + Date.now().toString(36),
@@ -50,10 +56,16 @@ export const createEvent = async (req, res, next) => {
 export const updateEvent = async (req, res, next) => {
 
     try {
+        // Sanitize promos: filter out entries without a valid code
+        let updateData = { ...req.body };
+        if (updateData.promos && Array.isArray(updateData.promos)) {
+            updateData.promos = updateData.promos.filter(promo => promo && promo.code);
+        }
+
         const updatedEvent = await Event.findByIdAndUpdate(
             req.params.id,
-            { $set: req.body },
-            { new: true }
+            { $set: updateData },
+            { new: true, runValidators: true }
         )
         const baseUrl = process.env.BASE_URL || 'https://comfytag.com';
         const newStatus = req.body.status;
