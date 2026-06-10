@@ -1,41 +1,200 @@
-﻿<h1>Let's Go! 🚀 {{eventName}} Starts in 4 Hours</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4 Hours to Go — {{eventName}}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F5F3FF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased;">
 
-<p>Hey {{firstName}},</p>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background-color: #F5F3FF; padding: 24px 16px;">
+    <tr>
+      <td align="center">
 
-<p>The moment's here. {{eventName}} kicks off in just <strong>4 hours</strong>. Time to get ready!</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="max-width: 560px; background-color: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 32px rgba(124, 58, 237, 0.12);">
 
-<div style="background-color: #fafaf9; border-left: 4px solid #ef4444; padding: 16px; margin: 20px 0; border-radius: 4px;">
-  <h3 style="margin-top: 0; color: #ef4444;">Go-Time Checklist</h3>
-  <p style="margin-bottom: 8px;">🕐 <strong>Event Time:</strong> {{eventTime}}</p>
-  <p style="margin-bottom: 8px;">📍 <strong>Location:</strong> {{eventVenue}}</p>
-  <p style="margin-bottom: 0;">🗺️ <strong>Address:</strong> {{eventAddress}}</p>
-</div>
+          <!-- HEADER -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%); padding: 28px 32px 24px; text-align: center;">
+              <p style="margin: 0 0 4px; font-size: 24px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px; line-height: 1;">ComfyTag</p>
+              <p style="margin: 0; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.65); letter-spacing: 2px; text-transform: uppercase;">Your face is your ticket</p>
+            </td>
+          </tr>
 
-{{!-- Face enrollment feature launching soon, reminder upsell temporarily disabled --}}
-{{!--
-{{#if faceEnrolled}}
-<div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 4px;">
-  <h3 style="margin-top: 0; color: #10b981;">Your Face = Your Ticket ✓</h3>
-  <p style="margin-bottom: 0;">You've already enrolled your face — just show up and scan! No QR codes needed.</p>
-</div>
-{{else}}
-<div style="background-color: #ede9fe; border-left: 4px solid #7c3aed; padding: 16px; margin: 20px 0; border-radius: 4px;">
-  <h3 style="margin-top: 0; color: #7c3aed;">Quick Enroll Your Face (2 min)</h3>
-  <p style="margin-bottom: 16px;">Enroll your face now so you can skip the line at the gate — no QR code needed, just scan your face.</p>
-  {{> ctaButton text="Enroll Now" url=appLink }}
-</div>
-{{/if}}
---}}
+          <!-- HERO -->
+          <tr>
+            <td style="padding: 32px 32px 24px; text-align: center; border-bottom: 1px solid #FEE2E2;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                <tr>
+                  <td align="center" style="padding-bottom: 16px;">
+                    <span style="display: inline-block; background-color: #EF4444; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 5px 14px; border-radius: 20px; letter-spacing: 0.8px; text-transform: uppercase;">4 Hours to Go 🚀</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 8px; font-size: 26px; font-weight: 800; color: #1C1917; line-height: 1.2; letter-spacing: -0.3px;">{{eventName}}</p>
+                    <p style="margin: 0; font-size: 16px; color: #78716C; line-height: 1.4;">starts in <strong style="color: #EF4444;">4 hours</strong></p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-<p style="margin-top: 24px; margin-bottom: 8px;"><strong>Before You Leave Home:</strong></p>
-<ul style="margin: 12px 0; padding-left: 20px; color: #78716c;">
-  <li style="margin-bottom: 8px;">Screenshot your ticket or save your reference (just in case)</li>
-  <li style="margin-bottom: 8px;">Charge your phone (face scanning needs battery 🔋)</li>
-  <li style="margin-bottom: 8px;">Plan your travel time (don't be late!)</li>
-</ul>
+          <!-- BODY -->
+          <tr>
+            <td style="padding: 28px 32px 0;">
 
-{{> ctaButton text="View Ticket" url=ticketLink }}
+              <!-- GREETING -->
+              <p style="margin: 0 0 6px; font-size: 16px; font-weight: 700; color: #1C1917;">It's almost time, {{firstName}}.</p>
+              <p style="margin: 0 0 24px; font-size: 15px; color: #78716C; line-height: 1.65;">The moment you've been waiting for is here. Here's what you need to walk straight in.</p>
 
-<p style="color: #a8a29e; margin-top: 24px;">Having issues? <a href="https://comfytag.com/support" style="color: #7c3aed;">Contact support</a> immediately.</p>
+              <!-- GO-TIME DETAILS -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 20px; border-radius: 14px; overflow: hidden; border: 1.5px solid #FECACA;">
+                <tr>
+                  <td style="background-color: #FEF2F2; padding: 11px 20px; border-bottom: 1px solid #FECACA;">
+                    <p style="margin: 0; font-size: 11px; font-weight: 700; color: #991B1B; letter-spacing: 1px; text-transform: uppercase;">Go-Time Details</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px; background-color: #FFFFFF;">
 
-<p style="color: #a8a29e; font-size: 14px;">Let's make this unforgettable! 🎊</p>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 12px;">
+                      <tr>
+                        <td width="24" valign="middle" style="font-size: 15px; line-height: 1;">🕐</td>
+                        <td style="padding-left: 8px;">
+                          <p style="margin: 0; font-size: 12px; color: #A8A29E; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Time</p>
+                          <p style="margin: 2px 0 0; font-size: 14px; color: #1C1917; font-weight: 600;">{{eventTime}}</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 12px;">
+                      <tr>
+                        <td width="24" valign="middle" style="font-size: 15px; line-height: 1;">📍</td>
+                        <td style="padding-left: 8px;">
+                          <p style="margin: 0; font-size: 12px; color: #A8A29E; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Venue</p>
+                          <p style="margin: 2px 0 0; font-size: 14px; color: #1C1917; font-weight: 600;">{{eventVenue}}</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    {{#if eventAddress}}
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                      <tr>
+                        <td width="24" valign="middle" style="font-size: 15px; line-height: 1;">🗺️</td>
+                        <td style="padding-left: 8px;">
+                          <p style="margin: 0; font-size: 12px; color: #A8A29E; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Address</p>
+                          <p style="margin: 2px 0 0; font-size: 14px; color: #1C1917; font-weight: 600;">{{eventAddress}}</p>
+                        </td>
+                      </tr>
+                    </table>
+                    {{/if}}
+
+                  </td>
+                </tr>
+              </table>
+
+              <!-- DEPARTURE CHECKLIST -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 24px; border-radius: 14px; overflow: hidden; border: 1.5px solid #E7E5E4;">
+                <tr>
+                  <td style="background-color: #FAFAF9; padding: 11px 20px; border-bottom: 1px solid #E7E5E4;">
+                    <p style="margin: 0; font-size: 11px; font-weight: 700; color: #78716C; letter-spacing: 1px; text-transform: uppercase;">Before You Leave Home</p>
+                  </td>
+                </tr>
+
+                <!-- Item 1 -->
+                <tr>
+                  <td style="padding: 16px 20px 0; background-color: #FFFFFF;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                      <tr>
+                        <td width="28" valign="top">
+                          <div style="width: 22px; height: 22px; background-color: #10B981; border-radius: 50%; text-align: center; line-height: 22px; font-size: 12px; color: #FFFFFF; font-weight: 700;">✓</div>
+                        </td>
+                        <td style="padding-left: 10px;" valign="middle">
+                          <p style="margin: 0; font-size: 14px; font-weight: 600; color: #1C1917;">Screenshot your ticket QR</p>
+                          <p style="margin: 2px 0 0; font-size: 13px; color: #78716C;">Or keep this email open — just in case</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Item 2 -->
+                <tr>
+                  <td style="padding: 14px 20px 0; background-color: #FFFFFF;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                      <tr>
+                        <td width="28" valign="top">
+                          <div style="width: 22px; height: 22px; background-color: #10B981; border-radius: 50%; text-align: center; line-height: 22px; font-size: 12px; color: #FFFFFF; font-weight: 700;">✓</div>
+                        </td>
+                        <td style="padding-left: 10px;" valign="middle">
+                          <p style="margin: 0; font-size: 14px; font-weight: 600; color: #1C1917;">Charge your phone</p>
+                          <p style="margin: 2px 0 0; font-size: 13px; color: #78716C;">You'll need the battery at the gate 🔋</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Item 3 -->
+                <tr>
+                  <td style="padding: 14px 20px 20px; background-color: #FFFFFF;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                      <tr>
+                        <td width="28" valign="top">
+                          <div style="width: 22px; height: 22px; background-color: #10B981; border-radius: 50%; text-align: center; line-height: 22px; font-size: 12px; color: #FFFFFF; font-weight: 700;">✓</div>
+                        </td>
+                        <td style="padding-left: 10px;" valign="middle">
+                          <p style="margin: 0; font-size: 14px; font-weight: 600; color: #1C1917;">Plan your travel time</p>
+                          <p style="margin: 2px 0 0; font-size: 13px; color: #78716C;">Don't be the one who arrives late!</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+              </table>
+
+              <!-- CTA -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 28px;">
+                <tr>
+                  <td align="center">
+                    <a href="{{ticketLink}}" style="display: inline-block; background-color: #7C3AED; color: #FFFFFF; padding: 14px 36px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 0.2px;">View Ticket</a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- SIGN OFF -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 28px;">
+                <tr>
+                  <td style="text-align: center;">
+                    <p style="margin: 0 0 6px; font-size: 20px; line-height: 1;">🎊</p>
+                    <p style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #1C1917;">Let's make this unforgettable!</p>
+                    <p style="margin: 0; font-size: 13px; color: #A8A29E; line-height: 1.5;">Having issues? <a href="https://comfytag.com/support" style="color: #7C3AED; text-decoration: none; font-weight: 500;">Contact support</a> immediately.</p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background-color: #F5F5F4; border-top: 1px solid #E7E5E4; padding: 20px 32px; text-align: center;">
+              <p style="margin: 0 0 6px; font-size: 12px; color: #A8A29E; line-height: 1.5;">© {{year}} ComfyTag. All rights reserved.</p>
+              <p style="margin: 0; font-size: 12px; line-height: 1.5;">
+                <a href="{{unsubscribeUrl}}" style="color: #A8A29E; text-decoration: none;">Unsubscribe</a>
+                <span style="margin: 0 8px; color: #D6D3D1;">·</span>
+                <a href="{{preferencesUrl}}" style="color: #A8A29E; text-decoration: none;">Email Preferences</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

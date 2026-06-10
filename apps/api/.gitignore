@@ -40,3 +40,7 @@ files
 # Untracked Local Assets & Docs
 docs/OAUTH_SETUP.md
 files/
+
+# Email preview artifacts (local dev only)
+test-emails.js
+email-previews/

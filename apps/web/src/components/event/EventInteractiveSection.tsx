@@ -233,7 +233,7 @@ export function EventInteractiveSection({
       </div>
 
       {/* Content area */}
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 24px 100px' }}>
+      <div style={{ maxWidth: '720px', margin: '24px auto 0', padding: '0 24px 100px' }}>
         <BackLink href="/events" marginBottom={16}>
           Events
         </BackLink>

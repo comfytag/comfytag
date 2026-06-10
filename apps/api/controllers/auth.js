@@ -650,6 +650,8 @@ export const forgotPassword = async (req, res, next) => {
       return res.status(404).json({ message: 'User not found' })
     }
 
+    const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
 
@@ -668,9 +670,18 @@ export const forgotPassword = async (req, res, next) => {
     }).save()
 
     // Send OTP email with error handling
-    const emailContent = `Your password reset OTP is: ${otp}\n\nThis OTP is valid for 1 hour.`
     try {
-      const emailResult = await sendEmails(user.email, 'Password Reset OTP', emailContent);
+      const emailResult = await enqueueEmail({
+        to: user.email,
+        subject: 'Your ComfyTag Password Reset Code',
+        template: 'otp.hbs',
+        data: {
+          otp,
+          year: new Date().getFullYear(),
+          unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+          preferencesUrl: `${baseUrl}/preferences`,
+        },
+      });
       if (!emailResult.success) {
         console.error(`[Auth] ERROR: Password reset OTP email failed for ${user.email}: ${emailResult.error}`);
         return res.status(500).json({ message: "Failed to send OTP email. Please try again." });

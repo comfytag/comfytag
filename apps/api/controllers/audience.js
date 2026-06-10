@@ -3,7 +3,6 @@ import Event from '../models/Event.js'
 import Audience from '../models/Audience.js';
 import User from '../models/User.js';
 import { createError } from '../utils/error.js'
-import { sendTicket } from '../utils/sendEmail.js';
 import { enqueueEmail } from '../jobs/emailQueue.js';
 import { createNotification } from './notification.js'
 import moment from 'moment/moment.js';
@@ -61,23 +60,46 @@ export const createFreeAudience = async (req, res, next) => {
         }
 
         try {
-            await Event.findByIdAndUpdate(eventId, { $inc: { sold: savedAudience.numOfTicket } })
+            await Event.updateOne(
+                { _id: eventId, "ticketType.name": type },
+                {
+                    $inc: {
+                        "ticketType.$.sold": savedAudience.numOfTicket,
+                        sold: savedAudience.numOfTicket,
+                    }
+                }
+            )
         } catch (err) {
             next(err)
         }
 
         res.status(200).json(savedAudience)
 
-        const text = 'Your free ticket is confirmed'
-        const details = `<div>
-        <p>Your free ticket has been confirmed!</p>
-        Name : ${savedAudience.name} <br/>
-        Event : ${savedAudience.eventname} <br/>
-        Number of tickets : ${savedAudience.numOfTicket} <br/>
-        Ticket type : ${savedAudience.type} <br/>
-        Amount paid : Free <br/>
-        ${qrCode ? `<img src="${qrCode}" alt="Your QR Code" style="width:200px;height:200px;" />` : ''}</div>`
-        await sendTicket(savedAudience.email, savedAudience.eventname + ' ticket', text, details)
+        const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+        await enqueueEmail({
+          to: savedAudience.email,
+          subject: `ComfyTag Ticket — ${savedAudience.eventname}`,
+          template: 'ticketConfirmation.hbs',
+          data: {
+            eventName: savedAudience.eventname,
+            eventDate: event?.date ? moment(event.date).format('ddd, MMM D, YYYY') : 'TBA',
+            eventTime: event?.startTime || 'TBA',
+            attendeeName: savedAudience.name?.split(' ')[0] || '',
+            ticketTier: savedAudience.type,
+            qty: savedAudience.numOfTicket,
+            ticketLabel: savedAudience.numOfTicket > 1 ? 'tickets' : 'ticket',
+            totalPrice: 'Free',
+            organizerName: event?.planner || '',
+            eventVenue: event?.venue || event?.address || '',
+            eventDescription: event?.description ? event.description.slice(0, 150) + (event.description.length > 150 ? '…' : '') : '',
+            shareLink: `${baseUrl}/share?ticket=${savedAudience.reference}`,
+            qrCodeUrl: qrCode || null,
+            year: new Date().getFullYear(),
+            unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+            preferencesUrl: `${baseUrl}/preferences`,
+          },
+          from: 'tickets@comfytag.com',
+        }).catch(err => console.error('[FreeTicket] Email queue failed:', err.message))
     } catch (err) {
         next(err)
     }
@@ -131,10 +153,15 @@ export const createAudience = async (req, res, next) => {
         }
 
         try {
-            const audienceCount = savedAudience.numOfTicket
-            await Event.findByIdAndUpdate(eventId, {
-                $inc: { sold: + audienceCount }
-            });
+            await Event.updateOne(
+                { _id: eventId, "ticketType.name": req.body.type },
+                {
+                    $inc: {
+                        "ticketType.$.sold": savedAudience.numOfTicket,
+                        sold: savedAudience.numOfTicket,
+                    }
+                }
+            )
         } catch (err) {
             next(err)
         }
@@ -163,24 +190,25 @@ export const createAudience = async (req, res, next) => {
         // Enqueue ticket confirmation email (CRITICAL PATH — must succeed)
         const ticketEmailResult = await enqueueEmail({
           to: savedAudience.email,
-          subject: `${savedAudience.eventname} — Your ticket is confirmed ✓`,
+          subject: `ComfyTag Ticket — ${savedAudience.eventname}`,
           template: 'ticketConfirmation.hbs',
           data: {
             eventName: savedAudience.eventname,
             eventDate: savedAudience.date ? moment(savedAudience.date).format('ddd, MMM D, YYYY') : 'TBA',
             eventTime: savedAudience.time || 'TBA',
-            attendeeName: savedAudience.name,
+            attendeeName: savedAudience.name?.split(' ')[0] || '',
             ticketTier: savedAudience.type,
             qty: savedAudience.numOfTicket,
             ticketLabel: savedAudience.numOfTicket > 1 ? 'tickets' : 'ticket',
-            totalPrice: `₦${savedAudience.amount.toLocaleString()}`,
-            faceEnrolled: buyer?.faceEnrolled || false,
-            isPartner: buyer?.userType === 'organizer' || false,
-            enrollFaceLink: `${baseUrl}/app/enroll-face`,
-            createEventLink: `${baseUrl}/register-organizer`,
+            totalPrice: savedAudience.amount === 0 ? 'Free' : `₦${savedAudience.amount.toLocaleString()}`,
+            organizerName: event?.planner || '',
+            eventVenue: event?.venue || event?.address || '',
+            eventDescription: event?.description ? event.description.slice(0, 150) + (event.description.length > 150 ? '…' : '') : '',
             shareLink: `${baseUrl}/share?ticket=${savedAudience.reference}`,
             qrCodeUrl: qrCode || null,
             year: new Date().getFullYear(),
+            unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+            preferencesUrl: `${baseUrl}/preferences`,
           },
           from: 'tickets@comfytag.com',
         });
@@ -209,6 +237,8 @@ export const createAudience = async (req, res, next) => {
             eventVenue: event.venue || 'TBA',
             viewTicketLink: `${baseUrl}/tickets/${savedAudience._id}`,
             year: new Date().getFullYear(),
+            unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+            preferencesUrl: `${baseUrl}/preferences`,
           },
           delay: delay48h,
           from: 'tickets@comfytag.com',
@@ -230,12 +260,12 @@ export const createAudience = async (req, res, next) => {
             eventName: event.name,
             eventId: eventId,
             eventTime: event.startTime || 'TBA',
-            eventAddress: event.address || 'TBA',
+            eventAddress: event.address || '',
             eventVenue: event.venue || 'TBA',
-            faceEnrolled: buyer?.faceEnrolled || false,
-            appLink: `${baseUrl}/app`,
             ticketLink: `${baseUrl}/tickets/${savedAudience._id}`,
             year: new Date().getFullYear(),
+            unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+            preferencesUrl: `${baseUrl}/preferences`,
           },
           delay: delay4h,
           from: 'tickets@comfytag.com',

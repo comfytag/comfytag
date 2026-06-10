@@ -1,19 +1,138 @@
-﻿<h1>Welcome to ComfyTag! 🎉</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to ComfyTag!</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F5F3FF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased;">
 
-<p>Hi {{name}},</p>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background-color: #F5F3FF; padding: 24px 16px;">
+    <tr>
+      <td align="center">
 
-<p>You're all set! Your ComfyTag account is active and ready to go. This is where the magic happens—no more QR codes, no more lost tickets. Just your face, your ticket.</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="max-width: 560px; background-color: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 32px rgba(124, 58, 237, 0.12);">
 
-<h2 style="font-size: 18px; margin-top: 24px;">How It Works</h2>
+          <!-- HEADER -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%); padding: 28px 32px 24px; text-align: center;">
+              <p style="margin: 0 0 4px; font-size: 24px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px; line-height: 1;">ComfyTag</p>
+              <p style="margin: 0; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.65); letter-spacing: 2px; text-transform: uppercase;">Your face is your ticket</p>
+            </td>
+          </tr>
 
-<ol style="color: #78716c; line-height: 1.8;">
-  <li><strong>Enroll your face</strong> in the ComfyTag app (takes 30 seconds)</li>
-  <li><strong>Browse events</strong> and grab tickets you love</li>
-  <li><strong>Show up at the gate</strong>—your face is your ticket. No QR, no hassle.</li>
-</ol>
+          <!-- BODY -->
+          <tr>
+            <td style="padding: 36px 32px 0;">
 
-<p style="margin-top: 24px;">Your face is unique, secure, and always with you. That's the ComfyTag promise.</p>
+              <!-- Greeting & headline -->
+              {{#if name}}
+              <p style="margin: 0 0 4px; font-size: 16px; font-weight: 700; color: #1C1917;">Hi {{name}}, 👋</p>
+              {{else}}
+              <p style="margin: 0 0 4px; font-size: 16px; font-weight: 700; color: #1C1917;">Welcome aboard! 👋</p>
+              {{/if}}
+              <h1 style="margin: 8px 0 16px; font-size: 28px; font-weight: 800; color: #1C1917; line-height: 1.2; letter-spacing: -0.5px;">Welcome to ComfyTag 🎉</h1>
+              <p style="margin: 0 0 28px; font-size: 15px; color: #78716C; line-height: 1.7;">Your account is live and ready. No more QR codes, no more lost tickets — just your face and your ticket. That's the ComfyTag promise.</p>
 
-{{> ctaButton text="Get Started" url="https://comfytag.com/app" }}
+              <!-- HOW IT WORKS -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 28px; border-radius: 14px; overflow: hidden; border: 1.5px solid #EDE9FE;">
+                <tr>
+                  <td style="background-color: #EDE9FE; padding: 11px 20px; border-bottom: 1px solid #DDD6FE;">
+                    <p style="margin: 0; font-size: 11px; font-weight: 700; color: #7C3AED; letter-spacing: 1px; text-transform: uppercase;">How It Works</p>
+                  </td>
+                </tr>
 
-<p style="color: #a8a29e; font-size: 14px; margin-top: 32px;">Questions? Check out our <a href="{{supportUrl}}/faq" style="color: #7c3aed;">FAQ</a> or reply to this email anytime.</p>
+                <!-- Step 1 -->
+                <tr>
+                  <td style="padding: 18px 20px 0; background-color: #FFFFFF;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                      <tr>
+                        <td width="36" valign="top">
+                          <div style="width: 28px; height: 28px; background-color: #7C3AED; border-radius: 50%; text-align: center; line-height: 28px; font-size: 13px; font-weight: 700; color: #FFFFFF;">1</div>
+                        </td>
+                        <td style="padding-left: 4px;" valign="middle">
+                          <p style="margin: 0; font-size: 14px; font-weight: 700; color: #1C1917;">Enroll Your Face</p>
+                          <p style="margin: 3px 0 0; font-size: 13px; color: #78716C; line-height: 1.55;">Open the ComfyTag app and enroll in under 30 seconds.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Step 2 -->
+                <tr>
+                  <td style="padding: 16px 20px 0; background-color: #FFFFFF;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                      <tr>
+                        <td width="36" valign="top">
+                          <div style="width: 28px; height: 28px; background-color: #7C3AED; border-radius: 50%; text-align: center; line-height: 28px; font-size: 13px; font-weight: 700; color: #FFFFFF;">2</div>
+                        </td>
+                        <td style="padding-left: 4px;" valign="middle">
+                          <p style="margin: 0; font-size: 14px; font-weight: 700; color: #1C1917;">Browse &amp; Buy Tickets</p>
+                          <p style="margin: 3px 0 0; font-size: 13px; color: #78716C; line-height: 1.55;">Discover events you'll love and grab your tickets.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Step 3 -->
+                <tr>
+                  <td style="padding: 16px 20px 20px; background-color: #FFFFFF;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                      <tr>
+                        <td width="36" valign="top">
+                          <div style="width: 28px; height: 28px; background-color: #7C3AED; border-radius: 50%; text-align: center; line-height: 28px; font-size: 13px; font-weight: 700; color: #FFFFFF;">3</div>
+                        </td>
+                        <td style="padding-left: 4px;" valign="middle">
+                          <p style="margin: 0; font-size: 14px; font-weight: 700; color: #1C1917;">Walk In at the Gate</p>
+                          <p style="margin: 3px 0 0; font-size: 13px; color: #78716C; line-height: 1.55;">Just show your face — no QR, no paper, no hassle.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+              </table>
+
+              <!-- CTA -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 28px;">
+                <tr>
+                  <td align="center">
+                    <a href="https://comfytag.com/events" style="display: inline-block; background-color: #7C3AED; color: #FFFFFF; padding: 14px 36px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 0.2px;">Explore Events</a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- FAQ line -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 28px;">
+                <tr>
+                  <td style="text-align: center;">
+                    <p style="margin: 0; font-size: 13px; color: #A8A29E; line-height: 1.5;">Questions? <a href="https://comfytag.com/support/faq" style="color: #7C3AED; text-decoration: none; font-weight: 500;">Visit our FAQ</a> or reply to this email anytime.</p>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background-color: #F5F5F4; border-top: 1px solid #E7E5E4; padding: 20px 32px; text-align: center;">
+              <p style="margin: 0 0 6px; font-size: 12px; color: #A8A29E; line-height: 1.5;">© {{year}} ComfyTag. All rights reserved.</p>
+              <p style="margin: 0; font-size: 12px; line-height: 1.5;">
+                <a href="{{unsubscribeUrl}}" style="color: #A8A29E; text-decoration: none;">Unsubscribe</a>
+                <span style="margin: 0 8px; color: #D6D3D1;">·</span>
+                <a href="{{preferencesUrl}}" style="color: #A8A29E; text-decoration: none;">Email Preferences</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
