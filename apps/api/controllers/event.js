@@ -62,6 +62,13 @@ export const updateEvent = async (req, res, next) => {
             updateData.promos = updateData.promos.filter(promo => promo && promo.code);
         }
 
+        // Compute totalCapacity if ticketType is being updated
+        if (updateData.ticketType) {
+            updateData.totalCapacity = updateData.ticketType.reduce(
+                (sum, t) => sum + (t.capacity || 0), 0
+            );
+        }
+
         const updatedEvent = await Event.findByIdAndUpdate(
             req.params.id,
             { $set: updateData },

@@ -84,6 +84,10 @@ const EventSchema = new Schema({
         type: Number,
         default: 0,
     },
+    totalCapacity: {
+        type: Number,
+        default: 0,
+    },
     videoUrl: {
         type: String,
         default: '',
@@ -124,5 +128,10 @@ const EventSchema = new Schema({
     { timestamps: true });
 
 EventSchema.index({ name: 'text', description: 'text', address: 'text' })
+
+EventSchema.pre('save', function (next) {
+    this.totalCapacity = this.ticketType.reduce((sum, t) => sum + (t.capacity || 0), 0);
+    next();
+});
 
 export default mongoose.model("Event", EventSchema)
