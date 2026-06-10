@@ -29,10 +29,13 @@ services:
     restart: unless-stopped
     env_file:
       - apps/web/.env
+    environment:
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
     networks:
       - comfytag-network
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "3000"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -46,10 +49,13 @@ services:
     restart: unless-stopped
     env_file:
       - apps/partner/.env
+    environment:
+      - HOSTNAME=0.0.0.0
+      - PORT=3001
     networks:
       - comfytag-network
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "3001"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3001"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -63,15 +69,17 @@ services:
     restart: unless-stopped
     env_file:
       - apps/admin/.env
+    environment:
+      - HOSTNAME=0.0.0.0
+      - PORT=3002
     networks:
       - comfytag-network
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "3002"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3002"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-
   api:
     build:
       context: ./apps/api

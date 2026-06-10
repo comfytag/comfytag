@@ -6,35 +6,23 @@ import type { User } from '@comfytag/types'
 export interface FaceEnrollmentBannerProps {
   user: User
   onDismiss: () => void
-  onSetup: () => void
 }
 
-export function FaceEnrollmentBanner({ user, onDismiss, onSetup }: FaceEnrollmentBannerProps) {
-  const [isVisible, setIsVisible] = useState(false)
+export function FaceEnrollmentBanner({ user, onDismiss }: FaceEnrollmentBannerProps) {
+  const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
-    // Only show if user hasn't enrolled face
-    if (user.faceEnrolled) {
-      setIsVisible(false)
-      return
-    }
-
     // Check if user has dismissed this banner
     const isDismissed = localStorage.getItem('face-enrollment-banner-dismissed')
-    if (!isDismissed) {
-      setIsVisible(true)
+    if (isDismissed) {
+      setIsVisible(false)
     }
-  }, [user.faceEnrolled])
+  }, [])
 
   const handleDismiss = () => {
     setIsVisible(false)
     localStorage.setItem('face-enrollment-banner-dismissed', 'true')
     onDismiss()
-  }
-
-  const handleSetup = () => {
-    setIsVisible(false)
-    onSetup()
   }
 
   if (!isVisible) return null
@@ -62,7 +50,7 @@ export function FaceEnrollmentBanner({ user, onDismiss, onSetup }: FaceEnrollmen
             marginBottom: 4,
           }}
         >
-          Set up face check-in
+          Face Check-In — Coming Soon
         </div>
         <div
           style={{
@@ -71,7 +59,7 @@ export function FaceEnrollmentBanner({ user, onDismiss, onSetup }: FaceEnrollmen
             lineHeight: 1.4,
           }}
         >
-          Your face is your ticket. 30 seconds.
+          Skip the queue with your face — no QR code needed. Launching soon on the ComfyTag app.
         </div>
       </div>
 
@@ -83,39 +71,6 @@ export function FaceEnrollmentBanner({ user, onDismiss, onSetup }: FaceEnrollmen
           flexShrink: 0,
         }}
       >
-        <button
-          onClick={handleSetup}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '10px 16px',
-            background: 'var(--color-brand)',
-            color: 'var(--color-text-on-brand)',
-            border: 'none',
-            borderRadius: 'var(--radius-md)',
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: `background var(--duration-fast) var(--ease-standard)`,
-            whiteSpace: 'nowrap',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'var(--color-brand-dark)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'var(--color-brand)'
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.outline = `2px solid var(--color-brand)`
-            e.currentTarget.style.outlineOffset = '2px'
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.outline = 'none'
-          }}
-        >
-          Set up <span aria-hidden="true">→</span>
-        </button>
 
         <button
           onClick={handleDismiss}
@@ -132,6 +87,7 @@ export function FaceEnrollmentBanner({ user, onDismiss, onSetup }: FaceEnrollmen
             fontSize: 16,
             color: 'var(--color-text-muted)',
             transition: `background var(--duration-fast) var(--ease-standard)`,
+            flexShrink: 0,
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(124, 58, 237, 0.1)'
@@ -146,7 +102,7 @@ export function FaceEnrollmentBanner({ user, onDismiss, onSetup }: FaceEnrollmen
           onBlur={(e) => {
             e.currentTarget.style.outline = 'none'
           }}
-          aria-label="Dismiss face enrollment banner"
+          aria-label="Dismiss face enrollment coming soon banner"
           title="Dismiss"
         >
           ✕

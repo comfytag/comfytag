@@ -6,12 +6,14 @@ interface Step {
   title: string
   description: string
   icon: React.ReactNode
+  isComingSoon?: boolean
 }
 
 const steps: Step[] = [
   {
     title: 'Enroll Your Face',
-    description: 'Takes 30 seconds. That\'s it. One scan, infinite entry at any ComfyTag venue.',
+    description: 'Coming soon on the ComfyTag app. One scan, infinite entry.',
+    isComingSoon: true,
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
@@ -31,7 +33,8 @@ const steps: Step[] = [
   },
   {
     title: 'Show Your Face',
-    description: 'No QR code needed. Your face IS your ticket. Walk straight in.',
+    description: 'Coming soon. No QR code needed. Walk straight in.',
+    isComingSoon: true,
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2" />
@@ -119,6 +122,20 @@ export function HowItWorksSection() {
           line-height: 1.6;
         }
 
+        .__ct_how_badge {
+          display: inline-block;
+          background: var(--color-brand-light);
+          color: var(--color-brand-dark);
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          padding: 4px 8px;
+          border-radius: 4px;
+          margin-left: 8px;
+          white-space: nowrap;
+        }
+
         /* Mobile: stacked on smaller screens */
         @media (max-width: 767px) {
           .__ct_how_section {
@@ -153,7 +170,10 @@ export function HowItWorksSection() {
             {steps.map((step, index) => (
               <div key={index} className="__ct_how_card">
                 <div className="__ct_how_icon_badge">{step.icon}</div>
-                <h3 className="__ct_how_title">{step.title}</h3>
+                <h3 className="__ct_how_title">
+                  {step.title}
+                  {step.isComingSoon && <span className="__ct_how_badge">Coming Soon</span>}
+                </h3>
                 <p className="__ct_how_description">{step.description}</p>
               </div>
             ))}

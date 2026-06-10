@@ -2,20 +2,26 @@
 
 <p>Hi {{name}},</p>
 
+{{!-- Face enrollment feature launching soon, welcome email enrollment nudge temporarily disabled --}}
+{{!--
 <p>Ready to ditch the QR codes? In just 30 seconds, you can enroll your face in the ComfyTag app. Once it's done, your face IS your ticket—no scanning, no printing, no stress.</p>
-
 <h2 style="font-size: 18px; margin-top: 24px;">Enroll Your Face</h2>
-
 <p>Open the ComfyTag app and go to "Face Setup." We'll walk you through it:</p>
-
 <ol style="color: #78716c; line-height: 1.8;">
   <li>Look at the camera</li>
   <li>We capture and encrypt your face (on your device)</li>
   <li>Done. Your ticket lives on your face.</li>
 </ol>
-
 {{> ctaButton text="Enroll Face Now" url="{{enrollUrl}}" }}
-
 {{> faceNudge firstTime="true" }}
-
 <p style="color: #a8a29e; font-size: 14px; margin-top: 32px;">Security note: Your face template is encrypted and stored only on your device. We never see or store raw biometric data.</p>
+--}}
+
+<div style="background-color: #ede9fe; border-left: 4px solid #7c3aed; border-radius: 8px; padding: 16px; margin: 24px 0;">
+  <h3 style="margin-top: 0; color: #5b21b6;">Face Check-In — Coming Soon</h3>
+  <p style="color: #5b21b6; font-size: 14px; margin-bottom: 0;">
+    We're putting the finishing touches on face-powered entry — no QR codes, no queues, just show up and walk in. Stay tuned, it's almost here.
+  </p>
+</div>
+
+<p style="color: #a8a29e; font-size: 14px; margin-top: 32px;">Your QR code ticket is ready to use at the gate.</p>

@@ -21,6 +21,8 @@
   <p style="margin-bottom: 0; font-size: 18px; font-weight: 600; color: #1c1917; border-top: 1px solid #e7e5e4; padding-top: 16px;">Total Paid: <span style="color: #7c3aed;">{{totalPrice}}</span></p>
 </div>
 
+{{!-- Face enrollment feature launching soon, enrollment upsell temporarily disabled --}}
+{{!--
 {{#unless faceEnrolled}}
 <div style="background-color: #ede9fe; border-left: 4px solid #7c3aed; padding: 16px; margin: 20px 0; border-radius: 4px;">
   <h3 style="margin-top: 0; color: #7c3aed;">Next Step: Enroll Your Face</h3>
@@ -28,6 +30,12 @@
   {{> ctaButton text="Enroll Your Face Now" url=enrollFaceLink }}
 </div>
 {{/unless}}
+--}}
+
+<div style="background-color: #ede9fe; border-left: 4px solid #7c3aed; padding: 16px; margin: 20px 0; border-radius: 4px;">
+  <h3 style="margin-top: 0; color: #7c3aed;">Face Check-In — Coming Soon</h3>
+  <p>Skip the queue with face-powered entry — no QR code needed. We're launching this feature soon on the ComfyTag app.</p>
+</div>
 
 {{#unless isPartner}}
 <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 4px;">

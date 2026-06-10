@@ -89,13 +89,10 @@ export default function TicketsPage() {
       <main className="__ct_tickets_wrap">
         <h1 className="__ct_tickets_heading" style={{ marginBottom: '24px' }}>My Tickets</h1>
 
-        {!bannerUser.faceEnrolled && (
-          <FaceEnrollmentBanner
-            user={bannerUser}
-            onDismiss={() => {}}
-            onSetup={() => router.push('/profile/face-enrollment')}
-          />
-        )}
+        <FaceEnrollmentBanner
+          user={bannerUser}
+          onDismiss={() => {}}
+        />
 
         <TabBar
           tabs={[
