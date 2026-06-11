@@ -17,10 +17,10 @@ export const createFreeAudience = async (req, res, next) => {
     const eventId = req.params.eventId
 
     try {
-        // Check for duplicate ticket
-        const existing = await Audience.findOne({ event_id: eventId, email })
-        if (existing) {
-            return res.status(400).json({ success: false, message: 'You already have a ticket for this event.' })
+        // Check free ticket limit (max 10 per email per event)
+        const ticketCount = await Audience.countDocuments({ event_id: eventId, email })
+        if (ticketCount >= 10) {
+            return res.status(400).json({ success: false, message: 'You have reached the maximum limit of 10 free tickets per person for this event.' })
         }
 
         // Check tier capacity
@@ -111,13 +111,7 @@ export const createAudience = async (req, res, next) => {
     const userId = req.params.userId;
 
     try {
-        // Check for duplicate ticket (1 ticket per user per event, even for free)
-        const existing = await Audience.findOne({ event_id: eventId, user_id: userId })
-        if (existing) {
-            return res.status(400).json({ success: false, message: 'You already have a ticket for this event. Free events are limited to 1 ticket per person.' })
-        }
-
-        // Check tier capacity
+        // Check tier capacity and allowed free ticket limit
         const event = await Event.findById(eventId)
         if (!event) {
             return res.status(404).json({ success: false, message: 'Event not found.' })
@@ -129,6 +123,15 @@ export const createAudience = async (req, res, next) => {
 
         // Allow free tickets (amount = 0, no Paystack reference needed)
         const isFreeTicket = req.body.amount === 0 || req.body.amount === '0';
+
+        // Check duplicate ticket restrictions
+        if (isFreeTicket) {
+            // Free tickets: allow up to 10 per user per event
+            const freeTicketCount = await Audience.countDocuments({ event_id: eventId, user_id: userId, amount: 0 })
+            if (freeTicketCount >= 10) {
+                return res.status(400).json({ success: false, message: 'You have reached the maximum limit of 10 free tickets per person for this event.' })
+            }
+        }
         if (!isFreeTicket && !req.body.reference) {
             return res.status(400).json({ success: false, message: 'Paid tickets require a Paystack reference.' })
         }

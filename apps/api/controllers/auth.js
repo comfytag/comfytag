@@ -12,6 +12,7 @@ import { createError } from '../utils/error.js';
 import speakeasy from 'speakeasy';
 import { enqueueEmail } from '../jobs/emailQueue.js';
 import { createNotification } from './notification.js';
+import { generateReferralCode } from '../utils/referralCode.js';
 
 
 const router = express.Router()
@@ -179,12 +180,16 @@ export const register = async (req,res,next) =>{
 		const salt = await bcrypt.genSalt(Number(process.env.SALT));
 		const hashPassword = await bcrypt.hash(req.body.password, salt);
 
+		// Generate referral code
+		const referralCode = generateReferralCode(req.body.username, req.body.name);
+
 		user = await new User({
 			name:      req.body.name,
 			username:  req.body.username,
 			email:     req.body.email,
 			password:  hashPassword,
 			isPartner: req.body.isPartner === true,
+			referralCode,
 		}).save();
 
 		const token = await new Token({
@@ -218,7 +223,13 @@ export const register = async (req,res,next) =>{
 
 		res
 			.status(201)
-			.send({ message: "An Email sent to " + user.email + " please verify", data: user });
+			.send({
+				message: "An Email sent to " + user.email + " please verify",
+				data: {
+					...user.toObject(),
+					referralCode: user.referralCode,
+				}
+			});
 	} catch (error) {
 		console.log(error);
 		res.status(500).send({ message: "Internal Server Error" + error});
@@ -295,7 +306,8 @@ export const login = async (req,res,next) =>{
 				isPartner: user.isPartner,
 				isAdmin: user.isAdmin,
 				isVerify: user.isVerify,
-				role: user.role || 'viewer'  // Ensure role is always returned (TASK 2)
+				role: user.role || 'viewer',  // Ensure role is always returned (TASK 2)
+				referralCode: user.referralCode,
 			},
 			token,
 			message: "logged in successfully"
@@ -349,6 +361,12 @@ export const googleSignIn = async (req, res) => {
 			)
 		}
 
+		// Generate referral code if it doesn't exist
+		if (!user.referralCode) {
+			user.referralCode = generateReferralCode(user.username, user.name);
+			await user.save();
+		}
+
 		const token = user.generateAuthToken()
 		res.status(200).json({
 			status: true,
@@ -360,6 +378,7 @@ export const googleSignIn = async (req, res) => {
 				isPartner: user.isPartner,
 				isAdmin: user.isAdmin,
 				isVerify: user.isVerify,
+				referralCode: user.referralCode,
 			},
 			token,
 			message: 'Google sign-in successful',
@@ -583,6 +602,13 @@ export const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).select('-password')
     if (!user) return res.status(404).json({ message: 'User not found' })
+
+    // Generate referral code for existing users who don't have one
+    if (!user.referralCode) {
+      user.referralCode = generateReferralCode(user.username, user.name);
+      await user.save();
+    }
+
     const { isAdmin, ...details } = user._doc
     res.status(200).json({ user: details, token: user.generateAuthToken() })
   } catch (err) {

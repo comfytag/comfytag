@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -15,11 +15,19 @@ export default function ProfilePage() {
   const router = useRouter()
   const { data: user } = useProfile()
   const { mutate: updateProfile, isPending: isSaving } = useUpdateProfile()
-  const [name, setName] = useState(user?.name ?? session?.user?.name ?? '')
-  const [username, setUsername] = useState(user?.username ?? '')
+  const [name, setName] = useState(session?.user?.name ?? '')
+  const [username, setUsername] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [isUpgrading, setIsUpgrading] = useState(false)
+  const [copiedReferral, setCopiedReferral] = useState(false)
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name ?? session?.user?.name ?? '')
+      setUsername(user.username ?? '')
+    }
+  }, [user, session?.user?.name])
 
   async function handleSave() {
     setSaveError(null)
@@ -48,6 +56,21 @@ export default function ProfilePage() {
       setSaveError('Failed to upgrade. Please try again.')
       setIsUpgrading(false)
     }
+  }
+
+  function handleCopyReferralLink() {
+    const referralCode = user?.referralCode || session?.user?.referralCode || user?._id
+    if (!referralCode) return
+
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://comfytag.com'
+    const referralLink = `${baseUrl}?ref=${referralCode}`
+
+    navigator.clipboard.writeText(referralLink).then(() => {
+      setCopiedReferral(true)
+      setTimeout(() => setCopiedReferral(false), 2000)
+    }).catch(err => {
+      console.error('Failed to copy:', err)
+    })
   }
 
   if (status === 'loading') {
@@ -180,6 +203,62 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
+
+        {/* Referral Link section */}
+        {(user?.referralCode || session?.user?.referralCode || user?._id) && (
+          <div
+            style={{
+              backgroundColor: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '12px',
+              padding: '20px',
+              marginTop: '20px',
+            }}
+          >
+            <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 16px' }}>
+              Your Referral Link
+            </h2>
+
+            <div style={{ marginBottom: '12px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '0 0 8px' }}>
+                Share this link to earn rewards
+              </p>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '8px',
+                  backgroundColor: 'rgba(124, 58, 237, 0.05)',
+                  border: '1px solid rgba(124, 58, 237, 0.2)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  alignItems: 'center',
+                }}
+              >
+                <code
+                  style={{
+                    flex: 1,
+                    fontSize: '13px',
+                    color: 'var(--color-brand)',
+                    fontFamily: 'monospace',
+                    margin: 0,
+                    wordBreak: 'break-all',
+                    padding: 0,
+                  }}
+                >
+                  ?ref={user?.referralCode || session?.user?.referralCode || user?._id}
+                </code>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleCopyReferralLink}
+                  className="text-xs whitespace-nowrap"
+                >
+                  {copiedReferral ? '✓ Copied' : 'Copy'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Account section */}
         <div

@@ -170,6 +170,7 @@ export const enqueueEmail = async (options) => {
 
   try {
     const job = await emailQueue.add(
+      'send-email',
       { to, subject, template, data, from, replyTo, userId, notificationType },
       { delay }
     );

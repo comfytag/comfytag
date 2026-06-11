@@ -108,6 +108,12 @@ const UserSchema = new Schema({
             },
             default: () => ({ publicProfile: true, showInSearch: true }),
         },
+        referralCode: {
+            type: String,
+            unique: true,
+            sparse: true,
+            default: null,
+        },
     // },
     // password: { type: String, required: true, }
 // }

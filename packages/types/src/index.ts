@@ -29,6 +29,7 @@ export interface User {
     publicProfile: boolean
     showInSearch: boolean
   }
+  referralCode?: string
   createdAt: string
   updatedAt: string
 }
