@@ -1,14 +1,11 @@
 name: Deploy Pipeline (Staging → Production)
-
 on:
   push:
     branches:
       - main
-
 concurrency:
   group: deployment
   cancel-in-progress: false
-
 permissions:
   contents: read
   packages: write
@@ -32,8 +29,8 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4         
-        with:           
+      - uses: actions/checkout@v4
+        with:
           submodules: false
       - uses: pnpm/action-setup@v4
         with:
@@ -60,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:           
+        with:
           submodules: false
       - name: 🔐 Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -68,8 +65,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
-      # 🛠️ ADD THIS ENTIRE STEP: Inject Production URLs before building!
       - name: 📝 Inject Frontend Environment Variables
         run: |
           echo "NEXT_PUBLIC_API_URL=https://api.comfytag.com" > apps/web/.env.production
@@ -77,7 +72,6 @@ jobs:
           echo "NEXT_PUBLIC_API_URL=https://api.comfytag.com" > apps/admin/.env.production
       - name: 🔨 Build Docker images
         run: docker compose -f docker-compose.prod.yml build
-        
       - name: 🏷️ Tag Images for GHCR
         run: |
           REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
@@ -85,7 +79,6 @@ jobs:
           docker tag comfytag-web ghcr.io/$REPO_OWNER/comfytag-web:latest
           docker tag comfytag-partner ghcr.io/$REPO_OWNER/comfytag-partner:latest
           docker tag comfytag-admin ghcr.io/$REPO_OWNER/comfytag-admin:latest
-
       - name: 🚀 Push Images to GHCR
         run: |
           REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
@@ -93,10 +86,8 @@ jobs:
           docker push ghcr.io/$REPO_OWNER/comfytag-web:latest
           docker push ghcr.io/$REPO_OWNER/comfytag-partner:latest
           docker push ghcr.io/$REPO_OWNER/comfytag-admin:latest
-
       - name: ✅ Validate docker-compose
         run: docker compose -f docker-compose.prod.yml config --no-interpolate > /dev/null || true
-        
       - name: ✅ Verify Docker images
         run: |
           echo "Verifying Docker images..."
@@ -112,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:           
+        with:
           submodules: false
       - name: Deploy to production environment
         uses: appleboy/ssh-action@v1.0.3
@@ -150,10 +141,10 @@ jobs:
             echo "🔄 Starting containers..."
             docker compose -f docker-compose.prod.yml up -d --no-build
             
-            # 🛠️ FIX 1: Automatically restart Nginx to clear the IP cache
-            # echo "♻️ Restarting Nginx..."
-            # docker compose -f docker-compose.prod.yml restart nginx
-
+            echo "♻️ Reloading Nginx to map new container IPs..."
+            sudo systemctl reload nginx || true
+            docker compose -f docker-compose.prod.yml exec -T nginx nginx -s reload || true
+            
             echo "⏳ Waiting for services to stabilize..."
             sleep 15
             
@@ -173,7 +164,6 @@ jobs:
             
             echo "🧹 Cleaning up old images..."
             docker image prune -a -f
-
       - name: ✅ Production deployed successfully
         run: |
           echo "✅ Deployment complete!"
@@ -185,7 +175,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:           
+        with:
           submodules: false
       - name: Verify production is healthy
         uses: appleboy/ssh-action@v1.0.3
