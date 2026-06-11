@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
+import Redis from 'ioredis'
 
 // WF-2: Inline HTML escaper — no external dep needed for 5 substitutions
 function escapeHtml(str: string): string {
@@ -19,30 +18,30 @@ interface ContactPayload {
   message: string
 }
 
-// WF-4: Rate limiter — only initialised when Upstash credentials are present.
-// Fail-open in dev (no credentials); fail-closed in prod enforced by env guard below.
-const ratelimit =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? new Ratelimit({
-        redis: Redis.fromEnv(),
-        limiter: Ratelimit.slidingWindow(5, '1 h'),
-      })
-    : null
+// WF-4: Single Redis client — reused across requests within the same process
+const redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379')
 
 export async function POST(request: NextRequest) {
-  // WF-4: Enforce rate limit per IP — 5 requests per hour
-  if (ratelimit) {
+  // WF-4: Fixed-window rate limit — 5 requests per IP per hour
+  try {
     const ip =
       request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
       request.headers.get('x-real-ip') ??
       '127.0.0.1'
-    const { success } = await ratelimit.limit(ip)
-    if (!success) {
+    const key = `ratelimit:contact:${ip}`
+    const count = await redis.incr(key)
+    if (count === 1) {
+      // First hit in the window — set the 1-hour expiry
+      await redis.expire(key, 3600)
+    }
+    if (count > 5) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },
         { status: 429 },
       )
     }
+  } catch {
+    // Redis unavailable — fail-open so the contact form still works
   }
 
   let body: Partial<ContactPayload>
