@@ -61,7 +61,8 @@ const withdrawColumns: ColumnDef<WithdrawRequest>[] = [
 ]
 
 export default function WithdrawPage() {
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
+  // PD-1: userId is always derived from the authenticated session — never from URL params or props
   const userId = session?.user?.id
   const token = session?.user?.token
 
@@ -71,8 +72,8 @@ export default function WithdrawPage() {
   const [selectedEventId, setSelectedEventId] = useState('')
   const [formError, setFormError] = useState('')
 
-  const requestsQuery = useWithdrawals(userId || '', token)
-  const banksQuery = useBankAccount(userId || '', token)
+  const requestsQuery = useWithdrawals(sessionStatus === 'authenticated' ? (userId ?? '') : '', token)
+  const banksQuery = useBankAccount(sessionStatus === 'authenticated' ? (userId ?? '') : '', token)
   const eventsQuery = useMyEvents()
   const revenueQuery = usePartnerRevenue()
   const withdrawMutation = useRequestPayout()

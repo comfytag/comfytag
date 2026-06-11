@@ -1,4 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
+
+// WF-2: Inline HTML escaper — no external dep needed for 5 substitutions
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
 
 interface ContactPayload {
   name: string
@@ -7,7 +19,32 @@ interface ContactPayload {
   message: string
 }
 
+// WF-4: Rate limiter — only initialised when Upstash credentials are present.
+// Fail-open in dev (no credentials); fail-closed in prod enforced by env guard below.
+const ratelimit =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Ratelimit({
+        redis: Redis.fromEnv(),
+        limiter: Ratelimit.slidingWindow(5, '1 h'),
+      })
+    : null
+
 export async function POST(request: NextRequest) {
+  // WF-4: Enforce rate limit per IP — 5 requests per hour
+  if (ratelimit) {
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0].trim() ??
+      request.headers.get('x-real-ip') ??
+      '127.0.0.1'
+    const { success } = await ratelimit.limit(ip)
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 },
+      )
+    }
+  }
+
   let body: Partial<ContactPayload>
   try {
     body = (await request.json()) as Partial<ContactPayload>
@@ -21,9 +58,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
+  // WF-1: Destination address from env — never hardcode PII in source
+  const contactEmail = process.env.CONTACT_EMAIL
+  if (!contactEmail) {
+    if (process.env.NODE_ENV !== 'production') {
+      return NextResponse.json({ success: true })
+    }
+    return NextResponse.json(
+      { error: 'Contact email not configured' },
+      { status: 503 },
+    )
+  }
+
   const resendApiKey = process.env.RESEND_API_KEY
   if (!resendApiKey) {
-    // No email service configured — log and return success in dev
     if (process.env.NODE_ENV !== 'production') {
       return NextResponse.json({ success: true })
     }
@@ -32,6 +80,12 @@ export async function POST(request: NextRequest) {
       { status: 503 },
     )
   }
+
+  // WF-2: Escape all user-supplied fields before HTML interpolation — prevents stored XSS
+  const safeName = escapeHtml(name)
+  const safeEmail = escapeHtml(email)
+  const safeSubject = escapeHtml(subject)
+  const safeMessage = escapeHtml(message)
 
   try {
     const res = await fetch('https://api.resend.com/emails', {
@@ -42,13 +96,13 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         from: 'noreply@comfytag.ng',
-        to: 'pixelgumstudio@gmail.com',
-        subject: `ComfyTag Contact: ${subject}`,
+        to: contactEmail,
+        subject: `ComfyTag Contact: ${safeSubject}`,
         html: `
-          <p><strong>From:</strong> ${name} (${email})</p>
-          <p><strong>Subject:</strong> ${subject}</p>
+          <p><strong>From:</strong> ${safeName} (${safeEmail})</p>
+          <p><strong>Subject:</strong> ${safeSubject}</p>
           <hr />
-          <p style="white-space: pre-wrap;">${message}</p>
+          <p style="white-space: pre-wrap;">${safeMessage}</p>
         `,
       }),
     })

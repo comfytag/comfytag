@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { type AxiosError } from 'axios'
 import { getSession } from 'next-auth/react'
 
 const api = axios.create({
@@ -6,13 +6,31 @@ const api = axios.create({
   withCredentials: true,
 })
 
+// AD-1: Cache the JWT so getSession() (a network round-trip to /api/auth/session)
+// only fires once per session lifetime, not on every Axios request.
+// Cleared on 401 so an expired token forces a fresh session fetch.
+let cachedToken: string | null = null
+
 api.interceptors.request.use(async (config) => {
-  const session = await getSession()
-  if (session?.user?.token) {
-    config.headers.Authorization = `Bearer ${session.user.token}`
+  if (!cachedToken) {
+    const session = await getSession()
+    cachedToken = session?.user?.token ?? null
+  }
+  if (cachedToken) {
+    config.headers.Authorization = `Bearer ${cachedToken}`
   }
   return config
 })
+
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      cachedToken = null
+    }
+    return Promise.reject(error)
+  },
+)
 
 export default api
 

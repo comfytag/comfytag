@@ -88,7 +88,14 @@ export default function ForgotPasswordPage() {
         setError((data as { message?: string }).message ?? 'Invalid code. Please try again.')
       } else {
         const data = await res.json().catch(() => ({}))
-        setResetToken((data as { resetToken?: string }).resetToken ?? '')
+        // BUG-12: Validate token presence — an empty string would silently allow a
+        // reset attempt that the backend would reject with a confusing error
+        const token = (data as { resetToken?: string }).resetToken
+        if (!token) {
+          setError('Verification failed. Please request a new code and try again.')
+          return
+        }
+        setResetToken(token)
         setStep(3)
       }
     } catch {
