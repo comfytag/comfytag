@@ -327,6 +327,7 @@ export const getEvent = async (req, res, next) => {
             event = await Event.findById(id).catch(() => null)
         }
         if (!event) return res.status(404).json({ success: false, message: 'Event not found' })
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         res.status(200).json({ success: true, data: event })
     } catch (err) {
         next(err)
