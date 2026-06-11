@@ -25,7 +25,7 @@ export function useEventComments(eventId: string) {
 export function useOrganizerProfile(slug: string) {
   return useQuery({
     queryKey: profileKeys.organizer(slug),
-    queryFn: () => api.get(`/organizer/${slug}`).then(r => r.data.data),
+    queryFn: () => api.get(`/users/${slug}`).then(r => r.data.data ?? r.data),
     staleTime: 300_000,
     enabled: !!slug,
   })

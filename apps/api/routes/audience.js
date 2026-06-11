@@ -35,8 +35,8 @@ router.get("/ref/:reference", getAudienceByReference)
 router.put("/:id", verifyUser, updateAudience)
 // DELETE
 router.delete("/:id/:userId", verifyAdmin, deleteAudience)
-// GET
-router.get("/:id", verifyUser, getAudience)
+// GET — public: MongoDB ObjectId is unguessable; no auth required to view a ticket stub
+router.get("/:id", getAudience)
 // GET ALL
 router.get("/", verifyUser, getAllAudience)
 

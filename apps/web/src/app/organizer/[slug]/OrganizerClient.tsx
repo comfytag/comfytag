@@ -9,12 +9,9 @@ import { EventCard } from '@/components/ui/EventCard'
 import { AuthGateSheet } from '@/components/ui/AuthGateSheet'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { TabBar } from '@/components/ui/TabBar'
-import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import { Button, EmptyState } from '@comfytag/ui'
-import { isUpcoming } from '@comfytag/utils'
 import type { Event } from '@comfytag/types'
-import { api } from '@/lib/api'
 import { useOrganizerProfile, useFollowOrganizer, useLikeEvent } from '@/hooks/useEvents'
 
 type ActiveTab = 'upcoming' | 'past'
@@ -85,12 +82,14 @@ export function OrganizerClient({ slug, initialProfile }: { slug: string; initia
   const events: Event[] = organizer?.events ?? []
   const stats = organizer?.stats
 
+  const now = new Date()
+
   const upcomingEvents = events
-    .filter((e: Event) => isUpcoming(e.date) && e.status === 'published')
+    .filter((e: Event) => new Date(e.date) >= now)
     .sort((a: Event, b: Event) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   const pastEvents = events
-    .filter((e: Event) => !isUpcoming(e.date) || e.status === 'ended')
+    .filter((e: Event) => new Date(e.date) < now)
     .sort((a: Event, b: Event) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   const tabEvents = activeTab === 'upcoming' ? upcomingEvents : pastEvents
@@ -123,15 +122,15 @@ export function OrganizerClient({ slug, initialProfile }: { slug: string; initia
 
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '0 24px 80px' }}>
         {/* Organizer profile card */}
-        <div style={{ marginTop: '24px', marginBottom: '24px' }}>
+        <div style={{ marginTop: '24px', marginBottom: organizer?.bio ? '12px' : '24px' }}>
           <OrganizerCard
             variant="profile"
             organizer={{
-              _id: slug,
+              _id: organizer?._id ?? slug,
               name: organizerName,
-              image: undefined,
-              isPartner: true,
-              isVerify: {},
+              image: organizer?.avatar ?? organizer?.image,
+              isPartner: organizer?.isPartner ?? true,
+              isVerify: organizer?.isVerify ?? {},
             }}
             stats={{
               followerCount,
@@ -143,12 +142,18 @@ export function OrganizerClient({ slug, initialProfile }: { slug: string; initia
           />
         </div>
 
-        <div style={{ marginBottom: '16px' }}>
-          <WhatsAppButton
-            href={`https://wa.me/?text=${encodeURIComponent(`Hi ${organizerName}, I found you on ComfyTag and I'm interested in your events.`)}`}
-            label="Contact on WhatsApp"
-          />
-        </div>
+        {organizer?.bio && (
+          <p
+            style={{
+              fontSize: '14px',
+              color: 'var(--color-text-muted)',
+              lineHeight: 1.6,
+              margin: '0 0 24px',
+            }}
+          >
+            {organizer.bio}
+          </p>
+        )}
 
         <TabBar
           tabs={[

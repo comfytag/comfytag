@@ -6,6 +6,7 @@ export const startFaceEnrollmentNudgeCron = () => {
   cron.schedule('0 9 * * *', async () => {
     try {
       console.log('[Face Nudge Cron] Starting run...');
+      const baseUrl = process.env.BASE_URL || 'https://comfytag.com';
       const now = new Date();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
@@ -22,7 +23,13 @@ export const startFaceEnrollmentNudgeCron = () => {
             to: user.email,
             subject: 'Most ComfyTag users skip the queue. Here\'s how.',
             template: 'faceEnrollmentNudge1.hbs',
-            data: { firstName: user.name.split(' ')[0], enrollLink: `${process.env.WEB_URL}/app/enroll-face`, year: new Date().getFullYear() },
+            data: {
+              firstName: user.name.split(' ')[0],
+              enrollLink: `${process.env.WEB_URL}/app/enroll-face`,
+              year: new Date().getFullYear(),
+              unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+              preferencesUrl: `${baseUrl}/preferences`,
+            },
             from: 'hello@comfytag.com',
           }).catch(e => console.error('[Face Nudge] Email 1 failed:', e.message));
         }
@@ -41,7 +48,13 @@ export const startFaceEnrollmentNudgeCron = () => {
             to: user.email,
             subject: 'Still haven\'t set up your face? Here\'s why it\'s worth it.',
             template: 'faceEnrollmentNudge2.hbs',
-            data: { firstName: user.name.split(' ')[0], enrollLink: `${process.env.WEB_URL}/app/enroll-face`, year: new Date().getFullYear() },
+            data: {
+              firstName: user.name.split(' ')[0],
+              enrollLink: `${process.env.WEB_URL}/app/enroll-face`,
+              year: new Date().getFullYear(),
+              unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+              preferencesUrl: `${baseUrl}/preferences`,
+            },
             from: 'hello@comfytag.com',
           }).catch(e => console.error('[Face Nudge] Email 2 failed:', e.message));
           await User.updateOne({ _id: user._id }, { faceEnrollmentNudge2Sent: true });

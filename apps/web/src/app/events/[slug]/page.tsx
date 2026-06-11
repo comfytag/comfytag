@@ -238,9 +238,9 @@ export default async function EventDetailPage({
                   followerCount={organizerStats?.followers ?? 0}
                   upcomingEventCount={organizerStats?.upcomingEvents ?? 0}
                 />
-                <div style={{ marginTop: '16px', display: 'none' }}>
+                <div style={{ marginTop: '16px' }}>
                   <a
-                    href={`/organizer/${organizer.username || organizer._id}`}
+                    href={`/organizer/${organizer.username && !organizer.username.includes('@') ? organizer.username : organizer._id}`}
                     style={{
                       display: 'block',
                       width: '100%',

@@ -2,13 +2,11 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken'
 import Joi  from  "joi";
 import passwordComplexity  from "joi-password-complexity";
-// import uniqueValidator from 'mongoose-unique-validator'
 const { Schema } = mongoose;
 
 const UserSchema = new Schema({
     token: { type: String, },
-    // user:{
-    username: { type: String, required: true,}, // unique: true },
+    username: { type: String, required: true, unique: true, lowercase: true, trim: true },
         name: { type: String, required: true, },
         email: { type: String, required: true, lowercase: true },
         // emailVerified: { type: Boolean, default: false },
@@ -109,6 +107,14 @@ const UserSchema = new Schema({
             default: () => ({ publicProfile: true, showInSearch: true }),
         },
         referralCode: {
+            type: String,
+            unique: true,
+            sparse: true,
+            default: null,
+        },
+        referralFallbackCode: {
+            // Stable 8-digit numeric code derived from _id.
+            // Used for referral tracking when user has no valid username.
             type: String,
             unique: true,
             sparse: true,

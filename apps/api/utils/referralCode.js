@@ -1,4 +1,17 @@
 /**
+ * Deterministic 8-digit numeric fallback code derived from a MongoDB ObjectId.
+ * Takes the last 8 hex chars of the id, interprets them as uint32, mods by 1e8,
+ * and zero-pads to 8 digits. Stable for the same id across all calls.
+ * @param {string|import('mongoose').Types.ObjectId} userId
+ * @returns {string} 8-digit zero-padded numeric string
+ */
+export function generateFallbackCode(userId) {
+  const hex = userId.toString().slice(-8);
+  const num = parseInt(hex, 16) % 100_000_000;
+  return num.toString().padStart(8, '0');
+}
+
+/**
  * Generate a unique 8-character alphanumeric referral code
  * @param {string} username - User's username
  * @param {string} fullname - User's full name (fallback if username is empty)

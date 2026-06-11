@@ -96,6 +96,8 @@ export const initiateTransfer = async (req, res, next) => {
         acceptLink: `${baseUrl}/tickets/transfer/${ticketId}/accept?token=${transferToken}`,
         declineLink: `${baseUrl}/tickets/transfer/${ticketId}/decline?token=${transferToken}`,
         year: new Date().getFullYear(),
+        unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+        preferencesUrl: `${baseUrl}/preferences`,
       },
       from: 'tickets@comfytag.com',
     }).catch(err => console.error('[Transfer Initiated] Queue failed:', err.message))
@@ -181,6 +183,8 @@ export const acceptTransfer = async (req, res, next) => {
         ticketTier: ticket.type,
         dashboardLink: `${baseUrl}/tickets`,
         year: new Date().getFullYear(),
+        unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+        preferencesUrl: `${baseUrl}/preferences`,
       },
       from: 'tickets@comfytag.com',
     }).catch(err => console.error('[Transfer Accepted] Queue failed:', err.message))
@@ -250,6 +254,8 @@ export const declineTransfer = async (req, res, next) => {
         transferLink: `${baseUrl}/tickets/${ticketId}/transfer`,
         sellLink: `${baseUrl}/tickets/${ticketId}/sell`,
         year: new Date().getFullYear(),
+        unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+        preferencesUrl: `${baseUrl}/preferences`,
       },
       from: 'tickets@comfytag.com',
     }).catch(err => console.error('[Transfer Declined] Queue failed:', err.message))

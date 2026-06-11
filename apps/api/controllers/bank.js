@@ -165,6 +165,8 @@ export const updateWithdraw = async (req,res,next) =>{
                 arrivalTime: '24–48 hours',
                 dashboardLink: `${baseUrl}/partner/payouts`,
                 year: new Date().getFullYear(),
+                unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`,
+                preferencesUrl: `${baseUrl}/partner/preferences`,
               },
               from: 'payouts@comfytag.com',
             }).catch(err => console.error('[Payout Approved] Queue failed:', err.message))
@@ -194,6 +196,8 @@ export const updateWithdraw = async (req,res,next) =>{
                 actionStep: 'Review your bank details and resubmit',
                 resubmitLink: `${baseUrl}/partner/payouts/${withdrawId}/resubmit`,
                 year: new Date().getFullYear(),
+                unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`,
+                preferencesUrl: `${baseUrl}/partner/preferences`,
               },
               from: 'payouts@comfytag.com',
               replyTo: 'payouts@comfytag.com',

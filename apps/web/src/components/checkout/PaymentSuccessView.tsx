@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@comfytag/ui'
 import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
@@ -25,11 +25,20 @@ export function PaymentSuccessView({
   guestEmail,
 }: PaymentSuccessViewProps) {
   const router = useRouter()
+  const [shareImgBroken, setShareImgBroken] = useState(false)
 
   const shareUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/events/${eventId}`
       : `https://comfytag.com/events/${eventId}`
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: eventName, url: shareUrl }).catch(() => {})
+    } else {
+      navigator.clipboard.writeText(shareUrl).catch(() => {})
+    }
+  }
 
   return (
     <div
@@ -159,27 +168,75 @@ export function PaymentSuccessView({
 
         {/* Shareable OG card */}
         <div style={{ width: '100%' }}>
-          <img
-            src={`/api/og?eventId=${eventId}&ref=${successRef}`}
-            width={400}
-            height={209}
-            alt="Share card"
-            style={{
-              width: '100%',
-              height: 'auto',
-              borderRadius: '12px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-              cursor: 'pointer',
-              display: 'block',
-            }}
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({ title: eventName, url: shareUrl })
-              } else {
-                navigator.clipboard.writeText(shareUrl)
-              }
-            }}
-          />
+          {shareImgBroken ? (
+            <div
+              role="button"
+              tabIndex={0}
+              aria-label={`Share ${eventName}`}
+              onClick={handleShare}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleShare() }}
+              style={{
+                width: '100%',
+                aspectRatio: '400 / 209',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark, #5B21B6) 100%)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                cursor: 'pointer',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                justifyContent: 'center',
+                padding: '24px 28px',
+                gap: '10px',
+              }}
+            >
+              <div style={{ fontSize: '28px', lineHeight: 1 }} aria-hidden="true">🎟️</div>
+              <div
+                style={{
+                  fontSize: '18px',
+                  fontWeight: 800,
+                  color: '#ffffff',
+                  lineHeight: 1.3,
+                }}
+              >
+                {eventName}
+              </div>
+              <div
+                style={{
+                  background: 'rgba(255,255,255,0.18)',
+                  borderRadius: '8px',
+                  padding: '5px 14px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                Just Got My Ticket! ✨
+              </div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>
+                comfytag.com
+              </div>
+            </div>
+          ) : (
+            <img
+              src={`/api/og?eventId=${eventId}&ref=${successRef}`}
+              width={400}
+              height={209}
+              alt={`Share card for ${eventName}`}
+              onError={() => setShareImgBroken(true)}
+              onClick={handleShare}
+              style={{
+                width: '100%',
+                height: 'auto',
+                borderRadius: '12px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                cursor: 'pointer',
+                display: 'block',
+              }}
+            />
+          )}
           <p
             style={{
               fontSize: '12px',

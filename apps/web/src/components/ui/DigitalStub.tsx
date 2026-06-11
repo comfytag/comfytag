@@ -20,6 +20,7 @@ export function DigitalStub({
   secondsUntilRefresh,
 }: DigitalStubProps) {
   const isUsed = scanState === 'used'
+  const [imgBroken, setImgBroken] = React.useState(false)
 
   return (
     <>
@@ -190,12 +191,13 @@ export function DigitalStub({
         >
           {/* QR area */}
           <div style={{ position: 'relative', marginBottom: '12px' }}>
-            {qrDataUrl ? (
+            {qrDataUrl && !imgBroken ? (
               <img
                 src={qrDataUrl}
                 width={180}
                 height={180}
                 alt="Ticket QR"
+                onError={() => setImgBroken(true)}
                 style={{
                   borderRadius: 'var(--radius-sm)',
                   background: '#ffffff',
@@ -218,7 +220,7 @@ export function DigitalStub({
                   color: 'var(--color-text-muted)',
                 }}
               >
-                Loading QR…
+                {imgBroken ? 'QR unavailable' : 'Loading QR…'}
               </div>
             )}
 

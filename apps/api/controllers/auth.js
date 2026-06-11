@@ -12,7 +12,7 @@ import { createError } from '../utils/error.js';
 import speakeasy from 'speakeasy';
 import { enqueueEmail } from '../jobs/emailQueue.js';
 import { createNotification } from './notification.js';
-import { generateReferralCode } from '../utils/referralCode.js';
+import { generateReferralCode, generateFallbackCode } from '../utils/referralCode.js';
 
 
 const router = express.Router()
@@ -88,6 +88,7 @@ const enqueueWelcomeSeries = async (userId, type, userData) => {
 				unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`,
 				preferencesUrl: `${baseUrl}/partner/preferences`,
 				supportUrl: `${baseUrl}/support`,
+				dashboardUrl: process.env.PARTNER_URL || `${baseUrl}/partner/overview`,
 			};
 
 			// Email 1: Immediate
@@ -192,6 +193,23 @@ export const register = async (req,res,next) =>{
 			referralCode,
 		}).save();
 
+		// Generate and persist the deterministic fallback code now that _id is known
+		user.referralFallbackCode = generateFallbackCode(user._id);
+		await user.save();
+
+		// Track referral if a ref param was supplied on the registration URL
+		const refParam = req.query.ref;
+		if (refParam) {
+			await User.findOne({
+				$or: [{ username: refParam }, { referralFallbackCode: refParam }]
+			}).then(referrer => {
+				if (referrer) {
+					// TODO: persist referral record or increment referrer reward counter
+					console.log(`[Referral] New user ${user._id} referred by ${referrer._id}`);
+				}
+			}).catch(err => console.error('[Referral] Lookup error:', err.message));
+		}
+
 		const token = await new Token({
 			userId: user._id,
 			token: crypto.randomBytes(32).toString("hex")
@@ -221,16 +239,20 @@ export const register = async (req,res,next) =>{
 			);
 		}
 
+		const { password: _pw, ...safeUser } = user.toObject()
 		res
 			.status(201)
 			.send({
 				message: "An Email sent to " + user.email + " please verify",
 				data: {
-					...user.toObject(),
+					...safeUser,
 					referralCode: user.referralCode,
 				}
 			});
 	} catch (error) {
+		if (error.code === 11000 && error.keyPattern?.username) {
+			return next(createError(409, 'This username is already taken. Please choose another one.'))
+		}
 		console.log(error);
 		res.status(500).send({ message: "Internal Server Error" + error});
 	}
@@ -302,6 +324,7 @@ export const login = async (req,res,next) =>{
 				_id: user._id,
 				email: user.email,
 				name: user.name,
+				username: user.username,
 				image: user.image,
 				isPartner: user.isPartner,
 				isAdmin: user.isAdmin,
@@ -361,10 +384,15 @@ export const googleSignIn = async (req, res) => {
 			)
 		}
 
-		// Generate referral code if it doesn't exist
-		if (!user.referralCode) {
-			user.referralCode = generateReferralCode(user.username, user.name);
-			await user.save();
+		// Lazily backfill referral codes in a single save
+		const gcUpdates = {};
+		if (!user.referralCode) gcUpdates.referralCode = generateReferralCode(user.username, user.name);
+		if (!user.referralFallbackCode) gcUpdates.referralFallbackCode = generateFallbackCode(user._id);
+		if (Object.keys(gcUpdates).length > 0) {
+			try {
+				Object.assign(user, gcUpdates);
+				await user.save();
+			} catch { /* non-blocking */ }
 		}
 
 		const token = user.generateAuthToken()
@@ -374,6 +402,7 @@ export const googleSignIn = async (req, res) => {
 				_id: user._id,
 				email: user.email,
 				name: user.name,
+				username: user.username,
 				image: user.image,
 				isPartner: user.isPartner,
 				isAdmin: user.isAdmin,
@@ -477,6 +506,8 @@ export const verifyID = async (req,res,next) =>{
 					reuploadLink: `${baseUrl}/partner/kyc`,
 					supportChatLink: `${baseUrl}/support/chat`,
 					year: new Date().getFullYear(),
+					unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`,
+					preferencesUrl: `${baseUrl}/partner/preferences`,
 				},
 				from: 'support@comfytag.com',
 				replyTo: 'support@comfytag.com',
@@ -525,6 +556,8 @@ export const verifyID = async (req,res,next) =>{
 					bankSetupLink: `${baseUrl}/partner/settings/bank`,
 					supportEmail: 'support@comfytag.com',
 					year: new Date().getFullYear(),
+					unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`,
+					preferencesUrl: `${baseUrl}/partner/preferences`,
 				},
 				from: 'support@comfytag.com',
 				replyTo: 'support@comfytag.com',
@@ -603,14 +636,23 @@ export const getMe = async (req, res, next) => {
     const user = await User.findById(req.user.id).select('-password')
     if (!user) return res.status(404).json({ message: 'User not found' })
 
-    // Generate referral code for existing users who don't have one
-    if (!user.referralCode) {
-      user.referralCode = generateReferralCode(user.username, user.name);
-      await user.save();
+    // Lazily backfill missing codes in a single save
+    const updates = {};
+    if (!user.referralCode) updates.referralCode = generateReferralCode(user.username, user.name);
+    if (!user.referralFallbackCode) updates.referralFallbackCode = generateFallbackCode(user._id);
+    if (Object.keys(updates).length > 0) {
+      try {
+        Object.assign(user, updates);
+        await user.save();
+      } catch { /* non-blocking */ }
     }
 
+    // Surface referralCode: username if valid, else fallback code
+    const hasValidUsername = user.username && !user.username.includes('@');
+    const referralCode = hasValidUsername ? user.username : user.referralFallbackCode;
+
     const { isAdmin, ...details } = user._doc
-    res.status(200).json({ user: details, token: user.generateAuthToken() })
+    res.status(200).json({ user: { ...details, referralCode }, token: user.generateAuthToken() })
   } catch (err) {
     next(err)
   }

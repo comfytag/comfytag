@@ -16,21 +16,19 @@
   <p style="margin: 0; font-size: 14px; color: #78716c;">You have until <strong>{{expiryDate}}</strong> to accept this ticket. After that, it's gone!</p>
 </div>
 
-<div style="display: flex; gap: 12px; margin: 24px 0;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-    <tr>
-      <td width="48%" align="center" style="padding-right: 6px;">
-        <a href="{{acceptLink}}" style="display: inline-block; background-color: #7c3aed; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; border: 2px solid #7c3aed; width: 100%; box-sizing: border-box;">
-          Accept ✓
-        </a>
-      </td>
-      <td width="48%" align="center" style="padding-left: 6px;">
-        <a href="{{declineLink}}" style="display: inline-block; background-color: transparent; color: #7c3aed; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; border: 2px solid #7c3aed; width: 100%; box-sizing: border-box;">
-          Decline
-        </a>
-      </td>
-    </tr>
-  </table>
-</div>
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 24px 0;">
+  <tr>
+    <td width="48%" align="center" style="padding-right: 6px;">
+      <a href="{{acceptLink}}" style="display: inline-block; background-color: #7c3aed; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; border: 2px solid #7c3aed; width: 100%; box-sizing: border-box;">
+        Accept ✓
+      </a>
+    </td>
+    <td width="48%" align="center" style="padding-left: 6px;">
+      <a href="{{declineLink}}" style="display: inline-block; background-color: transparent; color: #7c3aed; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; border: 2px solid #7c3aed; width: 100%; box-sizing: border-box;">
+        Decline
+      </a>
+    </td>
+  </tr>
+</table>
 
 <p style="color: #a8a29e; font-size: 14px; margin-top: 32px;">This ticket expires on {{expiryDate}}. Accept or decline by then!</p>

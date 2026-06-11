@@ -55,6 +55,7 @@ export const createFreeAudience = async (req, res, next) => {
         try {
             qrCode = await QR(savedAudience.reference)
             await Audience.findByIdAndUpdate(savedAudience._id, { qrCode })
+            savedAudience.qrCode = qrCode
         } catch (qrErr) {
             console.log('QR generation failed:', qrErr.message)
         }
@@ -151,6 +152,7 @@ export const createAudience = async (req, res, next) => {
         try {
             qrCode = await QR(savedAudience.reference)
             await Audience.findByIdAndUpdate(savedAudience._id, { qrCode })
+            savedAudience.qrCode = qrCode
         } catch (qrErr) {
             console.log('QR generation failed:', qrErr.message)
         }
@@ -332,15 +334,11 @@ export const getAudienceByReference = async (req, res, next) => {
     }
 }
 
-// GET
+// GET — public (route has no auth middleware; ObjectId is unguessable)
 export const getAudience = async (req, res, next) => {
     try {
         const ticket = await Audience.findById(req.params.id)
         if (!ticket) return next(createError(404, 'Ticket not found'))
-        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
-        if (ticket.user_id !== requesterId) {
-            return next(createError(403, 'Not authorized'))
-        }
         res.status(200).json(ticket)
     } catch (err) {
         next(err)

@@ -1,13 +1,13 @@
 import Users from '../models/User.js'
+import { createError } from '../utils/error.js'
 import { verifyToken } from '../utils/verifyToken.js'
 import Token from '../models/token.js'
 import { sendEmails }  from '../utils/sendEmail.js'
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 import Joi  from  "joi";
-
-
 import jwt from 'jsonwebtoken'
+import { generateFallbackCode } from '../utils/referralCode.js'
 
 
 // ONBOARDING
@@ -112,7 +112,7 @@ export const updateUser = async (req,res,next) =>{
     try{
         // Whitelist allowed fields — prevent privilege escalation
         const allowedFields = [
-            'name', 'email', 'phone', 'businessName', 'address', 'image', 'avatar', 'bgImg',
+            'username', 'name', 'email', 'phone', 'businessName', 'address', 'image', 'avatar', 'bgImg',
             'notificationPreferences', 'privacySettings',
         ];
         const updateData = {};
@@ -122,13 +122,27 @@ export const updateUser = async (req,res,next) =>{
             }
         });
 
+        if ('username' in updateData) {
+            const uname = (updateData.username ?? '').trim();
+            if (uname === '') {
+                return res.status(400).json({ success: false, message: 'Username cannot be empty.' });
+            }
+            if (uname.includes('@')) {
+                return res.status(400).json({ success: false, message: 'Usernames cannot be email addresses.' });
+            }
+            updateData.username = uname;
+        }
+
         const updatedUser = await Users.findByIdAndUpdate(
             req.params.id,
-           { $set: updateData},
-           {new: true}
-        )
+            { $set: updateData },
+            { new: true }
+        ).select('-password')
         res.status(200).json(updatedUser)
-    }catch(err){
+    } catch (err) {
+        if (err.code === 11000 && err.keyPattern?.username) {
+            return next(createError(409, 'This username is already taken. Please choose another one.'))
+        }
         next(err)
     }
 }
@@ -178,13 +192,40 @@ export const deleteUser = async (req,res,next) =>{
 // GET
 export const getUser = async (req,res,next) =>{
     try{
-        const getUser = await Users.findById(
-            req.params.id
-            )
+        // Try username lookup first so public profile URLs work with handles
+        let user = await Users.findOne({ username: req.params.id })
 
-            const {password, isAdmin, ...OtherDetails} = getUser._doc
-            res.status(200).json({...OtherDetails})
-        // res.status(200).json(getUser)
+        // Fall back to ObjectId lookup for direct _id links and legacy DB entries
+        if (!user) {
+            try {
+                user = await Users.findById(req.params.id)
+            } catch {
+                // req.params.id was not a valid ObjectId — fall through to 404
+            }
+        }
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' })
+        }
+
+        // Lazily generate and persist referralFallbackCode for existing users
+        let fallbackCode = user.referralFallbackCode;
+        if (!fallbackCode) {
+            fallbackCode = generateFallbackCode(user._id);
+            try {
+                user.referralFallbackCode = fallbackCode;
+                await user.save();
+            } catch {
+                // Non-blocking: collision on sparse unique index won't break the request
+            }
+        }
+
+        // Surface referralCode: prefer username when it is not an email address
+        const hasValidUsername = user.username && !user.username.includes('@');
+        const referralCode = hasValidUsername ? user.username : fallbackCode;
+
+        const { password, isAdmin, ...OtherDetails } = user._doc;
+        res.status(200).json({ ...OtherDetails, referralCode });
     }catch(err){
         next(err)
     }
