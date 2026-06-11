@@ -35,12 +35,24 @@ export default function EventsPage() {
   ], [events])
 
   const filtered = useMemo(() => {
+    const now = new Date()
     let result = filter === 'all' ? events : events.filter(e => e.status === filter)
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
       result = result.filter(e => e.name.toLowerCase().includes(q))
     }
-    return result
+    // Temporal sort: upcoming events (date >= now) ascending, past events descending.
+    // Undated events treated as upcoming and placed last within that group.
+    return [...result].sort((a, b) => {
+      const dateA = a.date ? new Date(a.date).getTime() : Infinity
+      const dateB = b.date ? new Date(b.date).getTime() : Infinity
+      const nowMs = now.getTime()
+      const aUpcoming = dateA >= nowMs
+      const bUpcoming = dateB >= nowMs
+      if (aUpcoming && bUpcoming) return dateA - dateB   // both upcoming → ascending
+      if (!aUpcoming && !bUpcoming) return dateB - dateA  // both past → most-recent first
+      return aUpcoming ? -1 : 1                           // upcoming before past
+    })
   }, [events, filter, searchQuery])
 
   return (

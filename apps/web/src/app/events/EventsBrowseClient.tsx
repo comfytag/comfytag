@@ -365,7 +365,6 @@ export function EventsBrowseClient({
   const [hasMore, setHasMore] = useState(initialEvents.length === 12)
   const [totalCount, setTotalCount] = useState<number | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('list')
-  const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming')
   const [filters, setFilters] = useState<Filters>({
     searchQuery: searchParams.get('q') ?? '',
     types: searchParams.get('category') ? [searchParams.get('category')!] : [],
@@ -385,22 +384,22 @@ export function EventsBrowseClient({
     [states]
   )
 
-  const buildParams = useCallback((f: Filters, p: number, t: 'upcoming' | 'past') => {
+  const buildParams = useCallback((f: Filters, p: number) => {
     const params = new URLSearchParams()
     params.set('limit', '12')
     params.set('page', String(p))
+    params.set('showPast', 'true')
     if (f.searchQuery.trim()) params.set('q', f.searchQuery.trim())
     if (f.types.length > 0) params.set('category', f.types.join(','))
     if (f.state) params.set('state', f.state)
     if (f.minPrice) params.set('priceMin', f.minPrice)
     if (f.maxPrice) params.set('priceMax', f.maxPrice)
     if (f.date) params.set('date', f.date)
-    if (t === 'past') params.set('showPast', 'true')
     return params.toString()
   }, [])
 
   const fetchEvents = useCallback(
-    async (f: Filters, p: number, t: 'upcoming' | 'past', append = false) => {
+    async (f: Filters, p: number, append = false) => {
       const fresh = p === 1 && !append
       if (fresh) setIsLoading(true)
       else setIsLoadingMore(true)
@@ -412,7 +411,7 @@ export function EventsBrowseClient({
         // events), so all other filter combos route there.
         const needsSearch = !!f.searchQuery.trim() || !!f.date
         const endpoint = needsSearch ? '/events/search' : '/events'
-        const response = await api.get(`${endpoint}?${buildParams(f, p, t)}`)
+        const response = await api.get(`${endpoint}?${buildParams(f, p)}`)
         const data = response.data as Record<string, unknown>
         const list: Event[] = Array.isArray(data)
           ? (data as Event[])
@@ -438,10 +437,10 @@ export function EventsBrowseClient({
   useEffect(() => {
     if (isFirstRender.current) { isFirstRender.current = false; return }
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => { void fetchEvents(filters, 1, tab) }, 300)
+    debounceRef.current = setTimeout(() => { void fetchEvents(filters, 1) }, 300)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, tab])
+  }, [filters])
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
@@ -457,14 +456,7 @@ export function EventsBrowseClient({
   }
 
   function handleClear() {
-    setTab('upcoming')
     setFilters({ searchQuery: '', types: [], state: '', minPrice: '', maxPrice: '', date: '' })
-  }
-
-  function handleTabChange(newTab: 'upcoming' | 'past') {
-    setTab(newTab)
-    setPage(1)
-    setEvents([])
   }
 
   // Close date menu on outside click
@@ -478,7 +470,7 @@ export function EventsBrowseClient({
   }, [dateMenuOpen])
 
   function handleLoadMore() {
-    void fetchEvents(filters, page + 1, tab, true)
+    void fetchEvents(filters, page + 1, true)
   }
 
   function handleEventSelect(id: string) {
@@ -487,6 +479,22 @@ export function EventsBrowseClient({
   }
 
   // ─── Derived state ─────────────────────────────────────────────────────────
+
+  // Client-side split — showPast=true is always sent so the API returns all
+  // events; date math here divides them into two display sections.
+  const upcomingEvents = useMemo(() => {
+    const now = new Date()
+    return [...events]
+      .filter((e) => !e.date || new Date(e.date) >= now)
+      .sort((a, b) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime())
+  }, [events])
+
+  const pastEvents = useMemo(() => {
+    const now = new Date()
+    return [...events]
+      .filter((e) => !!e.date && new Date(e.date) < now)
+      .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+  }, [events])
 
   const hasActive =
     !!filters.searchQuery ||
@@ -512,7 +520,7 @@ export function EventsBrowseClient({
       {/* Page header */}
       <div style={{ marginBottom: '20px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-text)', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
-          {tab === 'past' ? 'Past Events' : 'Browse Events'}
+          Browse Events
         </h1>
         {!isLoading && (
           <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', margin: 0 }}>
@@ -521,42 +529,6 @@ export function EventsBrowseClient({
               : `${displayCount} event${displayCount !== 1 ? 's' : ''} available`}
           </p>
         )}
-      </div>
-
-      {/* Tab toggle */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-        <button
-          onClick={() => handleTabChange('upcoming')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: 'var(--radius-full)',
-            border: tab === 'upcoming' ? '1.5px solid var(--color-brand)' : '1.5px solid var(--color-border)',
-            background: tab === 'upcoming' ? 'var(--color-brand)' : 'var(--color-surface-2)',
-            color: tab === 'upcoming' ? 'var(--color-text-on-brand)' : 'var(--color-text)',
-            fontSize: '14px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 150ms ease',
-          }}
-        >
-          Upcoming
-        </button>
-        <button
-          onClick={() => handleTabChange('past')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: 'var(--radius-full)',
-            border: tab === 'past' ? '1.5px solid var(--color-brand)' : '1.5px solid var(--color-border)',
-            background: tab === 'past' ? 'var(--color-brand)' : 'var(--color-surface-2)',
-            color: tab === 'past' ? 'var(--color-text-on-brand)' : 'var(--color-text)',
-            fontSize: '14px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all 150ms ease',
-          }}
-        >
-          Past Events
-        </button>
       </div>
 
       {/* ── Filter bar (sticky) ── */}
@@ -620,8 +592,7 @@ export function EventsBrowseClient({
               />
             ))}
 
-            {/* Date dropdown pill — hidden in past tab */}
-            {tab === 'upcoming' && (
+            {/* Date dropdown pill */}
             <div ref={dateRef} style={{ position: 'relative' }}>
               <button
                 type="button"
@@ -696,7 +667,6 @@ export function EventsBrowseClient({
                 </div>
               )}
             </div>
-            )}
 
             {/* State dropdown */}
             <StateFilterDropdown
@@ -705,14 +675,12 @@ export function EventsBrowseClient({
               onChange={(state) => setFilters((prev) => ({ ...prev, state }))}
             />
 
-            {/* Price dropdown — hidden in past tab */}
-            {tab === 'upcoming' && (
+            {/* Price dropdown */}
             <PriceDropdown
               minPrice={filters.minPrice}
               maxPrice={filters.maxPrice}
               onChange={(minPrice, maxPrice) => setFilters((prev) => ({ ...prev, minPrice, maxPrice }))}
             />
-            )}
 
             {/* Clear */}
             {hasActive && (
@@ -749,7 +717,7 @@ export function EventsBrowseClient({
           {Array.from({ length: SKELETON_COUNT }).map((_, i) => <EventCardSkeleton key={i} />)}
         </div>
 
-      ) : events.length === 0 ? (
+      ) : upcomingEvents.length === 0 && pastEvents.length === 0 ? (
         <div style={{ textAlign: 'center' }}>
           <EmptyState
             title="No events found"
@@ -799,21 +767,24 @@ export function EventsBrowseClient({
         </div>
 
       ) : (
-        /* ── List view (flat grid) ── */
+        /* ── List view — upcoming section then past section ── */
         <>
-          <div className="events-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px', marginBottom: '40px' }}>
-            {[...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((event) => (
-              <EventCard
-                key={event._id}
-                event={event}
-                href={`/events/${event.slug ?? event._id}`}
-              />
-            ))}
-          </div>
+          {/* Upcoming events */}
+          {upcomingEvents.length > 0 && (
+            <div className="events-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+              {upcomingEvents.map((event) => (
+                <EventCard
+                  key={event._id}
+                  event={event}
+                  href={`/events/${event.slug ?? event._id}`}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Load more */}
           {hasMore && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px', marginBottom: '16px' }}>
               <button
                 type="button"
                 onClick={handleLoadMore}
@@ -830,6 +801,33 @@ export function EventsBrowseClient({
                 {isLoadingMore ? <><LoadingSpinner size="sm" />Loading…</> : 'Load More Events'}
               </button>
             </div>
+          )}
+
+          {/* Past Events section */}
+          {pastEvents.length > 0 && (
+            <section style={{ marginTop: '48px' }}>
+              <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', marginBottom: '40px' }} />
+              <h2
+                style={{
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  color: 'var(--color-text)',
+                  margin: '0 0 20px',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Past Events
+              </h2>
+              <div className="events-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px' }}>
+                {pastEvents.map((event) => (
+                  <EventCard
+                    key={event._id}
+                    event={event}
+                    href={`/events/${event.slug ?? event._id}`}
+                  />
+                ))}
+              </div>
+            </section>
           )}
         </>
       )}

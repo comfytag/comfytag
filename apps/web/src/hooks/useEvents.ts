@@ -59,7 +59,15 @@ export function useFollowOrganizer() {
   return useMutation({
     mutationFn: ({ organizerId, slug }: { organizerId: string; slug: string }) =>
       api.post(`/organizers/${organizerId}/follow`).then(r => r.data),
-    onSuccess: (_, { slug }) => {
+    onSuccess: (data: { following: boolean; followerCount: number }, { slug }) => {
+      // Immediately patch the cached profile so the button switches without
+      // waiting for a full refetch, then fire a background invalidation for
+      // eventual consistency (in case other callers hold stale data).
+      qc.setQueryData(
+        profileKeys.organizer(slug),
+        (old: Record<string, unknown> | undefined) =>
+          old ? { ...old, isFollowing: data.following, followerCount: data.followerCount } : old
+      )
       qc.invalidateQueries({ queryKey: profileKeys.organizer(slug) })
       qc.invalidateQueries({ queryKey: profileKeys.following })
     },
