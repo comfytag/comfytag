@@ -32,7 +32,9 @@ const AudienceSchema = new Schema({
     },
     reference: {
         type: String,
-        uppercase: true
+        uppercase: true,
+        unique: true,
+        sparse: true,   // allows multiple docs with no reference (free tickets pre-QR)
     },
     type: {
         type: String,

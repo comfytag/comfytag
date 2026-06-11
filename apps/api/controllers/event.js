@@ -17,7 +17,8 @@ function toSlug(name) {
 
 // CREATE
 export const createEvent = async (req, res, next) => {
-    const userId = req.params.userId;
+    // Derive organizer ID from the verified JWT — never trust req.params for ownership
+    const userId = (req.user._id ?? req.user.id).toString()
 
     // Get event planner username
     const getUser = await User.findById(userId)
@@ -56,6 +57,15 @@ export const createEvent = async (req, res, next) => {
 export const updateEvent = async (req, res, next) => {
 
     try {
+        const userId = (req.user._id ?? req.user.id ?? '').toString()
+
+        const event = await Event.findById(req.params.id)
+        if (!event) return next(createError(404, 'Event not found'))
+
+        if (event.planner_id.toString() !== userId && !req.user.isAdmin) {
+            return next(createError(403, 'You are not authorized to update this event'))
+        }
+
         // Sanitize promos: filter out entries without a valid code
         let updateData = { ...req.body };
         if (updateData.promos && Array.isArray(updateData.promos)) {
@@ -109,9 +119,9 @@ export const updateEvent = async (req, res, next) => {
                 subject: `That was amazing — thanks for coming 🎉`,
                 template: 'postEventRecap1.hbs',
                 data: {
-                  firstName: attendee.name.split(' ')[0],
+                  firstName: attendee.name?.split(' ')[0] || '',
                   eventName: updatedEvent.name,
-                  eventId: updatedEvent._id,
+                  eventId: updatedEvent._id.toString(),
                   attendeeCount,
                   rateLink: `${baseUrl}/events/${updatedEvent._id}/rate`,
                   year: new Date().getFullYear(),
@@ -135,9 +145,9 @@ export const updateEvent = async (req, res, next) => {
                 subject: `Similar events you'd love (based on ${updatedEvent.category})`,
                 template: 'postEventRecap2.hbs',
                 data: {
-                  firstName: attendee.name.split(' ')[0],
+                  firstName: attendee.name?.split(' ')[0] || '',
                   eventName: updatedEvent.name,
-                  eventId: updatedEvent._id,
+                  eventId: updatedEvent._id.toString(),
                   interestCategory: updatedEvent.category,
                   state: updatedEvent.state,
                   recommendedEvents: similarEvents.map(e => ({
@@ -206,7 +216,7 @@ export const updateEvent = async (req, res, next) => {
                   title: 'New Event',
                   message: `${updatedEvent.planner} just posted: ${updatedEvent.name}`,
                   data: {
-                    event_id: updatedEvent._id,
+                    event_id: updatedEvent._id.toString(),
                     eventName: updatedEvent.name,
                     organizerName: updatedEvent.planner,
                   },

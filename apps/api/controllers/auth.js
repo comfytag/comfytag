@@ -253,7 +253,7 @@ export const register = async (req,res,next) =>{
 			   }},
 			   {new: true}
 		)
-		await token.remove();
+		await token.deleteOne();
 
 		res.status(200).send({ message: "Email verified successfully" });
 	} catch (error) {
@@ -392,12 +392,13 @@ export const sendVerifyEmail = async (req,res,next) =>{
 
 	try {
 		const user = await User.findOne({ email: req.params.email });
+		if (!user) return res.status(404).json({ message: 'User not found' })
 		const userid = user._id
 
 		// check if token exist and remove
 		const checkToken = await Token.findOne({ userId: userid });
 		if(checkToken){
-			await checkToken.remove();
+			await checkToken.deleteOne();
 		}
 		// Always create a new verification token
 		const token = await new Token({
@@ -664,10 +665,10 @@ export const forgotPassword = async (req, res, next) => {
       return res.status(400).json({ message: 'Email or phone is required' })
     }
 
-    // Find user by email (case-insensitive) or phone
+    // Safe literal match — never interpolate user input into RegExp (ReDoS risk)
     let user = await User.findOne({
       $or: [
-        { email: new RegExp(`^${identifier}$`, 'i') },
+        { email: identifier.toLowerCase() },
         { phone: identifier }
       ]
     })
@@ -735,10 +736,10 @@ export const verifyOtp = async (req, res, next) => {
       return res.status(400).json({ message: 'Email/phone and OTP are required' })
     }
 
-    // Find user by identifier
+    // Safe literal match — never interpolate user input into RegExp (ReDoS risk)
     let user = await User.findOne({
       $or: [
-        { email: new RegExp(`^${identifier}$`, 'i') },
+        { email: identifier.toLowerCase() },
         { phone: identifier }
       ]
     })
@@ -806,10 +807,10 @@ export const resetPassword = async (req, res, next) => {
       return res.status(401).json({ message: 'Reset token invalid or expired' })
     }
 
-    // Find user by identifier
+    // Safe literal match — never interpolate user input into RegExp (ReDoS risk)
     let user = await User.findOne({
       $or: [
-        { email: new RegExp(`^${identifier}$`, 'i') },
+        { email: identifier.toLowerCase() },
         { phone: identifier }
       ]
     })
