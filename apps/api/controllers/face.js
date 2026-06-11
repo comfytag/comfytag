@@ -121,6 +121,11 @@ export const verifyFace = async (req, res, next) => {
 // Removes face template — called on ticket transfer
 export const removeFace = async (req, res, next) => {
   try {
+    const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+    if (req.params.userId !== requesterId && !req.user.isAdmin) {
+      return next(createError(403, 'You are not authorized to remove this face template'))
+    }
+
     await User.findByIdAndUpdate(req.params.userId, {
       faceEnrolled: false,
       faceTemplate: null,

@@ -380,11 +380,30 @@ export const getAudience = async (req, res, next) => {
     }
 }
 
-// GET ALL
+// GET ALL — admin only, paginated
 export const getAllAudience = async (req, res, next) => {
     try {
-        const getAudience = await Audience.find()
-        res.status(200).json(getAudience)
+        if (!req.user.isAdmin) {
+            return next(createError(403, 'Forbidden'))
+        }
+
+        const { page = 1, limit = 50 } = req.query
+        const pageNum = Math.max(1, parseInt(String(page), 10) || 1)
+        const limitNum = Math.min(100, Math.max(1, parseInt(String(limit), 10) || 50))
+        const skip = (pageNum - 1) * limitNum
+
+        const [audience, total] = await Promise.all([
+            Audience.find().sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+            Audience.countDocuments(),
+        ])
+
+        res.status(200).json({
+            data: audience,
+            page: pageNum,
+            limit: limitNum,
+            total,
+            pages: Math.ceil(total / limitNum),
+        })
     } catch (err) {
         next(err)
     }

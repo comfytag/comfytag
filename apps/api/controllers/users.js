@@ -183,16 +183,13 @@ export const deleteUser = async (req,res,next) =>{
     }
 }
 
-// GET
+// GET — public profile; only safe fields returned (no PII, no flags)
 export const getUser = async (req,res,next) =>{
     try{
-        const getUser = await Users.findById(
-            req.params.id
-            )
-
-            const {password, isAdmin, ...OtherDetails} = getUser._doc
-            res.status(200).json({...OtherDetails})
-        // res.status(200).json(getUser)
+        const user = await Users.findById(req.params.id)
+            .select('name username avatar image bio followers following createdAt')
+        if (!user) return next(createError(404, 'User not found'))
+        res.status(200).json(user)
     }catch(err){
         next(err)
     }
