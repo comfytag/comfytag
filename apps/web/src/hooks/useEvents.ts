@@ -57,8 +57,8 @@ export function useLikeEvent() {
 export function useFollowOrganizer() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ slug }: { slug: string }) =>
-      api.post(`/organizer/${slug}/follow`).then(r => r.data),
+    mutationFn: ({ organizerId, slug }: { organizerId: string; slug: string }) =>
+      api.post(`/organizers/${organizerId}/follow`).then(r => r.data),
     onSuccess: (_, { slug }) => {
       qc.invalidateQueries({ queryKey: profileKeys.organizer(slug) })
       qc.invalidateQueries({ queryKey: profileKeys.following })

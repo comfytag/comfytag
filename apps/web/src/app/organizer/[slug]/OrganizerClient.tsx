@@ -51,11 +51,13 @@ export function OrganizerClient({ slug, initialProfile }: { slug: string; initia
       openGate('like')
       return
     }
-    followMutate({ slug })
+    if (!organizer?._id) return
+    followMutate({ organizerId: organizer._id, slug })
   }
 
   async function handleUnfollowConfirm() {
-    followMutate({ slug })
+    if (!organizer?._id) return
+    followMutate({ organizerId: organizer._id, slug })
     setUnfollowSheetOpen(false)
   }
 
@@ -76,21 +78,24 @@ export function OrganizerClient({ slug, initialProfile }: { slug: string; initia
   // Organizer data from hook
   const organizerName = organizer?.name ?? 'Organizer'
   const isFollowing = organizer?.isFollowing ?? false
-  const followerCount = organizer?.followers?.length ?? 0
+  // Stats are embedded in the getUser response; followerCount/eventCount/totalTicketsSold
+  // are flat integers. Fallback to array-length for any legacy shape.
+  const followerCount = organizer?.followerCount ?? organizer?.followers?.length ?? 0
+  const eventCount = organizer?.eventCount ?? 0
+  const totalTicketsSold = organizer?.totalTicketsSold ?? 0
 
   // Events from organizer object
   const events: Event[] = organizer?.events ?? []
-  const stats = organizer?.stats
 
   const now = new Date()
 
   const upcomingEvents = events
-    .filter((e: Event) => new Date(e.date) >= now)
-    .sort((a: Event, b: Event) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .filter((e: Event) => new Date(e.date || 0) >= now)
+    .sort((a: Event, b: Event) => new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime())
 
   const pastEvents = events
-    .filter((e: Event) => new Date(e.date) < now)
-    .sort((a: Event, b: Event) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .filter((e: Event) => new Date(e.date || 0) < now)
+    .sort((a: Event, b: Event) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
 
   const tabEvents = activeTab === 'upcoming' ? upcomingEvents : pastEvents
 
@@ -134,8 +139,8 @@ export function OrganizerClient({ slug, initialProfile }: { slug: string; initia
             }}
             stats={{
               followerCount,
-              eventCount: stats?.eventCount ?? 0,
-              totalTicketsSold: stats?.totalTicketsSold ?? 0,
+              eventCount,
+              totalTicketsSold,
             }}
             isFollowing={isFollowing}
             onFollow={handleFollow}

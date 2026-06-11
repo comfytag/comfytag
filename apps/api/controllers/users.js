@@ -224,8 +224,35 @@ export const getUser = async (req,res,next) =>{
         const hasValidUsername = user.username && !user.username.includes('@');
         const referralCode = hasValidUsername ? user.username : fallbackCode;
 
+        // Fetch events + aggregate stats in parallel.
+        // User.events stores raw string IDs (no ref) — query by planner_id instead.
+        const Event = (await import('../models/Event.js')).default
+        const Follow = (await import('../models/Follow.js')).default
+
+        const [organizerEvents, followerCount, eventCount, soldResult] = await Promise.all([
+            Event.find({
+                planner_id: user._id.toString(),
+                status: { $in: ['published', 'draft', 'active', 'live'] },
+            }).sort({ date: 1 }).lean(),
+            Follow.countDocuments({ organizer_id: user._id.toString() }),
+            Event.countDocuments({ planner_id: user._id.toString() }),
+            Event.aggregate([
+                { $match: { planner_id: user._id.toString() } },
+                { $group: { _id: null, total: { $sum: '$sold' } } },
+            ]),
+        ])
+
+        const totalTicketsSold = soldResult.length > 0 ? soldResult[0].total : 0
+
         const { password, isAdmin, ...OtherDetails } = user._doc;
-        res.status(200).json({ ...OtherDetails, referralCode });
+        res.status(200).json({
+            ...OtherDetails,
+            referralCode,
+            events: organizerEvents,
+            followerCount,
+            eventCount,
+            totalTicketsSold,
+        });
     }catch(err){
         next(err)
     }
