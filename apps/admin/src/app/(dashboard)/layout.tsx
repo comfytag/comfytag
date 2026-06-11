@@ -8,7 +8,7 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   const session = await getServerSession()
-  if (!session) redirect('/login')
+  if (!session || !session.user?.role) redirect('/login')
 
   return (
     <ShellClient role={session.user.role} userName={session.user.name}>

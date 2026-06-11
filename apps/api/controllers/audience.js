@@ -9,6 +9,12 @@ import moment from 'moment/moment.js';
 import { QR } from '../utils/QRCode.js';
 import { generateSecret } from 'otplib'
 
+// Returns true only if the event exists and its planner_id matches partnerId.
+const assertPartnerOwnsEvent = async (eventId, partnerId) => {
+    const event = await Event.findOne({ _id: eventId, planner_id: partnerId }).select('_id').lean()
+    return event !== null
+}
+
 
 
 // CREATE FREE TICKET (no payment / no auth required)
@@ -286,14 +292,29 @@ export const createAudience = async (req, res, next) => {
 
 // UPDATE
 export const updateAudience = async (req, res, next) => {
-    
     try {
+        const ticket = await Audience.findById(req.params.id)
+        if (!ticket) return next(createError(404, 'Ticket not found'))
+
+        if (!req.user.isAdmin) {
+            const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+            const ownsEvent = await assertPartnerOwnsEvent(ticket.event_id, requesterId)
+            if (!ownsEvent) return next(createError(403, 'Not authorized to update this ticket'))
+        }
+
+        // Strict whitelist — partners may only correct attendee contact details
+        const updateData = {}
+        if ('name' in req.body) updateData.name = req.body.name
+        if ('phone' in req.body) updateData.phone = req.body.phone
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ success: false, message: 'No valid fields to update. Allowed: name, phone.' })
+        }
+
         const updatedAudience = await Audience.findByIdAndUpdate(
-              req.params.id,
-            { $set: req.body },
+            req.params.id,
+            { $set: updateData },
             { new: true }
         )
-         
         res.status(200).json(updatedAudience)
     } catch (err) {
         next(err)
@@ -302,15 +323,27 @@ export const updateAudience = async (req, res, next) => {
 
 // DELETE
 export const deleteAudience = async (req, res, next) => {
-    const userId = req.params.userId;
+    const ticketId = req.params.id
+    const urlUserId = req.params.userId
     try {
-        await Audience.findByIdAndDelete(
-            req.params.id
-        )
+        const ticket = await Audience.findById(ticketId)
+        if (!ticket) return next(createError(404, 'Ticket not found'))
+
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+
+        if (!req.user.isAdmin) {
+            const isSelf = ticket.user_id === requesterId
+            const ownsEvent = !isSelf && await assertPartnerOwnsEvent(ticket.event_id, requesterId)
+            if (!isSelf && !ownsEvent) {
+                return next(createError(403, 'Not authorized to delete this ticket'))
+            }
+        }
+
+        await Audience.findByIdAndDelete(ticketId)
         try {
-            await User.findByIdAndUpdate(userId, {
-                 $pull: { events: req.params.id },
-                 });
+            await User.findByIdAndUpdate(urlUserId, {
+                $pull: { events: ticketId },
+            })
         } catch (err) {
             next(err)
         }
@@ -338,7 +371,7 @@ export const getAudience = async (req, res, next) => {
         const ticket = await Audience.findById(req.params.id)
         if (!ticket) return next(createError(404, 'Ticket not found'))
         const requesterId = (req.user._id ?? req.user.id ?? '').toString()
-        if (ticket.user_id !== requesterId) {
+        if (!req.user.isAdmin && ticket.user_id !== requesterId) {
             return next(createError(403, 'Not authorized'))
         }
         res.status(200).json(ticket)
@@ -423,6 +456,12 @@ export const getMyTickets = async (req, res, next) => {
 // GET ALL with pagination
 export const getEventAudience = async (req, res, next) => {
     try {
+        if (!req.user.isAdmin) {
+            const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+            const ownsEvent = await assertPartnerOwnsEvent(req.params.eventId, requesterId)
+            if (!ownsEvent) return next(createError(403, 'Not authorized to view attendees for this event'))
+        }
+
         const { page = 1, limit = 25 } = req.query
         const pageNum = Math.max(1, parseInt(String(page), 10) || 1)
         const limitNum = Math.max(1, parseInt(String(limit), 10) || 25)
@@ -459,6 +498,12 @@ export const manualCheckIn = async (req, res, next) => {
         const ticket = await Audience.findById(ticketId)
         if (!ticket) return next(createError(404, 'Ticket not found'))
 
+        if (!req.user.isAdmin) {
+            const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+            const ownsEvent = await assertPartnerOwnsEvent(ticket.event_id, requesterId)
+            if (!ownsEvent) return next(createError(403, 'Not authorized to check in tickets for this event'))
+        }
+
         // Update check-in status
         ticket.checkedIn = checkedIn
         if (checkedIn) {
@@ -484,6 +529,12 @@ export const manualCheckIn = async (req, res, next) => {
 export const exportEventAudienceCSV = async (req, res, next) => {
     try {
         const { eventId } = req.params
+
+        if (!req.user.isAdmin) {
+            const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+            const ownsEvent = await assertPartnerOwnsEvent(eventId, requesterId)
+            if (!ownsEvent) return next(createError(403, 'Not authorized to export attendees for this event'))
+        }
 
         const tickets = await Audience.find({ event_id: eventId }).sort({ createdAt: -1 })
 
@@ -533,6 +584,12 @@ export const checkInByReference = async (req, res, next) => {
 
         const ticket = await Audience.findOne({ reference: reference.trim().toUpperCase() })
         if (!ticket) return res.status(404).json({ success: false, message: 'Ticket not found' })
+
+        if (!req.user.isAdmin) {
+            const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+            const ownsEvent = await assertPartnerOwnsEvent(ticket.event_id, requesterId)
+            if (!ownsEvent) return next(createError(403, 'Not authorized to check in tickets for this event'))
+        }
 
         if (ticket.status === 'refunded') return res.status(400).json({ success: false, message: 'Ticket has been refunded' })
         if (ticket.status === 'transferred') return res.status(400).json({ success: false, message: 'Ticket has been transferred' })

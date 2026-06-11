@@ -1,4 +1,5 @@
 import https from 'https'
+import crypto from 'crypto'
 import { generateSync } from 'otplib'
 import Event from '../models/Event.js'
 import User from '../models/User.js'
@@ -375,6 +376,60 @@ export const getTicketStatus = async (req, res, next) => {
   }
 }
 
+// ─── Paystack Webhook Controller ─────────────────────────────────────────────
+
+// POST /paystack/webhook
+// Paystack calls this server-to-server — NO JWT auth. HMAC validates the sender.
+export const handlePaystackWebhook = async (req, res, next) => {
+  try {
+    const signature = req.headers['x-paystack-signature']
+    if (!signature) {
+      return res.status(401).json({ message: 'Missing signature' })
+    }
+
+    // Compute expected HMAC-SHA512 over the raw request body (re-serialised JSON)
+    const expected = crypto
+      .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY)
+      .update(JSON.stringify(req.body))
+      .digest('hex')
+
+    // Constant-time comparison to prevent timing attacks
+    let signatureValid = false
+    try {
+      const expectedBuf = Buffer.from(expected, 'hex')
+      const sigBuf = Buffer.from(signature, 'hex')
+      signatureValid =
+        expectedBuf.length === sigBuf.length &&
+        crypto.timingSafeEqual(expectedBuf, sigBuf)
+    } catch {
+      signatureValid = false
+    }
+
+    if (!signatureValid) {
+      return res.status(401).json({ message: 'Invalid signature' })
+    }
+
+    // Acknowledge receipt within Paystack's 5-second window
+    res.status(200).json({ received: true })
+
+    // Fire-and-forget: idempotency guard for charge.success events
+    const event = req.body
+    if (event?.event === 'charge.success' && event.data?.reference) {
+      Audience.findOne({ reference: event.data.reference })
+        .select('_id')
+        .lean()
+        .then(existing => {
+          if (!existing) {
+            // Ticket not yet created — this can be used to trigger recovery logic
+          }
+        })
+        .catch(err => console.error('[Webhook] idempotency check failed:', err.message))
+    }
+  } catch (err) {
+    next(err)
+  }
+}
+
 // ─── Seasonal Config Controller ───────────────────────────────────────────────
 
 // GET /config/seasonal
@@ -400,6 +455,15 @@ export const getSeasonalConfig = (req, res) => {
 export const verifyPaystackPayment = async (req, res, next) => {
   try {
     const { reference } = req.params
+
+    // Idempotency: a reference that already created a ticket must not be re-used
+    const existing = await Audience.findOne({ reference }).select('_id').lean()
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: 'This payment reference has already been processed.',
+      })
+    }
 
     const data = await new Promise((resolve, reject) => {
       const options = {

@@ -4,7 +4,7 @@ import ShellClient from '@/components/dashboard/ShellClient'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession()
-  if (!session) redirect('/login')
+  if (!session || !session.user?.isPartner) redirect('/login')
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
