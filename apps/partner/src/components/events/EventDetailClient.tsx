@@ -29,8 +29,17 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const statusMutation = useMutation({
-    mutationFn: (status: 'published' | 'draft' | 'cancelled') =>
-      api.patch('/events/' + eventId, { status }).then(r => r.data),
+    mutationFn: (status: 'published' | 'draft' | 'cancelled') => {
+      // Use new state machine endpoints for explicit transitions
+      if (status === 'published') {
+        return api.post(`/events/${eventId}/publish`).then(r => r.data)
+      } else if (status === 'cancelled') {
+        return api.post(`/events/${eventId}/cancel`).then(r => r.data)
+      } else {
+        // Fall back to PATCH for 'draft' transitions
+        return api.patch(`/events/${eventId}`, { status }).then(r => r.data)
+      }
+    },
     onSuccess: (_data, status) => {
       setCurrentStatus(status)
       queryClient.invalidateQueries({ queryKey: ['event', eventId] })

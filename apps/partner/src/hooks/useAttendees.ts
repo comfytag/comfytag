@@ -44,3 +44,14 @@ export function useCheckin() {
     },
   })
 }
+
+export function useExportAttendees() {
+  return useMutation({
+    mutationFn: async (eventId: string) => {
+      const response = await api.get(`/audience/events/${eventId}/audience/export`, {
+        responseType: 'text',
+      })
+      return response.data
+    },
+  })
+}

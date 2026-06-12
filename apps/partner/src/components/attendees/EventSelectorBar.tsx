@@ -111,7 +111,7 @@ export function EventSelectorBar({ events, selectedEventId, onSelectEvent }: Eve
             >
               <div style={{ fontWeight: 500, color: 'inherit' }}>{event.name}</div>
               <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                {new Date(event.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                {event.date ? new Date(event.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No date'}
               </div>
             </button>
           ))}

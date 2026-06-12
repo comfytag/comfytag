@@ -17,8 +17,8 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
   let event: Event | null = null
 
   try {
-    const res = await api.get<Event>(`/events/${eventId}`)
-    event = res.data
+    const res = await api.get<{ success: boolean; data: Event }>(`/events/${eventId}`)
+    event = res.data.data
   } catch {
     event = null
   }

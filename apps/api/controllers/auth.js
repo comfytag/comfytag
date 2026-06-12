@@ -623,9 +623,16 @@ export const adminLogin = async (req,res,next) =>{
 
        const token =jwt.sign({isAdmin: user.isAdmin}, process.env.JWT_SECRET)
        const {password, isAdmin, ...OtherDetails} = user._doc
+
+       // Sanitize phone and avatar fields (defensive measure)
+       const sanitizeString = (str) => {
+         if (!str || typeof str !== 'string') return str;
+         return str.replace(/â€"|â€™|â€˜|â€œ|â€|â„¹|â‚¦|Â·|â‰¥|â"€/g, '').trim();
+       };
+
         res.cookie("access_token", token, {
             httpOnly: true
-        }).status(200).json({...OtherDetails, role: user.role || 'viewer'})  // Least-privilege fallback (TASK 2)
+        }).status(200).json({...OtherDetails, phone: sanitizeString(user.phone) || '', avatar: sanitizeString(user.avatar) || null, role: user.role || 'viewer'})  // Least-privilege fallback (TASK 2)
     }catch(err){
        next(err)
     }
@@ -651,8 +658,14 @@ export const getMe = async (req, res, next) => {
     const hasValidUsername = user.username && !user.username.includes('@');
     const referralCode = hasValidUsername ? user.username : user.referralFallbackCode;
 
+    // Clean corrupted UTF-8 sequences before returning (defensive measure)
+    const sanitizeString = (str) => {
+      if (!str || typeof str !== 'string') return str;
+      return str.replace(/â€"|â€™|â€˜|â€œ|â€|â„¹|â‚¦|Â·|â‰¥|â"€/g, '').trim();
+    };
+
     const { isAdmin, ...details } = user._doc
-    res.status(200).json({ user: { ...details, referralCode }, token: user.generateAuthToken() })
+    res.status(200).json({ user: { ...details, phone: sanitizeString(user.phone) || '', avatar: sanitizeString(user.avatar) || null, referralCode }, token: user.generateAuthToken() })
   } catch (err) {
     next(err)
   }

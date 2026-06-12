@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Event } from '@comfytag/types'
-import { formatDate, formatTime } from '@comfytag/utils'
+import { formatDate, formatTime, formatNaira } from '@comfytag/utils'
 
 export interface EventCardProps {
   event: Event
@@ -38,7 +38,7 @@ export function EventCard({
     event.ticketType.length > 0
       ? Math.min(...event.ticketType.map((t) => t.price))
       : 0
-  const priceLabel = lowestPrice === 0 ? 'Free' : `₦${lowestPrice.toLocaleString('en-NG')}`
+  const priceLabel = lowestPrice === 0 ? 'Free' : formatNaira(lowestPrice)
 
   const height = compact ? 180 : 240
 

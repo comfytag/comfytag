@@ -1,5 +1,6 @@
-﻿'use client'
+'use client'
 
+import { Info } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { PageHeader, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { KycStatusHeader } from '@/components/kyc/KycStatusHeader'
@@ -10,7 +11,7 @@ export default function KycPage() {
   const { data: session } = useSession()
   const userId = session?.user?.id
 
-  const { data: user, isLoading, isError, refetch } = useKycStatus()
+  const { data: kycData, isLoading, isError, refetch } = useKycStatus()
 
   if (isLoading) {
     return (
@@ -22,7 +23,7 @@ export default function KycPage() {
     )
   }
 
-  if (isError || !user) {
+  if (isError || !kycData) {
     return (
       <div style={{ padding: '32px 24px' }}>
         <ErrorMessage
@@ -33,7 +34,9 @@ export default function KycPage() {
     )
   }
 
-  const verifyData = user.isVerify || {}
+  const verifyData = kycData.isVerify || {}
+  // Create a minimal user-like object for KycStatusHeader
+  const user = { isVerify: kycData.isVerify } as any
 
   return (
     <main style={{ flex: 1, padding: '32px 24px' }}>
@@ -100,8 +103,8 @@ export default function KycPage() {
             lineHeight: 1.6,
           }}
         >
-          <p style={{ margin: 0, marginBottom: '8px', fontWeight: 600 }}>
-            â„¹ï¸ Why we need this information
+          <p style={{ margin: 0, marginBottom: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Info className="w-4 h-4" /> Why we need this information
           </p>
           <p style={{ margin: 0 }}>
             We require KYC (Know Your Customer) verification for all organizers to comply with Nigerian
@@ -113,4 +116,3 @@ export default function KycPage() {
     </main>
   )
 }
-

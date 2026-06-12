@@ -1,5 +1,5 @@
 import express from 'express'
-import { createEvent, deleteEvent, eventsByCategory, eventsByPayment, eventsByState, getAllEvents, getEvent, getPlannerEvents, updateEvent, eventsByPick, eventsBySales, eventsByFilter, eventsBySingleFilter, getEventFeed, getEventsByState, updateTicketTier, deleteTicketTier, getTicketTierStats, getEventCategories, getEventStates } from '../controllers/event.js';
+import { createEvent, deleteEvent, eventsByCategory, eventsByPayment, eventsByState, getAllEvents, getEvent, getPlannerEvents, updateEvent, eventsByPick, eventsBySales, eventsByFilter, eventsBySingleFilter, getEventFeed, getEventsByState, updateTicketTier, deleteTicketTier, getTicketTierStats, getEventCategories, getEventStates, publishEvent, cancelEvent } from '../controllers/event.js';
 import { verifyAdmin, verifyUser, verifyToken } from '../utils/verifyToken.js';
 
 const router = express.Router()
@@ -35,6 +35,10 @@ router.post("/:userId", verifyUser, createEvent)
 router.get("/:id/tiers/stats", getTicketTierStats)
 router.put("/:id/tiers/:tierId", verifyToken, updateTicketTier)
 router.delete("/:id/tiers/:tierId", verifyToken, deleteTicketTier)
+
+// Event status transitions (explicit state machine)
+router.post("/:id/publish", verifyUser, publishEvent)
+router.post("/:id/cancel", verifyUser, cancelEvent)
 
 // Dynamic routes
 // UPDATE

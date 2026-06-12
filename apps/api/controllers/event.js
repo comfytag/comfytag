@@ -295,6 +295,142 @@ export const updateEvent = async (req, res, next) => {
     }
 }
 
+// PUBLISH EVENT
+export const publishEvent = async (req, res, next) => {
+    const eventId = req.params.id
+    const userId = (req.user._id ?? req.user.id ?? '').toString()
+
+    try {
+        // Verify event exists and user owns it
+        const event = await Event.findById(eventId)
+        if (!event) return next(createError(404, 'Event not found'))
+
+        if (event.planner_id.toString() !== userId && !req.user.isAdmin) {
+            return next(createError(403, 'You can only publish your own events'))
+        }
+
+        // Explicit status transition to 'published'
+        const updatedEvent = await Event.findByIdAndUpdate(
+            eventId,
+            { $set: { status: 'published' } },
+            { new: true, runValidators: true }
+        )
+
+        // ─── FLOW 3D: NEW EVENT ALERT (Follower Notification) ────────────────
+        const followers = await Follow.find({ organizer_id: updatedEvent.planner_id }).lean()
+
+        // Create real-time in-app notifications for followers
+        const io = req.app.locals.io
+        if (followers.length > 0) {
+            // Use Promise.allSettled to emit all notifications in parallel (non-blocking)
+            await Promise.allSettled(
+                followers.map(f =>
+                    createNotification({
+                        userId: f.follower_id.toString(),
+                        type: 'new_event_from_following',
+                        title: 'New Event',
+                        message: `${updatedEvent.planner} just posted: ${updatedEvent.name}`,
+                        data: {
+                            event_id: updatedEvent._id,
+                            eventName: updatedEvent.name,
+                            organizerName: updatedEvent.planner,
+                        },
+                        io,
+                    }).catch(err => console.error('[Notification] New event alert failed:', err.message))
+                )
+            )
+        }
+
+        // Email followers
+        if (followers.length > 0) {
+            const remainingCapacity = (updatedEvent.ticketType?.reduce((sum, t) => sum + (t.capacity || 0), 0) || 100) - (updatedEvent.ticketType?.reduce((sum, t) => sum + (t.sold || 0), 0) || 0)
+            const totalCapacity = updatedEvent.ticketType?.reduce((sum, t) => sum + (t.capacity || 0), 0) || 100
+            const capacityPercent = (remainingCapacity / totalCapacity) * 100
+            const isUrgent = capacityPercent < 20
+
+            const batchSize = 50
+            for (let i = 0; i < followers.length; i += batchSize) {
+                const batch = followers.slice(i, i + batchSize)
+
+                await Promise.allSettled(
+                    batch.map(async follower => {
+                        // Re-query follower's user to check notification preference
+                        const followerUser = await User.findById(follower.follower_id)
+                        if (followerUser?.notificationPreferences?.email === false) {
+                            return
+                        }
+
+                        const ticketPrice = updatedEvent.ticketType?.length > 0 ? updatedEvent.ticketType[0].price : 0
+                        const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+
+                        return enqueueEmail({
+                            to: followerUser?.email,
+                            subject: `${updatedEvent.planner} just dropped: ${updatedEvent.name}`,
+                            template: 'newEventAlert.hbs',
+                            data: {
+                                firstName: (followerUser?.name || followerUser?.email).split(' ')[0],
+                                organizerName: updatedEvent.planner,
+                                eventName: updatedEvent.name,
+                                eventDate: moment(updatedEvent.date).format('ddd, MMM D'),
+                                eventTime: updatedEvent.startTime || 'TBA',
+                                eventVenue: updatedEvent.venue || 'TBA',
+                                ticketPrice: `₦${ticketPrice}`,
+                                urgencyBadge: isUrgent,
+                                remainingCapacity,
+                                ticketLink: `${baseUrl}/events/${updatedEvent._id}`,
+                                year: new Date().getFullYear(),
+                                unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+                                preferencesUrl: `${baseUrl}/preferences`,
+                            },
+                            from: 'events@comfytag.com',
+                        }).catch(err => console.error('[New Event Alert] Queue failed:', err.message))
+                    })
+                )
+            }
+
+            console.log(`[New Event Alert] Queued ${followers.length} emails for followers`)
+        }
+
+        res.status(200).json(updatedEvent)
+    } catch (err) {
+        next(err)
+    }
+}
+
+// CANCEL EVENT
+export const cancelEvent = async (req, res, next) => {
+    const eventId = req.params.id
+    const userId = (req.user._id ?? req.user.id ?? '').toString()
+
+    try {
+        // Verify event exists and user owns it
+        const event = await Event.findById(eventId)
+        if (!event) return next(createError(404, 'Event not found'))
+
+        if (event.planner_id.toString() !== userId && !req.user.isAdmin) {
+            return next(createError(403, 'You can only cancel your own events'))
+        }
+
+        // Explicit status transition to 'cancelled'
+        const updatedEvent = await Event.findByIdAndUpdate(
+            eventId,
+            { $set: { status: 'cancelled' } },
+            { new: true, runValidators: true }
+        )
+
+        // Emit Socket.io event for real-time event cancellation
+        const io = req.app.locals.io
+        if (io) {
+            io.to(`organizer:${userId}`).emit('event:cancelled', { eventId, eventName: updatedEvent.name })
+            console.log(`[Socket.io] Emitted event:cancelled for organizer ${userId}, event ${eventId}`)
+        }
+
+        res.status(200).json(updatedEvent)
+    } catch (err) {
+        next(err)
+    }
+}
+
 // DELETE
 export const deleteEvent = async (req, res, next) => {
     const userId = req.user.id || req.session?.user?.id;

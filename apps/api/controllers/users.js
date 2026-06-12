@@ -133,6 +133,32 @@ export const updateUser = async (req,res,next) =>{
             updateData.username = uname;
         }
 
+        // Sanitize phone field: replace or clear corrupted UTF-8 sequences
+        if ('phone' in updateData) {
+            if (updateData.phone && typeof updateData.phone === 'string') {
+                // Remove corrupted UTF-8 em-dash and other invalid sequences
+                updateData.phone = updateData.phone.replace(/â€"|â€™|â€˜|â€œ|â€/g, '').trim();
+                if (updateData.phone === '') {
+                    updateData.phone = '';
+                }
+            } else if (!updateData.phone) {
+                updateData.phone = '';
+            }
+        }
+
+        // Sanitize avatar field: replace or clear corrupted UTF-8 sequences
+        if ('avatar' in updateData) {
+            if (updateData.avatar && typeof updateData.avatar === 'string') {
+                // Remove corrupted UTF-8 sequences
+                updateData.avatar = updateData.avatar.replace(/â€"|â€™|â€˜|â€œ|â€/g, '').trim();
+                if (updateData.avatar === '') {
+                    updateData.avatar = null;
+                }
+            } else if (!updateData.avatar) {
+                updateData.avatar = null;
+            }
+        }
+
         const updatedUser = await Users.findByIdAndUpdate(
             req.params.id,
             { $set: updateData },
@@ -244,9 +270,17 @@ export const getUser = async (req,res,next) =>{
 
         const totalTicketsSold = soldResult.length > 0 ? soldResult[0].total : 0
 
+        // Clean corrupted UTF-8 sequences before returning (defensive measure)
+        const sanitizeString = (str) => {
+            if (!str || typeof str !== 'string') return str;
+            return str.replace(/â€"|â€™|â€˜|â€œ|â€|â„¹|â‚¦|Â·|â‰¥|â"€/g, '').trim();
+        };
+
         const { password, isAdmin, ...OtherDetails } = user._doc;
         res.status(200).json({
             ...OtherDetails,
+            phone: sanitizeString(user.phone) || '',
+            avatar: sanitizeString(user.avatar) || null,
             referralCode,
             events: organizerEvents,
             followerCount,
@@ -302,6 +336,13 @@ export const getAllUsers = async (req,res,next) =>{
 export const uploadKYC = async (req, res, next) => {
     try {
         // Handle both JSON body and multipart form data
+        if (!req.body) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing request body or multi-part fields form data.'
+            })
+        }
+
         const { docType } = req.body
         const file = req.file
 

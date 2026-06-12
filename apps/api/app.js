@@ -60,6 +60,7 @@ import uploadRouter from './routes/upload.js'
 import analyticsRouter from './routes/analytics.js'
 import promosRouter from './routes/promos.js'
 import teamRouter from './routes/team.js'
+import partnerRouter from './routes/partner.js'
 import { verifyPartner } from './utils/verifyToken.js'
 import cron from 'node-cron'
 import { updateExpiredTickets } from './jobs/updateExpiredTickets.js'
@@ -181,6 +182,7 @@ app.use("/partner/audience", verifyPartner, audienceRouter)       // attendee da
 app.use("/partner/bank", verifyPartner, bankRouter)               // bank accounts
 app.use("/partner/withdraw", verifyPartner, withdrawRouter)       // withdrawal requests
 app.use("/partner/wallet", verifyPartner, walletRouter)           // wallet balance
+app.use("/partner", verifyPartner, partnerRouter)                 // partner-specific endpoints (KYC, etc.)
 
 // Error handling
 app.use((err, req, res, next) => {
