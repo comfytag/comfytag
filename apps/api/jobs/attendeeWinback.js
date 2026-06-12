@@ -7,6 +7,7 @@ export const startAttendeeWinbackCron = () => {
   cron.schedule('0 10 * * *', async () => {
     try {
       console.log('[Attendee Winback Cron] Starting...');
+      const baseUrl = process.env.BASE_URL || 'https://comfytag.com';
       const now = new Date();
       const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
       const oneHundredFiveDaysAgo = new Date(now.getTime() - 105 * 24 * 60 * 60 * 1000);
@@ -17,7 +18,7 @@ export const startAttendeeWinbackCron = () => {
       for (const t of buyers90) {
         const u = t.user_id;
         if (u && !u.suppressed_inactive) {
-          await enqueueEmail({ to: u.email, subject: 'It\'s been a while — here\'s what\'s trending in ' + (u.state || 'Nigeria'), template: 'attendeeWinback1.hbs', data: { firstName: u.name.split(' ')[0], state: u.state || 'Nigeria', browseLink: process.env.WEB_URL + '/events?state=' + (u.state || 'ng'), year: 2026 }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
+              await enqueueEmail({ to: u.email, subject: 'It\'s been a while — here\'s what\'s trending in ' + (u.state || 'Nigeria'), template: 'attendeeWinback1.hbs', data: { firstName: u.name.split(' ')[0], state: u.state || 'Nigeria', browseLink: process.env.WEB_URL + '/events?state=' + (u.state || 'ng'), year: new Date().getFullYear(), unsubscribeUrl: `${baseUrl}/preferences?unsub=email`, preferencesUrl: `${baseUrl}/preferences` }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
           await User.updateOne({ _id: u._id }, { attendeeWinback1Sent: true });
         }
       }
@@ -30,7 +31,7 @@ export const startAttendeeWinbackCron = () => {
         if (seen.has(uid)) continue; seen.add(uid);
         const u = t.user_id;
         if (u && !u.suppressed_inactive && !u.attendeeWinback2Sent) {
-          await enqueueEmail({ to: u.email, subject: u.name.split(' ')[0] + ', your favorite artists are performing soon', template: 'attendeeWinback2.hbs', data: { firstName: u.name.split(' ')[0], state: u.state || 'Nigeria', browseLink: process.env.WEB_URL + '/events?state=' + (u.state || 'ng'), year: 2026 }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
+          await enqueueEmail({ to: u.email, subject: u.name.split(' ')[0] + ', your favorite artists are performing soon', template: 'attendeeWinback2.hbs', data: { firstName: u.name.split(' ')[0], state: u.state || 'Nigeria', browseLink: process.env.WEB_URL + '/events?state=' + (u.state || 'ng'), year: new Date().getFullYear(), unsubscribeUrl: `${baseUrl2}/preferences?unsub=email`, preferencesUrl: `${baseUrl2}/preferences` }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
           await User.updateOne({ _id: u._id }, { attendeeWinback2Sent: true });
         }
       }
@@ -47,7 +48,7 @@ export const startAttendeeWinbackCron = () => {
           if (clicks) {
             await User.updateOne({ _id: u._id }, { emailEngaged: true, attendeeWinback3Sent: true });
           } else {
-            await enqueueEmail({ to: u.email, subject: 'Last message — we\'ll listen if you want us to stop', template: 'attendeeWinback3.hbs', data: { firstName: u.name.split(' ')[0], preferencesLink: process.env.WEB_URL + '/settings/notifications', year: 2026 }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
+            await enqueueEmail({ to: u.email, subject: 'Last message — we\'ll listen if you want us to stop', template: 'attendeeWinback3.hbs', data: { firstName: u.name.split(' ')[0], preferencesLink: process.env.WEB_URL + '/settings/notifications', year: new Date().getFullYear(), unsubscribeUrl: `${baseUrl3}/preferences?unsub=email`, preferencesUrl: `${baseUrl3}/preferences` }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
             await User.updateOne({ _id: u._id }, { suppressed_inactive: true, emailSuppressed: { reason: 'win-back-no-response', date: new Date() }, attendeeWinback3Sent: true });
           }
         }

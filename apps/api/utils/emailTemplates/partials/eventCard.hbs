@@ -6,8 +6,10 @@
   {{#if description}}
   <p style="color: #78716c; font-size: 14px; margin-bottom: 12px;">{{description}}</p>
   {{/if}}
-  <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #e7e5e4;">
-    {{#if date}}<span style="color: #78716c; font-size: 12px; font-weight: 500;">📅 {{date}}</span>{{/if}}
-    {{#if badge}}<span style="background-color: #ede9fe; color: #7c3aed; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{badge}}</span>{{/if}}
-  </div>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="padding-top: 12px; border-top: 1px solid #e7e5e4;">
+    <tr>
+      {{#if date}}<td style="color: #78716c; font-size: 12px; font-weight: 500;">📅 {{date}}</td>{{/if}}
+      {{#if badge}}<td align="right"><span style="background-color: #ede9fe; color: #7c3aed; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{badge}}</span></td>{{/if}}
+    </tr>
+  </table>
 </div>

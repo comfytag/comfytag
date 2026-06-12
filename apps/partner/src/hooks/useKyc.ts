@@ -4,7 +4,18 @@ import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { api } from '@/lib/api'
 import { kycKeys } from './queryKeys'
-import type { User } from '@comfytag/types'
+
+interface KycStatusResponse {
+  success: boolean
+  data: {
+    isVerify: {
+      email: boolean
+      photo: boolean
+      idCard: boolean
+      address: boolean
+    }
+  }
+}
 
 export function useKycStatus() {
   const { data: session } = useSession()
@@ -17,8 +28,8 @@ export function useKycStatus() {
       if (!userId) throw new Error('No user ID')
 
       try {
-        const response = await api.get<User>(`/partner/users/${userId}`)
-        return response.data
+        const response = await api.get<KycStatusResponse>(`/partner/kyc/${userId}`)
+        return response.data.data
       } catch (err) {
         console.error('[KYC Status Error]', err)
         throw err

@@ -38,7 +38,7 @@ const withdrawColumns: ColumnDef<WithdrawRequest>[] = [
         {row.acctName}
         <br />
         <span style={{ color: 'var(--color-text-muted)', fontSize: '12px' }}>
-          {row.bankName} Â· {row.acctNumber}
+          {row.bankName} · {row.acctNumber}
         </span>
       </span>
     ),
@@ -295,7 +295,7 @@ export default function WithdrawPage() {
           </div>
 
           <Input
-            label="Amount (â‚¦)"
+            label="Amount (₦)"
             type="number"
             placeholder="0"
             value={amount}

@@ -1,5 +1,6 @@
-﻿'use client'
+'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { useQuery } from '@tanstack/react-query'
@@ -8,6 +9,9 @@ import { OrganizerProfileCard } from '@/components/team/OrganizerProfileCard'
 import { OnboardingSummary } from '@/components/team/OnboardingSummary'
 import { CoOrganizerSection } from '@/components/team/CoOrganizerSection'
 import { api } from '@/lib/api'
+import { useMyEvents } from '@/hooks/useEvents'
+import { useEventTeam, useAddTeamMember, useRemoveTeamMember } from '@/hooks/useTeam'
+import type { TeamPermission } from '@/hooks/useTeam'
 
 interface IsVerify {
   email?: boolean
@@ -24,7 +28,7 @@ interface OnboardingData {
   interest?: string[]
 }
 
-interface User {
+interface UserProfile {
   _id: string
   name: string
   username: string
@@ -35,14 +39,45 @@ interface User {
 
 export default function TeamPage() {
   const { data: session } = useSession()
-  const { data: user, isLoading, isError } = useQuery({
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+
+  // ── User profile ──────────────────────────────────────────────────────────
+  const { data: user, isLoading: userLoading, isError: userError } = useQuery({
     queryKey: ['partnerUser', session?.user.id],
     queryFn: () =>
-      api.get<User>(`/users/${session!.user.id}`).then((r) => r.data),
+      api.get<UserProfile>(`/users/${session!.user.id}`).then((r) => r.data),
     enabled: !!session?.user.id,
   })
 
-  if (isLoading) {
+  // ── Events list (for the event selector in CoOrganizerSection) ───────────
+  const { data: events = [], isLoading: eventsLoading } = useMyEvents()
+
+  // ── Team hooks — keyed to the selected event ──────────────────────────────
+  const {
+    data: members = [],
+    isLoading: teamLoading,
+    isError: teamError,
+  } = useEventTeam(selectedEventId ?? '')
+
+  const addMember = useAddTeamMember()
+  const removeMember = useRemoveTeamMember()
+
+  const handleInvite = (email: string, permissions: TeamPermission[]) => {
+    if (!selectedEventId) return
+    addMember.mutate({ eventId: selectedEventId, email, permissions })
+  }
+
+  const handleRemove = (payload: { eventId: string; userId: string }) => {
+    removeMember.mutate(payload)
+  }
+
+  // Derive a friendly error string from React Query mutation errors
+  const inviteError =
+    addMember.isError && addMember.error instanceof Error
+      ? addMember.error.message
+      : null
+
+  if (userLoading) {
     return (
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <LoadingSpinner centered size="lg" />
@@ -50,7 +85,7 @@ export default function TeamPage() {
     )
   }
 
-  if (isError || !user) {
+  if (userError || !user) {
     return (
       <div style={{ padding: '32px 24px' }}>
         <ErrorMessage message="Failed to load user data." />
@@ -61,12 +96,10 @@ export default function TeamPage() {
   return (
     <div style={{ flex: 1, padding: '32px 24px', paddingBottom: '120px' }}>
       <main style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        {/* Page Title */}
         <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 32px', letterSpacing: '-0.02em' }}>
           TEAM
         </h1>
 
-        {/* Organizer Profile Card */}
         <OrganizerProfileCard
           name={user.name}
           username={user.username}
@@ -74,7 +107,6 @@ export default function TeamPage() {
           isVerify={user.isVerify}
         />
 
-        {/* Edit Setup Button */}
         <div style={{ marginBottom: '32px' }}>
           <Link href="/onboarding" style={{ textDecoration: 'none' }}>
             <Button variant="primary" fullWidth>
@@ -83,13 +115,23 @@ export default function TeamPage() {
           </Link>
         </div>
 
-        {/* Onboarding Summary */}
         <OnboardingSummary onboarding={user.onboarding} />
 
-        {/* Co-organizer Section */}
-        <CoOrganizerSection />
+        <CoOrganizerSection
+          events={events.map((e) => ({ _id: e._id, name: e.name }))}
+          eventsLoading={eventsLoading}
+          selectedEventId={selectedEventId}
+          onSelectEvent={setSelectedEventId}
+          members={members}
+          teamLoading={teamLoading}
+          teamError={teamError}
+          onInvite={handleInvite}
+          isInviting={addMember.isPending}
+          inviteError={inviteError}
+          onRemove={handleRemove}
+          isRemoving={removeMember.isPending}
+        />
       </main>
     </div>
   )
 }
-

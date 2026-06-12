@@ -1,3 +1,7 @@
+// Ticket inventory is live data — never serve a statically cached version
+// of this page. Each request must reflect the current sold count.
+export const dynamic = 'force-dynamic'
+
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { EventInteractiveSection } from '@/components/event/EventInteractiveSection'
@@ -17,7 +21,7 @@ async function getEvent(slug: string): Promise<EventType | null> {
   let res: Response
   try {
     res = await fetch(`${API}/events/${slug}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
     })
   } catch {
     throw new Error('Unable to connect to event service. Please try again.')
@@ -238,9 +242,9 @@ export default async function EventDetailPage({
                   followerCount={organizerStats?.followers ?? 0}
                   upcomingEventCount={organizerStats?.upcomingEvents ?? 0}
                 />
-                <div style={{ marginTop: '16px', display: 'none' }}>
+                <div style={{ marginTop: '16px' }}>
                   <a
-                    href={`/organizer/${organizer.username || organizer._id}`}
+                    href={`/organizer/${organizer.username && !organizer.username.includes('@') ? organizer.username : organizer._id}`}
                     style={{
                       display: 'block',
                       width: '100%',

@@ -1,13 +1,13 @@
 import Users from '../models/User.js'
+import { createError } from '../utils/error.js'
 import { verifyToken } from '../utils/verifyToken.js'
 import Token from '../models/token.js'
 import { sendEmails }  from '../utils/sendEmail.js'
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 import Joi  from  "joi";
-import { createError } from '../utils/error.js'
-
 import jwt from 'jsonwebtoken'
+import { generateFallbackCode } from '../utils/referralCode.js'
 
 
 // ONBOARDING
@@ -117,7 +117,7 @@ export const updateUser = async (req,res,next) =>{
     try{
         // Whitelist allowed fields — prevent privilege escalation
         const allowedFields = [
-            'name', 'email', 'phone', 'businessName', 'address', 'image', 'avatar', 'bgImg',
+            'username', 'name', 'email', 'phone', 'businessName', 'address', 'image', 'avatar', 'bgImg',
             'notificationPreferences', 'privacySettings',
         ];
         const updateData = {};
@@ -127,13 +127,53 @@ export const updateUser = async (req,res,next) =>{
             }
         });
 
+        if ('username' in updateData) {
+            const uname = (updateData.username ?? '').trim();
+            if (uname === '') {
+                return res.status(400).json({ success: false, message: 'Username cannot be empty.' });
+            }
+            if (uname.includes('@')) {
+                return res.status(400).json({ success: false, message: 'Usernames cannot be email addresses.' });
+            }
+            updateData.username = uname;
+        }
+
+        // Sanitize phone field: replace or clear corrupted UTF-8 sequences
+        if ('phone' in updateData) {
+            if (updateData.phone && typeof updateData.phone === 'string') {
+                // Remove corrupted UTF-8 em-dash and other invalid sequences
+                updateData.phone = updateData.phone.replace(/â€"|â€™|â€˜|â€œ|â€/g, '').trim();
+                if (updateData.phone === '') {
+                    updateData.phone = '';
+                }
+            } else if (!updateData.phone) {
+                updateData.phone = '';
+            }
+        }
+
+        // Sanitize avatar field: replace or clear corrupted UTF-8 sequences
+        if ('avatar' in updateData) {
+            if (updateData.avatar && typeof updateData.avatar === 'string') {
+                // Remove corrupted UTF-8 sequences
+                updateData.avatar = updateData.avatar.replace(/â€"|â€™|â€˜|â€œ|â€/g, '').trim();
+                if (updateData.avatar === '') {
+                    updateData.avatar = null;
+                }
+            } else if (!updateData.avatar) {
+                updateData.avatar = null;
+            }
+        }
+
         const updatedUser = await Users.findByIdAndUpdate(
             req.params.id,
-           { $set: updateData},
-           {new: true}
-        )
+            { $set: updateData },
+            { new: true }
+        ).select('-password')
         res.status(200).json(updatedUser)
-    }catch(err){
+    } catch (err) {
+        if (err.code === 11000 && err.keyPattern?.username) {
+            return next(createError(409, 'This username is already taken. Please choose another one.'))
+        }
         next(err)
     }
 }
@@ -186,10 +226,75 @@ export const deleteUser = async (req,res,next) =>{
 // GET — public profile; only safe fields returned (no PII, no flags)
 export const getUser = async (req,res,next) =>{
     try{
-        const user = await Users.findById(req.params.id)
-            .select('name username avatar image bio followers following createdAt')
-        if (!user) return next(createError(404, 'User not found'))
-        res.status(200).json(user)
+        // Try username lookup first so public profile URLs work with handles
+        let user = await Users.findOne({ username: req.params.id })
+
+        // Fall back to ObjectId lookup for direct _id links and legacy DB entries
+        if (!user) {
+            try {
+                user = await Users.findById(req.params.id)
+            } catch {
+                // req.params.id was not a valid ObjectId — fall through to 404
+            }
+        }
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' })
+        }
+
+        // Lazily generate and persist referralFallbackCode for existing users
+        let fallbackCode = user.referralFallbackCode;
+        if (!fallbackCode) {
+            fallbackCode = generateFallbackCode(user._id);
+            try {
+                user.referralFallbackCode = fallbackCode;
+                await user.save();
+            } catch {
+                // Non-blocking: collision on sparse unique index won't break the request
+            }
+        }
+
+        // Surface referralCode: prefer username when it is not an email address
+        const hasValidUsername = user.username && !user.username.includes('@');
+        const referralCode = hasValidUsername ? user.username : fallbackCode;
+
+        // Fetch events + aggregate stats in parallel.
+        // User.events stores raw string IDs (no ref) — query by planner_id instead.
+        const Event = (await import('../models/Event.js')).default
+        const Follow = (await import('../models/Follow.js')).default
+
+        const [organizerEvents, followerCount, eventCount, soldResult] = await Promise.all([
+            Event.find({
+                planner_id: user._id.toString(),
+                status: { $in: ['published', 'draft', 'active', 'live'] },
+            }).sort({ date: 1 }).lean(),
+            Follow.countDocuments({ organizer_id: user._id.toString() }),
+            Event.countDocuments({ planner_id: user._id.toString() }),
+            Event.aggregate([
+                { $match: { planner_id: user._id.toString() } },
+                { $group: { _id: null, total: { $sum: '$sold' } } },
+            ]),
+        ])
+
+        const totalTicketsSold = soldResult.length > 0 ? soldResult[0].total : 0
+
+        // Clean corrupted UTF-8 sequences before returning (defensive measure)
+        const sanitizeString = (str) => {
+            if (!str || typeof str !== 'string') return str;
+            return str.replace(/â€"|â€™|â€˜|â€œ|â€|â„¹|â‚¦|Â·|â‰¥|â"€/g, '').trim();
+        };
+
+        const { password, isAdmin, ...OtherDetails } = user._doc;
+        res.status(200).json({
+            ...OtherDetails,
+            phone: sanitizeString(user.phone) || '',
+            avatar: sanitizeString(user.avatar) || null,
+            referralCode,
+            events: organizerEvents,
+            followerCount,
+            eventCount,
+            totalTicketsSold,
+        });
     }catch(err){
         next(err)
     }
@@ -239,6 +344,13 @@ export const getAllUsers = async (req,res,next) =>{
 export const uploadKYC = async (req, res, next) => {
     try {
         // Handle both JSON body and multipart form data
+        if (!req.body) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing request body or multi-part fields form data.'
+            })
+        }
+
         const { docType } = req.body
         const file = req.file
 

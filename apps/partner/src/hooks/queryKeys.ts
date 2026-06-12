@@ -27,3 +27,8 @@ export const attendeeKeys = {
 export const kycKeys = {
   status: ['kyc', 'status'] as const,
 }
+
+export const teamKeys = {
+  all: ['team'] as const,
+  event: (eventId: string) => [...teamKeys.all, eventId] as const,
+}

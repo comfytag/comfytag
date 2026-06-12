@@ -2,7 +2,8 @@ export * from './constants'
 export * from './auth'
 
 // ─── Currency formatting ───────────────────────────────
-export function formatNaira(amount: number): string {
+export function formatNaira(amount: number | null | undefined): string {
+  if (amount == null || isNaN(amount)) return '₦0'
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',

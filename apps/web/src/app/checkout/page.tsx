@@ -7,7 +7,9 @@ import { useSession } from 'next-auth/react'
 import { Button, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { AuthGateSheet } from '@/components/ui/AuthGateSheet'
 import { useAuthGate } from '@/hooks/useAuthGate'
+import { useQueryClient } from '@tanstack/react-query'
 import { useCheckout } from '@/hooks/useCheckout'
+import { eventKeys, ticketKeys } from '@/hooks/queryKeys'
 import { formatNaira } from '@comfytag/utils'
 import {
   CheckoutSummary,
@@ -49,6 +51,8 @@ function CheckoutInner() {
   const tierId = searchParams.get('tierId') ?? ''
   const qty = parseInt(searchParams.get('qty') ?? '1', 10)
 
+  const queryClient = useQueryClient()
+
   // Call the useCheckout hook for all data fetching and state management
   const checkout = useCheckout(eventId, tierId, qty)
 
@@ -89,6 +93,10 @@ function CheckoutInner() {
         userId: session?.user.id ?? undefined,
       })
       setSuccessRef(ref)
+      // Bust cached event inventory and user ticket list so both UIs
+      // reflect the new purchase without requiring a hard reload.
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(checkout.event.slug ?? eventId) })
+      queryClient.invalidateQueries({ queryKey: ticketKeys.list() })
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate([200, 100, 200])
       }
@@ -128,6 +136,10 @@ function CheckoutInner() {
       )
 
       setSuccessRef(reference)
+      // Bust cached event inventory and user ticket list so both UIs
+      // reflect the new purchase without requiring a hard reload.
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(checkout.event.slug ?? eventId) })
+      queryClient.invalidateQueries({ queryKey: ticketKeys.list() })
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate([200, 100, 200])
       }

@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Modal } from '@comfytag/ui'
 import type { BankAccount } from '@comfytag/types'
 import { api } from '@/lib/api'
+import { formatNaira } from '@comfytag/utils'
 
 interface RequestPayoutModalProps {
   isOpen: boolean
@@ -111,7 +112,7 @@ export function RequestPayoutModal({
             <option value="">Select a bank account</option>
             {activeBanks.map((bank) => (
               <option key={bank._id} value={bank._id}>
-                {bank.bankName} â€” {bank.acctNumber}
+                {bank.bankName} — {bank.acctNumber}
               </option>
             ))}
           </select>
@@ -161,7 +162,7 @@ export function RequestPayoutModal({
               color: 'var(--color-text)',
             }}
           >
-            Amount (â‚¦)
+            Amount (₦)
           </label>
           <input
             id="amount"
@@ -186,7 +187,7 @@ export function RequestPayoutModal({
               margin: 0,
             }}
           >
-            Available: â‚¦{(maxAmount ?? 0).toLocaleString()}
+            Available: {formatNaira(maxAmount ?? 0)}
           </p>
         </div>
 

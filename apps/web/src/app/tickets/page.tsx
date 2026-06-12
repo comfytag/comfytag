@@ -57,11 +57,19 @@ export default function TicketsPage() {
     )
   }
 
-  // Categorize tickets by status only — the backend cron job transitions
-  // expired tickets from 'active' to 'ended' each hour, so status is the
-  // single source of truth for upcoming vs. past.
-  const upcoming = tickets.filter((t) => t.status === 'active')
-  const past = tickets.filter((t) => t.status !== 'active')
+  // Categorize by event date, not ticket status — status lags until the
+  // backend cron runs, so a ticket can be 'active' long after the event ends.
+  const now = new Date()
+
+  const upcoming = tickets.filter((t) => {
+    const dateToCompare = t.eventDate || t.date
+    return dateToCompare ? new Date(dateToCompare) >= now : true
+  })
+
+  const past = tickets.filter((t) => {
+    const dateToCompare = t.eventDate || t.date
+    return dateToCompare ? new Date(dateToCompare) < now : false
+  })
 
   // Adapter: build a User-compatible object for FaceEnrollmentBanner.
   // faceEnrolled is not stored in the JWT session, so we default to false —
@@ -96,8 +104,8 @@ export default function TicketsPage() {
 
         <TabBar
           tabs={[
-            { label: 'Upcoming', value: 'upcoming' },
-            { label: 'Past', value: 'past' },
+            { label: 'Upcoming', value: 'upcoming', count: upcoming.length },
+            { label: 'Past', value: 'past', count: past.length },
           ]}
           activeTab={activeTab}
           onChange={(value) => setActiveTab(value as Tab)}

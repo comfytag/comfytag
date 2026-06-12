@@ -8,8 +8,7 @@ import { useAuthGate } from '@/hooks/useAuthGate'
 import { EmptyState } from '@comfytag/ui'
 import type { Event } from '@comfytag/types'
 import { formatDate, isToday, isUpcoming } from '@comfytag/utils'
-import { api } from '@/lib/api'
-import { authHeader } from '@comfytag/utils'
+import { useLikeEvent } from '@/hooks/useEvents'
 
 const PAGE_SIZE = 12
 
@@ -27,10 +26,11 @@ export function EventFeedSection({
   onEventSelect,
   activeCategory,
 }: EventFeedSectionProps) {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const { gateOpen, closeGate, openGate } = useAuthGate()
+  const { mutate: likeMutate } = useLikeEvent()
   const eventList = initialEvents.length > 0 ? initialEvents : events
 
   // Tonight row (compact horizontal scroll)
@@ -52,22 +52,34 @@ export function EventFeedSection({
     [eventList, activeCategory]
   )
 
-  async function handleLike(eventId: string) {
-    if (!session) {
+  // Past events — published, date in the past, newest first
+  const pastEvents = useMemo(
+    () =>
+      eventList
+        .filter(
+          (e) =>
+            e.status === 'published' &&
+            !!e.date &&
+            !isUpcoming(e.date) &&
+            (!activeCategory || e.category.toLowerCase() === activeCategory.toLowerCase())
+        )
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+    [eventList, activeCategory]
+  )
+
+  function handleLike(eventId: string) {
+    if (status !== 'authenticated' || !session) {
       openGate('like')
       return
     }
-    try {
-      await api.post(`/events/${eventId}/like`, null)
-      setLikedIds((prev) => {
-        const next = new Set(prev)
-        if (next.has(eventId)) next.delete(eventId)
-        else next.add(eventId)
-        return next
-      })
-    } catch {
-      // silent fail
-    }
+    const eventSlug = eventList.find((e) => e._id === eventId)?.slug ?? eventId
+    likeMutate({ eventId, slug: eventSlug })
+    setLikedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(eventId)) next.delete(eventId)
+      else next.add(eventId)
+      return next
+    })
   }
 
   const sentinelRef = useRef<HTMLDivElement>(null)
@@ -225,6 +237,51 @@ export function EventFeedSection({
         {/* Infinite scroll sentinel */}
         {allUpcomingEvents.length > visibleCount && (
           <div ref={sentinelRef} style={{ height: '40px', marginTop: '8px' }} aria-hidden="true" />
+        )}
+
+        {/* Past Events section */}
+        {pastEvents.length > 0 && (
+          <section style={{ marginTop: '48px' }}>
+            <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', marginBottom: '40px' }} />
+            <h2
+              style={{
+                fontSize: '18px',
+                fontWeight: 700,
+                color: 'var(--color-text)',
+                margin: '0 0 20px',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              Past Events
+            </h2>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                gap: '14px',
+              }}
+            >
+              {pastEvents.slice(0, 8).map((event) => (
+                <div
+                  key={event._id}
+                  onClick={() => onEventSelect?.(event._id)}
+                  role="button"
+                  tabIndex={0}
+                  style={{ cursor: 'pointer' }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') onEventSelect?.(event._id)
+                  }}
+                >
+                  <EventCard
+                    event={event}
+                    href={`/events/${event.slug ?? event._id}`}
+                    isLiked={likedIds.has(event._id)}
+                    onLike={handleLike}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
         )}
         </div>
       </section>

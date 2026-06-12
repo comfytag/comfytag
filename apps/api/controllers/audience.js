@@ -61,6 +61,7 @@ export const createFreeAudience = async (req, res, next) => {
         try {
             qrCode = await QR(savedAudience.reference)
             await Audience.findByIdAndUpdate(savedAudience._id, { qrCode })
+            savedAudience.qrCode = qrCode
         } catch (qrErr) {
             console.log('QR generation failed:', qrErr.message)
         }
@@ -189,6 +190,7 @@ export const createAudience = async (req, res, next) => {
         try {
             qrCode = await QR(savedAudience.reference)
             await Audience.findByIdAndUpdate(savedAudience._id, { qrCode })
+            savedAudience.qrCode = qrCode
         } catch (qrErr) {
             console.log('QR generation failed:', qrErr.message)
         }
@@ -387,7 +389,7 @@ export const getAudienceByReference = async (req, res, next) => {
     }
 }
 
-// GET
+// GET — self or admin (enforced in controller)
 export const getAudience = async (req, res, next) => {
     try {
         const ticket = await Audience.findById(req.params.id)

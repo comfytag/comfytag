@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Event } from '@comfytag/types'
-import { formatDate, formatTime } from '@comfytag/utils'
+import { formatDate, formatTime, formatNaira } from '@comfytag/utils'
 
 export interface EventCardProps {
   event: Event
@@ -32,6 +32,13 @@ export function EventCard({
   const totalCap = event.ticketType.reduce((s, t) => s + t.capacity, 0)
   const soldPct = totalCap > 0 ? event.sold / totalCap : 0
   const imageSrc = event.coverImage ?? event.images[0] ?? '/placeholder.svg'
+
+  // Derive the lowest price across all ticket tiers (0 = free event).
+  const lowestPrice =
+    event.ticketType.length > 0
+      ? Math.min(...event.ticketType.map((t) => t.price))
+      : 0
+  const priceLabel = lowestPrice === 0 ? 'Free' : formatNaira(lowestPrice)
 
   const height = compact ? 180 : 240
 
@@ -133,21 +140,55 @@ export function EventCard({
             {event.name}
           </div>
 
-          {/* Date + venue — muted */}
+          {/* Date + venue + price — muted row */}
           <div
             style={{
-              color: 'var(--color-text-muted)',
-              fontSize: '12px',
-              lineHeight: 1.4,
               display: 'flex',
-              flexDirection: 'column',
-              gap: '2px',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              gap: '8px',
             }}
           >
-            <div>{formatDate(event.date)} at {formatTime(event.startTime)}</div>
-            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {event.venue}
+            <div
+              style={{
+                color: 'var(--color-text-muted)',
+                fontSize: '12px',
+                lineHeight: 1.4,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2px',
+                minWidth: 0,
+                flex: 1,
+              }}
+            >
+              <div>{formatDate(event.date)} at {formatTime(event.startTime)}</div>
+              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {event.venue}
+              </div>
             </div>
+
+            {/* Price chip — hidden on compact cards to save space */}
+            {!compact && (
+              <div
+                style={{
+                  flexShrink: 0,
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  letterSpacing: '0.02em',
+                  color: lowestPrice === 0 ? '#10B981' : 'var(--color-text-on-brand)',
+                  background:
+                    lowestPrice === 0
+                      ? 'rgba(16, 185, 129, 0.18)'
+                      : 'rgba(255, 255, 255, 0.14)',
+                  padding: '3px 8px',
+                  borderRadius: 'var(--radius-full)',
+                  backdropFilter: 'blur(4px)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {priceLabel}
+              </div>
+            )}
           </div>
         </div>
 

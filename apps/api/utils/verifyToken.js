@@ -56,3 +56,16 @@ export const verifyAdmin = (req,res, next) =>{
         }
     })
 }
+
+// Requires the caller to be a registered partner OR admin.
+// Use on all /partner/*, /bank/*, and /withdraw/* routes.
+export const verifyPartner = (req, res, next) => {
+    verifyToken(req, res, (err) => {
+        if (err) return next(err);
+        if (req.user.isPartner || req.user.isAdmin) {
+            next();
+        } else {
+            return next(createError(403, "Partner access required!"));
+        }
+    });
+}

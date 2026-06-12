@@ -16,6 +16,18 @@ fs.readdirSync(PARTIALS_DIR).forEach((file) => {
   Handlebars.registerPartial(name, content);
 });
 
+// ─── Load and cache Handlebars layouts on first use ─────────────────────────
+const LAYOUTS_DIR = path.join(TEMPLATES_DIR, "layouts");
+const layoutCache = {};
+
+const getLayout = (layoutName) => {
+  if (!layoutCache[layoutName]) {
+    const raw = fs.readFileSync(path.join(LAYOUTS_DIR, layoutName), "utf-8");
+    layoutCache[layoutName] = Handlebars.compile(raw);
+  }
+  return layoutCache[layoutName];
+};
+
 // ─── Email sender addresses (configurable via env, with defaults) ────────────
 const RESEND_FROM_DEFAULT = process.env.RESEND_FROM_DEFAULT || "noreply@comfytag.com";
 const RESEND_FROM_TICKETS = process.env.RESEND_FROM_TICKETS || "tickets@comfytag.com";
@@ -106,7 +118,25 @@ export const sendEmail = async ({
     let html = null;
     if (template) {
       const compiledTemplate = loadTemplate(template);
-      html = compiledTemplate(data);
+      const bodyHtml = compiledTemplate(data);
+
+      // Standalone templates (ticketConfirmation, otp, reminder, etc.) include their
+      // own full HTML shell. Fragment templates (welcome series, transfer, KYC, etc.)
+      // are bare HTML body content — wrap them in the transactional layout so they
+      // get a proper <!DOCTYPE>, viewport meta, and branded header/footer in all clients.
+      const isStandalone = bodyHtml.trimStart().startsWith("<!DOCTYPE");
+      if (isStandalone) {
+        html = bodyHtml;
+      } else {
+        const layoutName = data._layout || "transactional.hbs";
+        html = getLayout(layoutName)({
+          subject,
+          body: bodyHtml,
+          year: data.year || new Date().getFullYear(),
+          unsubscribeUrl: data.unsubscribeUrl || "",
+          preferencesUrl: data.preferencesUrl || "",
+        });
+      }
     }
 
     // ─── Build mail options ────────────────────────
@@ -182,8 +212,7 @@ export const sendEmails = async (email, subject, text, html) => {
 };
 
 /**
- * Ticket confirmation email sender
- * Sends confirmation with ticket information
+ * Legacy wrapper — sends a ticket confirmation email
  * @param {string} email - Recipient email
  * @param {string} subject - Email subject
  * @param {string} text - Plain text content
@@ -195,14 +224,14 @@ export const sendTicket = async (email, subject, text, html) => {
     to: email,
     subject,
     text,
-    template: "ticketConfirmation.hbs", // Uses dedicated ticket template
+    template: "ticketConfirmation.hbs",
     data: { text, html },
     from: RESEND_FROM_TICKETS,
   });
 };
 
 /**
- * Convenience function: Send OTP email
+ * Convenience function: Send OTP / password-reset email
  * @param {string} email - Recipient email
  * @param {string} otp - One-time password
  * @param {string} [templateName="otp.hbs"] - Template to use
@@ -213,11 +242,17 @@ export const sendOTP = async (
   otp,
   templateName = "otp.hbs"
 ) => {
+  const baseUrl = process.env.BASE_URL || "https://comfytag.com";
   return sendEmail({
     to: email,
     subject: "Your ComfyTag One-Time Password",
     template: templateName,
-    data: { otp },
+    data: {
+      otp,
+      year: new Date().getFullYear(),
+      unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+      preferencesUrl: `${baseUrl}/preferences`,
+    },
     from: RESEND_FROM_DEFAULT,
   });
 };
@@ -226,19 +261,25 @@ export const sendOTP = async (
  * Convenience function: Send welcome email
  * @param {string} email - Recipient email
  * @param {string} name - User's name
- * @param {string} [templateName="welcome.hbs"] - Template to use
+ * @param {string} [templateName="attendeeWelcome1.hbs"] - Template to use
  * @returns {Promise<Object>} Result object
  */
 export const sendWelcome = async (
   email,
   name,
-  templateName = "welcome.hbs"
+  templateName = "attendeeWelcome1.hbs"
 ) => {
+  const baseUrl = process.env.BASE_URL || "https://comfytag.com";
   return sendEmail({
     to: email,
     subject: "Welcome to ComfyTag",
     template: templateName,
-    data: { name },
+    data: {
+      name,
+      year: new Date().getFullYear(),
+      unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+      preferencesUrl: `${baseUrl}/preferences`,
+    },
     from: RESEND_FROM_DEFAULT,
   });
 };

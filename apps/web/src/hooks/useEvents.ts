@@ -25,7 +25,7 @@ export function useEventComments(eventId: string) {
 export function useOrganizerProfile(slug: string) {
   return useQuery({
     queryKey: profileKeys.organizer(slug),
-    queryFn: () => api.get(`/organizer/${slug}`).then(r => r.data.data),
+    queryFn: () => api.get(`/users/${slug}`).then(r => r.data.data ?? r.data),
     staleTime: 300_000,
     enabled: !!slug,
   })
@@ -57,9 +57,17 @@ export function useLikeEvent() {
 export function useFollowOrganizer() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ slug }: { slug: string }) =>
-      api.post(`/organizer/${slug}/follow`).then(r => r.data),
-    onSuccess: (_, { slug }) => {
+    mutationFn: ({ organizerId, slug }: { organizerId: string; slug: string }) =>
+      api.post(`/organizers/${organizerId}/follow`).then(r => r.data),
+    onSuccess: (data: { following: boolean; followerCount: number }, { slug }) => {
+      // Immediately patch the cached profile so the button switches without
+      // waiting for a full refetch, then fire a background invalidation for
+      // eventual consistency (in case other callers hold stale data).
+      qc.setQueryData(
+        profileKeys.organizer(slug),
+        (old: Record<string, unknown> | undefined) =>
+          old ? { ...old, isFollowing: data.following, followerCount: data.followerCount } : old
+      )
       qc.invalidateQueries({ queryKey: profileKeys.organizer(slug) })
       qc.invalidateQueries({ queryKey: profileKeys.following })
     },

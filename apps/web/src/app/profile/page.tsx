@@ -59,7 +59,7 @@ export default function ProfilePage() {
   }
 
   function handleCopyReferralLink() {
-    const referralCode = user?.referralCode || session?.user?.referralCode || user?._id
+    const referralCode = user?.referralCode || session?.user?.referralCode
     if (!referralCode) return
 
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://comfytag.com'
@@ -205,7 +205,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Referral Link section */}
-        {(user?.referralCode || session?.user?.referralCode || user?._id) && (
+        {(user?.referralCode || session?.user?.referralCode) && (
           <div
             style={{
               backgroundColor: 'var(--color-surface)',
@@ -245,7 +245,7 @@ export default function ProfilePage() {
                     padding: 0,
                   }}
                 >
-                  ?ref={user?.referralCode || session?.user?.referralCode || user?._id}
+                  ?ref={user?.referralCode || session?.user?.referralCode}
                 </code>
                 <Button
                   variant="secondary"

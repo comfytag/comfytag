@@ -7,6 +7,7 @@ export const startOrganizerWinbackCron = () => {
   cron.schedule('0 11 * * *', async () => {
     try {
       console.log('[Organizer Winback Cron] Starting...');
+      const baseUrl = process.env.BASE_URL || 'https://comfytag.com';
       const now = new Date();
       const sixtydaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
       const seventyFiveDaysAgo = new Date(now.getTime() - 75 * 24 * 60 * 60 * 1000);
@@ -18,7 +19,7 @@ export const startOrganizerWinbackCron = () => {
       for (const orgId of org60Ids) {
         const org = await User.findById(orgId);
         if (org && !org.suppressed_inactive && !org.organizerWinback1Sent) {
-          await enqueueEmail({ to: org.email, subject: 'Your last event was a hit — ready for the next one?', template: 'organizerWinback1.hbs', data: { organizerName: org.name.split(' ')[0], createLink: process.env.PARTNER_URL + '/events/create', year: 2026 }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
+          await enqueueEmail({ to: org.email, subject: 'Your last event was a hit — ready for the next one?', template: 'organizerWinback1.hbs', data: { organizerName: org.name.split(' ')[0], createLink: process.env.PARTNER_URL + '/events/create', year: new Date().getFullYear(), unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`, preferencesUrl: `${baseUrl}/partner/preferences` }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
           await User.updateOne({ _id: orgId }, { organizerWinback1Sent: true });
         }
       }
@@ -29,7 +30,7 @@ export const startOrganizerWinbackCron = () => {
       for (const orgId of org75Ids) {
         const org = await User.findById(orgId);
         if (org && !org.suppressed_inactive && !org.organizerWinback2Sent) {
-          await enqueueEmail({ to: org.email, subject: '3 event formats trending in Nigeria right now', template: 'organizerWinback2.hbs', data: { organizerName: org.name.split(' ')[0], createLink: process.env.PARTNER_URL + '/events/create', year: 2026 }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
+          await enqueueEmail({ to: org.email, subject: '3 event formats trending in Nigeria right now', template: 'organizerWinback2.hbs', data: { organizerName: org.name.split(' ')[0], createLink: process.env.PARTNER_URL + '/events/create', year: new Date().getFullYear(), unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`, preferencesUrl: `${baseUrl}/partner/preferences` }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
           await User.updateOne({ _id: orgId }, { organizerWinback2Sent: true });
         }
       }
@@ -44,7 +45,7 @@ export const startOrganizerWinbackCron = () => {
           if (clicks) {
             await User.updateOne({ _id: orgId }, { emailEngaged: true, organizerWinback3Sent: true });
           } else {
-            await enqueueEmail({ to: org.email, subject: 'One last message — stay or opt out', template: 'organizerWinback3.hbs', data: { organizerName: org.name.split(' ')[0], preferencesLink: process.env.PARTNER_URL + '/settings/notifications', year: 2026 }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
+            await enqueueEmail({ to: org.email, subject: 'One last message — stay or opt out', template: 'organizerWinback3.hbs', data: { organizerName: org.name.split(' ')[0], preferencesLink: process.env.PARTNER_URL + '/settings/notifications', year: new Date().getFullYear(), unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`, preferencesUrl: `${baseUrl}/partner/preferences` }, from: 'hello@comfytag.com' }).catch(e => console.error(e.message));
             await User.updateOne({ _id: orgId }, { suppressed_inactive: true, emailSuppressed: { reason: 'organizer-winback-no-response', date: new Date() }, organizerWinback3Sent: true });
           }
         }

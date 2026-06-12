@@ -33,7 +33,7 @@ export function useMyEvents() {
 export function useEventById(id: string) {
   return useQuery({
     queryKey: partnerEventKeys.detail(id),
-    queryFn: () => api.get<Event>(`/events/${id}`).then((r) => r.data),
+    queryFn: () => api.get<{ success: boolean; data: Event }>(`/events/${id}`).then((r) => r.data.data),
     staleTime: 60_000,
     enabled: !!id,
   })

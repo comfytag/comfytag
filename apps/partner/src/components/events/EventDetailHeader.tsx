@@ -19,11 +19,15 @@ export function EventDetailHeader({
   onStatusChange,
   isStatusPending,
 }: EventDetailHeaderProps) {
+  if (!event) {
+    return null
+  }
+
   return (
     <>
       <PageHeader
-        title={event.name}
-        subtitle={`${formatDate(event.date)} · ${event.venue || ''}`}
+        title={event.name || 'Untitled Event'}
+        subtitle={`${event.date ? formatDate(event.date) : 'No date'} · ${event.venue || 'No venue'}`}
         action={
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
             <Link
@@ -97,14 +101,14 @@ export function EventDetailHeader({
               ? 'approved'
               : event.status === 'cancelled'
                 ? 'rejected'
-                : event.status
+                : event.status || 'draft'
           }
         />
         <span style={{ fontSize: '14px', color: 'var(--color-text-muted)' }}>
-          {event.address}, {event.state}
+          {event.address || 'No address'}, {event.state || 'No state'}
         </span>
         <span style={{ fontSize: '14px', color: 'var(--color-text-muted)' }}>
-          {event.startTime} – {event.endTime}
+          {event.startTime || 'TBA'} – {event.endTime || 'TBA'}
         </span>
       </div>
     </>

@@ -76,9 +76,8 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
     try {
       const fd = new FormData()
       fd.append('file', file)
-      const res = await fetch('/api/upload', { method: 'POST', body: fd })
-      const data = await res.json()
-      return data.url
+      const res = await api.post<{ url: string }>('/upload', fd)
+      return res.data.url
     } catch (err) {
       setError('Failed to upload file. Please try again.')
       throw err
@@ -89,7 +88,7 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
     const price = Number(currentTier.price)
     const capacity = Number(currentTier.capacity)
     if (!currentTier.name || price < 0 || capacity <= 0) {
-      setTierError('Please enter a valid name, price â‰¥ 0, and capacity > 0.')
+      setTierError('Please enter a valid name, price ≥ 0, and capacity > 0.')
       return
     }
     setTiers([...tiers, currentTier])
@@ -123,6 +122,7 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
       ticketType: tiers.map(t => ({ name: t.name, price: Number(t.price), capacity: Number(t.capacity) })),
       performers: performers.length > 0 ? performers : undefined,
       images,
+      videoUrl: videoUrl || undefined,
     })
   }
 
@@ -360,7 +360,7 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
         />
         <div style={{ ...twoColGrid, marginTop: '16px' }}>
           <Input
-            label="Price (â‚¦)"
+            label="Price (₦)"
             type="number"
             placeholder="0"
             value={currentTier.price}

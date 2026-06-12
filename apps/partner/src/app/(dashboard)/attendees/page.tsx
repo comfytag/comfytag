@@ -7,8 +7,7 @@ import type { Ticket } from '@comfytag/types'
 import { EventSelectorBar } from '@/components/attendees/EventSelectorBar'
 import { AttendeeSearchFilter } from '@/components/attendees/AttendeeSearchFilter'
 import { AttendeeRow } from '@/components/attendees/AttendeeRow'
-import { useMyEvents, useAttendees, useCheckin } from '@/hooks'
-import { api } from '@/lib/api'
+import { useMyEvents, useAttendees, useCheckin, useExportAttendees } from '@/hooks'
 
 type StatusFilterValue = 'all' | 'active' | 'used' | 'transferred' | 'refunded'
 
@@ -33,25 +32,26 @@ export default function AttendeesPage() {
   // Check-in mutation
   const checkInMutation = useCheckin()
 
+  // Export mutation
+  const exportMutation = useExportAttendees()
+
   // CSV export handler
-  const handleExport = async () => {
+  const handleExport = () => {
     if (!selectedEventId) return
-    try {
-      const res = await api.get(
-        `/audience/events/${selectedEventId}/audience/export`,
-        {
-          responseType: 'blob',
-        }
-      )
-      const blob = res.data
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `attendees-${selectedEventId}.csv`
-      a.click()
-    } catch (err) {
-      console.error('Export failed:', err)
-    }
+    exportMutation.mutate(selectedEventId, {
+      onSuccess: (csv) => {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `attendees-${selectedEventId}.csv`
+        a.click()
+        window.URL.revokeObjectURL(url)
+      },
+      onError: (err) => {
+        console.error('Export failed:', err)
+      },
+    })
   }
 
   // Filter attendees
@@ -67,7 +67,7 @@ export default function AttendeesPage() {
       result = result.filter(a =>
         a.name?.toLowerCase().includes(q) ||
         a.email?.toLowerCase().includes(q) ||
-        a.phone?.toLowerCase().includes(q)
+        String(a.phone || '').toLowerCase().includes(q)
       )
     }
 

@@ -57,8 +57,17 @@ const AudienceSchema = new Schema({
     // ─── Ticket Status ─────────────────────────────
     status: {
         type: String,
-        enum: ['active', 'used', 'transferred', 'refunded', 'ended'],
+        enum: ['active', 'used', 'transferred', 'refunded', 'ended', 'escrow', 'cancelled'],
         default: 'active',
+    },
+
+    // ─── Split Ticket Lineage ───────────────────────
+    // Set on child documents created by a partial transfer.
+    // Null on original (non-split) tickets.
+    parentTicketId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Audience',
+        default: null,
     },
 
     // ─── QR Code ───────────────────────────────────

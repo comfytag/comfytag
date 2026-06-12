@@ -8,6 +8,7 @@ import { Badge, Button, Input, DataTable, ErrorMessage } from '@comfytag/ui'
 import type { Ticket as TicketType } from '@comfytag/types'
 import { formatNaira, formatDate } from '@comfytag/utils'
 import { api } from '@/lib/api'
+import { useExportAttendees } from '@/hooks/useAttendees'
 
 const ATTENDEES_PER_PAGE = 25
 
@@ -71,6 +72,8 @@ export function AttendeesSection({ eventId }: AttendeesSectionProps) {
     enabled: !!eventId && eventId !== 'undefined' && !!session?.user?.token,
   })
 
+  const exportMutation = useExportAttendees()
+
   const rawAttendees = attendeesQuery.data ?? []
 
   const attendees = useMemo(() => {
@@ -90,24 +93,23 @@ export function AttendeesSection({ eventId }: AttendeesSectionProps) {
     return filtered
   }, [rawAttendees, searchQuery, filterStatus])
 
-  const handleExportCSV = async () => {
-    try {
-      const response = await api.get(`/audience/events/${eventId}/audience/export`, {
-        responseType: 'text',
-      })
-      const csv = response.data
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-      const link = document.createElement('a')
-      const url = URL.createObjectURL(blob)
-      link.setAttribute('href', url)
-      link.setAttribute('download', `attendees.csv`)
-      link.style.visibility = 'hidden'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    } catch (err) {
-      console.error('Failed to export CSV:', err)
-    }
+  const handleExportCSV = () => {
+    exportMutation.mutate(eventId, {
+      onSuccess: (csv) => {
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+        const link = document.createElement('a')
+        const url = URL.createObjectURL(blob)
+        link.setAttribute('href', url)
+        link.setAttribute('download', `attendees.csv`)
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      },
+      onError: (err) => {
+        console.error('Failed to export CSV:', err)
+      },
+    })
   }
 
   return (

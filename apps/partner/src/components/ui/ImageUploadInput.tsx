@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
 import { api } from '@/lib/api'
 
 interface Props {
@@ -12,13 +11,12 @@ interface Props {
 }
 
 export function ImageUploadInput({ value, onChange, label, previewShape = 'rect', disabled }: Props) {
-  const { data: session } = useSession()
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !session?.user?.token) return
+    if (!file) return
 
     setIsUploading(true)
     setUploadError(null)
@@ -27,9 +25,9 @@ export function ImageUploadInput({ value, onChange, label, previewShape = 'rect'
     formData.append('file', file)
 
     try {
-      const res = await api.post('/upload', formData, {
-        headers: { Authorization: `Bearer ${session.user.token}` },
-      })
+      // Uses the shared api instance: Authorization header is set globally by
+      // ApiTokenSync, and the 401 interceptor handles token expiry automatically.
+      const res = await api.post('/upload', formData)
       onChange(res.data.url)
     } catch {
       setUploadError('Upload failed. Try again.')

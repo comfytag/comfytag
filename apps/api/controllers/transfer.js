@@ -4,82 +4,155 @@ import Event from '../models/Event.js'
 import { createError } from '../utils/error.js'
 import { enqueueEmail } from '../jobs/emailQueue.js'
 import { createNotification } from './notification.js'
+import { QR } from '../utils/QRCode.js'
 import moment from 'moment/moment.js'
 import crypto from 'crypto'
 
 // POST /tickets/transfer/initiate
-// Ticket owner initiates a transfer to another user
+// Ticket owner initiates a transfer to another user.
+// If shareQuantity < numOfTicket, a child "escrow" document is created for
+// exactly shareQuantity tickets; the parent document is decremented only after
+// the child persists successfully (safe ordering for transactional integrity).
 export const initiateTransfer = async (req, res, next) => {
   try {
-    const { ticketId, recipientEmail, recipientPhone } = req.body
+    const { ticketId, recipientEmail, recipientPhone, shareQuantity } = req.body
     const senderId = req.user.id
 
     if (!ticketId || (!recipientEmail && !recipientPhone)) {
-      return next(createError(400,
-        'ticketId and recipient contact required'))
+      return next(createError(400, 'ticketId and recipient contact required'))
     }
 
-    // Verify ticket belongs to sender
+    // Verify ticket belongs to sender and is transferable
     const ticket = await Audience.findById(ticketId)
     if (!ticket) return next(createError(404, 'Ticket not found'))
     if (ticket.user_id.toString() !== senderId) {
-      return next(createError(403,
-        'You do not own this ticket'))
+      return next(createError(403, 'You do not own this ticket'))
     }
     if (ticket.status !== 'active') {
-      return next(createError(400,
-        `Cannot transfer a ${ticket.status} ticket`))
+      return next(createError(400, `Cannot transfer a ${ticket.status} ticket`))
+    }
+    if (ticket.numOfTicket < 1) {
+      return next(createError(400, 'This ticket has no remaining seats to transfer'))
     }
 
     // Find recipient
-    const query = recipientEmail
-      ? { email: recipientEmail }
-      : { phone: recipientPhone }
-    const recipient = await User.findOne(query)
+    const recipientQuery = recipientEmail ? { email: recipientEmail } : { phone: recipientPhone }
+    const recipient = await User.findOne(recipientQuery)
     if (!recipient) {
-      return next(createError(404,
-        'No ComfyTag account found for that contact'))
+      return next(createError(404, 'No ComfyTag account found for that contact'))
     }
     if (recipient._id.toString() === senderId) {
-      return next(createError(400,
-        'Cannot transfer a ticket to yourself'))
+      return next(createError(400, 'Cannot transfer a ticket to yourself'))
     }
 
-    // Generate secure transfer token
-    const transferToken = crypto.randomBytes(32).toString('hex')
+    // Validate shareQuantity
+    const qty = shareQuantity != null ? Number(shareQuantity) : ticket.numOfTicket
+    if (!Number.isInteger(qty) || qty < 1) {
+      return next(createError(400, 'shareQuantity must be a positive integer'))
+    }
+    if (qty > ticket.numOfTicket) {
+      return next(createError(400,
+        `shareQuantity (${qty}) exceeds available tickets (${ticket.numOfTicket})`))
+    }
 
-    await Audience.findByIdAndUpdate(ticketId, {
-      transferredTo: recipient._id.toString(),
-      transferToken,
-      status: 'active', // still active until accepted
-    })
+    const transferToken = crypto.randomBytes(32).toString('hex')
+    const isPartial = qty < ticket.numOfTicket
+    let targetTicketId
+
+    if (isPartial) {
+      // ── Partial split: create child document first, then decrement parent ──
+      // Child is saved before the parent is modified so that a child-save
+      // failure leaves the parent completely untouched.
+      const childDoc = new Audience({
+        name:         ticket.name,
+        event_id:     ticket.event_id,
+        user_id:      senderId,       // sender holds the escrow ticket until accepted
+        eventname:    ticket.eventname,
+        amount:       Math.round(ticket.amount * qty / ticket.numOfTicket),
+        isFreeTicket: ticket.isFreeTicket,
+        numOfTicket:  qty,
+        reference:    `${ticket.reference}_SPLIT_${Date.now()}`,
+        type:         ticket.type,
+        phone:        ticket.phone,
+        email:        ticket.email,
+        status:       'escrow',
+        parentTicketId: ticket._id,
+        transferredTo:  recipient._id.toString(),
+        transferToken,
+      })
+
+      const savedChild = await childDoc.save()
+
+      // Generate QR for child — failure is non-fatal; child is already persisted
+      try {
+        const childQr = await QR(savedChild.reference)
+        await Audience.findByIdAndUpdate(savedChild._id, { qrCode: childQr })
+      } catch (qrErr) {
+        console.error('[Transfer Split] QR generation failed:', qrErr.message)
+      }
+
+      // Atomically decrement parent only after child is safely on disk.
+      // The $gte guard prevents a race condition if two partial transfers
+      // are initiated concurrently against the same parent.
+      const updatedParent = await Audience.findOneAndUpdate(
+        { _id: ticketId, numOfTicket: { $gte: qty } },
+        { $inc: { numOfTicket: -qty } },
+        { new: true }
+      )
+
+      if (!updatedParent) {
+        // Race condition: tickets claimed by another concurrent operation.
+        // Cancel the child and surface the conflict to the caller.
+        await Audience.findByIdAndUpdate(savedChild._id, {
+          status: 'cancelled',
+          transferredTo: null,
+          transferToken: null,
+        })
+        return next(createError(409,
+          'Not enough tickets available — please try again'))
+      }
+
+      targetTicketId = savedChild._id
+    } else {
+      // ── Full transfer: legacy path — mark parent with the transfer token ──
+      await Audience.findByIdAndUpdate(ticketId, {
+        transferredTo: recipient._id.toString(),
+        transferToken,
+        status: 'active',
+      })
+      targetTicketId = ticketId
+    }
 
     res.status(200).json({
-      message: 'Transfer initiated',
+      message: isPartial ? 'Partial transfer initiated' : 'Transfer initiated',
       recipientName: recipient.name,
-      ticketId,
+      ticketId: targetTicketId,
+      isPartial,
+      shareQuantity: qty,
     })
 
-    // Create in-app notification for recipient
+    // ── Post-response side effects (non-blocking) ──────────────────────────
     const io = req.app.locals.io
-    const sender = await User.findById(senderId)
+    const [sender, event] = await Promise.all([
+      User.findById(senderId),
+      Event.findById(ticket.event_id),
+    ])
+    const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
 
     await createNotification({
       userId: recipient._id.toString(),
       type: 'transfer_received',
       title: 'You received a ticket',
-      message: `${sender?.name || 'Someone'} sent you a ticket`,
+      message: `${sender?.name || 'Someone'} sent you ${qty > 1 ? `${qty} tickets` : 'a ticket'}`,
       data: {
-        ticketId,
+        ticketId: targetTicketId,
         senderName: sender?.name,
-        senderId: senderId,
+        senderId,
+        shareQuantity: qty,
+        isPartial,
       },
       io,
     }).catch(err => console.error('[Notification] Transfer received failed:', err.message))
-
-    // Enqueue transfer initiated email to recipient (non-blocking)
-    const event = await Event.findById(ticket.event_id)
-    const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
 
     enqueueEmail({
       to: recipient.email,
@@ -92,10 +165,14 @@ export const initiateTransfer = async (req, res, next) => {
         eventDate: event?.startDate ? moment(event.startDate).format('ddd, MMM D, YYYY') : 'TBA',
         eventTime: event?.startTime || 'TBA',
         ticketTier: ticket.type,
+        qty,
+        ticketLabel: qty > 1 ? 'tickets' : 'ticket',
         expiryDate: moment().add(7, 'days').format('ddd, MMM D, YYYY'),
-        acceptLink: `${baseUrl}/tickets/transfer/${ticketId}/accept?token=${transferToken}`,
-        declineLink: `${baseUrl}/tickets/transfer/${ticketId}/decline?token=${transferToken}`,
+        acceptLink:  `${baseUrl}/tickets/transfer/${targetTicketId}/accept?token=${transferToken}`,
+        declineLink: `${baseUrl}/tickets/transfer/${targetTicketId}/decline?token=${transferToken}`,
         year: new Date().getFullYear(),
+        unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+        preferencesUrl: `${baseUrl}/preferences`,
       },
       from: 'tickets@comfytag.com',
     }).catch(err => console.error('[Transfer Initiated] Queue failed:', err.message))
@@ -125,19 +202,20 @@ export const acceptTransfer = async (req, res, next) => {
 
     const previousOwner = ticket.user_id
 
-    // Transfer ownership
+    // Transfer ownership.
+    // Works for both full-transfer (status: 'active') and partial-split
+    // escrow tickets (status: 'escrow') — status: 'active' covers both.
     await Audience.findByIdAndUpdate(ticketId, {
       user_id: recipientId,
       faceOwner: recipientId,
       transferredFrom: previousOwner,
       transferredAt: new Date(),
       transferToken: null,
+      transferredTo: null,
       status: 'active',
-      // Reset check-in for new owner
       checkedIn: false,
       checkedInAt: null,
       checkedInMethod: null,
-      // Reset face link — recipient must enroll face
       faceLinkedAt: null,
     })
 
@@ -181,6 +259,8 @@ export const acceptTransfer = async (req, res, next) => {
         ticketTier: ticket.type,
         dashboardLink: `${baseUrl}/tickets`,
         year: new Date().getFullYear(),
+        unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+        preferencesUrl: `${baseUrl}/preferences`,
       },
       from: 'tickets@comfytag.com',
     }).catch(err => console.error('[Transfer Accepted] Queue failed:', err.message))
@@ -203,16 +283,37 @@ export const declineTransfer = async (req, res, next) => {
         'This transfer is not addressed to you'))
     }
 
-    // Cancel the transfer — ticket stays with original owner
-    await Audience.findByIdAndUpdate(ticketId, {
-      transferredTo: null,
-      transferToken: null,
-    })
+    const isEscrowChild = ticket.status === 'escrow' && ticket.parentTicketId != null
 
-    res.status(200).json({
-      message: 'Transfer declined',
-      ticketId
-    })
+    if (isEscrowChild) {
+      // ── Partial-split rollback ─────────────────────────────────────────
+      // Restore parent quantity first so tickets are never stranded if the
+      // subsequent child-cancel write fails.
+      const parentUpdated = await Audience.findOneAndUpdate(
+        { _id: ticket.parentTicketId },
+        { $inc: { numOfTicket: ticket.numOfTicket } },
+        { new: true }
+      )
+      if (!parentUpdated) {
+        console.error('[Transfer Rollback] Parent ticket not found:', ticket.parentTicketId)
+      }
+      await Audience.findByIdAndUpdate(ticketId, {
+        status: 'cancelled',
+        transferredTo: null,
+        transferToken: null,
+      })
+    } else {
+      // ── Full-transfer cancel: ticket stays with original owner ─────────
+      await Audience.findByIdAndUpdate(ticketId, {
+        transferredTo: null,
+        transferToken: null,
+      })
+    }
+
+    // For email deep links, point back to the parent when rolling back a split
+    const emailTicketId = isEscrowChild ? ticket.parentTicketId : ticketId
+
+    res.status(200).json({ message: 'Transfer declined', ticketId })
 
     // Create in-app notification for original owner
     const io = req.app.locals.io
@@ -247,9 +348,11 @@ export const declineTransfer = async (req, res, next) => {
         eventDate: event?.startDate ? moment(event.startDate).format('ddd, MMM D, YYYY') : 'TBA',
         eventTime: event?.startTime || 'TBA',
         ticketTier: ticket.type,
-        transferLink: `${baseUrl}/tickets/${ticketId}/transfer`,
-        sellLink: `${baseUrl}/tickets/${ticketId}/sell`,
+        transferLink: `${baseUrl}/tickets/${emailTicketId}/transfer`,
+        sellLink: `${baseUrl}/tickets/${emailTicketId}/sell`,
         year: new Date().getFullYear(),
+        unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+        preferencesUrl: `${baseUrl}/preferences`,
       },
       from: 'tickets@comfytag.com',
     }).catch(err => console.error('[Transfer Declined] Queue failed:', err.message))
@@ -305,7 +408,7 @@ export const getIncomingTransfers = async (req, res, next) => {
 
     const pendingTransfers = await Audience.find({
       transferredTo: userId,
-      status: 'active',
+      status: { $in: ['active', 'escrow'] },
       transferToken: { $ne: null },
     }).select('+transferToken').lean()
 

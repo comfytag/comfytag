@@ -25,7 +25,7 @@ export function useWallet() {
   return useQuery({
     queryKey: payoutKeys.wallet,
     queryFn: () =>
-      api.get<WalletData>('/partner/wallet/').then((r) => r.data),
+      api.get<WalletData>('/partner/wallet').then((r) => r.data),
     staleTime: 60_000,
     enabled: !!session?.user?.id && !!token,
   })
