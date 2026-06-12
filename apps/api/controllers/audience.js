@@ -9,6 +9,12 @@ import moment from 'moment/moment.js';
 import { QR } from '../utils/QRCode.js';
 import { generateSecret } from 'otplib'
 
+// Returns true only if the event exists and its planner_id matches partnerId.
+const assertPartnerOwnsEvent = async (eventId, partnerId) => {
+    const event = await Event.findOne({ _id: eventId, planner_id: partnerId }).select('_id').lean()
+    return event !== null
+}
+
 
 
 // CREATE FREE TICKET (no payment / no auth required)
@@ -112,22 +118,28 @@ export const createAudience = async (req, res, next) => {
     const userId = req.params.userId;
 
     try {
-        // Check tier capacity and allowed free ticket limit
         const event = await Event.findById(eventId)
         if (!event) {
             return res.status(404).json({ success: false, message: 'Event not found.' })
         }
-        const tier = event.ticketType.find(t => t.name === req.body.type)
-        if (tier && tier.capacity > 0 && tier.sold >= tier.capacity) {
-            return res.status(400).json({ success: false, message: 'This ticket tier is sold out.' })
+
+        const tierName = req.body.type
+        const tier = event.ticketType.find(t => t.name === tierName)
+        if (!tier) {
+            return res.status(400).json({ success: false, message: 'Invalid ticket tier.' })
         }
 
-        // Allow free tickets (amount = 0, no Paystack reference needed)
-        const isFreeTicket = req.body.amount === 0 || req.body.amount === '0';
+        const numOfTicket = Math.max(1, parseInt(req.body.numOfTicket, 10) || 1)
 
-        // Check duplicate ticket restrictions
+        // Server-side derivation — never trust req.body.amount or req.body.isFreeTicket
+        const isFreeTicket = tier.price === 0
+        // 5% platform fee applied to the ticket subtotal
+        const serverAmount = isFreeTicket
+            ? 0
+            : Math.round(tier.price * numOfTicket * 1.05)
+
+        // Free-ticket duplicate limit
         if (isFreeTicket) {
-            // Free tickets: allow up to 10 per user per event
             const freeTicketCount = await Audience.countDocuments({ event_id: eventId, user_id: userId, amount: 0 })
             if (freeTicketCount >= 10) {
                 return res.status(400).json({ success: false, message: 'You have reached the maximum limit of 10 free tickets per person for this event.' })
@@ -137,13 +149,39 @@ export const createAudience = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Paid tickets require a Paystack reference.' })
         }
 
+        // Atomic capacity check + decrement (Fix P-3 — eliminates TOCTOU race condition).
+        // $elemMatch scopes both the name match and the sold guard to the same array element,
+        // so the positional $ operator is unambiguous.
+        const capacityFilter = tier.capacity > 0
+            ? { _id: eventId, ticketType: { $elemMatch: { name: tierName, sold: { $lte: tier.capacity - numOfTicket } } } }
+            : { _id: eventId, 'ticketType.name': tierName }
+
+        const atomicEvent = await Event.findOneAndUpdate(
+            capacityFilter,
+            { $inc: { 'ticketType.$.sold': numOfTicket, sold: numOfTicket } },
+            { new: true }
+        )
+
+        if (tier.capacity > 0 && !atomicEvent) {
+            return res.status(409).json({ success: false, message: 'Tickets sold out or insufficient capacity.' })
+        }
+
+        // Build document from explicit field list — never spread req.body
         const newAudience = new Audience({
-            ...req.body,
+            name: req.body.name,
+            email: req.body.email,
+            phone: req.body.phone,
+            eventname: req.body.eventname,
+            numOfTicket,
+            type: tierName,
+            amount: serverAmount,
+            reference: req.body.reference,
             event_id: eventId,
             user_id: userId,
             totpSecret: generateSecret(),
-            isFreeTicket: isFreeTicket, // Track if this is a free ticket
-        });
+            isFreeTicket,
+            status: 'active',
+        })
 
         const savedAudience = await newAudience.save()
 
@@ -157,19 +195,7 @@ export const createAudience = async (req, res, next) => {
             console.log('QR generation failed:', qrErr.message)
         }
 
-        try {
-            await Event.updateOne(
-                { _id: eventId, "ticketType.name": req.body.type },
-                {
-                    $inc: {
-                        "ticketType.$.sold": savedAudience.numOfTicket,
-                        sold: savedAudience.numOfTicket,
-                    }
-                }
-            )
-        } catch (err) {
-            next(err)
-        }
+        // NOTE: sold count was already incremented atomically above — no second updateOne needed
 
         res.status(200).json(savedAudience)
 
@@ -184,7 +210,7 @@ export const createAudience = async (req, res, next) => {
           title: 'Ticket confirmed ✓',
           message: `Your ticket to ${savedAudience.eventname} is ready`,
           data: {
-            ticketId: savedAudience._id,
+            ticketId: savedAudience._id.toString(),
             eventId: eventId,
             eventName: savedAudience.eventname,
             reference: savedAudience.reference,
@@ -224,7 +250,9 @@ export const createAudience = async (req, res, next) => {
 
         // ─── FLOW 3A: EVENT REMINDER SERIES ────────────────────────────────────
         // Schedule 48h and 4h reminders based on event start time
-        const hoursUntilEvent = (event.date - new Date()) / (1000 * 60 * 60);
+        // Guard: event.date may be null — NaN propagates into BullMQ/Redis Lua and crashes the queue
+        const rawHours = event.date ? (event.date - new Date()) / (1000 * 60 * 60) : NaN;
+        const hoursUntilEvent = Number.isFinite(rawHours) ? rawHours : 0;
         const delay48h = Math.max(0, (hoursUntilEvent - 48) * 60 * 60 * 1000);
         const delay4h = Math.max(0, (hoursUntilEvent - 4) * 60 * 60 * 1000);
 
@@ -234,7 +262,7 @@ export const createAudience = async (req, res, next) => {
           subject: `You're going to ${event.name} in 2 days`,
           template: 'eventReminder48h.hbs',
           data: {
-            firstName: savedAudience.name.split(' ')[0],
+            firstName: savedAudience.name?.split(' ')[0] || '',
             eventName: event.name,
             eventId: eventId,
             eventDate: moment(event.date).format('ddd, MMM D, YYYY'),
@@ -261,7 +289,7 @@ export const createAudience = async (req, res, next) => {
           subject: `${event.name} starts in 4 hours — here's what you need`,
           template: 'eventReminder4h.hbs',
           data: {
-            firstName: savedAudience.name.split(' ')[0],
+            firstName: savedAudience.name?.split(' ')[0] || '',
             eventName: event.name,
             eventId: eventId,
             eventTime: event.startTime || 'TBA',
@@ -288,14 +316,29 @@ export const createAudience = async (req, res, next) => {
 
 // UPDATE
 export const updateAudience = async (req, res, next) => {
-    
     try {
+        const ticket = await Audience.findById(req.params.id)
+        if (!ticket) return next(createError(404, 'Ticket not found'))
+
+        if (!req.user.isAdmin) {
+            const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+            const ownsEvent = await assertPartnerOwnsEvent(ticket.event_id, requesterId)
+            if (!ownsEvent) return next(createError(403, 'Not authorized to update this ticket'))
+        }
+
+        // Strict whitelist — partners may only correct attendee contact details
+        const updateData = {}
+        if ('name' in req.body) updateData.name = req.body.name
+        if ('phone' in req.body) updateData.phone = req.body.phone
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ success: false, message: 'No valid fields to update. Allowed: name, phone.' })
+        }
+
         const updatedAudience = await Audience.findByIdAndUpdate(
-              req.params.id,
-            { $set: req.body },
+            req.params.id,
+            { $set: updateData },
             { new: true }
         )
-         
         res.status(200).json(updatedAudience)
     } catch (err) {
         next(err)
@@ -304,15 +347,27 @@ export const updateAudience = async (req, res, next) => {
 
 // DELETE
 export const deleteAudience = async (req, res, next) => {
-    const userId = req.params.userId;
+    const ticketId = req.params.id
+    const urlUserId = req.params.userId
     try {
-        await Audience.findByIdAndDelete(
-            req.params.id
-        )
+        const ticket = await Audience.findById(ticketId)
+        if (!ticket) return next(createError(404, 'Ticket not found'))
+
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+
+        if (!req.user.isAdmin) {
+            const isSelf = ticket.user_id === requesterId
+            const ownsEvent = !isSelf && await assertPartnerOwnsEvent(ticket.event_id, requesterId)
+            if (!isSelf && !ownsEvent) {
+                return next(createError(403, 'Not authorized to delete this ticket'))
+            }
+        }
+
+        await Audience.findByIdAndDelete(ticketId)
         try {
-            await User.findByIdAndUpdate(userId, {
-                 $pull: { events: req.params.id },
-                 });
+            await User.findByIdAndUpdate(urlUserId, {
+                $pull: { events: ticketId },
+            })
         } catch (err) {
             next(err)
         }
@@ -334,22 +389,45 @@ export const getAudienceByReference = async (req, res, next) => {
     }
 }
 
-// GET — public (route has no auth middleware; ObjectId is unguessable)
+// GET — self or admin (enforced in controller)
 export const getAudience = async (req, res, next) => {
     try {
         const ticket = await Audience.findById(req.params.id)
         if (!ticket) return next(createError(404, 'Ticket not found'))
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (!req.user.isAdmin && ticket.user_id !== requesterId) {
+            return next(createError(403, 'Not authorized'))
+        }
         res.status(200).json(ticket)
     } catch (err) {
         next(err)
     }
 }
 
-// GET ALL
+// GET ALL — admin only, paginated
 export const getAllAudience = async (req, res, next) => {
     try {
-        const getAudience = await Audience.find()
-        res.status(200).json(getAudience)
+        if (!req.user.isAdmin) {
+            return next(createError(403, 'Forbidden'))
+        }
+
+        const { page = 1, limit = 50 } = req.query
+        const pageNum = Math.max(1, parseInt(String(page), 10) || 1)
+        const limitNum = Math.min(100, Math.max(1, parseInt(String(limit), 10) || 50))
+        const skip = (pageNum - 1) * limitNum
+
+        const [audience, total] = await Promise.all([
+            Audience.find().sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+            Audience.countDocuments(),
+        ])
+
+        res.status(200).json({
+            data: audience,
+            page: pageNum,
+            limit: limitNum,
+            total,
+            pages: Math.ceil(total / limitNum),
+        })
     } catch (err) {
         next(err)
     }
@@ -373,7 +451,7 @@ export const getUserAudience = async (req, res, next) => {
             Audience.updateMany(
                 { email: userEmail, user_id: 'guest' },
                 { $set: { user_id: userId } }
-            ).catch(() => {})
+            ).catch(err => console.error('[Audience] Guest ticket migration failed:', err.message))
         }
     } catch (err) {
         next(err)
@@ -421,6 +499,12 @@ export const getMyTickets = async (req, res, next) => {
 // GET ALL with pagination
 export const getEventAudience = async (req, res, next) => {
     try {
+        if (!req.user.isAdmin) {
+            const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+            const ownsEvent = await assertPartnerOwnsEvent(req.params.eventId, requesterId)
+            if (!ownsEvent) return next(createError(403, 'Not authorized to view attendees for this event'))
+        }
+
         const { page = 1, limit = 25 } = req.query
         const pageNum = Math.max(1, parseInt(String(page), 10) || 1)
         const limitNum = Math.max(1, parseInt(String(limit), 10) || 25)
@@ -457,6 +541,12 @@ export const manualCheckIn = async (req, res, next) => {
         const ticket = await Audience.findById(ticketId)
         if (!ticket) return next(createError(404, 'Ticket not found'))
 
+        if (!req.user.isAdmin) {
+            const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+            const ownsEvent = await assertPartnerOwnsEvent(ticket.event_id, requesterId)
+            if (!ownsEvent) return next(createError(403, 'Not authorized to check in tickets for this event'))
+        }
+
         // Update check-in status
         ticket.checkedIn = checkedIn
         if (checkedIn) {
@@ -482,6 +572,12 @@ export const manualCheckIn = async (req, res, next) => {
 export const exportEventAudienceCSV = async (req, res, next) => {
     try {
         const { eventId } = req.params
+
+        if (!req.user.isAdmin) {
+            const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+            const ownsEvent = await assertPartnerOwnsEvent(eventId, requesterId)
+            if (!ownsEvent) return next(createError(403, 'Not authorized to export attendees for this event'))
+        }
 
         const tickets = await Audience.find({ event_id: eventId }).sort({ createdAt: -1 })
 
@@ -531,6 +627,12 @@ export const checkInByReference = async (req, res, next) => {
 
         const ticket = await Audience.findOne({ reference: reference.trim().toUpperCase() })
         if (!ticket) return res.status(404).json({ success: false, message: 'Ticket not found' })
+
+        if (!req.user.isAdmin) {
+            const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+            const ownsEvent = await assertPartnerOwnsEvent(ticket.event_id, requesterId)
+            if (!ownsEvent) return next(createError(403, 'Not authorized to check in tickets for this event'))
+        }
 
         if (ticket.status === 'refunded') return res.status(400).json({ success: false, message: 'Ticket has been refunded' })
         if (ticket.status === 'transferred') return res.status(400).json({ success: false, message: 'Ticket has been transferred' })

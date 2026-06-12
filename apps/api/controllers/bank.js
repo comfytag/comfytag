@@ -4,6 +4,7 @@ import Withdraw from '../models/Withdraw.js';
 import User from '../models/User.js';
 import { enqueueEmail } from '../jobs/emailQueue.js';
 import { createNotification } from './notification.js';
+import { createError } from '../utils/error.js';
 
 
 // CREATE Bank
@@ -27,15 +28,32 @@ export const createBank = async (req, res, next) => {
 }
 
 // UPDATE
-export const updateBank = async (req,res,next) =>{
-    try{
+export const updateBank = async (req, res, next) => {
+    try {
+        const bank = await Bank.findById(req.params.id)
+        if (!bank) return next(createError(404, 'Bank record not found'))
+
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (bank.user_id.toString() !== requesterId && !req.user.isAdmin) {
+            return next(createError(403, 'You are not authorized!'))
+        }
+
+        // Strict whitelist — only bank detail fields; never user_id, status, or flags
+        const updateData = {}
+        if ('account_number' in req.body) updateData.account_number = req.body.account_number
+        if ('bank_code' in req.body) updateData.bank_code = req.body.bank_code
+        if ('account_name' in req.body) updateData.account_name = req.body.account_name
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ success: false, message: 'No valid fields to update. Allowed: account_number, bank_code, account_name.' })
+        }
+
         const updatedBank = await Bank.findByIdAndUpdate(
             req.params.id,
-           { $set: req.body},
-           {new: true}
+            { $set: updateData },
+            { new: true }
         )
         res.status(200).json(updatedBank)
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }
@@ -94,20 +112,16 @@ export const updateBankStatus = async (req,res,next) =>{
 
 // Withdrawal
 
-// CREATE Bank
+// CREATE Withdraw
 export const createWithdraw = async (req, res, next) => {
-    const userId = req.params.userId;
-
+    // Hardcode user_id from the verified JWT — never trust req.params for ownership
+    const userId = (req.user._id ?? req.user.id).toString()
 
     const newWithdraw = new Withdraw({
         ...req.body,
-         user_id: userId,
-        //  acctName: acct_name,
-        //  acctNumber: paymentDetails.acctNumber,
-        //  bankName: paymentDetails.bankName
-
-     });
-        try {
+        user_id: userId,
+    })
+    try {
         const savedWithdraw = await newWithdraw.save()
         res.status(200).json(savedWithdraw)
     } catch (err) {

@@ -2,53 +2,40 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
-import { ShieldCheck, ScanFace, Building2, Shield } from 'lucide-react'
-import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
-import type { User } from '@comfytag/types'
-import api from '@/lib/api'
-import { StatCard } from '@comfytag/ui'
-import { PageHeader } from '@comfytag/ui'
+import { Mail, ShieldCheck, ScanFace, Building2, Shield } from 'lucide-react'
+import { LoadingSpinner, ErrorMessage, Badge, StatCard, InfoField, PageHeader } from '@comfytag/ui'
+import { formatDate } from '@comfytag/utils'
 import { ProfileCard } from '@/components/ui/ProfileCard'
+import { IamActionPanel } from '@/components/iam/IamActionPanel'
+import { useAdminUserDetail } from '@/hooks'
 
-// ─── Fetch function ────────────────────────────────────
-const fetchUser = async (id: string): Promise<User> => {
-  const { data } = await api.get<User>(`/admin/users/${id}`)
-  return data
-}
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
-// ─── Page ──────────────────────────────────────────────
 export default function UserDetailPage() {
-  const { data: session } = useSession({ required: true })
-  const { id } = useParams<{ id: string }>()
+  const params = useParams<{ id: string }>()
+  const id = params?.id ?? ''
 
-  const { data: user, isLoading, isError } = useQuery({
-    queryKey: ['admin', 'users', id],
-    queryFn: () => fetchUser(id),
-    enabled: !!session?.user && !!id,
-  })
+  const { data: user, isLoading, isError, refetch } = useAdminUserDetail(id)
 
-  if (isLoading) {
+  if (isLoading) return <LoadingSpinner size="lg" centered />
+
+  if (isError || !user) {
     return (
-      <div style={{ padding: '32px 24px' }}>
-        <LoadingSpinner size="md" centered />
-      </div>
+      <ErrorMessage
+        message="Failed to load user profile"
+        onRetry={() => void refetch()}
+      />
     )
   }
 
-  if (isError) {
-    return (
-      <div style={{ padding: '32px 24px' }}>
-        <ErrorMessage message="Failed to load user" />
-      </div>
-    )
-  }
+  const hasExtraInfo = !!(user.businessName || user.address || user.faceEnrolledAt)
 
   return (
     <div style={{ padding: '32px 24px' }}>
+      {/* ─── Header ────────────────────────────────────────── */}
       <PageHeader
-        title={user?.name ?? 'User'}
+        title={user.name}
+        subtitle="User Management"
         action={
           <Link
             href="/users"
@@ -59,45 +46,93 @@ export default function UserDetailPage() {
         }
       />
 
-      {/* Profile card */}
+      {/* ─── Profile card ──────────────────────────────────── */}
       <ProfileCard
-        name={user?.name ?? ''}
-        email={user?.email ?? ''}
-        phone={user?.phone}
-        username={user?.username}
-        joinedAt={user?.createdAt}
-      />
+        name={user.name}
+        email={user.email}
+        phone={user.phone}
+        username={user.username}
+        joinedAt={user.createdAt}
+        avatarUrl={user.image ?? undefined}
+      >
+        <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Badge status={user.suspended ? 'suspended' : 'active'} />
+          {user.kycStatus && <Badge status={user.kycStatus} />}
+        </div>
+      </ProfileCard>
 
-      {/* Stats grid */}
+      {/* ─── Stats row ─────────────────────────────────────── */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
           gap: 16,
-          marginTop: 24,
+          marginBottom: 24,
         }}
       >
         <StatCard
+          icon={Mail}
+          label="Email"
+          value={user.isVerify?.email ? 'Verified' : 'Unverified'}
+        />
+        <StatCard
           icon={ShieldCheck}
-          value={user?.isVerify?.email ? 'Verified' : 'Unverified'}
-          label="Email Status"
+          label="KYC Status"
+          value={
+            user.kycStatus
+              ? user.kycStatus.charAt(0).toUpperCase() + user.kycStatus.slice(1)
+              : 'None'
+          }
         />
         <StatCard
           icon={ScanFace}
-          value={user?.faceEnrolled ? 'Enrolled' : 'Not enrolled'}
           label="Face Biometric"
+          value={user.faceEnrolled ? 'Enrolled' : 'Not enrolled'}
         />
         <StatCard
           icon={Building2}
-          value={user?.isPartner ? 'Yes' : 'No'}
-          label="Organizer Account"
+          label="Account Type"
+          value={user.isPartner ? 'Organizer' : 'Attendee'}
         />
         <StatCard
           icon={Shield}
-          value={user?.isAdmin ? 'Yes' : 'No'}
           label="Admin Access"
+          value={
+            user.isAdmin
+              ? (user.role?.replace(/_/g, ' ') ?? 'Admin')
+              : 'None'
+          }
         />
       </div>
+
+      {/* ─── Extra info grid (only shown when fields are present) ── */}
+      {hasExtraInfo && (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+            gap: 12,
+            backgroundColor: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 12,
+            padding: 20,
+            marginBottom: 28,
+          }}
+        >
+          {user.businessName && (
+            <InfoField label="Business" value={user.businessName} />
+          )}
+          {user.address && (
+            <InfoField label="Location" value={user.address} />
+          )}
+          {user.faceEnrolledAt && (
+            <InfoField label="Face enrolled" value={formatDate(user.faceEnrolledAt)} />
+          )}
+        </div>
+      )}
+
+      {/* ─── IAM controls ──────────────────────────────────── */}
+      <IamActionPanel userId={user._id} user={user} />
     </div>
   )
 }

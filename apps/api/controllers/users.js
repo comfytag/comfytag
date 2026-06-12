@@ -13,15 +13,20 @@ import { generateFallbackCode } from '../utils/referralCode.js'
 // ONBOARDING
 
 export const onboardUser = async (req, res, next) => {
-    
     try {
-        const onboardUser = await Users.findByIdAndUpdate(
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (requesterId !== req.params.id && !req.user.isAdmin) {
+            return next(createError(403, 'You are not authorized!'))
+        }
+
+        // Strict whitelist — only the onboarding object may be written
+        const onboardingData = req.body.onboarding ?? req.body
+        const onboardedUser = await Users.findByIdAndUpdate(
             req.params.id,
-            { $set: {onboarding: req.body} },
+            { $set: { onboarding: onboardingData } },
             { new: true }
         )
-         
-        res.status(200).json(onboardUser)
+        res.status(200).json(onboardedUser)
     } catch (err) {
         next(err)
     }
@@ -206,16 +211,19 @@ export const isUserVerified = async (req,res,next) =>{
 // DELETE
 export const deleteUser = async (req,res,next) =>{
     try{
-        await Users.findByIdAndDelete(
-            req.params.id
-        )
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (requesterId !== req.params.id && !req.user.isAdmin) {
+            return next(createError(403, 'You are not authorized!'))
+        }
+
+        await Users.findByIdAndDelete(req.params.id)
         res.status(200).json('Users has been deleted')
     }catch(err){
         next(err)
     }
 }
 
-// GET
+// GET — public profile; only safe fields returned (no PII, no flags)
 export const getUser = async (req,res,next) =>{
     try{
         // Try username lookup first so public profile URLs work with handles

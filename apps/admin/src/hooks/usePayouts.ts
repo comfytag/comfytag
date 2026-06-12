@@ -35,7 +35,7 @@ export function useApprovePayout() {
   })
 }
 
-export function useRejectPayout() {
+export function useLegacyRejectPayout() {
   const qc = useQueryClient()
 
   return useMutation({

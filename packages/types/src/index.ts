@@ -194,7 +194,12 @@ export interface PromoCode {
 }
 
 // ─── Admin ─────────────────────────────────────────────
-export type AdminRole = 'super_admin' | 'finance' | 'moderator'
+export type AdminRole =
+  | 'super_admin'
+  | 'finance'
+  | 'kyc_reviewer'
+  | 'support'
+  | 'moderator'
 
 export interface AdminUser {
   _id: string
@@ -217,6 +222,75 @@ export interface AuditLog {
   targetId: string
   timestamp: string
   ip: string
+}
+
+// Full user view returned by /api/admin/users — includes KYC and suspension state
+export interface UserAdminProfile {
+  _id: string
+  name: string
+  username: string
+  email: string
+  phone?: string
+  image?: string
+  businessName?: string
+  address?: string
+  isAdmin: boolean
+  isPartner: boolean
+  role: AdminRole
+  suspended: boolean
+  kycStatus: 'pending' | 'verified' | 'rejected' | null
+  kycRejectionReason?: string | null
+  kycRejectedAt?: string | null
+  isVerify: {
+    email?: boolean
+    photo?: boolean
+    idCard?: boolean
+    address?: boolean
+  }
+  verify?: {
+    photo?: string
+    idCard?: { front?: string; back?: string }
+    address?: string
+  }
+  faceEnrolled?: boolean
+  faceEnrolledAt?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+// POST /api/admin/kyc/approve
+export interface KycApprovalPayload {
+  userId: string
+  kycType: 'photo' | 'idcard' | 'address'
+}
+
+// POST /api/admin/kyc/reject
+export interface KycRejectPayload {
+  userId: string
+  rejectionReason?: string
+}
+
+// POST /api/admin/payouts/process
+export interface PayoutProcessPayload {
+  withdrawId: string
+}
+
+// POST /api/admin/payouts/reject
+export interface PayoutRejectPayload {
+  withdrawId: string
+  reason?: string
+}
+
+// Paginated envelope returned by /api/admin/* list endpoints
+export interface AdminPaginatedResponse<T> {
+  success: boolean
+  data: T[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
 }
 
 // ─── API Response wrapper ──────────────────────────────

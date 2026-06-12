@@ -15,14 +15,12 @@ import { testRedisConnection } from './jobs/emailQueue.js'
 // Validate environment at startup (fail fast if missing env vars)
 await validateEnvironment()
 
-// Test Redis connectivity if email queue is enabled (production)
-if (process.env.NODE_ENV === 'production') {
-  try {
-    await testRedisConnection()
-  } catch (err) {
-    console.error(`\n❌ Startup failed: ${err.message}\n`)
-    process.exit(1)
-  }
+// Test Redis connectivity on every startup — queue crashes in dev are caught early too
+try {
+  await testRedisConnection()
+} catch (err) {
+  console.error(`\n❌ Startup failed: ${err.message}\n`)
+  process.exit(1)
 }
 
 const connect = async () => {
@@ -62,6 +60,7 @@ import promosRouter from './routes/promos.js'
 import teamRouter from './routes/team.js'
 import partnerRouter from './routes/partner.js'
 import { verifyPartner } from './utils/verifyToken.js'
+import adminRouter from './routes/admin.js'
 import cron from 'node-cron'
 import { updateExpiredTickets } from './jobs/updateExpiredTickets.js'
 
@@ -110,6 +109,9 @@ app.use("/admin/category", categoryRouter)   // category endpoint
 app.use("/admin/audience", audienceRouter)   // audience endpoint
 app.use("/admin/withdraw", withdrawRouter)   //  withdraw info endpoint
 app.use("/admin/bank", bankRouter)   // bank info endpoint
+
+// Granular RBAC admin execution endpoints (Phase 1 expansion)
+app.use("/api/admin", adminRouter)
 
 
 app.use("/auth", authRouter)      // Authentication endpoint

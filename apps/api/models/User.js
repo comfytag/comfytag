@@ -18,7 +18,12 @@ const UserSchema = new Schema({
         password: { type: String, required: true, },
         events: { type: [String], },
         isAdmin: { type: Boolean, default: false },
-        role: { type: String, enum: ['super_admin', 'finance', 'moderator', 'viewer'], default: 'viewer' },
+        role: {
+            type: String,
+            enum: ['super_admin', 'finance', 'kyc_reviewer', 'support', 'moderator', 'viewer'],
+            default: 'viewer',
+        },
+        suspended: { type: Boolean, default: false },
         isPartner: { type: Boolean, default: false },
         image: { type: String, },
         avatar: { type: String, },
@@ -53,6 +58,15 @@ const UserSchema = new Schema({
             }
         },
         premium: { type: Boolean, default: false },
+
+        // ─── KYC Tracking ─────────────────────────────
+        kycStatus: {
+            type: String,
+            enum: ['pending', 'verified', 'rejected'],
+            default: null,
+        },
+        kycRejectionReason: { type: String, default: null },
+        kycRejectedAt: { type: Date, default: null },
 
         // ─── Face Recognition ──────────────────────────
         faceEnrolled: {
@@ -136,6 +150,7 @@ UserSchema.methods.generateAuthToken = function () {
 			email: this.email,
 			isPartner: !!this.isPartner,
 			isAdmin: !!this.isAdmin,
+			role: this.role || 'viewer',
 		},
 		process.env.JWT_SECRET,
 		{ expiresIn: "7d" }

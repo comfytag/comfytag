@@ -1,116 +1,186 @@
 'use client'
 
-import type { CSSProperties } from 'react'
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useQuery, useMutation } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
-import { Ticket, Users, Banknote, Star } from 'lucide-react'
-import { Badge, LoadingSpinner, ErrorMessage, Button } from '@comfytag/ui'
-import { formatNaira, formatDate } from '@comfytag/utils'
-import type { Event, TicketTier } from '@comfytag/types'
-import api from '@/lib/api'
-import { StatCard } from '@comfytag/ui'
-import { DataTable } from '@comfytag/ui'
+import { Ticket, Users, Banknote, Star, AlertTriangle } from 'lucide-react'
+import {
+  LoadingSpinner,
+  ErrorMessage,
+  Badge,
+  StatCard,
+  InfoField,
+  DataTable,
+  PageHeader,
+} from '@comfytag/ui'
 import type { ColumnDef } from '@comfytag/ui'
-import { PageHeader } from '@comfytag/ui'
-import { MediaUploader } from '@comfytag/ui'
+import type { TicketTier } from '@comfytag/types'
+import { formatNaira, formatDate, formatTime } from '@comfytag/utils'
+import { EventActionPanel } from '@/components/events/EventActionPanel'
+import { useAdminEventDetail } from '@/hooks'
 
-// ─── Query fetch function ──────────────────────────────
-const fetchEvent = async (id: string): Promise<Event> => {
-  const { data } = await api.get<Event>(`/admin/event/${id}`)
-  return data
-}
+// ─── Ticket tier table columns ─────────────────────────────────────────────────
 
-// ─── InfoField component ───────────────────────────────
-function InfoField({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div>
-      <div
-        style={{
-          fontSize: 12,
-          color: 'var(--color-text-muted)',
-          marginBottom: 4,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-        }}
-      >
-        {label}
-      </div>
-      <div style={{ fontSize: 14, color: 'var(--color-text)' }}>{value}</div>
-    </div>
-  )
-}
-
-// ─── Ticket tier columns ───────────────────────────────
 const tierColumns: ColumnDef<TicketTier>[] = [
-  { key: 'name', header: 'Tier Name', render: (t) => t.name },
+  {
+    key: 'name',
+    header: 'Tier',
+    render: (t) => <span style={{ fontWeight: 500 }}>{t.name}</span>,
+  },
   {
     key: 'price',
     header: 'Price',
     render: (t) => (
-      <span style={{ color: 'var(--color-gold)' }}>{formatNaira(t.price)}</span>
+      <span style={{ color: 'var(--color-gold)', fontWeight: 600 }}>
+        {formatNaira(t.price)}
+      </span>
     ),
   },
-  { key: 'capacity', header: 'Capacity', render: (t) => t.capacity },
-  { key: 'sold', header: 'Sold', render: (t) => t.sold },
-  { key: 'available', header: 'Available', render: (t) => t.capacity - t.sold },
+  {
+    key: 'sold',
+    header: 'Sold',
+    render: (t) => <span style={{ fontVariantNumeric: 'tabular-nums' }}>{t.sold}</span>,
+  },
+  {
+    key: 'capacity',
+    header: 'Capacity',
+    render: (t) => (
+      <span style={{ color: 'var(--color-text-muted)', fontVariantNumeric: 'tabular-nums' }}>
+        {t.capacity}
+      </span>
+    ),
+  },
+  {
+    key: 'available',
+    header: 'Available',
+    render: (t) => {
+      const remaining = t.capacity - t.sold
+      const pct = t.capacity > 0 ? Math.round((t.sold / t.capacity) * 100) : 0
+      return (
+        <div>
+          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{remaining}</span>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: 12, marginLeft: 6 }}>
+            ({pct}% sold)
+          </span>
+        </div>
+      )
+    },
+  },
+  {
+    key: 'revenue',
+    header: 'Revenue',
+    render: (t) => (
+      <span style={{ color: 'var(--color-gold)', fontVariantNumeric: 'tabular-nums' }}>
+        {formatNaira(t.price * t.sold)}
+      </span>
+    ),
+  },
 ]
 
+// ─── Suspension banner ────────────────────────────────────────────────────────
+
+function SuspensionBanner({ eventName }: { eventName: string }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 14,
+        padding: '16px 20px',
+        borderRadius: 12,
+        border: '1px solid rgba(239, 68, 68, 0.4)',
+        backgroundColor: 'rgba(239, 68, 68, 0.08)',
+        marginBottom: 24,
+      }}
+    >
+      <AlertTriangle
+        size={20}
+        style={{ color: 'var(--color-error)', flexShrink: 0, marginTop: 1 }}
+      />
+      <div>
+        <div
+          style={{
+            fontSize: 14,
+            fontWeight: 600,
+            color: 'var(--color-error)',
+            marginBottom: 4,
+          }}
+        >
+          Event Suspended
+        </div>
+        <div style={{ fontSize: 13, color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
+          <strong style={{ color: 'var(--color-text)' }}>{eventName}</strong> has been
+          suspended by the admin team. Ticket sales and check-in are currently halted.
+          Use the controls below to restore this event.
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function EventDetailPage() {
-  const { data: session } = useSession()
-  void session
+  const params = useParams<{ id: string }>()
+  const id = params?.id ?? ''
 
-  const { id } = useParams<{ id: string }>()
-  const [images, setImages] = useState<string[]>([])
-  const [videoUrl, setVideoUrl] = useState('')
-  const [mediaError, setMediaError] = useState('')
-
-  const { data: event, isLoading, isError } = useQuery({
-    queryKey: ['admin', 'event', id],
-    queryFn: () => fetchEvent(id),
-    enabled: !!id,
-  })
-
-  const saveMutation = useMutation({
-    mutationFn: () => api.put(`/admin/event/${id}`, { images, videoUrl }),
-    onSuccess: () => {
-      setMediaError('')
-    },
-    onError: () => setMediaError('Failed to save media. Please try again.'),
-  })
-
-  async function handleUpload(file: File): Promise<string> {
-    const fd = new FormData()
-    fd.append('file', file)
-    const res = await api.post<{ url: string }>('/upload', fd)
-    return res.data.url
-  }
-
-  useEffect(() => {
-    if (!event) return
-    if (event.images) setImages(event.images)
-  }, [event])
+  const { data: event, isLoading, isError, refetch } = useAdminEventDetail(id)
 
   if (isLoading) return <LoadingSpinner size="lg" centered />
-  if (isError || !event) return <ErrorMessage message="Failed to load event" />
+
+  if (isError || !event) {
+    return (
+      <ErrorMessage
+        message="Failed to load event"
+        onRetry={() => void refetch()}
+      />
+    )
+  }
+
+  const totalCapacity = (event.ticketType ?? []).reduce((sum, t) => sum + t.capacity, 0)
+  const totalRevenue  = (event.ticketType ?? []).reduce((sum, t) => sum + t.price * t.sold, 0)
+  const coverImage    = event.coverImage ?? event.images?.[0]
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: 'var(--color-text-primary)' }}>
-          {event.name}
-        </h1>
-        <Link
-          href="/events"
-          style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: 14 }}
-        >
-          ← Back to Events
-        </Link>
-      </div>
+    <div style={{ padding: '32px 24px' }}>
+      {/* ─── Suspension banner ─────────────────────────────── */}
+      {event.status === 'cancelled' && (
+        <SuspensionBanner eventName={event.name} />
+      )}
 
-      {/* Event info card */}
+      {/* ─── Header ────────────────────────────────────────── */}
+      <PageHeader
+        title={event.name}
+        subtitle={`by ${event.planner}`}
+        action={
+          <Link
+            href="/events"
+            style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: 14 }}
+          >
+            ← Back to Events
+          </Link>
+        }
+      />
+
+      {/* ─── Cover image ───────────────────────────────────── */}
+      {coverImage && (
+        <div
+          style={{
+            borderRadius: 12,
+            overflow: 'hidden',
+            marginBottom: 24,
+            border: '1px solid var(--color-border)',
+            maxHeight: 320,
+          }}
+        >
+          <img
+            src={coverImage}
+            alt={event.name}
+            style={{ width: '100%', height: 320, objectFit: 'cover', display: 'block' }}
+          />
+        </div>
+      )}
+
+      {/* ─── Event metadata card ───────────────────────────── */}
       <div
         style={{
           backgroundColor: 'var(--color-surface)',
@@ -124,19 +194,53 @@ export default function EventDetailPage() {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: 16,
+            gap: 20,
           }}
         >
-          <InfoField label="Date" value={formatDate(event.date)} />
-          <InfoField label="Venue" value={event.venue} />
-          <InfoField label="Address" value={event.address} />
-          <InfoField label="State" value={event.state} />
-          <InfoField label="Category" value={event.category} />
-          <InfoField label="Status" value={<Badge status={event.status} />} />
+          <InfoField label="Date"      value={formatDate(event.date)} />
+          <InfoField label="Time"      value={`${formatTime(event.startTime)} – ${formatTime(event.endTime)}`} />
+          <InfoField label="Venue"     value={event.venue} />
+          <InfoField label="Address"   value={event.address} />
+          <InfoField label="State"     value={event.state} />
+          <InfoField label="Category"  value={event.category} />
+          <InfoField label="Status"    value={<Badge status={event.status} />} />
+          <InfoField
+            label="Organizer"
+            value={
+              event.planner_id ? (
+                <Link
+                  href={`/users/${event.planner_id}`}
+                  style={{ color: 'var(--color-brand)', textDecoration: 'none', fontSize: 14 }}
+                >
+                  {event.planner} →
+                </Link>
+              ) : (
+                event.planner
+              )
+            }
+          />
+          {event.description && (
+            <div style={{ gridColumn: '1 / -1' }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: 'var(--color-text-muted)',
+                  marginBottom: 4,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                Description
+              </div>
+              <div style={{ fontSize: 14, color: 'var(--color-text)', lineHeight: 1.6 }}>
+                {event.description}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Stats */}
+      {/* ─── Stat cards ────────────────────────────────────── */}
       <div
         style={{
           display: 'grid',
@@ -145,31 +249,21 @@ export default function EventDetailPage() {
           marginBottom: 24,
         }}
       >
-        <StatCard icon={Ticket} value={event.sold} label="Tickets Sold" />
-        <StatCard
-          icon={Users}
-          value={event.ticketType.reduce((s, t) => s + t.capacity, 0)}
-          label="Total Capacity"
-        />
-        <div style={{ '--color-text': 'var(--color-gold)' } as unknown as CSSProperties}>
-          <StatCard
-            icon={Banknote}
-            value={formatNaira(event.sold * (event.ticketType?.[0]?.price ?? 0))}
-            label="Est. Revenue"
-          />
-        </div>
-        <StatCard icon={Star} value={event.featured ? 'Yes' : 'No'} label="Featured" />
+        <StatCard icon={Ticket}  label="Tickets Sold"    value={event.sold} />
+        <StatCard icon={Users}   label="Total Capacity"  value={totalCapacity} />
+        <StatCard icon={Banknote} label="Total Revenue"  value={formatNaira(totalRevenue)} />
+        <StatCard icon={Star}    label="Featured"        value={event.featured ? 'Yes' : 'No'} />
       </div>
 
-      {/* Ticket tiers */}
-      {event.ticketType.length > 0 && (
+      {/* ─── Ticket tier breakdown ─────────────────────────── */}
+      {(event.ticketType ?? []).length > 0 && (
         <>
           <h2
             style={{
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: 600,
               color: 'var(--color-text)',
-              marginBottom: 16,
+              margin: '0 0 12px',
             }}
           >
             Ticket Tiers
@@ -180,68 +274,22 @@ export default function EventDetailPage() {
               border: '1px solid var(--color-border)',
               borderRadius: 12,
               overflow: 'hidden',
+              marginBottom: 28,
             }}
           >
-            <DataTable<TicketTier> columns={tierColumns} data={event.ticketType} />
+            <DataTable<TicketTier>
+              columns={tierColumns}
+              data={event.ticketType ?? []}
+              keyField="_id"
+              emptyTitle="No ticket tiers defined"
+              emptySubtitle="This event has no ticket tiers configured."
+            />
           </div>
         </>
       )}
 
-      {/* Media Section */}
-      <h2
-        style={{
-          fontSize: 18,
-          fontWeight: 600,
-          color: 'var(--color-text)',
-          marginBottom: 16,
-          marginTop: 32,
-        }}
-      >
-        Event Media
-      </h2>
-      <div
-        style={{
-          backgroundColor: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 12,
-          padding: 24,
-        }}
-      >
-        <div style={{ marginBottom: 20 }}>
-          <MediaUploader
-            label="Event Images"
-            accept="image"
-            multiple
-            urls={images}
-            onAdd={(newUrls) => setImages([...images, ...newUrls])}
-            onRemove={(url) => setImages(images.filter(u => u !== url))}
-            uploadFn={handleUpload}
-          />
-        </div>
-
-        <div style={{ marginBottom: 20 }}>
-          <MediaUploader
-            label="Promo Video (Optional)"
-            accept="video"
-            urls={videoUrl ? [videoUrl] : []}
-            onAdd={(newUrls) => setVideoUrl(newUrls[0] ?? '')}
-            onRemove={() => setVideoUrl('')}
-            uploadFn={handleUpload}
-          />
-        </div>
-
-        {mediaError && <ErrorMessage message={mediaError} />}
-
-        <div style={{ marginTop: mediaError ? 12 : 0 }}>
-          <Button
-            variant="primary"
-            loading={saveMutation.isPending}
-            onClick={() => saveMutation.mutate()}
-          >
-            Save Media
-          </Button>
-        </div>
-      </div>
+      {/* ─── Moderation action panel ───────────────────────── */}
+      <EventActionPanel eventId={event._id} event={event} />
     </div>
   )
 }

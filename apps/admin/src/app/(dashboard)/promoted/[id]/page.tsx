@@ -17,8 +17,8 @@ import { PageHeader } from '@comfytag/ui'
 
 // ─── Query fetch functions ─────────────────────────────
 const fetchEvent = async (id: string): Promise<Event> => {
-  const { data } = await api.get<Event>(`/admin/event/${id}`)
-  return data
+  const { data } = await api.get<{ success: boolean; data: Event }>(`/admin/event/${id}`)
+  return data.data
 }
 
 const toggleFeatured = async (id: string, featured: boolean): Promise<void> => {
@@ -152,7 +152,7 @@ export default function PromotedDetailPage() {
         <StatCard icon={Ticket} value={event.sold} label="Tickets Sold" />
         <StatCard
           icon={Users}
-          value={event.ticketType.reduce((s, t) => s + t.capacity, 0)}
+          value={(event.ticketType ?? []).reduce((s, t) => s + t.capacity, 0)}
           label="Total Capacity"
         />
         <div style={{ '--color-text': 'var(--color-gold)' } as unknown as CSSProperties}>
@@ -166,7 +166,7 @@ export default function PromotedDetailPage() {
       </div>
 
       {/* Ticket tiers */}
-      {event.ticketType.length > 0 && (
+      {(event.ticketType ?? []).length > 0 && (
         <>
           <h2
             style={{
@@ -186,7 +186,7 @@ export default function PromotedDetailPage() {
               overflow: 'hidden',
             }}
           >
-            <DataTable<TicketTier> columns={tierColumns} data={event.ticketType} />
+            <DataTable<TicketTier> columns={tierColumns} data={event.ticketType ?? []} />
           </div>
         </>
       )}

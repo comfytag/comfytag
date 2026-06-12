@@ -1,6 +1,6 @@
 import express from 'express'
 import { createAudience, createFreeAudience, deleteAudience, getAllAudience, getAudience, getAudienceByReference, getEventAudience, getUserAudience, getMyTickets, updateAudience, manualCheckIn, exportEventAudienceCSV, checkInByReference } from '../controllers/audience.js';
-import { verifyAdmin, verifyUser, verifyToken } from '../utils/verifyToken.js';
+import { verifyAdmin, verifyUser, verifyToken, verifyPartner } from '../utils/verifyToken.js';
 
 const router = express.Router()
 
@@ -8,10 +8,10 @@ const router = express.Router()
 router.post("/free/:eventId", createFreeAudience)
 
 // POST QR/barcode scanner check-in by reference string (before /:userId/:eventId wildcard)
-router.post("/checkin-by-ref", verifyUser, checkInByReference)
+router.post("/checkin-by-ref", verifyPartner, checkInByReference)
 
 // POST manual check-in toggle (before /:userId/:eventId wildcard)
-router.post("/:id/checkin", verifyUser, manualCheckIn)
+router.post("/:id/checkin", verifyPartner, manualCheckIn)
 
 // Ticket purchase (must come after routes with static segments)
 router.post("/:userId/:eventId", verifyToken, createAudience)
@@ -23,22 +23,22 @@ router.get("/my", verifyToken, getMyTickets)
 router.get("/user/:userId", verifyToken, getUserAudience)
 
 // GET ALL BY A Event
-router.get("/event/:eventId", verifyToken, getEventAudience)
+router.get("/event/:eventId", verifyPartner, getEventAudience)
 
 // CSV EXPORT for event attendees
-router.get("/events/:eventId/audience/export", verifyUser, exportEventAudienceCSV)
+router.get("/events/:eventId/audience/export", verifyPartner, exportEventAudienceCSV)
 
 // GET BY REFERENCE — public ticket preview for claim-ticket page
 router.get("/ref/:reference", getAudienceByReference)
 
-// UPDATE
-router.put("/:id", verifyUser, updateAudience)
-// DELETE
-router.delete("/:id/:userId", verifyAdmin, deleteAudience)
-// GET — public: MongoDB ObjectId is unguessable; no auth required to view a ticket stub
-router.get("/:id", getAudience)
-// GET ALL
-router.get("/", verifyUser, getAllAudience)
+// UPDATE — partner must own the event (enforced in controller)
+router.put("/:id", verifyPartner, updateAudience)
+// DELETE — ownership enforced in controller (self, partner, or admin)
+router.delete("/:id/:userId", verifyToken, deleteAudience)
+// GET — self or admin (enforced in controller)
+router.get("/:id", verifyToken, getAudience)
+// GET ALL — admin only
+router.get("/", verifyAdmin, getAllAudience)
 
 
 

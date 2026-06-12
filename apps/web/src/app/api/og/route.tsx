@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
               background: 'rgba(255,255,255,0.15)',
               borderRadius: 8,
               padding: '8px 16px',
-              width: 'fit-content',
+              width: 'auto',
             }}
           >
             <span style={{ fontSize: 24 }}>{'🎟️'}</span>

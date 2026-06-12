@@ -25,7 +25,7 @@ export const verifyUser = (req,res, next) =>{
         if(err) return next(err);
         const userId = (req.user._id ?? req.user.id ?? '').toString()
         const paramUserId = req.params.id ?? req.params.userId ?? req.params.uid
-        if(userId === paramUserId || req.user.isPartner || req.user.isAdmin){
+        if(userId === paramUserId || req.user.isAdmin){
             next()
         } else{
             return next(createError(403,"You are not authorized!"));

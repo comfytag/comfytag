@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useContext } from 'react'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
-import { Menu } from 'lucide-react'
+import { Menu, Bell } from 'lucide-react'
 import type { AdminRole } from '../../lib/roles'
+import { NotificationContext } from '../../contexts/NotificationContext'
 
 interface TopbarProps {
   onMenuClick: () => void
@@ -18,9 +19,11 @@ interface RoleBadgeStyle {
 }
 
 const ROLE_BADGE: Record<AdminRole, RoleBadgeStyle> = {
-  super_admin: { bg: 'var(--color-brand)', label: 'Super Admin' },
-  finance: { bg: 'var(--color-gold)', label: 'Finance' },
-  moderator: { bg: 'var(--color-success)', label: 'Moderator' },
+  super_admin:  { bg: 'var(--color-brand)',   label: 'Super Admin'  },
+  finance:      { bg: 'var(--color-gold)',    label: 'Finance'      },
+  kyc_reviewer: { bg: '#7C3AED',             label: 'KYC Reviewer' },
+  support:      { bg: '#0EA5E9',             label: 'Support'      },
+  moderator:    { bg: 'var(--color-success)', label: 'Moderator'   },
 }
 
 function toTitleCase(str: string): string {
@@ -46,6 +49,7 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
     : 'Dashboard'
   const pageTitle = toTitleCase(segment || 'Dashboard')
 
+  const { unreadCount } = useContext(NotificationContext)
   const badge = ROLE_BADGE[role] || { bg: 'var(--color-brand)', label: 'Admin' }
   const initials = getInitials(userName)
 
@@ -124,6 +128,51 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
         >
           {badge.label}
         </span>
+
+        {/* Notification bell */}
+        <div style={{ position: 'relative' }}>
+          <button
+            aria-label={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '36px',
+              height: '36px',
+              border: 'none',
+              backgroundColor: 'transparent',
+              color: 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              borderRadius: '6px',
+            }}
+          >
+            <Bell size={18} />
+          </button>
+          {unreadCount > 0 && (
+            <span
+              aria-hidden
+              style={{
+                position: 'absolute',
+                top: '4px',
+                right: '4px',
+                minWidth: '16px',
+                height: '16px',
+                padding: '0 4px',
+                borderRadius: '9999px',
+                backgroundColor: 'var(--color-error)',
+                color: '#fff',
+                fontSize: '10px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                lineHeight: 1,
+              }}
+            >
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </div>
 
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <button

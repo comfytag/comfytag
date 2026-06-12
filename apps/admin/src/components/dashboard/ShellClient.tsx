@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import type { AdminRole } from '../../lib/roles'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
+import { useNotificationSocket } from '../../hooks/useNotificationSocket'
 
 interface ShellClientProps {
   children: ReactNode
@@ -14,6 +15,7 @@ interface ShellClientProps {
 
 export function ShellClient({ children, role, userName }: ShellClientProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  useNotificationSocket()
 
   return (
     <>

@@ -29,7 +29,7 @@ const columns: ColumnDef<Event>[] = [
   {
     key: 'sold',
     header: 'Sold / Cap',
-    render: (e) => `${e.sold} / ${e.ticketType.reduce((s, t) => s + t.capacity, 0)}`,
+    render: (e) => `${e.sold} / ${(e.ticketType ?? []).reduce((s, t) => s + t.capacity, 0)}`,
   },
 ]
 
