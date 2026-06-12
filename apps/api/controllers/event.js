@@ -52,12 +52,28 @@ export const createEvent = async (req, res, next) => {
     }
 }
 
+// Fields that must never be overwritten through the update endpoint.
+// planner_id / planner / slug are set once at creation.
+// sold tracks ticket sales atomically in the audience controller.
+const IMMUTABLE_EVENT_FIELDS = ['_id', '__v', 'planner_id', 'planner', 'slug', 'sold'];
+
 // UPDATE
 export const updateEvent = async (req, res, next) => {
 
     try {
-        // Sanitize promos: filter out entries without a valid code
+        // Verify event exists and that the caller owns it (admins bypass ownership)
+        const event = await Event.findById(req.params.id);
+        if (!event) return next(createError(404, 'Event not found'));
+        const callerId = (req.user._id ?? req.user.id ?? '').toString();
+        if (event.planner_id.toString() !== callerId && !req.user.isAdmin) {
+            return next(createError(403, 'You can only update your own events'));
+        }
+
+        // Strip fields that must never be overwritten via this endpoint
         let updateData = { ...req.body };
+        IMMUTABLE_EVENT_FIELDS.forEach(f => delete updateData[f]);
+
+        // Sanitize promos: filter out entries without a valid code
         if (updateData.promos && Array.isArray(updateData.promos)) {
             updateData.promos = updateData.promos.filter(promo => promo && promo.code);
         }

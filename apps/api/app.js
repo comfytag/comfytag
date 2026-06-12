@@ -59,6 +59,8 @@ import testimonialRouter from './routes/testimonial.js'
 import uploadRouter from './routes/upload.js'
 import analyticsRouter from './routes/analytics.js'
 import promosRouter from './routes/promos.js'
+import teamRouter from './routes/team.js'
+import { verifyPartner } from './utils/verifyToken.js'
 import cron from 'node-cron'
 import { updateExpiredTickets } from './jobs/updateExpiredTickets.js'
 
@@ -112,13 +114,14 @@ app.use("/admin/bank", bankRouter)   // bank info endpoint
 app.use("/auth", authRouter)      // Authentication endpoint
 app.use("/event", eventRouter)   // event endpoint
 app.use('/events', eventSearchRouter)  // search must be before /:id wildcard
+app.use('/events', teamRouter)   // team routes before /:id wildcard in eventRouter
 app.use("/events", eventRouter)  // event alias (plural)
 app.use("/categories", categoryRouter)   // category alias
 app.use("/category", categoryRouter)   // category endpoint
 app.use("/audience", audienceRouter)   // audience endpoint
 app.use("/users", usersRouter)   // Users endpoint
-app.use("/bank", bankRouter)     // bank accounts
-app.use("/withdraw", withdrawRouter)   // withdrawal requests
+app.use("/bank", verifyPartner, bankRouter)     // bank accounts — partners only
+app.use("/withdraw", verifyPartner, withdrawRouter)   // withdrawal requests — partners only
 
 // Face recognition
 app.use('/face', faceRouter)
@@ -169,14 +172,15 @@ app.use('/', promosRouter)
 
 
 //Partner Routes
-app.use("/partner/auth", authRouter)     // Authentication endpoint
-app.use("/partner/users", usersRouter)   // Users endpoint
-app.use("/partner/event", eventRouter)   // event endpoint
-app.use("/partner/category", categoryRouter)   // category endpoint
-app.use("/partner/audience", audienceRouter)   // audience endpoint
-app.use("/partner/bank", bankRouter)   // bank info endpoint
-app.use("/partner/withdraw", withdrawRouter)   //  withdraw info endpoint
-app.use("/partner/wallet", walletRouter)   // wallet endpoint
+app.use("/partner/auth", authRouter)                              // pre-auth — no guard
+app.use("/partner/users", usersRouter)                            // profile/public — no guard
+app.use("/partner/event", teamRouter)                             // team routes before /:id wildcard
+app.use("/partner/event", verifyPartner, eventRouter)             // event management
+app.use("/partner/category", categoryRouter)                      // category lookups — public ok
+app.use("/partner/audience", verifyPartner, audienceRouter)       // attendee data
+app.use("/partner/bank", verifyPartner, bankRouter)               // bank accounts
+app.use("/partner/withdraw", verifyPartner, withdrawRouter)       // withdrawal requests
+app.use("/partner/wallet", verifyPartner, walletRouter)           // wallet balance
 
 // Error handling
 app.use((err, req, res, next) => {

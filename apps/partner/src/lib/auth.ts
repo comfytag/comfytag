@@ -35,6 +35,7 @@ declare module 'next-auth/jwt' {
     token: string
     logo?: string | null
     isPartner: boolean
+    isAdmin: boolean
   }
 }
 
@@ -191,6 +192,7 @@ export const authOptions: NextAuthOptions = {
         token.token = user.token
         token.logo = user.logo
         token.isPartner = user.isPartner
+        token.isAdmin = user.isAdmin
       }
       return token
     },
@@ -199,6 +201,7 @@ export const authOptions: NextAuthOptions = {
       session.user.token = token.token
       if (token.logo) session.user.logo = token.logo
       session.user.isPartner = token.isPartner
+      session.user.isAdmin = token.isAdmin
       return session
     },
   },
