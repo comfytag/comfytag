@@ -33,19 +33,6 @@ export const verifyUser = (req,res, next) =>{
     })
 }
 
-// Allows any authenticated partner or admin. Per-resource ownership must be
-// enforced inside the controller (e.g. event planner_id === req.user.id).
-export const verifyPartner = (req, res, next) => {
-    verifyToken(req, res, (err) => {
-        if (err) return next(err);
-        if (req.user.isPartner || req.user.isAdmin) {
-            next()
-        } else {
-            return next(createError(403, "You are not authorized!"));
-        }
-    })
-}
-
 export const verifyAdmin = (req,res, next) =>{
     verifyToken(req,res, (err) =>{
         if(err) return next(err);

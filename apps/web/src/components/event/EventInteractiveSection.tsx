@@ -292,7 +292,7 @@ export function EventInteractiveSection({
           hypeLinkLoading={hypeLinkLoading}
         />
 
-        <Divider />
+       {/*  <Divider />
         <h2
           style={{
             fontSize: '16px',
@@ -310,7 +310,7 @@ export function EventInteractiveSection({
           isFollowing={isFollowing}
           onFollow={handleFollow}
           variant="inline"
-        />
+        /> */}
       </div>
 
       {/* Sticky bar */}
