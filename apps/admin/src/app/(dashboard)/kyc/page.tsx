@@ -1,15 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { LoadingSpinner, ErrorMessage, Badge } from '@comfytag/ui'
-import type { User } from '@comfytag/types'
-import { DataTable } from '@comfytag/ui'
+import { LoadingSpinner, ErrorMessage, Badge, DataTable, PageHeader } from '@comfytag/ui'
 import type { ColumnDef } from '@comfytag/ui'
-import { PageHeader } from '@comfytag/ui'
-import { useAllUsers } from '@/hooks'
+import type { UserAdminProfile } from '@comfytag/types'
+import { formatDate } from '@comfytag/utils'
+import { useKycQueue } from '@/hooks'
 
-// ─── Table columns ─────────────────────────────────────
-const columns: ColumnDef<User>[] = [
+// ─── Table column definitions ─────────────────────────────────────────────────
+
+const columns: ColumnDef<UserAdminProfile>[] = [
   {
     key: 'name',
     header: 'Organizer',
@@ -22,35 +22,97 @@ const columns: ColumnDef<User>[] = [
       </Link>
     ),
   },
-  { key: 'email', header: 'Email', render: (u) => u.email },
-  { key: 'emailV', header: 'Email Verified', render: (u) => <Badge status={u.isVerify?.email ? 'verified' : 'pending'} /> },
-  { key: 'photo', header: 'Photo', render: (u) => <Badge status={u.isVerify?.photo ? 'verified' : 'pending'} /> },
-  { key: 'idcard', header: 'ID Card', render: (u) => <Badge status={u.isVerify?.idCard ? 'verified' : 'pending'} /> },
-  { key: 'address', header: 'Address', render: (u) => <Badge status={u.isVerify?.address ? 'verified' : 'pending'} /> },
+  {
+    key: 'email',
+    header: 'Email',
+    render: (u) => (
+      <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>{u.email}</span>
+    ),
+  },
+  {
+    key: 'business',
+    header: 'Business',
+    render: (u) => (
+      <span style={{ fontSize: 13 }}>{u.businessName ?? '—'}</span>
+    ),
+  },
+  {
+    key: 'docs',
+    header: 'Documents',
+    render: (u) => (
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <Badge status={u.isVerify?.photo   ? 'photo'   : 'no photo'}   />
+        <Badge status={u.isVerify?.idCard  ? 'id card' : 'no id'}      />
+        <Badge status={u.isVerify?.address ? 'address' : 'no address'} />
+      </div>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'KYC Status',
+    render: (u) => <Badge status={u.kycStatus ?? 'pending'} />,
+  },
+  {
+    key: 'submitted',
+    header: 'Submitted',
+    render: (u) => (
+      <span style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+        {formatDate(u.createdAt)}
+      </span>
+    ),
+  },
+  {
+    key: 'action',
+    header: '',
+    render: (u) => (
+      <Link
+        href={`/kyc/${u._id}`}
+        style={{
+          display: 'inline-block',
+          padding: '5px 14px',
+          borderRadius: 6,
+          fontSize: 13,
+          fontWeight: 600,
+          color: 'var(--color-brand)',
+          border: '1px solid var(--color-brand)',
+          textDecoration: 'none',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        Review →
+      </Link>
+    ),
+  },
 ]
 
-// ─── Page ──────────────────────────────────────────────
-export default function KycPage() {
-  const { data: users, isLoading, isError, refetch } = useAllUsers()
+// ─── Page ──────────────────────────────────────────────────────────────────────
 
-  const organizers = (users ?? []).filter((u) => u.isPartner)
+export default function KycPage() {
+  const { data: queueData, isLoading, isError, refetch } = useKycQueue()
+
+  const users = queueData?.data ?? []
+  const total = queueData?.pagination?.total ?? 0
 
   if (isLoading) return <LoadingSpinner size="lg" centered />
 
   if (isError) {
     return (
       <ErrorMessage
-        message="Failed to load KYC data"
+        message="Failed to load KYC queue"
         onRetry={() => void refetch()}
       />
     )
   }
 
   return (
-    <div>
+    <div style={{ padding: '32px 24px' }}>
       <PageHeader
         title="KYC Review"
-        subtitle={isLoading ? 'Loading...' : `${organizers.length} organizers`}
+        subtitle={
+          isLoading
+            ? 'Loading…'
+            : `${total} organiser${total !== 1 ? 's' : ''} pending review`
+        }
       />
 
       <div
@@ -58,10 +120,17 @@ export default function KycPage() {
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
           borderRadius: 12,
-          padding: 24,
+          overflow: 'hidden',
         }}
       >
-        <DataTable<User> columns={columns} data={organizers} isLoading={isLoading} />
+        <DataTable<UserAdminProfile>
+          columns={columns}
+          data={users}
+          isLoading={isLoading}
+          keyField="_id"
+          emptyTitle="No pending KYC applications"
+          emptySubtitle="All organiser accounts are fully verified or no documents have been submitted yet."
+        />
       </div>
     </div>
   )

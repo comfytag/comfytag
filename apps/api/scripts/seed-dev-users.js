@@ -20,6 +20,7 @@ const users = [
     password: 'Admin123!',
     isPartner: false,
     isAdmin: true,
+    role: 'super_admin',
     isVerify: { email: true, photo: false, idCard: false, address: false },
   },
 ];

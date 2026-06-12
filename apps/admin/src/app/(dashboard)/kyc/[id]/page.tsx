@@ -2,129 +2,121 @@
 
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { LoadingSpinner, ErrorMessage, Badge } from '@comfytag/ui'
-import type { User } from '@comfytag/types'
-import { PageHeader } from '@comfytag/ui'
+import { LoadingSpinner, ErrorMessage, Badge, InfoField, PageHeader } from '@comfytag/ui'
+import { formatDate } from '@comfytag/utils'
 import { ProfileCard } from '@/components/ui/ProfileCard'
-import { useUserById, useVerifyKyc } from '@/hooks'
+import { KycActionPanel } from '@/components/kyc/KycActionPanel'
+import { useKycDetails } from '@/hooks'
 
-// ─── Page ──────────────────────────────────────────────
+// ─── Page ──────────────────────────────────────────────────────────────────────
+
 export default function KycDetailPage() {
   const params = useParams<{ id: string }>()
   const id = params?.id ?? ''
 
-  const { data: user, isLoading, isError } = useUserById(id)
-  const verifyMutation = useVerifyKyc()
+  const { data: user, isLoading, isError, refetch } = useKycDetails(id)
 
   if (isLoading) return <LoadingSpinner size="lg" centered />
 
   if (isError || !user) {
-    return <ErrorMessage message="Failed to load user" />
+    return (
+      <ErrorMessage
+        message="Failed to load KYC profile"
+        onRetry={() => void refetch()}
+      />
+    )
   }
 
   return (
-    <div>
+    <div style={{ padding: '32px 24px' }}>
+      {/* ─── Header ────────────────────────────────────────── */}
       <PageHeader
         title={user.name}
+        subtitle="KYC Document Review"
         action={
           <Link
             href="/kyc"
-            style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: 14 }}
+            style={{
+              color: 'var(--color-text-muted)',
+              textDecoration: 'none',
+              fontSize: 14,
+            }}
           >
-            ← Back to KYC
+            ← Back to KYC Queue
           </Link>
         }
       />
 
-      {/* Profile card */}
+      {/* ─── Organiser profile ─────────────────────────────── */}
       <ProfileCard
         name={user.name}
         email={user.email}
         phone={user.phone}
         username={user.username}
         joinedAt={user.createdAt}
-      />
-
-      {/* Verification status grid */}
-      <h2
-        style={{
-          fontSize: 16,
-          fontWeight: 600,
-          color: 'var(--color-text)',
-          marginTop: 24,
-          marginBottom: 16,
-        }}
+        avatarUrl={user.image ?? undefined}
       >
-        Verification Status
-      </h2>
+        {/* KYC status pill inside the profile card */}
+        <div style={{ marginTop: 8 }}>
+          <Badge status={user.kycStatus ?? 'pending'} />
+          {user.kycStatus === 'rejected' && user.kycRejectionReason && (
+            <div
+              style={{
+                marginTop: 6,
+                fontSize: 12,
+                color: 'var(--color-error)',
+              }}
+            >
+              Rejection reason: {user.kycRejectionReason}
+              {user.kycRejectedAt && (
+                <span style={{ color: 'var(--color-text-muted)', marginLeft: 6 }}>
+                  ({formatDate(user.kycRejectedAt)})
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </ProfileCard>
+
+      {/* ─── Quick-stats row ───────────────────────────────── */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-          gap: 16,
-          marginBottom: 24,
+          gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+          gap: 12,
+          backgroundColor: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 12,
+          padding: 20,
+          marginBottom: 28,
         }}
       >
-        {[
-          { label: 'Email', field: 'email', verified: user.isVerify?.email },
-          { label: 'Photo', field: 'photo', verified: user.isVerify?.photo },
-          { label: 'ID Card', field: 'idcard', verified: user.isVerify?.idCard },
-          { label: 'Address', field: 'address', verified: user.isVerify?.address },
-        ].map(({ label, field, verified }) => (
-          <div
-            key={field}
-            style={{
-              backgroundColor: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 12,
-              padding: 16,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                color: 'var(--color-text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                marginBottom: 8,
-              }}
-            >
-              {label}
-            </div>
-            <div style={{ marginBottom: 12 }}><Badge status={verified ? 'verified' : 'pending'} /></div>
-            {!verified && field !== 'email' && (
-              <button
-                onClick={() => verifyMutation.mutate({ id, field })}
-                disabled={verifyMutation.isPending}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: 6,
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  backgroundColor: 'var(--color-brand)',
-                  color: '#fff',
-                  opacity: verifyMutation.isPending ? 0.6 : 1,
-                }}
-              >
-                Verify
-              </button>
-            )}
-          </div>
-        ))}
+        <InfoField
+          label="Email verified"
+          value={<Badge status={user.isVerify?.email ? 'verified' : 'pending'} />}
+        />
+        <InfoField
+          label="Photo"
+          value={<Badge status={user.isVerify?.photo ? 'verified' : 'pending'} />}
+        />
+        <InfoField
+          label="ID Card"
+          value={<Badge status={user.isVerify?.idCard ? 'verified' : 'pending'} />}
+        />
+        <InfoField
+          label="Address"
+          value={<Badge status={user.isVerify?.address ? 'verified' : 'pending'} />}
+        />
+        {user.businessName && (
+          <InfoField label="Business" value={user.businessName} />
+        )}
+        {user.address && (
+          <InfoField label="Location" value={user.address} />
+        )}
       </div>
 
-      {verifyMutation.isSuccess && (
-        <div style={{ color: 'var(--color-success)', fontSize: 14, marginTop: 8 }}>
-          Verification updated.
-        </div>
-      )}
-      {verifyMutation.isError && (
-        <div style={{ color: 'var(--color-error)', fontSize: 14, marginTop: 8 }}>
-          Failed to update verification.
-        </div>
-      )}
+      {/* ─── Document viewer + action controls ─────────────── */}
+      <KycActionPanel userId={user._id} user={user} />
     </div>
   )
 }

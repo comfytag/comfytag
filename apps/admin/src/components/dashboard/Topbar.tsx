@@ -18,9 +18,11 @@ interface RoleBadgeStyle {
 }
 
 const ROLE_BADGE: Record<AdminRole, RoleBadgeStyle> = {
-  super_admin: { bg: 'var(--color-brand)', label: 'Super Admin' },
-  finance: { bg: 'var(--color-gold)', label: 'Finance' },
-  moderator: { bg: 'var(--color-success)', label: 'Moderator' },
+  super_admin:  { bg: 'var(--color-brand)',   label: 'Super Admin'  },
+  finance:      { bg: 'var(--color-gold)',    label: 'Finance'      },
+  kyc_reviewer: { bg: '#7C3AED',             label: 'KYC Reviewer' },
+  support:      { bg: '#0EA5E9',             label: 'Support'      },
+  moderator:    { bg: 'var(--color-success)', label: 'Moderator'   },
 }
 
 function toTitleCase(str: string): string {

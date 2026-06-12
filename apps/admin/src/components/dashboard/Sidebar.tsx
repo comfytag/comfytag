@@ -32,19 +32,19 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Overview', href: '/overview', icon: LayoutDashboard, roles: 'all' },
-  { label: 'Users', href: '/users', icon: Users, roles: ['super_admin', 'moderator'] },
-  { label: 'Organizers', href: '/organizers', icon: Building2, roles: ['super_admin', 'moderator'] },
-  { label: 'Events', href: '/events', icon: Calendar, roles: 'all' },
-  { label: 'KYC', href: '/kyc', icon: FileCheck, roles: ['super_admin', 'moderator'] },
-  { label: 'Payouts', href: '/payouts', icon: Banknote, roles: ['super_admin', 'finance'] },
-  { label: 'Face Logs', href: '/face-logs', icon: ScanFace, roles: ['super_admin', 'moderator'] },
-  { label: 'Promoted', href: '/promoted', icon: TrendingUp, roles: 'all' },
-  { label: 'Categories', href: '/categories', icon: Tag, roles: 'all' },
-  { label: 'Analytics', href: '/analytics', icon: BarChart3, roles: ['super_admin', 'finance'] },
-  { label: 'Audit Log', href: '/audit', icon: ClipboardList, roles: ['super_admin'] },
-  { label: 'Team', href: '/team', icon: UserCog, roles: ['super_admin'] },
-  { label: 'Settings', href: '/settings', icon: Settings, roles: 'all' },
+  { label: 'Overview',        href: '/overview',   icon: LayoutDashboard, roles: 'all' },
+  { label: 'User Management', href: '/users',       icon: Users,           roles: ['support', 'moderator', 'finance'] },
+  { label: 'Organizers',      href: '/organizers',  icon: Building2,       roles: ['support', 'moderator', 'finance'] },
+  { label: 'KYC Review',      href: '/kyc',         icon: FileCheck,       roles: ['kyc_reviewer', 'finance', 'support'] },
+  { label: 'Events',          href: '/events',      icon: Calendar,        roles: 'all' },
+  { label: 'Payouts',         href: '/payouts',     icon: Banknote,        roles: ['finance', 'support'] },
+  { label: 'Promoted',        href: '/promoted',    icon: TrendingUp,      roles: 'all' },
+  { label: 'Categories',      href: '/categories',  icon: Tag,             roles: 'all' },
+  { label: 'Face Logs',       href: '/face-logs',   icon: ScanFace,        roles: ['moderator', 'support'] },
+  { label: 'Analytics',       href: '/analytics',   icon: BarChart3,       roles: ['finance', 'support', 'moderator'] },
+  { label: 'Audit Log',       href: '/audit',       icon: ClipboardList,   roles: ['super_admin'] },
+  { label: 'Team',            href: '/team',        icon: UserCog,         roles: ['super_admin'] },
+  { label: 'Settings',        href: '/settings',    icon: Settings,        roles: 'all' },
 ]
 
 interface SidebarProps {

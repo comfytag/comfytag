@@ -1,7 +1,7 @@
 'use client'
 
 import type { CSSProperties } from 'react'
-import { useSession } from 'next-auth/react'
+import { useState, useEffect } from 'react'
 import { Users, Calendar, TrendingUp, Banknote } from 'lucide-react'
 import { Badge, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { formatNaira, formatDate } from '@comfytag/utils'
@@ -57,7 +57,7 @@ const columns: ColumnDef<Event>[] = [
     key: 'sold',
     header: 'Sold',
     render: (e) =>
-      `${e.sold} / ${e.ticketType.reduce((s, t) => s + t.capacity, 0)}`,
+      `${e.sold} / ${(e.ticketType ?? []).reduce((s, t) => s + t.capacity, 0)}`,
   },
   {
     key: 'revenue',
@@ -70,12 +70,16 @@ const columns: ColumnDef<Event>[] = [
   },
 ]
 
-const todayDate = new Intl.DateTimeFormat('en-NG', { dateStyle: 'full' }).format(new Date())
-
 // Wrapper style that cascades --color-text to gold for the stat value text
 const goldValueStyle = { '--color-text': 'var(--color-gold)' } as unknown as CSSProperties
 
 export default function OverviewPage() {
+  // Populated client-side only to avoid SSR/browser Intl mismatch causing hydration warnings
+  const [todayDate, setTodayDate] = useState('')
+  useEffect(() => {
+    setTodayDate(new Intl.DateTimeFormat('en-NG', { dateStyle: 'full' }).format(new Date()))
+  }, [])
+
   const usersQuery = useAllUsers()
   const eventsQuery = useAllAdminEvents()
   const withdrawsQuery = useAllPayouts()
