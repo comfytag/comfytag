@@ -44,3 +44,10 @@ export const adminRbacUserKeys = {
   list: (params?: Record<string, unknown>) => [...adminRbacUserKeys.all, 'list', params] as const,
   detail: (id: string) => [...adminRbacUserKeys.all, 'detail', id] as const,
 }
+
+export const adminAnalyticsKeys = {
+  all: ['api-admin-analytics'] as const,
+  overview: () => [...adminAnalyticsKeys.all, 'overview'] as const,
+  users:    () => [...adminAnalyticsKeys.all, 'users']    as const,
+  revenue:  () => [...adminAnalyticsKeys.all, 'revenue']  as const,
+}

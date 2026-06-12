@@ -1,7 +1,9 @@
 import { useEffect, useContext } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 import { useSocket } from './useSocket'
 import { NotificationContext } from '@/contexts/NotificationContext'
+import { api } from '@/lib/api'
 import { Notification } from '@comfytag/types'
 
 /**
@@ -14,31 +16,31 @@ import { Notification } from '@comfytag/types'
 export const useNotificationSocket = () => {
   const socket = useSocket()
   const queryClient = useQueryClient()
-  const { setUnreadCount } = useContext(NotificationContext)
+  const { data: session } = useSession()
+  const { setUnreadCount, incrementUnreadCount } = useContext(NotificationContext)
+  const userId = session?.user?.id
 
   useEffect(() => {
-    if (!socket) return
+    if (!socket || !userId) return
+
+    // All cache operations must use the same scoped key as notifications/page.tsx
+    const notifKey = ['notifications', userId]
 
     /**
      * Listen for new notification received
      * Add to React Query cache and update unread count
      */
     const handleNotificationReceived = (notification: Notification) => {
-      // Update React Query cache
-      queryClient.setQueryData(
-        ['notifications'],
-        (oldData: any) => {
-          if (!oldData) return { notifications: [notification] }
-          return {
-            ...oldData,
-            notifications: [notification, ...oldData.notifications],
-            unreadCount: (oldData.unreadCount || 0) + 1,
-          }
+      queryClient.setQueryData(notifKey, (oldData: any) => {
+        if (!oldData) return { notifications: [notification], unreadCount: 1 }
+        return {
+          ...oldData,
+          notifications: [notification, ...oldData.notifications],
+          unreadCount: (oldData.unreadCount || 0) + 1,
         }
-      )
-
-      // Invalidate notifications query to trigger fresh fetch if needed
-      queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      })
+      // Sync the nav badge immediately — don't wait for unreadCount:update
+      incrementUnreadCount()
     }
 
     /**
@@ -46,20 +48,11 @@ export const useNotificationSocket = () => {
      * Update context and React Query cache
      */
     const handleUnreadCountUpdate = (data: { unreadCount: number; updatedAt: string }) => {
-      // Update global context
       setUnreadCount(data.unreadCount)
-
-      // Update React Query cache
-      queryClient.setQueryData(
-        ['notifications'],
-        (oldData: any) => {
-          if (!oldData) return { unreadCount: data.unreadCount }
-          return {
-            ...oldData,
-            unreadCount: data.unreadCount,
-          }
-        }
-      )
+      queryClient.setQueryData(notifKey, (oldData: any) => {
+        if (!oldData) return { unreadCount: data.unreadCount }
+        return { ...oldData, unreadCount: data.unreadCount }
+      })
     }
 
     /**
@@ -67,22 +60,13 @@ export const useNotificationSocket = () => {
      * Update cache and unread count
      */
     const handleNotificationRead = (data: { notificationId: string; read: boolean; readAt: string }) => {
-      // Update React Query cache
-      queryClient.setQueryData(
-        ['notifications'],
-        (oldData: any) => {
-          if (!oldData) return oldData
-
-          const updatedNotifications = oldData.notifications?.map((notif: Notification) =>
-            notif._id === data.notificationId ? { ...notif, read: true } : notif
-          )
-
-          return {
-            ...oldData,
-            notifications: updatedNotifications,
-          }
-        }
-      )
+      queryClient.setQueryData(notifKey, (oldData: any) => {
+        if (!oldData) return oldData
+        const updatedNotifications = oldData.notifications?.map((notif: Notification) =>
+          notif._id === data.notificationId ? { ...notif, read: true } : notif
+        )
+        return { ...oldData, notifications: updatedNotifications }
+      })
     }
 
     /**
@@ -90,35 +74,33 @@ export const useNotificationSocket = () => {
      * Reset unread count and update cache
      */
     const handleAllNotificationsRead = () => {
-      // Update global context
       setUnreadCount(0)
-
-      // Update React Query cache
-      queryClient.setQueryData(
-        ['notifications'],
-        (oldData: any) => {
-          if (!oldData) return { unreadCount: 0 }
-
-          const updatedNotifications = oldData.notifications?.map((notif: Notification) => ({
-            ...notif,
-            read: true,
-          }))
-
-          return {
-            ...oldData,
-            notifications: updatedNotifications,
-            unreadCount: 0,
-          }
-        }
-      )
+      queryClient.setQueryData(notifKey, (oldData: any) => {
+        if (!oldData) return { unreadCount: 0 }
+        const updatedNotifications = oldData.notifications?.map((notif: Notification) => ({
+          ...notif,
+          read: true,
+        }))
+        return { ...oldData, notifications: updatedNotifications, unreadCount: 0 }
+      })
     }
 
-    /**
-     * Listen for initial unread count on connection
-     * (Optional: if server sends initial state)
-     */
-    const handleConnected = (data: any) => {
-      // Optionally fetch initial unread count here
+    // Seed the badge from HTTP on every socket connect / reconnect.
+    // Without this the badge resets to 0 after every page reload.
+    const handleConnected = async (_data: any) => {
+      try {
+        const data = await queryClient.fetchQuery({
+          queryKey: notifKey,
+          queryFn: () =>
+            api.get('/notification', { params: { page: 1, limit: 50 } }).then((r) => r.data),
+          staleTime: 30_000,
+        })
+        if (typeof (data as any)?.unreadCount === 'number') {
+          setUnreadCount((data as any).unreadCount)
+        }
+      } catch {
+        // Non-fatal — badge will update on next real-time event
+      }
     }
 
     /**
@@ -142,5 +124,5 @@ export const useNotificationSocket = () => {
       socket.off('allNotifications:read', handleAllNotificationsRead)
       socket.off('connected', handleConnected)
     }
-  }, [socket, queryClient, setUnreadCount])
+  }, [socket, userId, queryClient, setUnreadCount, incrementUnreadCount])
 }

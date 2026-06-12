@@ -346,6 +346,42 @@ export const processPayout = async (req, res, next) => {
         )
         if (!withdrawal) return next(createError(404, 'Withdrawal request not found.'))
 
+        const io = req.app.locals.io
+        const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+
+        await createNotification({
+            userId: withdrawal.user_id,
+            type: 'payout_approved',
+            title: 'Payout sent ✓',
+            message: `₦${withdrawal.amount.toLocaleString()} has been sent to your ${withdrawal.bankName} account`,
+            data: {
+                amount: withdrawal.amount,
+                bankName: withdrawal.bankName,
+                acctName: withdrawal.acctName,
+                withdrawId,
+            },
+            io,
+        }).catch(err => console.error('[Admin Payout] Notification error:', err.message))
+
+        User.findById(withdrawal.user_id).select('email name').then(user => {
+            if (!user) return
+            enqueueEmail({
+                to: user.email,
+                subject: 'Your payout has been sent',
+                template: 'payoutSent.hbs',
+                data: {
+                    organizerName: user.name,
+                    amount: withdrawal.amount,
+                    bankName: withdrawal.bankName,
+                    acctName: withdrawal.acctName,
+                    dashboardLink: `${baseUrl}/partner/withdraw`,
+                    year: new Date().getFullYear(),
+                },
+                from: 'support@comfytag.com',
+                replyTo: 'support@comfytag.com',
+            }).catch(err => console.error('[Admin Payout] Email error:', err.message))
+        }).catch(err => console.error('[Admin Payout] User lookup error:', err.message))
+
         return res.status(200).json({
             success: true,
             message: 'Payout marked as sent.',
@@ -370,10 +406,47 @@ export const rejectPayout = async (req, res, next) => {
         )
         if (!withdrawal) return next(createError(404, 'Withdrawal request not found.'))
 
+        const io = req.app.locals.io
+        const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+        const rejectionReason = (reason ?? '').trim() || 'Please contact support for details'
+
+        await createNotification({
+            userId: withdrawal.user_id,
+            type: 'payout_rejected',
+            title: 'Payout request rejected',
+            message: 'Your withdrawal could not be processed at this time',
+            data: {
+                amount: withdrawal.amount,
+                rejectionReason,
+                supportLink: `${baseUrl}/support/chat`,
+                withdrawId,
+            },
+            io,
+        }).catch(err => console.error('[Admin Payout] Rejection notification error:', err.message))
+
+        User.findById(withdrawal.user_id).select('email name').then(user => {
+            if (!user) return
+            enqueueEmail({
+                to: user.email,
+                subject: 'Your payout request could not be processed',
+                template: 'payoutRejected.hbs',
+                data: {
+                    organizerName: user.name,
+                    amount: withdrawal.amount,
+                    rejectionReason,
+                    supportChatLink: `${baseUrl}/support/chat`,
+                    resubmitLink: `${baseUrl}/partner/withdraw`,
+                    year: new Date().getFullYear(),
+                },
+                from: 'support@comfytag.com',
+                replyTo: 'support@comfytag.com',
+            }).catch(err => console.error('[Admin Payout] Rejection email error:', err.message))
+        }).catch(err => console.error('[Admin Payout] User lookup error:', err.message))
+
         return res.status(200).json({
             success: true,
             message: 'Payout rejected.',
-            data: { withdrawId, status: 'rejected', reason: reason || null },
+            data: { withdrawId, status: 'rejected', reason: rejectionReason },
         })
     } catch (err) {
         next(err)
