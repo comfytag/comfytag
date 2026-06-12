@@ -67,7 +67,7 @@ export default function AttendeesPage() {
       result = result.filter(a =>
         a.name?.toLowerCase().includes(q) ||
         a.email?.toLowerCase().includes(q) ||
-        a.phone?.toLowerCase().includes(q)
+        String(a.phone || '').toLowerCase().includes(q)
       )
     }
 

@@ -337,7 +337,7 @@ export default function EventsPage() {
                     >
                       <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--color-text)', fontWeight: 500 }}>{event.name}</td>
                       <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--color-text)' }}>
-                        {new Date(event.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        {event.date ? new Date(event.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No date'}
                       </td>
                       <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--color-text)' }}>
                         <span

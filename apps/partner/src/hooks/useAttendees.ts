@@ -6,6 +6,14 @@ import { api } from '@/lib/api'
 import { attendeeKeys } from './queryKeys'
 import type { Ticket } from '@comfytag/types'
 
+interface EventAudienceResponse {
+  data: Ticket[]
+  page: number
+  limit: number
+  total: number
+  pages: number
+}
+
 export function useAttendees(eventId: string) {
   const { data: session } = useSession()
   const token = session?.user?.token
@@ -14,8 +22,8 @@ export function useAttendees(eventId: string) {
     queryKey: attendeeKeys.list(eventId),
     queryFn: () =>
       api
-        .get<Ticket[]>(`/audience/event/${eventId}`)
-        .then((r) => r.data ?? []),
+        .get<EventAudienceResponse>(`/audience/event/${eventId}`)
+        .then((r) => r.data?.data ?? []),
     staleTime: 30_000,
     enabled: !!eventId && !!token,
   })
