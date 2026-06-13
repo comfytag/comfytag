@@ -59,16 +59,18 @@ export default function TicketsPage() {
 
   // Categorize by event date, not ticket status — status lags until the
   // backend cron runs, so a ticket can be 'active' long after the event ends.
-  const now = new Date()
+  // Compare against end-of-day so today's events stay in Upcoming until midnight.
+  const endOfToday = new Date()
+  endOfToday.setHours(23, 59, 59, 999)
 
   const upcoming = tickets.filter((t) => {
     const dateToCompare = t.eventDate || t.date
-    return dateToCompare ? new Date(dateToCompare) >= now : true
+    return dateToCompare ? new Date(dateToCompare) >= endOfToday : true
   })
 
   const past = tickets.filter((t) => {
     const dateToCompare = t.eventDate || t.date
-    return dateToCompare ? new Date(dateToCompare) < now : false
+    return dateToCompare ? new Date(dateToCompare) < endOfToday : false
   })
 
   // Adapter: build a User-compatible object for FaceEnrollmentBanner.
