@@ -1,90 +1,156 @@
-'use client'
+import Link from 'next/link'
+import Image from 'next/image'
+import { ArrowRight, Flame, Zap, TrendingUp } from 'lucide-react'
 
-import React from 'react'
-import { EventCard } from '@/components/ui/EventCard'
-import { isUpcoming } from '@comfytag/utils'
-import type { Event } from '@comfytag/types'
-
-interface EditorPicksSectionProps {
-  events: Event[]
+interface PickEvent {
+  id: string
+  title: string
+  venue: string
+  date: string
+  price: string
+  image: string
+  badge: 'Selling Fast' | 'Tonight' | 'Trending' | null
 }
 
-export function EditorPicksSection({ events }: EditorPicksSectionProps) {
-  if (!events || events.length === 0) return null
+const MOCK_EVENTS: PickEvent[] = [
+  {
+    id: 'detty-december-lagos',
+    title: 'Detty December All-White Party',
+    venue: 'Eko Hotel & Suites, Lagos',
+    date: 'Sat 28 Jun · 9PM',
+    price: '₦25,000',
+    image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&auto=format&q=80',
+    badge: 'Selling Fast',
+  },
+  {
+    id: 'afrobeats-live-lagos',
+    title: 'Afrobeats Live Lagos 2026',
+    venue: 'Eko Convention Centre, Lagos',
+    date: 'Fri 4 Jul · 8PM',
+    price: '₦15,000',
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&auto=format&q=80',
+    badge: 'Tonight',
+  },
+  {
+    id: 'lagos-fashion-week',
+    title: 'Lagos Fashion Week – SS26',
+    venue: 'Federal Palace Hotel, Lagos',
+    date: 'Sun 6 Jul · 3PM',
+    price: '₦35,000',
+    image: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&auto=format&q=80',
+    badge: null,
+  },
+  {
+    id: 'ilorin-comedy-night',
+    title: 'Ilorin Comedy Night Live',
+    venue: 'Kwara Hotel Banquet Hall, Ilorin',
+    date: 'Sat 12 Jul · 7PM',
+    price: '₦5,000',
+    image: 'https://images.unsplash.com/photo-1501281668745-f7f57925be31?w=800&auto=format&q=80',
+    badge: 'Trending',
+  },
+  {
+    id: 'abuja-music-festival',
+    title: 'Abuja Music Festival',
+    venue: 'Millennium Park Grounds, Abuja',
+    date: 'Sat 19 Jul · 5PM',
+    price: '₦8,000',
+    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&q=80',
+    badge: null,
+  },
+]
 
-  // Filter to only upcoming, published events, then take first 4
-  const featured = events
-    .filter((e) => e.status === 'published' && isUpcoming(e.date))
-    .slice(0, 4)
+const BADGE_CONFIG = {
+  'Selling Fast': { icon: Flame,      iconClass: 'text-orange-500' },
+  'Tonight':      { icon: Zap,        iconClass: 'text-yellow-500' },
+  'Trending':     { icon: TrendingUp, iconClass: 'text-violet-600' },
+} as const
+
+function EditorPickCard({ event, priority }: { event: PickEvent; priority: boolean }) {
+  const badge = event.badge ? BADGE_CONFIG[event.badge] : null
+  const BadgeIcon = badge?.icon
 
   return (
-    <section
-      style={{
-        background: 'linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark) 100%)',
-        padding: '64px 16px',
-        marginBottom: '0',
-      }}
+    <Link
+      href={`/events/${event.id}`}
+      className="relative shrink-0 w-[85vw] md:w-100 aspect-4/5 rounded-[2rem] overflow-hidden snap-center group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+      aria-label={`${event.title} — ${event.date} — from ${event.price}`}
     >
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ marginBottom: '40px' }}>
-          <span
-            style={{
-              display: 'inline-block',
-              padding: '6px 14px',
-              borderRadius: '99px',
-              background: 'rgba(255,255,255,0.15)',
-              color: '#ffffff',
-              fontSize: '12px',
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              marginBottom: '12px',
-              backdropFilter: 'blur(4px)',
-            }}
+      {/* Cover image */}
+      <Image
+        src={event.image}
+        alt={event.title}
+        fill
+        sizes="(max-width: 768px) 85vw, 400px"
+        priority={priority}
+        className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+      />
+
+      {/* Gradient overlay */}
+      <div
+        className="absolute inset-0 bg-linear-to-t from-zinc-900/90 via-zinc-900/20 to-transparent"
+        aria-hidden
+      />
+
+      {/* Urgency badge — top-left */}
+      {event.badge && badge && BadgeIcon && (
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-zinc-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+          <BadgeIcon className={`h-3 w-3 ${badge.iconClass}`} aria-hidden />
+          {event.badge}
+        </div>
+      )}
+
+      {/* Content — pinned to bottom */}
+      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+        <p className="text-zinc-300 text-sm mb-1">{event.date}</p>
+        <h3 className="text-2xl font-bold text-white mb-1 line-clamp-2">{event.title}</h3>
+        <p className="text-zinc-400 text-sm mb-4">{event.venue}</p>
+
+        <div className="flex items-center justify-between">
+          <span className="text-white font-bold text-lg">{event.price}</span>
+          <div className="bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-white/30 transition-colors">
+            Get Tickets
+          </div>
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+export function EditorPicksSection() {
+  return (
+    <section
+      className="w-full py-16 md:py-24 bg-zinc-50"
+      aria-labelledby="editor-picks-heading"
+    >
+      {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 mb-10 md:mb-14 flex items-end justify-between">
+        <div>
+          <p className="text-sm font-bold tracking-widest text-violet-600 uppercase mb-2">
+            Exclusively Curated
+          </p>
+          <h2
+            id="editor-picks-heading"
+            className="text-3xl md:text-5xl font-extrabold tracking-tight text-zinc-900"
           >
             Editor&apos;s Picks
-          </span>
-          <h2
-            style={{
-              fontFamily: 'var(--font-anybody), sans-serif',
-              fontSize: '32px',
-              fontWeight: 800, // NEW: Anybody font weight for boldness
-              color: 'var(--color-text-on-brand)',
-              marginBottom: '8px',
-              letterSpacing: '-0.01em',
-            }}
-          >
-            Curated by Our Team
           </h2>
-          <p
-            style={{
-              color: 'var(--color-text-on-brand)',
-              opacity: 0.85,
-              fontSize: '16px',
-              lineHeight: 1.6,
-            }}
-          >
-            Events we think you&apos;ll absolutely love.
-          </p>
         </div>
 
-        {/* Cards grid — 4 columns on desktop, responsive */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-            gap: '16px',
-          }}
+        <Link
+          href="/events"
+          className="hidden md:flex items-center text-violet-600 font-semibold hover:text-violet-700 transition-colors"
         >
-          {featured.map((event) => (
-            <EventCard
-              key={event._id}
-              event={event}
-              href={`/events/${event.slug ?? event._id}`}
-            />
-          ))}
-        </div>
+          See All
+          <ArrowRight className="ml-2 h-4 w-4" aria-hidden />
+        </Link>
+      </div>
+
+      {/* Horizontal scroll rail */}
+      <div className="flex overflow-x-auto gap-4 md:gap-6 px-4 md:px-8 pb-10 snap-x snap-mandatory scrollbar-hide max-w-[100vw]">
+        {MOCK_EVENTS.map((event, i) => (
+          <EditorPickCard key={event.id} event={event} priority={i === 0} />
+        ))}
       </div>
     </section>
   )

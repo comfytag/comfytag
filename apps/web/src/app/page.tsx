@@ -1,6 +1,7 @@
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { HeroSection } from '@/components/home/HeroSection'
+import { FomoStrip } from '@/components/home/FomoStrip'
 import { HomeClientShell } from '@/components/home/HomeClientShell'
 import { HomeFeedClient } from '@/components/home/HomeFeedClient'
 import { EditorPicksSection } from '@/components/home/EditorPicksSection'
@@ -202,11 +203,14 @@ export default async function HomePage() {
         }}
       />
       <HeroSection />
-      <EditorPicksSection events={editorPicks} />
+      <FomoStrip />
+      <EditorPicksSection />
       <HowItWorksSection />
       <CategoryGridSection />
-      <HomeClientShell />
-      <main style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' }}>
+      {/* <HomeClientShell /> */}
+      <main 
+      // style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' }}
+      >
         <HomeFeedClient events={events} categories={categories} />
         <TestimonialsSection testimonials={testimonials} />
       </main>

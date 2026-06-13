@@ -1,105 +1,67 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
-import React from 'react'
 
-interface CategoryCard {
+interface Category {
   label: string
-  emoji: string
-  category: string
-  gradient: string
+  count: string
+  slug: string
+  image: string
 }
 
-const categories: CategoryCard[] = [
-  { label: 'Music', emoji: '🎵', category: 'music', gradient: 'linear-gradient(135deg, #7C3AED, #C026D3)' },
-  { label: 'Comedy', emoji: '😂', category: 'comedy', gradient: 'linear-gradient(135deg, #F59E0B, #D97706)' },
-  { label: 'Tech', emoji: '💻', category: 'tech', gradient: 'linear-gradient(135deg, #3B82F6, #1D4ED8)' },
-  { label: 'Sports', emoji: '⚽', category: 'sports', gradient: 'linear-gradient(135deg, #10B981, #059669)' },
-  { label: 'Nightlife', emoji: '🌃', category: 'nightlife', gradient: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' },
-  { label: 'Arts', emoji: '🎨', category: 'arts', gradient: 'linear-gradient(135deg, #EC4899, #BE185D)' },
+const categories: Category[] = [
+  {
+    label: 'Nightlife',
+    count: '38 Events',
+    slug: 'nightlife',
+    image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80',
+  },
+  {
+    label: 'Live Music',
+    count: '52 Events',
+    slug: 'music',
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80',
+  },
+  {
+    label: 'Comedy',
+    count: '24 Events',
+    slug: 'comedy',
+    image: 'https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=800&q=80',
+  },
+  {
+    label: 'Tech & Business',
+    count: '17 Events',
+    slug: 'tech',
+    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80',
+  },
 ]
 
 export function CategoryGridSection() {
   return (
-    <section
-      style={{
-        padding: '64px 16px',
-        background: 'var(--color-surface)',
-      }}
-    >
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ marginBottom: '40px' }}>
-          <h2
-            style={{
-              fontFamily: 'var(--font-anybody), sans-serif', // NEW: Anybody font
-              fontSize: '28px',
-              fontWeight: 800, // NEW: Extra bold
-              color: 'var(--color-text-primary)',
-              marginBottom: '12px',
-              letterSpacing: '-0.01em',
-            }}
-          >
-            Browse by Category
-          </h2>
-        </div>
+    <section className="w-full py-16 md:py-24 bg-white px-4 md:px-8">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-zinc-900 mb-10 md:mb-14">
+          Explore by Vibe
+        </h2>
 
-        {/* 3-column grid on desktop, 2-column on mobile */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '16px',
-          }}
-        >
-          {categories.map((category) => (
-            <Link
-              key={category.category}
-              href={`/events?category=${category.category}`}
-              style={{ textDecoration: 'none' }}
-            >
-              <div
-                style={{
-                  background: category.gradient,
-                  padding: '24px',
-                  borderRadius: '12px',
-                  minHeight: '160px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLDivElement
-                  el.style.transform = 'scale(1.05)'
-                  el.style.boxShadow = '0 12px 16px rgba(0, 0, 0, 0.15)'
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLDivElement
-                  el.style.transform = 'scale(1)'
-                  el.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)'
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: '48px',
-                    marginBottom: '12px',
-                  }}
-                >
-                  {category.emoji}
-                </div>
-                <div
-                  style={{
-                    fontFamily: 'var(--font-anybody), sans-serif', // NEW: Anybody font
-                    fontSize: '20px',
-                    fontWeight: 800, // NEW: Extra bold
-                    color: '#ffffff',
-                  }}
-                >
-                  {category.label}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {categories.map((cat) => (
+            <Link key={cat.slug} href={`/events?category=${cat.slug}`}>
+              <div className="relative group overflow-hidden rounded-3xl aspect-square md:aspect-4/3 cursor-pointer">
+                <Image
+                  src={cat.image}
+                  alt={cat.label}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                  <h3 className="text-white text-xl md:text-2xl font-bold tracking-tight">
+                    {cat.label}
+                  </h3>
+                  <p className="text-white/80 text-sm font-medium mt-1">{cat.count}</p>
                 </div>
               </div>
             </Link>

@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, JetBrains_Mono, Anybody, Space_Grotesk } from 'next/font/google'
+import { Inter, JetBrains_Mono, Anybody, Space_Grotesk, Geist } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { BottomTabBarWrapper } from '@/components/layout/BottomTabBarWrapper'
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono', display: 'swap' })
@@ -59,7 +62,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html suppressHydrationWarning lang="en" className={`${inter.variable} ${jetbrainsMono.variable} ${anybody.variable} ${spaceGrotesk.variable}`}>
+    <html suppressHydrationWarning lang="en" className={cn(inter.variable, jetbrainsMono.variable, anybody.variable, spaceGrotesk.variable, "font-sans", geist.variable)}>
       <body suppressHydrationWarning>
         <Providers>
           {children}

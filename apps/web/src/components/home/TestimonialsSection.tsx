@@ -1,150 +1,56 @@
-'use client'
+import { Star } from 'lucide-react'
 
-import React from 'react'
-import { AvatarInitials } from '@comfytag/ui'
-
-interface Testimonial {
+interface TestimonialNormalized {
   _id: string
   userName: string
   userImage?: string
   quote: string
   rating?: number
-  dateAttended?: string
 }
 
 interface TestimonialsSectionProps {
-  testimonials: Testimonial[]
+  testimonials: TestimonialNormalized[]
 }
 
 export function TestimonialsSection({ testimonials }: TestimonialsSectionProps) {
   if (!testimonials || testimonials.length === 0) return null
 
   return (
-    <section
-      style={{
-        background: 'var(--color-bg)',
-        padding: '80px 16px',
-      }}
-    >
-      <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-          <h2
-            style={{
-              fontFamily: 'var(--font-anybody), sans-serif', // NEW: Anybody font
-              fontSize: '36px',
-              fontWeight: 800, // NEW: Extra bold
-              color: 'var(--color-text)',
-              marginBottom: '12px',
-              letterSpacing: '-0.01em',
-            }}
-          >
-            What People Say
-          </h2>
-          <p
-            style={{
-              color: 'var(--color-text-muted)',
-              fontSize: '16px',
-              lineHeight: 1.6,
-            }}
-          >
-            Join thousands of happy attendees and organizers using ComfyTag.
-          </p>
-        </div>
+    <section className="w-full py-16 md:py-24 bg-zinc-50 px-4 md:px-8">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-zinc-900 mb-4 text-center">
+          Loved by attendees.
+        </h2>
+        <p className="text-lg text-zinc-500 max-w-2xl mx-auto text-center mb-16">
+          Don&apos;t just take our word for it. Here is what happens when you remove the friction from ticketing.
+        </p>
 
-        {/* Testimonial cards — scrollable on mobile, grid on desktop */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '24px',
-          }}
-        >
+        <div className="flex overflow-x-auto gap-4 pb-8 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:snap-none md:mx-0 md:px-0 md:pb-0">
           {testimonials.map((testimonial) => (
             <div
               key={testimonial._id}
-              style={{
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '28px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-                transition: 'transform 200ms ease, box-shadow 200ms ease',
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget as HTMLDivElement
-                el.style.transform = 'translateY(-4px)'
-                el.style.boxShadow = 'var(--shadow-md)'
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget as HTMLDivElement
-                el.style.transform = 'translateY(0)'
-                el.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)'
-              }}
+              className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-zinc-100 flex flex-col justify-between h-full hover:shadow-md transition-shadow shrink-0 w-[85vw] sm:w-85 snap-center md:w-auto md:shrink"
             >
-              {/* Star rating */}
-              {typeof testimonial.rating === 'number' && testimonial.rating > 0 && (
-                <div style={{ display: 'flex', gap: '4px' }}>
+              <div>
+                <div className="flex gap-1 mb-6 text-amber-400" aria-label="5 out of 5 stars">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        fontSize: '18px',
-                        color: i < testimonial.rating! ? 'var(--color-energy)' : 'var(--color-border)',
-                      }}
-                      aria-hidden="true"
-                    >
-                      ★
-                    </span>
+                    <Star key={i} size={18} fill="currentColor" strokeWidth={0} />
                   ))}
                 </div>
-              )}
 
-              {/* Quote */}
-              <p
-                style={{
-                  fontSize: '15px',
-                  color: 'var(--color-text)',
-                  lineHeight: 1.7,
-                  fontStyle: 'italic',
-                  flex: 1,
-                  margin: '0',
-                }}
-              >
-                &ldquo;{testimonial.quote}&rdquo;
-              </p>
+                <p className="text-zinc-700 text-lg leading-relaxed font-medium mb-8">
+                  &ldquo;{testimonial.quote}&rdquo;
+                </p>
+              </div>
 
-              {/* User info + date attended */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '8px', borderTop: '1px solid var(--color-border)' }}>
-                <AvatarInitials name={testimonial.userName} src={testimonial.userImage} size={40} />
-                <div style={{ flex: 1 }}>
-                  <p
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      color: 'var(--color-text)',
-                      margin: '0',
-                    }}
-                  >
-                    {testimonial.userName}
-                  </p>
-                  {testimonial.dateAttended && (
-                    <p
-                      style={{
-                        fontSize: '12px',
-                        color: 'var(--color-text-muted)',
-                        margin: '2px 0 0',
-                      }}
-                    >
-                      Attended: {new Date(testimonial.dateAttended).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                      })}
-                    </p>
-                  )}
+              <div className="flex items-center gap-3">
+                <div
+                  className="h-12 w-12 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 font-bold text-lg shrink-0"
+                  aria-hidden="true"
+                >
+                  {testimonial.userName.charAt(0).toUpperCase()}
                 </div>
+                <p className="font-bold text-zinc-900">{testimonial.userName}</p>
               </div>
             </div>
           ))}
