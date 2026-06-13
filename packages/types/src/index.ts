@@ -114,6 +114,7 @@ export interface Ticket {
   // Backend-enriched event details:
   eventDate?: string                // Event start date (ISO 8601 string)
   eventTime?: string                // Event start time (HH:MM format)
+  eventEndTime?: string             // Event end time (HH:MM format); may cross midnight
   eventVenue?: string               // Event venue name
   eventSlug?: string                // Event slug for routing
 }

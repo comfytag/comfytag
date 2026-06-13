@@ -486,6 +486,7 @@ export const getMyTickets = async (req, res, next) => {
             ...t,
             eventDate: eventMap[t.event_id?.toString?.()]?.date || t.date,
             eventTime: eventMap[t.event_id?.toString?.()]?.startTime,
+            eventEndTime: eventMap[t.event_id?.toString?.()]?.endTime,
             eventVenue: eventMap[t.event_id?.toString?.()]?.venue,
             eventSlug: eventMap[t.event_id?.toString?.()]?.slug,
         }))

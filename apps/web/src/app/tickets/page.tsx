@@ -57,20 +57,47 @@ export default function TicketsPage() {
     )
   }
 
-  // Categorize by event date, not ticket status — status lags until the
-  // backend cron runs, so a ticket can be 'active' long after the event ends.
-  // Compare against end-of-day so today's events stay in Upcoming until midnight.
-  const endOfToday = new Date()
-  endOfToday.setHours(23, 59, 59, 999)
+  // Build the exact end datetime for a ticket, accounting for overnight events
+  // (e.g. a club night starting 21:00 and ending 05:00 the next morning).
+  const buildEndDateTime = (t: Ticket): Date | null => {
+    const rawDate = t.eventDate || t.date
+    if (!rawDate) return null
+
+    const base = new Date(rawDate)
+    const startTime = t.eventTime    // 'HH:MM'
+    const endTime   = t.eventEndTime // 'HH:MM'
+
+    if (!startTime || !endTime) {
+      // Fallback: treat end-of-day on the event date
+      base.setHours(23, 59, 59, 999)
+      return base
+    }
+
+    const [startH] = startTime.split(':').map(Number)
+    const [endH, endM] = endTime.split(':').map(Number)
+
+    const endDateTime = new Date(base)
+    endDateTime.setHours(endH, endM, 0, 0)
+
+    // Overnight check: if the end hour is strictly before the start hour the
+    // event wraps past midnight, so the actual end is the following morning.
+    if (endH < startH) {
+      endDateTime.setDate(endDateTime.getDate() + 1)
+    }
+
+    return endDateTime
+  }
+
+  const now = new Date()
 
   const upcoming = tickets.filter((t) => {
-    const dateToCompare = t.eventDate || t.date
-    return dateToCompare ? new Date(dateToCompare) >= endOfToday : true
+    const end = buildEndDateTime(t)
+    return end ? now <= end : true
   })
 
   const past = tickets.filter((t) => {
-    const dateToCompare = t.eventDate || t.date
-    return dateToCompare ? new Date(dateToCompare) < endOfToday : false
+    const end = buildEndDateTime(t)
+    return end ? now > end : false
   })
 
   // Adapter: build a User-compatible object for FaceEnrollmentBanner.
