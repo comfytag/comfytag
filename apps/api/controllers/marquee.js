@@ -28,6 +28,17 @@ export const getActiveMarqueeItems = async (_req, res, next) => {
     }
 }
 
+// GET /cms/marquee/all — admin only
+// Returns every document regardless of isActive / time window, with _id included.
+export const getAllMarqueeItems = async (_req, res, next) => {
+    try {
+        const items = await MarqueeItem.find({}).sort({ sortOrder: 1, createdAt: -1 })
+        return res.status(200).json({ success: true, data: items })
+    } catch (err) {
+        next(err)
+    }
+}
+
 // POST /cms/marquee — admin only
 export const createMarqueeItem = async (req, res, next) => {
     try {

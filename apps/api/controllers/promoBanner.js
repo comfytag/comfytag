@@ -29,6 +29,17 @@ export const getActiveBanners = async (req, res, next) => {
     }
 }
 
+// GET /cms/banners/all — admin only
+// Returns every document regardless of isActive / time window, with _id included.
+export const getAllBanners = async (_req, res, next) => {
+    try {
+        const banners = await PromoBanner.find({}).sort({ createdAt: -1 })
+        return res.status(200).json({ success: true, data: banners })
+    } catch (err) {
+        next(err)
+    }
+}
+
 // POST /cms/banners — admin only
 export const createBanner = async (req, res, next) => {
     try {

@@ -13,6 +13,17 @@ export const getActiveSteps = async (_req, res, next) => {
     }
 }
 
+// GET /cms/how-it-works/all — admin only
+// Returns every document regardless of isActive, with _id included.
+export const getAllSteps = async (_req, res, next) => {
+    try {
+        const steps = await HowItWorksStep.find({}).sort({ sortOrder: 1, stepNumber: 1 })
+        return res.status(200).json({ success: true, data: steps })
+    } catch (err) {
+        next(err)
+    }
+}
+
 // POST /cms/how-it-works — admin only
 export const createStep = async (req, res, next) => {
     try {

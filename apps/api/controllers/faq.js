@@ -13,6 +13,17 @@ export const getActiveFaqs = async (_req, res, next) => {
     }
 }
 
+// GET /cms/faqs/all — admin only
+// Returns every document regardless of isActive, with _id included.
+export const getAllFaqs = async (_req, res, next) => {
+    try {
+        const items = await FaqItem.find({}).sort({ sortOrder: 1, createdAt: -1 })
+        return res.status(200).json({ success: true, data: items })
+    } catch (err) {
+        next(err)
+    }
+}
+
 // POST /cms/faqs — admin only
 export const createFaq = async (req, res, next) => {
     try {

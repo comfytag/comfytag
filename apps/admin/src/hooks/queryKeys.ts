@@ -51,3 +51,43 @@ export const adminAnalyticsKeys = {
   users:    () => [...adminAnalyticsKeys.all, 'users']    as const,
   revenue:  () => [...adminAnalyticsKeys.all, 'revenue']  as const,
 }
+
+export const siteConfigKeys = {
+  all: ['cms-site-config'] as const,
+  detail: () => [...siteConfigKeys.all, 'detail'] as const,
+}
+
+export const marqueeKeys = {
+  all: ['cms-marquee'] as const,
+  list: () => [...marqueeKeys.all, 'list'] as const,
+}
+
+export const promoBannerKeys = {
+  all: ['cms-banners'] as const,
+  list: () => [...promoBannerKeys.all, 'list'] as const,
+}
+
+export const howItWorksKeys = {
+  all: ['cms-how-it-works'] as const,
+  list: () => [...howItWorksKeys.all, 'list'] as const,
+}
+
+export const curatedSectionKeys = {
+  all: ['cms-curated'] as const,
+  detail: (key: string) => [...curatedSectionKeys.all, 'detail', key] as const,
+}
+
+export const faqKeys = {
+  all: ['cms-faqs'] as const,
+  list: () => [...faqKeys.all, 'list'] as const,
+}
+
+export const legalKeys = {
+  all: ['cms-legal'] as const,
+  detail: (docType: string) => [...legalKeys.all, 'detail', docType] as const,
+}
+
+export const pageContentKeys = {
+  all: ['cms-pages'] as const,
+  detail: (key: string) => [...pageContentKeys.all, 'detail', key] as const,
+}
