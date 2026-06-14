@@ -1,14 +1,26 @@
-import { Ticket, ScanFace, CheckCircle } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { Ticket, ScanFace, CheckCircle, type LucideIcon } from 'lucide-react'
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export interface CmsStep {
+  stepNumber: number
+  title: string
+  description: string
+  iconType: string
+  isComingSoon?: boolean
+}
 
 interface Step {
   icon: LucideIcon
   title: string
   description: string
   step: number
+  isComingSoon?: boolean
 }
 
-const STEPS: Step[] = [
+// ─── Hardcoded fallback ───────────────────────────────────────────────────────
+
+const STEPS_FALLBACK: Step[] = [
   {
     icon: Ticket,
     title: 'Buy your ticket',
@@ -20,6 +32,7 @@ const STEPS: Step[] = [
     title: 'Enroll your face once',
     description: 'Takes 30 seconds in the app. Encrypted and NDPR compliant.',
     step: 2,
+    isComingSoon: true,
   },
   {
     icon: CheckCircle,
@@ -29,7 +42,34 @@ const STEPS: Step[] = [
   },
 ]
 
-export function HowItWorksSection() {
+// ─── Icon mapping (iconType string → Lucide component) ────────────────────────
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  'ticket':       Ticket,
+  'scan-face':    ScanFace,
+  'check-circle': CheckCircle,
+}
+
+function resolveIcon(iconType: string): LucideIcon {
+  return ICON_MAP[iconType] ?? CheckCircle
+}
+
+function cmsStepToStep(s: CmsStep): Step {
+  return {
+    icon: resolveIcon(s.iconType),
+    title: s.title,
+    description: s.description,
+    step: s.stepNumber,
+    isComingSoon: s.isComingSoon,
+  }
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export function HowItWorksSection({ steps }: { steps?: CmsStep[] }) {
+  const activeSteps: Step[] =
+    steps && steps.length > 0 ? steps.map(cmsStepToStep) : STEPS_FALLBACK
+
   return (
     <section
       className="w-full py-16 md:py-24 bg-zinc-950 relative overflow-hidden"
@@ -54,11 +94,11 @@ export function HowItWorksSection() {
 
         {/* Step cards */}
         <div className="flex overflow-x-auto gap-4 pb-8 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:snap-none md:mx-0 md:px-0 md:pb-0">
-          {STEPS.map((step) => {
+          {activeSteps.map((step) => {
             const Icon = step.icon
             return (
               <div
-                key={step.title}
+                key={step.step}
                 className="relative overflow-hidden bg-zinc-900 rounded-3xl p-6 md:p-8 border border-zinc-800 flex flex-col hover:border-violet-500/50 transition-colors group shrink-0 w-[85vw] sm:w-85 snap-center md:w-auto md:shrink"
               >
                 {/* Giant background step number */}
@@ -73,7 +113,7 @@ export function HowItWorksSection() {
 
                 <h3 className="text-xl font-bold text-white mb-3 relative z-10">
                   {step.title}
-                  {step.step === 2 && (
+                  {step.isComingSoon && (
                     <span className="inline-flex items-center justify-center bg-violet-500/20 text-violet-300 text-[10px] tracking-widest uppercase font-bold px-2 py-0.5 rounded-full ml-3 border border-violet-500/30 align-middle">Coming Soon</span>
                   )}
                 </h3>

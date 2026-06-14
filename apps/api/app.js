@@ -52,6 +52,7 @@ import referralRouter from './routes/referral.js'
 import walletRouter from './routes/wallet.js'
 import ticketTokenRouter from './routes/ticketToken.js'
 import configRouter from './routes/config.js'
+import cmsRouter from './routes/cms.js'
 import paystackVerifyRouter from './routes/paystackVerify.js'
 import testimonialRouter from './routes/testimonial.js'
 import uploadRouter from './routes/upload.js'
@@ -159,6 +160,7 @@ app.use('/referral', referralRouter)
 app.use('/wallet', walletRouter)
 app.use('/tickets', ticketTokenRouter)
 app.use('/config', configRouter)
+app.use('/cms', cmsRouter)
 app.use('/paystack', paystackVerifyRouter)
 app.use('/testimonials', testimonialRouter)
 app.use('/upload', uploadRouter)

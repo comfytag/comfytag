@@ -5,7 +5,21 @@ import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { SearchSuggestionsOverlay } from '@/components/ui/SearchSuggestionsOverlay';
 
-export function HeroSection() {
+interface HeroSectionProps {
+  headline?: string
+  subtitle?: string
+  statAttendees?: string
+  statEvents?: string
+  statCities?: string
+}
+
+export function HeroSection({
+  headline,
+  subtitle,
+  statAttendees,
+  statEvents,
+  statCities,
+}: HeroSectionProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
@@ -55,20 +69,28 @@ export function HeroSection() {
             Nigeria&apos;s #1 Biometric Ticketing
           </div>
 
-          {/* Headline */}
+          {/* Headline — custom copy from CMS, or default with gradient accent */}
           <h1 className="max-w-4xl text-5xl md:text-7xl font-extrabold tracking-tighter text-white leading-[1.1] mb-6">
-            Your face is your{' '}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-violet-400 to-violet-200">
-              ticket.
-            </span>
+            {headline ?? (
+              <>
+                Your face is your{' '}
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-violet-400 to-violet-200">
+                  ticket.
+                </span>
+              </>
+            )}
           </h1>
 
-          {/* Subtitle */}
+          {/* Subtitle — custom copy from CMS, or default with badge */}
           <p className="max-w-2xl text-lg md:text-xl text-zinc-300 mb-10 font-medium">
-            No QR codes. No printouts. Just show up and walk in.{' '}
-            <span className="inline-block ml-2 bg-white/10 text-zinc-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-white/20 align-middle tracking-widest">
-              Face Ticketing Coming Soon
-            </span>
+            {subtitle ?? (
+              <>
+                No QR codes. No printouts. Just show up and walk in.{' '}
+                <span className="inline-block ml-2 bg-white/10 text-zinc-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-white/20 align-middle tracking-widest">
+                  Face Ticketing Coming Soon
+                </span>
+              </>
+            )}
           </p>
 
           {/*
@@ -116,15 +138,15 @@ export function HeroSection() {
         {/* Stats — z-10 keeps them visible above the bg layer but below the search module (z-20) */}
         <div className="relative z-10 w-full max-w-3xl mt-16 pt-8 border-t border-white/10 grid grid-cols-3 gap-4 md:gap-8 divide-x divide-white/10">
           <div className="flex flex-col items-center">
-            <span className="text-2xl md:text-4xl font-bold text-white tracking-tight">14K+</span>
+            <span className="text-2xl md:text-4xl font-bold text-white tracking-tight">{statAttendees ?? '14K+'}</span>
             <span className="text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest mt-1">Attendees</span>
           </div>
           <div className="flex flex-col items-center">
-            <span className="text-2xl md:text-4xl font-bold text-white tracking-tight">200+</span>
+            <span className="text-2xl md:text-4xl font-bold text-white tracking-tight">{statEvents ?? '200+'}</span>
             <span className="text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest mt-1">Events</span>
           </div>
           <div className="flex flex-col items-center">
-            <span className="text-2xl md:text-4xl font-bold text-white tracking-tight">3</span>
+            <span className="text-2xl md:text-4xl font-bold text-white tracking-tight">{statCities ?? '3'}</span>
             <span className="text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest mt-1">Cities</span>
           </div>
         </div>

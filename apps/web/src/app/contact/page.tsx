@@ -4,13 +4,28 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import ContactForm from './ContactForm'
 
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
+
+async function fetchSupportEmail(): Promise<string> {
+  try {
+    const res = await fetch(`${API}/config/site`, { next: { revalidate: 3600 } })
+    if (!res.ok) return 'support@comfytag.com'
+    const json = (await res.json()) as { success: boolean; data: { supportEmail?: string } }
+    return json.data?.supportEmail ?? 'support@comfytag.com'
+  } catch {
+    return 'support@comfytag.com'
+  }
+}
+
 export const metadata: Metadata = {
   title: "Contact ComfyTag — Help, Support & Feedback",
   description: 'Contact ComfyTag for support, partnerships, or questions about events and tickets. Email, WhatsApp available. We\'re ready to help.',
   alternates: { canonical: 'https://comfytag.com/contact' },
 }
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const supportEmail = await fetchSupportEmail()
+
   return (
     <>
       <Navbar />
@@ -87,14 +102,14 @@ export default function ContactPage() {
                 Email
               </h3>
               <a
-                href="mailto:pixelgumstudio@gmail.com"
+                href={`mailto:${supportEmail}`}
                 style={{
                   color: 'var(--color-text-muted)',
                   textDecoration: 'none',
                   fontSize: '14px',
                 }}
               >
-                pixelgumstudio@gmail.com
+                {supportEmail}
               </a>
             </div>
 

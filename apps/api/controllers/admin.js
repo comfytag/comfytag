@@ -1,6 +1,7 @@
 import User from '../models/User.js'
 import Withdraw from '../models/Withdraw.js'
 import Event from '../models/Event.js'
+import SiteConfig from '../models/SiteConfig.js'
 import { createError } from '../utils/error.js'
 import { createNotification } from './notification.js'
 import { enqueueEmail } from '../jobs/emailQueue.js'
@@ -632,12 +633,26 @@ export const getUserAnalytics = async (req, res, next) => {
 // Platform Settings — scaffold pending Settings model
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const getSettings = (_req, res) => {
-    res.status(501).json({ success: false, message: 'Platform settings — implementation pending (Settings model required).' })
+export const getSettings = async (_req, res, next) => {
+    try {
+        const config = await SiteConfig.findOne({}) ?? await SiteConfig.create({})
+        return res.status(200).json({ success: true, data: config })
+    } catch (err) {
+        next(err)
+    }
 }
 
-export const updateSettings = (_req, res) => {
-    res.status(501).json({ success: false, message: 'Platform settings — implementation pending (Settings model required).' })
+export const updateSettings = async (req, res, next) => {
+    try {
+        const config = await SiteConfig.findOneAndUpdate(
+            {},
+            req.body,
+            { upsert: true, new: true, setDefaultsOnInsert: true },
+        )
+        return res.status(200).json({ success: true, data: config })
+    } catch (err) {
+        next(err)
+    }
 }
 
 export const toggleFeatureFlags = (_req, res) => {

@@ -3,14 +3,18 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-interface Category {
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export interface CategoryGridItem {
   label: string
-  count: string
   slug: string
   image: string
+  count?: string
 }
 
-const categories: Category[] = [
+// ─── Hardcoded fallback ───────────────────────────────────────────────────────
+
+const FALLBACK_CATEGORIES: CategoryGridItem[] = [
   {
     label: 'Nightlife',
     count: '38 Events',
@@ -37,7 +41,12 @@ const categories: Category[] = [
   },
 ]
 
-export function CategoryGridSection() {
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export function CategoryGridSection({ categories }: { categories?: CategoryGridItem[] }) {
+  const activeCategories =
+    categories && categories.length > 0 ? categories : FALLBACK_CATEGORIES
+
   return (
     <section className="w-full py-16 md:py-24 bg-white px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
@@ -46,7 +55,7 @@ export function CategoryGridSection() {
         </h2>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {categories.map((cat) => (
+          {activeCategories.map((cat) => (
             <Link key={cat.slug} href={`/events?category=${cat.slug}`}>
               <div className="relative group overflow-hidden rounded-3xl aspect-square md:aspect-4/3 cursor-pointer">
                 <Image
@@ -61,7 +70,9 @@ export function CategoryGridSection() {
                   <h3 className="text-white text-xl md:text-2xl font-bold tracking-tight">
                     {cat.label}
                   </h3>
-                  <p className="text-white/80 text-sm font-medium mt-1">{cat.count}</p>
+                  {cat.count && (
+                    <p className="text-white/80 text-sm font-medium mt-1">{cat.count}</p>
+                  )}
                 </div>
               </div>
             </Link>

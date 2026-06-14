@@ -5,13 +5,88 @@ import { FomoStrip } from '@/components/home/FomoStrip'
 import { HomeClientShell } from '@/components/home/HomeClientShell'
 import { HomeFeedClient } from '@/components/home/HomeFeedClient'
 import { EditorPicksSection } from '@/components/home/EditorPicksSection'
-import { HowItWorksSection } from '@/components/home/HowItWorksSection'
-import { CategoryGridSection } from '@/components/home/CategoryGridSection'
+import { HowItWorksSection, type CmsStep } from '@/components/home/HowItWorksSection'
+import { CategoryGridSection, type CategoryGridItem } from '@/components/home/CategoryGridSection'
 import { TestimonialsSection } from '@/components/home/TestimonialsSection'
 import { JsonLd } from '@/components/seo/JsonLd'
 import type { Event, Category } from '@comfytag/types'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
+
+// ─── Site config (hero copy + stats) ─────────────────────────────────────────
+
+interface SiteConfigData {
+  heroHeadline?: string
+  heroSubtitle?: string
+  statAttendees?: string
+  statEvents?: string
+  statCities?: string
+}
+
+async function fetchSiteConfig(): Promise<SiteConfigData> {
+  try {
+    const res = await fetch(`${API}/config/site`, { next: { revalidate: 3600 } })
+    if (!res.ok) return {}
+    const json = (await res.json()) as { success: boolean; data: SiteConfigData }
+    return json.data ?? {}
+  } catch {
+    return {}
+  }
+}
+
+// ─── Marquee items (FomoStrip) ────────────────────────────────────────────────
+
+interface MarqueeStripItem {
+  text: string
+  pulse?: boolean
+  dotColor?: 'red' | 'violet'
+}
+
+async function fetchMarqueeItems(): Promise<MarqueeStripItem[]> {
+  try {
+    const res = await fetch(`${API}/cms/marquee`, { next: { revalidate: 60 } })
+    if (!res.ok) return []
+    const json = (await res.json()) as { success: boolean; data: MarqueeStripItem[] }
+    return Array.isArray(json.data) ? json.data : []
+  } catch {
+    return []
+  }
+}
+
+// ─── How It Works steps ───────────────────────────────────────────────────────
+
+async function fetchHowItWorksSteps(): Promise<CmsStep[]> {
+  try {
+    const res = await fetch(`${API}/cms/how-it-works`, { next: { revalidate: 3600 } })
+    if (!res.ok) return []
+    const json = (await res.json()) as { success: boolean; data: CmsStep[] }
+    return Array.isArray(json.data) ? json.data : []
+  } catch {
+    return []
+  }
+}
+
+// ─── Featured categories (CategoryGridSection) ────────────────────────────────
+
+async function fetchFeaturedCategories(): Promise<CategoryGridItem[]> {
+  try {
+    const res = await fetch(`${API}/categories?featured=true`, { next: { revalidate: 3600 } })
+    if (!res.ok) return []
+    const data: unknown = await res.json()
+    const raw = (
+      Array.isArray(data)
+        ? data
+        : Array.isArray((data as Record<string, unknown>).data)
+          ? (data as Record<string, unknown>).data
+          : []
+    ) as Array<{ title?: string; slug?: string; image?: string }>
+    return raw
+      .map((c) => ({ label: c.title ?? '', slug: c.slug ?? '', image: c.image ?? '' }))
+      .filter((c) => c.label && c.slug)
+  } catch {
+    return []
+  }
+}
 
 async function fetchEvents(): Promise<Event[]> {
   try {
@@ -81,6 +156,47 @@ function normalizeTestimonial(t: TestimonialRaw): TestimonialNormalized {
   }
 }
 
+// ─── FAQ items (FAQPage JSON-LD) ─────────────────────────────────────────────
+
+interface FaqItem {
+  question: string
+  answer: string
+}
+
+const FALLBACK_FAQS: FaqItem[] = [
+  {
+    question: 'How does ComfyTag work?',
+    answer:
+      "ComfyTag is Nigeria's face-powered event ticketing platform. You buy a ticket online, enroll your face once in the app, then show your face at the venue door — no QR code or printout needed.",
+  },
+  {
+    question: 'How do I buy event tickets in Ilorin?',
+    answer:
+      'Browse events on ComfyTag, select your tickets, and pay securely with Paystack. Your ticket is stored in your account — just show your face at the gate.',
+  },
+  {
+    question: 'Is ComfyTag available across Nigeria?',
+    answer:
+      'ComfyTag launched in Ilorin and is expanding to Lagos, Abuja, and Port Harcourt. Any event organizer in Nigeria can list on ComfyTag.',
+  },
+  {
+    question: 'Is my face data safe on ComfyTag?',
+    answer:
+      "Yes. ComfyTag encrypts all face templates on your device. We never store raw biometric data on our servers. ComfyTag is fully compliant with Nigeria's NDPR.",
+  },
+]
+
+async function fetchFaqs(): Promise<FaqItem[]> {
+  try {
+    const res = await fetch(`${API}/cms/faqs`, { next: { revalidate: 3600 } })
+    if (!res.ok) return []
+    const json = (await res.json()) as { success: boolean; data: FaqItem[] }
+    return Array.isArray(json.data) ? json.data : []
+  } catch {
+    return []
+  }
+}
+
 async function fetchTestimonials(): Promise<TestimonialNormalized[]> {
   const defaultTestimonials: TestimonialNormalized[] = [
     {
@@ -116,11 +232,26 @@ async function fetchTestimonials(): Promise<TestimonialNormalized[]> {
 }
 
 export default async function HomePage() {
-  const [events, categories, editorPicks, testimonials] = await Promise.all([
+  const [
+    events,
+    categories,
+    editorPicks,
+    testimonials,
+    siteConfig,
+    marqueeItems,
+    howItWorksSteps,
+    featuredCategories,
+    faqs,
+  ] = await Promise.all([
     fetchEvents(),
     fetchCategories(),
     fetchEditorPicks(),
     fetchTestimonials(),
+    fetchSiteConfig(),
+    fetchMarqueeItems(),
+    fetchHowItWorksSteps(),
+    fetchFeaturedCategories(),
+    fetchFaqs(),
   ])
 
   return (
@@ -166,47 +297,27 @@ export default async function HomePage() {
         schema={{
           '@context': 'https://schema.org',
           '@type': 'FAQPage',
-          mainEntity: [
-            {
-              '@type': 'Question',
-              name: 'How does ComfyTag work?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: "ComfyTag is Nigeria's face-powered event ticketing platform. You buy a ticket online, enroll your face once in the app, then show your face at the venue door — no QR code or printout needed.",
-              },
+          mainEntity: (faqs.length > 0 ? faqs : FALLBACK_FAQS).map((faq) => ({
+            '@type': 'Question',
+            name: faq.question,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: faq.answer,
             },
-            {
-              '@type': 'Question',
-              name: 'How do I buy event tickets in Ilorin?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'Browse events on ComfyTag, select your tickets, and pay securely with Paystack. Your ticket is stored in your account — just show your face at the gate.',
-              },
-            },
-            {
-              '@type': 'Question',
-              name: 'Is ComfyTag available across Nigeria?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'ComfyTag launched in Ilorin and is expanding to Lagos, Abuja, and Port Harcourt. Any event organizer in Nigeria can list on ComfyTag.',
-              },
-            },
-            {
-              '@type': 'Question',
-              name: 'Is my face data safe on ComfyTag?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'Yes. ComfyTag encrypts all face templates on your device. We never store raw biometric data on our servers. ComfyTag is fully compliant with Nigeria\'s NDPR.',
-              },
-            },
-          ],
+          })),
         }}
       />
-      <HeroSection />
-      <FomoStrip />
-      <EditorPicksSection />
-      <HowItWorksSection />
-      <CategoryGridSection />
+      <HeroSection
+        headline={siteConfig.heroHeadline || undefined}
+        subtitle={siteConfig.heroSubtitle || undefined}
+        statAttendees={siteConfig.statAttendees || undefined}
+        statEvents={siteConfig.statEvents || undefined}
+        statCities={siteConfig.statCities || undefined}
+      />
+      <FomoStrip items={marqueeItems.length > 0 ? marqueeItems : undefined} />
+      <EditorPicksSection events={editorPicks} />
+      <HowItWorksSection steps={howItWorksSteps.length > 0 ? howItWorksSteps : undefined} />
+      <CategoryGridSection categories={featuredCategories.length > 0 ? featuredCategories : undefined} />
       {/* <HomeClientShell /> */}
       <main 
       // style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' }}

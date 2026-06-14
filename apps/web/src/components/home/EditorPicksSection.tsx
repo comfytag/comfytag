@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Flame, Zap, TrendingUp } from 'lucide-react'
+import type { Event } from '@comfytag/types'
+import { formatNaira, isToday, formatTime } from '@comfytag/utils'
 
 interface PickEvent {
   id: string
@@ -66,6 +68,37 @@ const BADGE_CONFIG = {
   'Trending':     { icon: TrendingUp, iconClass: 'text-violet-600' },
 } as const
 
+function mapEventToPick(event: Event): PickEvent {
+  const tiers = event.ticketType ?? []
+  const lowestPrice = tiers.length > 0 ? Math.min(...tiers.map((t) => t.price)) : 0
+
+  const totalCapacity = tiers.reduce((sum, t) => sum + t.capacity, 0)
+  const totalSold     = tiers.reduce((sum, t) => sum + t.sold, 0)
+  const soldPct       = totalCapacity > 0 ? totalSold / totalCapacity : 0
+
+  let badge: PickEvent['badge'] = null
+  if (isToday(event.date))   badge = 'Tonight'
+  else if (soldPct >= 0.75)  badge = 'Selling Fast'
+  else if (event.featured)   badge = 'Trending'
+
+  const dateLabel = new Date(event.date).toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  })
+  const timeLabel = event.startTime ? ` · ${formatTime(event.startTime)}` : ''
+
+  return {
+    id:    event.slug || event._id,
+    title: event.name,
+    venue: event.venue + (event.state ? `, ${event.state}` : ''),
+    date:  `${dateLabel}${timeLabel}`,
+    price: lowestPrice > 0 ? formatNaira(lowestPrice) : 'Free',
+    image: event.coverImage ?? event.images?.[0] ?? '',
+    badge,
+  }
+}
+
 function EditorPickCard({ event, priority }: { event: PickEvent; priority: boolean }) {
   const badge = event.badge ? BADGE_CONFIG[event.badge] : null
   const BadgeIcon = badge?.icon
@@ -117,7 +150,9 @@ function EditorPickCard({ event, priority }: { event: PickEvent; priority: boole
   )
 }
 
-export function EditorPicksSection() {
+export function EditorPicksSection({ events }: { events?: Event[] }) {
+  const picks = events && events.length > 0 ? events.map(mapEventToPick) : MOCK_EVENTS
+
   return (
     <section
       className="w-full py-16 md:py-24 bg-zinc-50"
@@ -148,7 +183,7 @@ export function EditorPicksSection() {
 
       {/* Horizontal scroll rail */}
       <div className="flex overflow-x-auto gap-4 md:gap-6 px-4 md:px-8 pb-10 snap-x snap-mandatory scrollbar-hide max-w-[100vw]">
-        {MOCK_EVENTS.map((event, i) => (
+        {picks.map((event, i) => (
           <EditorPickCard key={event.id} event={event} priority={i === 0} />
         ))}
       </div>

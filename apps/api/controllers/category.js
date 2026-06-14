@@ -50,11 +50,15 @@ export const getCategory = async (req,res,next) =>{
 }
 
 // GET ALL
-export const getAllCategories = async (req,res,next) =>{
-    try{
-        const getCategories = await Category.find( )
+// Supports ?featured=true to return only isFeatured categories, sorted by featuredSortOrder.
+export const getAllCategories = async (req, res, next) => {
+    try {
+        const featuredOnly = req.query.featured === 'true'
+        const filter   = featuredOnly ? { isActive: true, isFeatured: true } : {}
+        const sortKey  = featuredOnly ? { featuredSortOrder: 1 } : { sortOrder: 1 }
+        const getCategories = await Category.find(filter).sort(sortKey)
         res.status(200).json(getCategories)
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }

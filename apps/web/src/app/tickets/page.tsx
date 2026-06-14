@@ -26,6 +26,15 @@ export default function TicketsPage() {
     staleTime: 60_000,
   })
 
+  const { data: faceEnrollmentBannerConfig } = useQuery<{ title?: string; body?: string } | null>({
+    queryKey: ['cms-banner', 'face-enrollment'],
+    queryFn: () =>
+      api
+        .get('/cms/banners?key=face-enrollment')
+        .then((r) => (r.data?.data as Array<{ title?: string; body?: string }>)?.[0] ?? null),
+    staleTime: 3_600_000,
+  })
+
   if (status === 'loading') {
     return <LoadingSpinner size="lg" centered />
   }
@@ -125,7 +134,12 @@ export default function TicketsPage() {
 
           {/* ── Face Biometric Promo Banner ── */}
           {showFaceBanner && (
-            <FaceEnrollmentBanner user={bannerUser} onDismiss={() => {}} />
+            <FaceEnrollmentBanner
+              user={bannerUser}
+              onDismiss={() => {}}
+              title={faceEnrollmentBannerConfig?.title}
+              body={faceEnrollmentBannerConfig?.body}
+            />
           )}
 
           {/* ── Loading state ── */}

@@ -3,7 +3,7 @@
 // screen readers don't need a live-scrolling strip.
 // Pauses on hover so mouse users can read before it scrolls away.
 
-interface StripItem {
+export interface StripItem {
   text: string
   pulse?: boolean   // show live/urgency pulsing dot
   dotColor?: 'red' | 'violet'
@@ -38,7 +38,9 @@ function PulseDot({ color }: { color: 'red' | 'violet' }) {
   )
 }
 
-export function FomoStrip() {
+export function FomoStrip({ items }: { items?: StripItem[] }) {
+  const activeItems = items && items.length > 0 ? items : ITEMS
+
   return (
     <div
       className="w-full overflow-hidden bg-violet-50/50 border-y border-violet-100 py-2.5 flex items-center select-none"
@@ -49,7 +51,7 @@ export function FomoStrip() {
           className="flex items-center shrink-0 whitespace-nowrap
                      animate-marquee group-hover:paused"
         >
-          {[...ITEMS, ...ITEMS].map((item, i) => (
+          {[...activeItems, ...activeItems].map((item, i) => (
             <span key={i} className="inline-flex items-center">
               {item.pulse ? (
                 <span className="flex items-center gap-2 text-sm font-medium text-violet-900 tracking-wide">

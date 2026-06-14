@@ -7,9 +7,15 @@ import type { User } from '@comfytag/types'
 export interface FaceEnrollmentBannerProps {
   user: User
   onDismiss: () => void
+  title?: string
+  body?: string
 }
 
-export function FaceEnrollmentBanner({ user, onDismiss }: FaceEnrollmentBannerProps) {
+const DEFAULT_TITLE = 'Your face is your entry pass.'
+const DEFAULT_BODY  =
+  'Tired of scrambling for emails at the door? Link your biometric pass now to step cleanly through gate check-ins automatically.'
+
+export function FaceEnrollmentBanner({ user, onDismiss, title, body }: FaceEnrollmentBannerProps) {
   const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
@@ -43,10 +49,10 @@ export function FaceEnrollmentBanner({ user, onDismiss }: FaceEnrollmentBannerPr
           Exclusive Upgrade
         </span>
         <h2 className="text-xl font-bold tracking-tight mb-2 leading-snug">
-          Your face is your entry pass.
+          {title ?? DEFAULT_TITLE}
         </h2>
         <p className="text-sm text-white/80 leading-relaxed max-w-sm">
-          Tired of scrambling for emails at the door? Link your biometric pass now to step cleanly through gate check-ins automatically.
+          {body ?? DEFAULT_BODY}
         </p>
       </div>
 
