@@ -7,10 +7,12 @@ import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { SearchSuggestionsOverlay } from '@/components/ui/SearchSuggestionsOverlay'
+import { MobileMenuDrawer } from '@/components/layout/MobileMenuDrawer'
 import { AvatarInitials, LoadingSpinner } from '@comfytag/ui'
 import { authHeader, formatNaira } from '@comfytag/utils'
 import type { Notification, User } from '@comfytag/types'
 import { api } from '@/lib/api'
+import { useAuthModal } from '@/hooks/useAuthModal'
 
 export interface NavbarProps {
   user?: User
@@ -22,6 +24,8 @@ export function Navbar({ user, onSearch }: NavbarProps) {
   const router = useRouter()
   const [searchVal, setSearchVal] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -32,6 +36,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
   const notifRef = useRef<HTMLDivElement>(null)
 
   const currentUser = user || session?.user
+  const { openModal } = useAuthModal()
 
   // Close avatar dropdown on outside click
   useEffect(() => {
@@ -99,8 +104,25 @@ export function Navbar({ user, onSearch }: NavbarProps) {
       .catch(() => {})
   }, [dropdownOpen, session])
 
-  function handleSearch() {
-    const query = searchVal.trim()
+  // Escape key closes mobile search overlay
+  useEffect(() => {
+    if (!mobileSearchOpen) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return
+      setMobileSearchOpen(false)
+      setSearchVal('')
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [mobileSearchOpen])
+
+  function closeMobileSearch() {
+    setMobileSearchOpen(false)
+    setSearchVal('')
+  }
+
+  function handleSearch(q?: string) {
+    const query = (q ?? searchVal).trim()
     if (query) {
       if (onSearch) {
         onSearch(query)
@@ -171,10 +193,41 @@ export function Navbar({ user, onSearch }: NavbarProps) {
           outline: 2px solid var(--color-brand);
           outline-offset: 2px;
         }
+        /* Hamburger — visible on mobile only */
+        .__ct_nav_hamburger {
+          display: none;
+          width: 38px;
+          height: 38px;
+          border-radius: var(--radius-full);
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: var(--color-text-muted);
+          padding: 0;
+          flex-shrink: 0;
+          align-items: center;
+          justify-content: center;
+          transition: color var(--duration-micro) ease;
+        }
+        .__ct_nav_hamburger:hover { color: var(--color-text); }
+        .__ct_nav_hamburger:focus-visible {
+          outline: 2px solid var(--color-brand);
+          outline-offset: 2px;
+        }
         @media (max-width: 767px) {
           .__ct_navbar {
             height: 56px;
             padding: 0 16px;
+            background: rgba(255, 255, 255, 0.80);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom-color: rgba(228, 228, 231, 0.50);
+          }
+          /* Center logo absolutely so left/right icons sit at edges */
+          .__ct_nav_logo {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
           }
           .__ct_nav_search {
             display: none;
@@ -184,11 +237,33 @@ export function Navbar({ user, onSearch }: NavbarProps) {
             align-items: center;
             justify-content: center;
           }
+          .__ct_nav_hamburger {
+            display: flex;
+          }
+          /* Avatar dropdown moves into drawer on mobile */
+          .__ct_nav_avatar_wrap { display: none; }
+          /* Guest login/signup buttons move into drawer on mobile */
+          .__ct_nav_auth_wrap { display: none; }
         }
       `}</style>
       <nav className="__ct_navbar" aria-label="Main navigation">
-        {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+        {/* Hamburger — mobile only; opens slide-out drawer */}
+        <button
+          type="button"
+          className="__ct_nav_hamburger"
+          onClick={() => setMobileMenuOpen(true)}
+          aria-label="Open navigation menu"
+          aria-expanded={mobileMenuOpen}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+
+        {/* Logo — desktop: flex item left-aligned; mobile: absolute center */}
+        <Link href="/" className="__ct_nav_logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <Image alt="ComfyTag" className="w-auto h-8 object-contain" height={40} priority src="/logo.png" width={120} />
         </Link>
 
@@ -215,7 +290,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
         <button
           type="button"
           className="__ct_nav_mobile_search_btn"
-          onClick={() => router.push('/events')}
+          onClick={() => setMobileSearchOpen(true)}
           aria-label="Search events"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -300,8 +375,8 @@ export function Navbar({ user, onSearch }: NavbarProps) {
 
             </div>
 
-            {/* Avatar + dropdown */}
-            <div ref={dropdownRef} style={{ position: 'relative' }}>
+            {/* Avatar + dropdown — hidden on mobile (lives in MobileMenuDrawer) */}
+            <div ref={dropdownRef} className="__ct_nav_avatar_wrap" style={{ position: 'relative' }}>
               <button
                 type="button"
                 onClick={() => setDropdownOpen((o) => !o)}
@@ -342,19 +417,105 @@ export function Navbar({ user, onSearch }: NavbarProps) {
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Link href="/login" className="__ct_nav_login_link" style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none', padding: '6px 10px' }}>
+          // Guest auth — hidden on mobile (lives in MobileMenuDrawer)
+          <div className="__ct_nav_auth_wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={() => openModal('login')}
+              className="__ct_nav_login_link"
+              style={{ fontSize: '14px', fontWeight: 500, padding: '6px 10px', background: 'none', border: 'none', cursor: 'pointer' }}
+            >
               Log In
-            </Link>
-            <Link
-              href="/register"
-              style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-on-brand)', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', padding: '8px 16px', textDecoration: 'none' }}
+            </button>
+            <button
+              type="button"
+              onClick={() => openModal('register')}
+              style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-on-brand)', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', padding: '8px 16px', border: 'none', cursor: 'pointer' }}
             >
               Sign Up
-            </Link>
+            </button>
           </div>
         )}
       </nav>
+
+      {/* Mobile slide-out drawer */}
+      <MobileMenuDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+
+      {/* Mobile search overlay — same autocomplete as desktop */}
+      {mobileSearchOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            aria-hidden="true"
+            onClick={closeMobileSearch}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.4)',
+              zIndex: 98,
+            }}
+          />
+
+          {/* Panel */}
+          <div
+            role="search"
+            aria-label="Search"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 99,
+              background: 'var(--color-bg)',
+              borderBottom: '1px solid var(--color-border)',
+              padding: '10px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+          >
+            {/* Back button */}
+            <button
+              type="button"
+              onClick={closeMobileSearch}
+              aria-label="Close search"
+              style={{
+                flexShrink: 0,
+                width: 36,
+                height: 36,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--color-text-muted)',
+                borderRadius: 'var(--radius-full)',
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+            </button>
+
+            {/* Input + suggestions (position:relative so suggestions anchor to input) */}
+            <div style={{ flex: 1, position: 'relative' }}>
+              <SearchInput
+                value={searchVal}
+                onChange={setSearchVal}
+                onSearch={(q) => { handleSearch(q); closeMobileSearch() }}
+                autoFocus
+                placeholder="Search events, artists, venues…"
+              />
+              <SearchSuggestionsOverlay
+                query={searchVal}
+                isOpen={true}
+                onClose={closeMobileSearch}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </>
   )
 }

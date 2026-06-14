@@ -647,6 +647,11 @@ export const updateTicketTier = async (req, res, next) => {
         const event = await Event.findById(eventId)
         if (!event) return next(createError(404, 'Event not found'))
 
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (event.planner_id.toString() !== requesterId && !req.user.isAdmin) {
+            return next(createError(403, 'Not authorized to update this event'))
+        }
+
         const tierIndex = event.ticketType.findIndex(t => t._id.toString() === tierId)
         if (tierIndex === -1) return next(createError(404, 'Ticket tier not found'))
 

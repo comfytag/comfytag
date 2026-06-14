@@ -161,6 +161,7 @@ export function EventHeroCarousel({
           background: '#09090b',
           overflow: 'hidden',
           touchAction: 'pan-y',
+          borderRadius: 'var(--radius-lg)',
         }}
       >
         <Image

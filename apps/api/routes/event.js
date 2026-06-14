@@ -33,8 +33,8 @@ router.post("/:userId", verifyUser, createEvent)
 
 // Ticket tier management
 router.get("/:id/tiers/stats", getTicketTierStats)
-router.put("/:id/tiers/:tierId", verifyToken, updateTicketTier)
-router.delete("/:id/tiers/:tierId", verifyToken, deleteTicketTier)
+router.put("/:id/tiers/:tierId", verifyUser, updateTicketTier)
+router.delete("/:id/tiers/:tierId", verifyUser, deleteTicketTier)
 
 // Event status transitions (explicit state machine)
 router.post("/:id/publish", verifyUser, publishEvent)

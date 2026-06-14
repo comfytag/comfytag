@@ -101,13 +101,13 @@ export function BottomTabBar({ currentPath }: BottomTabBarProps) {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 4px;
+          gap: 3px;
           padding: 8px 0;
           text-decoration: none;
-          color: var(--color-text-muted);
+          color: #a1a1aa;
           font-size: 11px;
           font-weight: 500;
-          transition: color var(--duration-micro) ease;
+          transition: color 200ms ease;
           border: none;
           background: none;
           cursor: pointer;
@@ -115,21 +115,10 @@ export function BottomTabBar({ currentPath }: BottomTabBarProps) {
           position: relative;
         }
         .__ct_bottom_tab_link.active {
-          color: var(--color-brand);
-        }
-        .__ct_bottom_tab_link.active::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 3px;
-          height: 24px;
-          background: var(--color-brand);
-          border-radius: 0 0 3px 3px;
+          color: #7C3AED;
         }
         .__ct_bottom_tab_link:focus-visible {
-          outline: 2px solid var(--color-brand);
+          outline: 2px solid #7C3AED;
           outline-offset: -2px;
         }
         @media (min-width: 768px) {
@@ -150,10 +139,33 @@ export function BottomTabBar({ currentPath }: BottomTabBarProps) {
               aria-label={tab.ariaLabel}
               aria-current={active ? 'page' : undefined}
             >
-              <div suppressHydrationWarning style={{ width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div
+                suppressHydrationWarning
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: active ? 'scale(1.05)' : 'scale(1)',
+                  transition: 'transform 200ms ease',
+                }}
+              >
                 {tab.icon}
               </div>
-              <span>{tab.label}</span>
+              <span style={{ fontWeight: active ? 700 : 500 }}>{tab.label}</span>
+              {active && (
+                <div
+                  aria-hidden="true"
+                  style={{
+                    width: 4,
+                    height: 4,
+                    borderRadius: '50%',
+                    background: '#7C3AED',
+                    marginTop: 1,
+                  }}
+                />
+              )}
             </Link>
           )
         })}

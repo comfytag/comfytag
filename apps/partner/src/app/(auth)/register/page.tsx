@@ -1,11 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Button, Input, ErrorMessage } from '@comfytag/ui'
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
+import { api } from '@/lib/api'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -42,39 +40,25 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      // Register with isPartner: true
-      const registerRes = await fetch(`${API}/auth/register-partner`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          username,
-          email,
-          password,
-          confirm_password: confirmPassword,
-        }),
+      await api.post('/auth/register-partner', {
+        name,
+        username,
+        email,
+        password,
+        confirm_password: confirmPassword,
       })
 
-      if (!registerRes.ok) {
-        const data = await registerRes.json()
-        if (registerRes.status === 409) {
-          setError('An account with this email already exists. Please sign in instead.')
-        } else {
-          setError(data.message ?? 'Registration failed. Please try again.')
-        }
-        setIsLoading(false)
-        return
-      }
-
       setSuccess(true)
-      setIsLoading(false)
-
-      // Registration successful - redirect to login with success message
       router.push(`/login?registered=true&email=${encodeURIComponent(email)}`)
-    } catch (err) {
+    } catch (err: unknown) {
+      const e = err as { response?: { status?: number; data?: { message?: string } } }
+      if (e.response?.status === 409) {
+        setError('An account with this email already exists. Please sign in instead.')
+      } else {
+        setError(e.response?.data?.message ?? 'Registration failed. Please try again.')
+      }
+    } finally {
       setIsLoading(false)
-      setError('An error occurred. Please try again.')
-      console.error(err)
     }
   }
 

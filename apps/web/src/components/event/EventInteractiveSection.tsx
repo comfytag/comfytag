@@ -25,6 +25,7 @@ import type { Event as EventType, TicketTier } from '@comfytag/types'
 import type { Comment } from '@/components/event/CommentSection'
 import { api } from '@/lib/api'
 import { Navbar } from '@/components/layout/Navbar'
+import { useAuthModal } from '@/hooks/useAuthModal'
 
 declare global {
   interface Window {
@@ -83,6 +84,7 @@ export function EventInteractiveSection({
     }
   }, [session])
 
+  const { openModal } = useAuthModal()
   const { isLiked, likeCount, toggleLike } = useLike(event._id, false, event.sold)
   const { gateOpen, gateTrigger, openGate, closeGate } = useAuthGate()
 
@@ -209,11 +211,13 @@ export function EventInteractiveSection({
 
   const handleCheckout = (tierId: string, qty: number) => {
     setTicketSheetOpen(false)
-    if (session) {
-      handleDirectCheckout(tierId, qty)
-    } else {
-      router.push(`/checkout?eventId=${event._id}&tierId=${tierId}&qty=${qty}`)
+    if (!session) {
+      // Unauthenticated: open auth modal instead of navigating away.
+      // After silent close the user stays on the event page, now signed in.
+      openModal('login')
+      return
     }
+    handleDirectCheckout(tierId, qty)
   }
 
   const allImages = [
@@ -291,7 +295,7 @@ export function EventInteractiveSection({
 
         {/* Above-the-fold premium image frame */}
         <div
-          className="w-full h-75 md:h-112.5 rounded-3xl overflow-hidden relative shadow-sm mb-8 bg-zinc-950"
+          className="w-full h-75 md:h-112.5 rounded-3xl overflow-hidden relative shadow-sm mb-8"
           data-testid="event-hero"
         >
           <EventHeroCarousel images={allImages} name={event.name} />
