@@ -158,7 +158,7 @@ export function EventHeroCarousel({
           position: 'relative',
           width: '100%',
           paddingBottom: '56.25%',
-          background: 'var(--color-surface-2)',
+          background: '#09090b',
           overflow: 'hidden',
           touchAction: 'pan-y',
         }}
@@ -168,7 +168,7 @@ export function EventHeroCarousel({
           alt={`${name} — image ${current + 1} of ${total}`}
           fill
           priority={current === 0}
-          style={{ objectFit: 'cover', transition: 'opacity 400ms ease' }}
+          style={{ objectFit: 'contain', transition: 'opacity 400ms ease' }}
           sizes="(max-width: 768px) 100vw, 720px"
         />
 

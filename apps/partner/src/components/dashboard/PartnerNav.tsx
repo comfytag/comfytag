@@ -96,8 +96,7 @@ export default function PartnerNav() {
           flexShrink: 0,
         }}
       >
-        <Image src="/logo.svg" alt="ComfyTag" width={24} height={24} style={{ flexShrink: 0 }} />
-        ComfyTag
+        <Image alt="ComfyTag" className="w-auto h-8 object-contain" height={40} priority src="/logo.png" width={120} />
       </Link>
 
       {/* Center nav links */}

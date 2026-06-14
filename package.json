@@ -4,6 +4,8 @@
   "scripts": {
     "predev": "node scripts/kill-dev-ports.js",
     "dev": "turbo run dev",
+    "predev:mobile": "node scripts/kill-dev-ports.js",
+    "dev:mobile": "turbo run dev:mobile",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",

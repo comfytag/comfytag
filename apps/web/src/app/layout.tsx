@@ -35,10 +35,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://comfytag.com',
   },
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-  },
   openGraph: {
     type: 'website',
     siteName: 'ComfyTag',

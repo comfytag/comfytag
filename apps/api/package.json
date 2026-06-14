@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon app.js",
+    "dev:mobile": "nodemon app.js",
     "start": "node app.js",
     "seed:dev": "node scripts/seed-dev-users.js",
     "seed:events": "node scripts/seed-events.js",

@@ -188,9 +188,8 @@ export function Navbar({ user, onSearch }: NavbarProps) {
       `}</style>
       <nav className="__ct_navbar" aria-label="Main navigation">
         {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '18px', color: 'var(--color-brand)', textDecoration: 'none', letterSpacing: '-0.3px' }}>
-          <Image src="/logo.svg" alt="ComfyTag" width={24} height={24} style={{ flexShrink: 0 }} />
-          ComfyTag
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <Image alt="ComfyTag" className="w-auto h-8 object-contain" height={40} priority src="/logo.png" width={120} />
         </Link>
 
         {/* Search — desktop only */}
@@ -318,22 +317,17 @@ export function Navbar({ user, onSearch }: NavbarProps) {
                   <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-border)' }}>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text)' }}>{currentUser.name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentUser.email}</div>
-                    {walletBalance !== null && (
+                    {/* {walletBalance !== null && (
                       <div style={{ fontSize: '12px', color: 'var(--color-brand)', marginTop: '4px', fontWeight: 600 }}>
                         Hype Credits: {formatNaira(walletBalance)}
                       </div>
-                    )}
+                    )} */}
                   </div>
-                  {[
-                    { label: 'My Tickets', href: '/tickets' },
-                    { label: 'Saved Events', href: '/my-following' },
-                    { label: 'My Hype Link', href: '/hype-link' },
-                    { label: 'Settings', href: '/profile' },
-                  ].map((item) => (
-                    <Link key={item.href} href={item.href} className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>
-                      {item.label}
-                    </Link>
-                  ))}
+                  <Link href="/tickets" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>My Tickets</Link>
+                  <Link href="/my-following" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>Saved Events</Link>
+                  {/* MVP: Hype Links affiliate feature disabled for initial launch — re-enable when affiliate system is ready */}
+                  {/* <Link href="/hype-link" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>My Hype Link</Link> */}
+                  <Link href="/profile" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>Settings</Link>
                   <div style={{ borderTop: '1px solid var(--color-border)' }}>
                     <button
                       type="button"

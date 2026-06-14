@@ -83,14 +83,16 @@ export function BottomTabBar({ currentPath }: BottomTabBarProps) {
           bottom: 0;
           left: 0;
           right: 0;
-          z-index: 30;
-          background: var(--color-bg);
-          border-top: 1px solid var(--color-border);
-          padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+          z-index: 100;
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-top: 1px solid rgb(228, 228, 231);
+          padding: 8px 24px calc(8px + env(safe-area-inset-bottom));
           display: flex;
-          justify-content: space-around;
-          align-items: flex-end;
-          height: calc(80px + env(safe-area-inset-bottom));
+          justify-content: space-between;
+          align-items: center;
+          height: calc(64px + env(safe-area-inset-bottom));
           gap: 0;
         }
         .__ct_bottom_tab_link {

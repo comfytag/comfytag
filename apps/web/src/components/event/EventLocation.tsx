@@ -36,24 +36,14 @@ export function EventLocation({ event }: EventLocationProps) {
       <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', margin: '0 0 12px', lineHeight: 1.5 }}>
         {fullAddress}
       </p>
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <div className="flex flex-wrap gap-2">
         {rideLinks(destination).map(({ label, href }) => (
           <a
             key={href}
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              fontSize: '13px',
-              fontWeight: 600,
-              color: 'var(--color-text)',
-              background: 'var(--color-surface-2)',
-              border: '1px solid var(--color-border)',
-              borderRadius: '8px',
-              padding: '8px 14px',
-              textDecoration: 'none',
-              display: 'inline-block',
-            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition-colors"
           >
             {label}
           </a>

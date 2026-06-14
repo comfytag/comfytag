@@ -11,10 +11,6 @@ const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space
 export const metadata: Metadata = {
   title: 'ComfyTag Partner',
   description: 'Event organizer dashboard',
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
