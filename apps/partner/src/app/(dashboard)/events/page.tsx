@@ -1,24 +1,18 @@
-﻿'use client'
+'use client'
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { Plus, Search, X } from 'lucide-react'
 import { Skeleton, EmptyState, ErrorMessage } from '@comfytag/ui'
 import type { Event } from '@comfytag/types'
-import { EventCard } from '@/components/ui/EventCard'
-import { EventFilterTabs } from '@/components/events/EventFilterTabs'
-import { ViewToggle } from '@/components/ui/ViewToggle'
+import { VaultSectionHeader } from '@/components/events/VaultSectionHeader'
+import { VaultTicketCard } from '@/components/events/VaultTicketCard'
+import { VaultLiveCard } from '@/components/events/VaultLiveCard'
 import { useMyEvents, useDeleteEvent, useDuplicateEvent } from '@/hooks'
-import { useQueryClient } from '@tanstack/react-query'
-
-type FilterValue = 'all' | 'published' | 'draft' | 'ended' | 'cancelled'
 
 export default function EventsPage() {
-  const queryClient = useQueryClient()
   const router = useRouter()
-  const [filter, setFilter] = useState<FilterValue>('all')
-  const [view, setView] = useState<'table' | 'grid'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
 
@@ -26,405 +20,212 @@ export default function EventsPage() {
   const duplicateMutation = useDuplicateEvent()
   const deleteEventMutation = useDeleteEvent()
 
-  const tabFilters = useMemo(() => [
-    { value: 'all', label: events.length > 0 ? `All (${events.length})` : 'All' },
-    { value: 'published', label: `Published (${events.filter((e) => e.status === 'published').length})` },
-    { value: 'draft', label: `Draft (${events.filter((e) => e.status === 'draft').length})` },
-    { value: 'ended', label: `Ended (${events.filter((e) => e.status === 'ended').length})` },
-    { value: 'cancelled', label: `Cancelled (${events.filter((e) => e.status === 'cancelled').length})` },
-  ], [events])
+  const searched = useMemo<Event[]>(() => {
+    if (!searchQuery.trim()) return events
+    const q = searchQuery.toLowerCase()
+    return events.filter((e) => e.name.toLowerCase().includes(q))
+  }, [events, searchQuery])
 
-  const filtered = useMemo(() => {
-    const now = new Date()
-    let result = filter === 'all' ? events : events.filter(e => e.status === filter)
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase()
-      result = result.filter(e => e.name.toLowerCase().includes(q))
+  const { liveNow, upcoming, past } = useMemo(() => {
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    const todayEnd = new Date(todayStart.getTime() + 86_400_000)
+
+    const liveNow: Event[] = []
+    const upcoming: Event[] = []
+    const past: Event[] = []
+
+    for (const event of searched) {
+      const eventDate = event.date ? new Date(event.date) : null
+
+      if (
+        event.status === 'published' &&
+        eventDate !== null &&
+        eventDate >= todayStart &&
+        eventDate < todayEnd
+      ) {
+        liveNow.push(event)
+      } else if (
+        event.status === 'draft' ||
+        (event.status === 'published' && (eventDate === null || eventDate >= todayEnd))
+      ) {
+        upcoming.push(event)
+      } else {
+        past.push(event)
+      }
     }
-    // Temporal sort: upcoming events (date >= now) ascending, past events descending.
-    // Undated events treated as upcoming and placed last within that group.
-    return [...result].sort((a, b) => {
-      const dateA = a.date ? new Date(a.date).getTime() : Infinity
-      const dateB = b.date ? new Date(b.date).getTime() : Infinity
-      const nowMs = now.getTime()
-      const aUpcoming = dateA >= nowMs
-      const bUpcoming = dateB >= nowMs
-      if (aUpcoming && bUpcoming) return dateA - dateB   // both upcoming → ascending
-      if (!aUpcoming && !bUpcoming) return dateB - dateA  // both past → most-recent first
-      return aUpcoming ? -1 : 1                           // upcoming before past
+
+    upcoming.sort((a, b) => {
+      const dA = a.date ? new Date(a.date).getTime() : Infinity
+      const dB = b.date ? new Date(b.date).getTime() : Infinity
+      return dA - dB
     })
-  }, [events, filter, searchQuery])
+
+    past.sort((a, b) => {
+      const dA = a.date ? new Date(a.date).getTime() : 0
+      const dB = b.date ? new Date(b.date).getTime() : 0
+      return dB - dA
+    })
+
+    return { liveNow, upcoming, past }
+  }, [searched])
+
+  function handleDuplicate(event: Event) {
+    setDuplicatingId(event._id)
+    duplicateMutation.mutate(event._id, {
+      onSuccess: (newEvent: { _id: string }) => router.push(`/events/${newEvent._id}/edit`),
+      onSettled: () => setDuplicatingId(null),
+    })
+  }
+
+  function handleDelete(event: Event) {
+    if (confirm(`Delete "${event.name}"?`)) {
+      deleteEventMutation.mutate(event._id)
+    }
+  }
+
+  function handleEdit(event: Event) {
+    router.push(`/events/${event._id}/edit`)
+  }
+
+  const isEmpty = !isLoading && liveNow.length === 0 && upcoming.length === 0 && past.length === 0
 
   return (
-    <div>
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', paddingTop: '32px', paddingBottom: '32px' }}>
-        {/* Header */}
-        <div style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-            <div>
-              <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-text)', margin: 0, marginBottom: '4px' }}>
-                YOUR EVENTS
-              </h1>
-              <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', margin: 0 }}>
-                Manage and track your events
-              </p>
-            </div>
-            <Link
-              href="/events/create"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                backgroundColor: 'var(--color-brand)',
-                color: 'white',
-                padding: '10px 18px',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: 600,
-                textDecoration: 'none',
-                transition: 'background var(--duration-fast) ease',
-              }}
-              onMouseEnter={(e) => {
-                ;(e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--color-brand-dark)'
-              }}
-              onMouseLeave={(e) => {
-                ;(e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'var(--color-brand)'
-              }}
-            >
-              <Plus size={16} />
-              Create Event
-            </Link>
-          </div>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-zinc-900 tracking-tight">Events Vault</h1>
+          <p className="mt-1 text-sm text-zinc-500">Manage and track all your events</p>
         </div>
-
-        {/* Error */}
-        {isError && (
-          <div style={{ marginBottom: '20px' }}>
-            <ErrorMessage message="Failed to load events." />
-          </div>
-        )}
-
-        {/* Search + Filter + View Toggle */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-            marginBottom: '24px',
-          }}
+        <Link
+          href="/events/create"
+          className="flex items-center gap-2 bg-violet-600 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-violet-700 active:bg-violet-800 transition-colors duration-150 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
         >
-          <div style={{ position: 'relative', maxWidth: '320px' }}>
-            <input
-              type="text"
-              placeholder="Search events..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '9px 36px 9px 12px',
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: '8px',
-                fontSize: '14px',
-                color: 'var(--color-text)',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                style={{
-                  position: 'absolute',
-                  right: '10px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--color-text-muted)',
-                  fontSize: '16px',
-                  lineHeight: 1,
-                  padding: 0,
-                }}
-              >
-                Ã—
-              </button>
-            )}
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: '12px',
-            }}
-          >
-            <EventFilterTabs
-              active={filter}
-              onChange={(v) => {
-                setFilter(v as FilterValue)
-                setSearchQuery('')
-              }}
-              tabs={tabFilters}
-            />
-            <ViewToggle view={view} onViewChange={setView} />
-          </div>
-        </div>
+          <Plus size={16} aria-hidden="true" />
+          Create Event
+        </Link>
+      </div>
 
-        {/* Grid View */}
-        {view === 'grid' ? (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '20px',
-            }}
+      {/* Search */}
+      <div className="relative max-w-sm">
+        <Search
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none"
+          size={15}
+          aria-hidden="true"
+        />
+        <input
+          type="text"
+          placeholder="Search events…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-white border border-zinc-200 shadow-sm rounded-full pl-10 pr-10 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => setSearchQuery('')}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
           >
-            {isLoading
-              ? Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      background: 'var(--color-surface)',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <Skeleton height={160} borderRadius={0} />
-                    <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <Skeleton height={18} width="75%" />
-                      <Skeleton height={14} width="45%" />
-                      <Skeleton height={20} width={60} borderRadius={9999} />
-                    </div>
-                  </div>
-                ))
-              : filtered.length === 0
-                ? (
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <EmptyState
-                        title="No events found"
-                        subtitle={
-                          filter === 'all'
-                            ? 'Create your first event to get started'
-                            : `No ${filter} events`
-                        }
-                        action={{ label: 'Create Event', href: '/events/create' }}
-                      />
-                    </div>
-                  )
-                : (
-                    filtered.map((event) => (
-                      <div key={event._id} style={{ position: 'relative' }}>
-                        <EventCard
-                          event={event}
-                          status={
-                            event.status === 'published' ? 'live'
-                            : event.status === 'ended' ? 'ended'
-                            : event.status === 'cancelled' ? 'cancelled'
-                            : 'draft'
-                          }
-                          href={event.status === 'draft' ? `/events/${event._id}/edit` : `/events/${event._id}`}
-                          onEdit={event.status !== 'ended' && event.status !== 'cancelled' ? () => {
-                            router.push(`/events/${event._id}/edit`)
-                          } : undefined}
-                          onDelete={() => {
-                            if (confirm(`Delete "${event.name}"?`)) {
-                              deleteEventMutation.mutate(event._id)
-                            }
-                          }}
-                        />
-                        <button
-                          onClick={() => {
-                            setDuplicatingId(event._id)
-                            duplicateMutation.mutate(event._id, {
-                              onSuccess: (newEvent) => {
-                                router.push(`/events/${newEvent._id}/edit`)
-                              },
-                              onSettled: () => {
-                                setDuplicatingId(null)
-                              },
-                            })
-                          }}
-                          disabled={!!duplicatingId}
-                          style={{
-                            width: '100%',
-                            padding: '8px 12px',
-                            marginTop: '8px',
-                            background: 'var(--color-surface)',
-                            border: '1px solid var(--color-border)',
-                            borderRadius: '8px',
-                            color: 'var(--color-text)',
-                            fontSize: '13px',
-                            fontWeight: 500,
-                            cursor: duplicatingId ? 'not-allowed' : 'pointer',
-                            transition: 'background var(--duration-fast) ease',
-                            opacity: duplicatingId ? 0.6 : 1,
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!duplicatingId) {
-                              (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface-2)'
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface)'
-                          }}
-                          title="Duplicate event"
-                        >
-                          {duplicatingId === event._id ? 'Duplicating...' : 'Duplicate'}
-                        </button>
-                      </div>
-                    ))
-                  )}
-          </div>
-        ) : (
-          /* Table View */
-          <div
-            style={{
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              borderRadius: '12px',
-              overflow: 'hidden',
-            }}
-          >
-            {isLoading ? (
-              <div style={{ padding: '32px', textAlign: 'center' }}>
-                <Skeleton height={20} width="100%" />
-              </div>
-            ) : filtered.length === 0 ? (
-              <div style={{ padding: '32px' }}>
-                <EmptyState
-                  title="No events found"
-                  subtitle={
-                    filter === 'all'
-                      ? 'Create your first event to get started'
-                      : `No ${filter} events`
-                  }
-                  action={{ label: 'Create Event', href: '/events/create' }}
-                />
-              </div>
-            ) : (
-              <table
-                style={{
-                  width: '100%',
-                  borderCollapse: 'collapse',
-                }}
-              >
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Event</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Date</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Status</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Tickets Sold</th>
-                    <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((event) => (
-                    <tr
-                      key={event._id}
-                      style={{
-                        borderBottom: '1px solid var(--color-border)',
-                      }}
-                      onMouseEnter={(e) => {
-                        ;(e.currentTarget as HTMLTableRowElement).style.background = 'var(--color-surface-2)'
-                      }}
-                      onMouseLeave={(e) => {
-                        ;(e.currentTarget as HTMLTableRowElement).style.background = 'transparent'
-                      }}
-                    >
-                      <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--color-text)', fontWeight: 500 }}>{event.name}</td>
-                      <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--color-text)' }}>
-                        {event.date ? new Date(event.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No date'}
-                      </td>
-                      <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--color-text)' }}>
-                        <span
-                          style={{
-                            display: 'inline-block',
-                            padding: '4px 10px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            textTransform: 'capitalize',
-                            backgroundColor:
-                              event.status === 'published'
-                                ? 'rgba(16, 185, 129, 0.15)'
-                                : event.status === 'draft'
-                                  ? 'rgba(168, 162, 158, 0.15)'
-                                  : 'rgba(0, 0, 0, 0.15)',
-                            color:
-                              event.status === 'published'
-                                ? 'var(--color-success)'
-                                : event.status === 'draft'
-                                  ? 'var(--color-text-muted)'
-                                  : 'var(--color-text-on-brand)',
-                          }}
-                        >
-                          {event.status === 'published' ? 'Live' : event.status}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--color-text)' }}>
-                        {event.sold.toLocaleString('en-NG')}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', alignItems: 'center' }}>
-                          <Link
-                            href={event.status === 'draft' ? `/events/${event._id}/edit` : `/events/${event._id}`}
-                            style={{
-                              color: 'var(--color-brand)',
-                              fontSize: '13px',
-                              textDecoration: 'none',
-                              fontWeight: 500,
-                            }}
-                          >
-                            {event.status === 'draft' ? 'Edit' : 'View'}
-                          </Link>
-                          <button
-                            onClick={() => {
-                              setDuplicatingId(event._id)
-                              duplicateMutation.mutate(event._id, {
-                                onSuccess: (newEvent) => {
-                                  router.push(`/events/${newEvent._id}/edit`)
-                                },
-                                onSettled: () => {
-                                  setDuplicatingId(null)
-                                },
-                              })
-                            }}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: 'var(--color-text-muted)',
-                              cursor: 'pointer',
-                              fontSize: '13px',
-                              textDecoration: 'none',
-                              padding: '4px 8px',
-                              transition: 'color var(--duration-fast) ease',
-                            }}
-                            onMouseEnter={(e) => {
-                              (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-brand)'
-                            }}
-                            onMouseLeave={(e) => {
-                              (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-muted)'
-                            }}
-                            title="Duplicate event"
-                            disabled={duplicatingId === event._id}
-                          >
-                            {duplicatingId === event._id ? 'Duplicating...' : 'Duplicate'}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+            <X size={14} aria-hidden="true" />
+          </button>
         )}
       </div>
+
+      {/* Error */}
+      {isError && <ErrorMessage message="Failed to load events." />}
+
+      {/* Loading skeletons */}
+      {isLoading && (
+        <div className="space-y-10">
+          {[0, 1].map((s) => (
+            <div key={s} className="space-y-4">
+              <Skeleton height={16} width={120} />
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} height={120} borderRadius={16} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Vault sections */}
+      {!isLoading && (
+        <>
+          {/* ── LIVE NOW ── */}
+          {liveNow.length > 0 && (
+            <section aria-label="Live now">
+              <VaultSectionHeader label="Live Now" count={liveNow.length} />
+              <div className="space-y-4">
+                {liveNow.map((event) => (
+                  <VaultLiveCard
+                    key={event._id}
+                    event={event}
+                    isDuplicating={duplicatingId === event._id}
+                    onEdit={() => handleEdit(event)}
+                    onDuplicate={() => handleDuplicate(event)}
+                    onDelete={() => handleDelete(event)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ── UPCOMING ── */}
+          {upcoming.length > 0 && (
+            <section aria-label="Upcoming events">
+              <VaultSectionHeader label="Upcoming" count={upcoming.length} />
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {upcoming.map((event) => (
+                  <VaultTicketCard
+                    key={event._id}
+                    event={event}
+                    isDuplicating={duplicatingId === event._id}
+                    onEdit={() => handleEdit(event)}
+                    onDuplicate={() => handleDuplicate(event)}
+                    onDelete={() => handleDelete(event)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ── PAST ── */}
+          {past.length > 0 && (
+            <section aria-label="Past events">
+              <VaultSectionHeader label="Past" count={past.length} />
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {past.map((event) => (
+                  <VaultTicketCard
+                    key={event._id}
+                    event={event}
+                    isDuplicating={duplicatingId === event._id}
+                    onEdit={() => handleEdit(event)}
+                    onDuplicate={() => handleDuplicate(event)}
+                    onDelete={() => handleDelete(event)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Empty state */}
+          {isEmpty && (
+            <EmptyState
+              title="No events found"
+              subtitle={
+                searchQuery
+                  ? `No events match "${searchQuery}"`
+                  : 'Create your first event to get started'
+              }
+              action={{ label: '+ Create Event', href: '/events/create' }}
+            />
+          )}
+        </>
+      )}
     </div>
   )
 }
-

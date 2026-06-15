@@ -1,9 +1,7 @@
 'use client'
 
-import React from 'react'
 import { Plus } from 'lucide-react'
-import { Button, Modal, Input, ErrorMessage } from '@comfytag/ui'
-import { twoColGrid, cardStyle, fieldGroupStyle } from '@/lib/formStyles'
+import { Button, Input, Modal, ErrorMessage } from '@comfytag/ui'
 import { TierListRow } from '@/components/events/TierListRow'
 import type { CreateEventFormData, TierInput } from '@/hooks/useCreateEventWizard'
 
@@ -23,6 +21,24 @@ interface Step3TiersProps {
   onPrev: () => void
 }
 
+function BackIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M19 12H5M12 5l-7 7 7 7" />
+    </svg>
+  )
+}
+
 export function Step3Tiers({
   formData,
   handleAddTier,
@@ -40,31 +56,34 @@ export function Step3Tiers({
 }: Step3TiersProps) {
   return (
     <>
-      <div style={cardStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0, color: 'var(--color-text)' }}>
-            Ticket Tiers
-          </h2>
-          <Button variant="ghost" size="sm" onClick={handleOpenTierModal}>
-            <Plus size={14} /> Add Tier
-          </Button>
+      <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-5">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-black text-zinc-900">Ticket Tiers</h2>
+            <p className="text-sm text-zinc-500 mt-0.5">Set prices, names, and capacities</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleOpenTierModal}
+            className="flex items-center gap-1.5 text-sm font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 px-4 py-2 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            <Plus size={14} aria-hidden="true" />
+            Add Tier
+          </button>
         </div>
 
+        {/* Tier list */}
         {formData.tiers.length === 0 ? (
-          <p
-            style={{
-              fontSize: '14px',
-              color: 'var(--color-text-muted)',
-              padding: '20px',
-              textAlign: 'center',
-              margin: 0,
-              marginBottom: '20px',
-            }}
-          >
-            No ticket tiers yet. Add at least one.
-          </p>
+          <div className="border-2 border-dashed border-zinc-200 rounded-2xl p-8 text-center">
+            <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center mx-auto mb-3">
+              <Plus size={18} className="text-zinc-400" aria-hidden="true" />
+            </div>
+            <p className="text-sm font-semibold text-zinc-500">No tiers yet</p>
+            <p className="text-xs text-zinc-400 mt-1">Add at least one ticket tier to continue</p>
+          </div>
         ) : (
-          <div style={{ marginBottom: '20px' }}>
+          <div className="space-y-2">
             {formData.tiers.map((tier, i) => (
               <TierListRow
                 key={i}
@@ -78,19 +97,45 @@ export function Step3Tiers({
           </div>
         )}
 
+        {/* Tier count summary pill */}
+        {formData.tiers.length > 0 && (
+          <div className="bg-violet-50 border border-violet-200 rounded-xl px-4 py-3 flex items-center justify-between">
+            <span className="text-xs font-semibold text-violet-700">
+              {formData.tiers.length} tier{formData.tiers.length > 1 ? 's' : ''} configured
+            </span>
+            <span className="text-xs text-violet-500">
+              Total capacity:{' '}
+              <span className="font-bold">
+                {formData.tiers.reduce((s, t) => s + Number(t.capacity), 0).toLocaleString()}
+              </span>
+            </span>
+          </div>
+        )}
+
+        {/* Error */}
         {stepErrors && <ErrorMessage message={stepErrors} />}
 
-        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-          <Button variant="ghost" onClick={onPrev}>
-            ← Back
-          </Button>
-          <Button variant="primary" onClick={onNext} fullWidth>
+        {/* Nav */}
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            type="button"
+            onClick={onPrev}
+            className="flex items-center gap-1.5 text-sm font-semibold text-zinc-500 hover:text-zinc-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded-lg"
+          >
+            <BackIcon />
+            Back
+          </button>
+          <button
+            type="button"
+            onClick={onNext}
+            className="flex-1 bg-violet-600 text-white text-sm font-bold py-4 rounded-2xl hover:bg-violet-700 active:bg-violet-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
             Next: Event Details →
-          </Button>
+          </button>
         </div>
       </div>
 
-      {/* Tier Modal */}
+      {/* Tier Modal — kept as-is (uses CSS-variable theme from @comfytag/ui) */}
       <Modal
         isOpen={tierModal}
         onClose={() => setTierModal(false)}
@@ -110,22 +155,22 @@ export function Step3Tiers({
           label="Tier Name"
           placeholder="e.g. Regular, VIP, VVIP"
           value={currentTier.name}
-          onChange={e => setCurrentTier({ ...currentTier, name: e.target.value })}
+          onChange={(e) => setCurrentTier({ ...currentTier, name: e.target.value })}
         />
-        <div style={{ ...twoColGrid, marginTop: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
           <Input
             label="Price (₦)"
             type="number"
             placeholder="0"
             value={currentTier.price}
-            onChange={e => setCurrentTier({ ...currentTier, price: e.target.value })}
+            onChange={(e) => setCurrentTier({ ...currentTier, price: e.target.value })}
           />
           <Input
             label="Capacity"
             type="number"
             placeholder="0"
             value={currentTier.capacity}
-            onChange={e => setCurrentTier({ ...currentTier, capacity: e.target.value })}
+            onChange={(e) => setCurrentTier({ ...currentTier, capacity: e.target.value })}
           />
         </div>
         {stepErrors && (

@@ -28,11 +28,11 @@ export function MilestoneTrack({ ticketsSold, totalCapacity }: MilestoneTrackPro
     <div className="px-2">
       <div className="relative pt-4 pb-10">
         {/* Track background */}
-        <div className="absolute top-[17px] left-[16px] right-[16px] h-0.5 bg-zinc-800 rounded-full" />
+        <div className="absolute top-[17px] left-[16px] right-[16px] h-0.5 bg-zinc-200 rounded-full" />
 
         {/* Track fill */}
         <div
-          className="absolute top-[17px] left-[16px] h-0.5 bg-amber-400 rounded-full transition-all duration-1000 ease-out"
+          className="absolute top-[17px] left-[16px] h-0.5 bg-violet-600 rounded-full transition-all duration-1000 ease-out"
           style={{ width: `calc(${progressPct}% * (100% - 32px) / 100)` }}
           aria-hidden="true"
         />
@@ -55,8 +55,8 @@ export function MilestoneTrack({ ticketsSold, totalCapacity }: MilestoneTrackPro
                       completed
                         ? 'bg-amber-400 border-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.4)]'
                         : isNext
-                        ? 'bg-zinc-950 border-violet-500'
-                        : 'bg-zinc-950 border-zinc-700',
+                        ? 'bg-white border-violet-500'
+                        : 'bg-zinc-200 border-zinc-300',
                     ].join(' ')}
                   >
                     {completed && (
@@ -96,13 +96,13 @@ export function MilestoneTrack({ ticketsSold, totalCapacity }: MilestoneTrackPro
                       completed
                         ? 'text-amber-400'
                         : isNext
-                        ? 'text-zinc-100'
-                        : 'text-zinc-600',
+                        ? 'text-zinc-700'
+                        : 'text-zinc-400',
                     ].join(' ')}
                   >
                     {milestone.label}
                   </span>
-                  <span className="text-[10px] text-zinc-600 leading-none">
+                  <span className="text-[10px] text-zinc-400 leading-none">
                     {milestone.sublabel}
                   </span>
                 </div>

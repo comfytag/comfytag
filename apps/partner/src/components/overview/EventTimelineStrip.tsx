@@ -28,7 +28,7 @@ export function EventTimelineStrip({ events }: EventTimelineStripProps) {
   if (events.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center">
           <svg
             width="22"
             height="22"
@@ -38,7 +38,7 @@ export function EventTimelineStrip({ events }: EventTimelineStripProps) {
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-zinc-600"
+            className="text-zinc-400"
             aria-hidden="true"
           >
             <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -79,8 +79,8 @@ export function EventTimelineStrip({ events }: EventTimelineStripProps) {
             className={[
               'group flex items-center gap-4 rounded-2xl border transition-all duration-200',
               live
-                ? 'bg-zinc-900 border-red-900/50 p-3 shadow-[0_0_20px_rgba(239,68,68,0.06)]'
-                : 'bg-zinc-900 border-zinc-800 p-3 hover:border-zinc-700',
+                ? 'bg-white border-red-200 p-3 shadow-sm shadow-red-50'
+                : 'bg-white border-zinc-200 p-3 hover:border-zinc-300 shadow-sm',
             ].join(' ')}
           >
             {/* Live beacon */}
@@ -94,7 +94,7 @@ export function EventTimelineStrip({ events }: EventTimelineStripProps) {
             )}
 
             {/* Poster thumbnail */}
-            <div className="relative w-16 h-20 rounded-xl overflow-hidden shrink-0 bg-zinc-800">
+            <div className="relative w-16 h-20 rounded-xl overflow-hidden shrink-0 bg-zinc-100">
               <Image
                 src={imageSrc}
                 alt={event.name}
@@ -108,18 +108,18 @@ export function EventTimelineStrip({ events }: EventTimelineStripProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 {live && (
-                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black text-red-400 bg-red-950 border border-red-900 uppercase tracking-widest shrink-0">
+                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black text-red-600 bg-red-50 border border-red-200 uppercase tracking-widest shrink-0">
                     Live
                   </span>
                 )}
                 {event.status === 'draft' && (
-                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-semibold text-zinc-500 bg-zinc-800 uppercase tracking-wider shrink-0">
+                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-semibold text-zinc-400 bg-zinc-100 uppercase tracking-wider shrink-0">
                     Draft
                   </span>
                 )}
               </div>
 
-              <p className="text-sm font-bold text-zinc-100 truncate leading-tight mb-1">
+              <p className="text-sm font-bold text-zinc-900 truncate leading-tight mb-1">
                 {event.name}
               </p>
 
@@ -129,7 +129,7 @@ export function EventTimelineStrip({ events }: EventTimelineStripProps) {
 
               {/* Capacity micro-bar */}
               <div className="mt-2 flex items-center gap-2">
-                <div className="flex-1 h-0.5 rounded-full bg-zinc-800 overflow-hidden">
+                <div className="flex-1 h-0.5 rounded-full bg-zinc-200 overflow-hidden">
                   <div
                     className="h-full bg-violet-500 rounded-full transition-all duration-700"
                     style={{ width: `${soldPct}%` }}
@@ -146,7 +146,7 @@ export function EventTimelineStrip({ events }: EventTimelineStripProps) {
             <Link
               href={`/events/${event._id}`}
               aria-label={`Open ${event.name}`}
-              className="shrink-0 flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-800 text-zinc-500 hover:bg-violet-600 hover:text-white group-hover:border-zinc-700 border border-transparent hover:border-violet-500 transition-all duration-200"
+              className="shrink-0 flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-100 text-zinc-400 hover:bg-violet-600 hover:text-white border border-zinc-200 hover:border-violet-500 transition-all duration-200"
             >
               <svg
                 width="14"

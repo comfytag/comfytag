@@ -63,7 +63,7 @@ function OverviewSkeleton() {
       </div>
       {/* Hero grid skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 h-64 rounded-[2.5rem] bg-zinc-950 border border-zinc-800" />
+        <div className="lg:col-span-2 h-64 rounded-[2.5rem] bg-zinc-900 border border-zinc-800" />
         <div className="h-64 rounded-[2.5rem] bg-zinc-100 border border-zinc-200" />
       </div>
       {/* Chip row skeleton */}

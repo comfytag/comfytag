@@ -12,10 +12,10 @@ function ShellInner({ children }: { children: ReactNode }) {
   useNotificationSocket()
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50">
       <FloatingIslandNav />
       <ContextRibbon />
-      <main className="min-h-screen bg-zinc-50/30 pt-16 md:pt-32 pb-28 md:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-slate-50 pt-16 md:pt-32 pb-28 md:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {children}
       </main>
       <BottomPillNav />
