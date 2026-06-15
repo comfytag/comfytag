@@ -1,23 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
-  ChevronRight,
-  User,
   CheckCircle2,
+  ChevronRight,
+  Plus,
+  Trash2,
+  User,
 } from 'lucide-react'
 import { ErrorMessage } from '@comfytag/ui'
 import type { Event, TierStats } from '@comfytag/types'
-import { formatDate, formatNaira } from '@comfytag/utils'
+import { EVENT_CATEGORIES, NIGERIAN_STATES, formatDate, formatNaira } from '@comfytag/utils'
 import { Sheet } from '@/components/ui/Sheet'
 import { AttendeesSection } from './AttendeesSection'
 import { EventRecapSection } from './EventRecapSection'
 import { api } from '@/lib/api'
+import { useUpdateTier, useDeleteTier, useAddTier } from '@/hooks/useEvents'
+import { partnerEventKeys } from '@/hooks/queryKeys'
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface TierStatsResponse {
   tiers: TierStats[]
@@ -35,6 +42,8 @@ interface StatusConfig {
   label: string
   pill: string
 }
+
+// ── Constants ─────────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<EventStatus, StatusConfig> = {
   published: {
@@ -56,12 +65,22 @@ const STATUS_CONFIG: Record<EventStatus, StatusConfig> = {
 }
 
 const DUMMY_ACTIVITY = [
-  { id: 1, type: 'purchase', user: 'Sarah K.', action: 'purchased VIP', time: '2m ago' },
-  { id: 2, type: 'checkin',  user: 'Mike O.',  action: 'checked in',    time: '5m ago' },
-  { id: 3, type: 'purchase', user: 'Adaeze N.', action: 'purchased General', time: '8m ago' },
-  { id: 4, type: 'checkin',  user: 'Chukwuma B.', action: 'checked in', time: '12m ago' },
-  { id: 5, type: 'purchase', user: 'Fatima L.', action: 'purchased Table', time: '15m ago' },
+  { id: 1, type: 'purchase', user: 'Sarah K.',     action: 'purchased VIP',      time: '2m ago'  },
+  { id: 2, type: 'checkin',  user: 'Mike O.',      action: 'checked in',          time: '5m ago'  },
+  { id: 3, type: 'purchase', user: 'Adaeze N.',    action: 'purchased General',  time: '8m ago'  },
+  { id: 4, type: 'checkin',  user: 'Chukwuma B.',  action: 'checked in',          time: '12m ago' },
+  { id: 5, type: 'purchase', user: 'Fatima L.',    action: 'purchased Table',    time: '15m ago' },
 ]
+
+// Shared premium field styles used inside both Sheet forms
+const sheetLabel =
+  'block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5'
+const sheetInput =
+  'w-full bg-white border-2 border-zinc-200 focus:border-violet-600 rounded-xl px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none transition-colors'
+const sheetSelect =
+  'w-full appearance-none bg-white border-2 border-zinc-200 focus:border-violet-600 rounded-xl px-4 py-3 pr-10 text-sm text-zinc-900 focus:outline-none transition-colors cursor-pointer'
+
+// ── Main Component ────────────────────────────────────────────────────────────
 
 export function EventDetailClient({ event, eventId, tierStats }: EventDetailClientProps) {
   const { data: session } = useSession()
@@ -92,12 +111,12 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
     },
   })
 
-  const liveEvent   = { ...event, status: currentStatus }
-  const statusCfg   = STATUS_CONFIG[currentStatus] ?? STATUS_CONFIG.draft
-  const tiers       = tierStats?.tiers ?? []
-  const totalSold   = event.sold ?? 0
-  const totalCap    = (event.ticketType ?? []).reduce((s, t) => s + t.capacity, 0)
-  const coverImage  = event.coverImage ?? event.images?.[0]
+  const liveEvent  = { ...event, status: currentStatus }
+  const statusCfg  = STATUS_CONFIG[currentStatus] ?? STATUS_CONFIG.draft
+  const tiers      = tierStats?.tiers ?? []
+  const totalSold  = event.sold ?? 0
+  const totalCap   = (event.ticketType ?? []).reduce((s, t) => s + t.capacity, 0)
+  const coverImage = event.coverImage ?? event.images?.[0]
 
   return (
     <div className="min-h-screen bg-slate-50 pt-8 pb-24 px-4 sm:px-6 lg:px-8 space-y-8">
@@ -131,9 +150,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
       {/* ── Main Grid ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        {/* ─────────────────────────────────────────────────────────────
-            DIGITAL TICKET OBJECT  (left · 7 cols)
-        ───────────────────────────────────────────────────────────── */}
+        {/* ── Digital Ticket Object (left · 7 cols) ────────────────── */}
         <div className="lg:col-span-7">
           <div className="bg-white border border-zinc-200 shadow-xl rounded-3xl overflow-hidden">
 
@@ -159,6 +176,17 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
                     unoptimized
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
+                  {/* Multi-image dot indicator */}
+                  {(event.images?.length ?? 0) > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+                      {event.images!.slice(0, 5).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`rounded-full ${i === 0 ? 'w-3 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50'}`}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="w-full h-56 bg-gradient-to-br from-violet-100 to-violet-50 flex items-center justify-center select-none">
@@ -195,7 +223,6 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
             {/* PERFORATED TEAR-LINE DIVIDER */}
             <div className="relative px-4">
               <div className="border-b-2 border-dashed border-zinc-200" />
-              {/* Notch circles */}
               <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-slate-50 border border-zinc-200" />
               <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-full bg-slate-50 border border-zinc-200" />
             </div>
@@ -263,17 +290,15 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
           </div>
         </div>
 
-        {/* ─────────────────────────────────────────────────────────────
-            COMMAND BOARD  (right · 5 cols)
-        ───────────────────────────────────────────────────────────── */}
+        {/* ── Command Board (right · 5 cols) ───────────────────────── */}
         <div className="lg:col-span-5 space-y-5">
 
           {/* Quick Actions — 2 × 2 grid */}
           <div className="grid grid-cols-2 gap-3">
-            <QuickAction href={`/events/${eventId}/gate`} emoji="🔴" label="Activate Gate" />
+            <QuickAction href={`/events/${eventId}/gate`}      emoji="🔴" label="Activate Gate" />
             <QuickAction href={`/events/${eventId}/analytics`} emoji="📊" label="Analytics" />
             <QuickAction emoji="📣" label="Promote" disabled />
-            <QuickAction href={`/events/${eventId}/promos`} emoji="🎁" label="Create Promo" />
+            <QuickAction href={`/events/${eventId}/promos`}    emoji="🎁" label="Create Promo" />
           </div>
 
           {/* Status Controls */}
@@ -360,17 +385,26 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
         open={isDetailsSheetOpen}
         onClose={() => setIsDetailsSheetOpen(false)}
         title="Edit Event Details"
-      />
+      >
+        <EditDetailsForm
+          event={event}
+          eventId={eventId}
+          onClose={() => setIsDetailsSheetOpen(false)}
+        />
+      </Sheet>
+
       <Sheet
         open={isTiersSheetOpen}
         onClose={() => setIsTiersSheetOpen(false)}
         title="Manage Ticket Tiers"
-      />
+      >
+        <EditTiersForm event={event} eventId={eventId} />
+      </Sheet>
     </div>
   )
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── TierRow ───────────────────────────────────────────────────────────────────
 
 interface TierRowProps {
   name: string
@@ -398,6 +432,8 @@ function TierRow({ name, sold, capacity, price, pct }: TierRowProps) {
     </div>
   )
 }
+
+// ── QuickAction ───────────────────────────────────────────────────────────────
 
 interface QuickActionProps {
   emoji: string
@@ -430,4 +466,649 @@ function QuickAction({ emoji, label, href, disabled = false }: QuickActionProps)
     return <Link href={href} className="block">{inner}</Link>
   }
   return <div>{inner}</div>
+}
+
+// ── SheetSelectChevron ────────────────────────────────────────────────────────
+
+function SheetSelectChevron() {
+  return (
+    <svg
+      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none"
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  )
+}
+
+// ── EditDetailsForm ───────────────────────────────────────────────────────────
+
+interface EditDetailsFormProps {
+  event: Event
+  eventId: string
+  onClose: () => void
+}
+
+function EditDetailsForm({ event, eventId, onClose }: EditDetailsFormProps) {
+  const router = useRouter()
+  const qc = useQueryClient()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [form, setForm] = useState({
+    name:      event.name ?? '',
+    category:  event.category ?? '',
+    description: event.description ?? '',
+    date:      event.date ? new Date(event.date).toISOString().split('T')[0] : '',
+    startTime: event.startTime ?? '',
+    endTime:   event.endTime ?? '',
+    venue:     event.venue ?? '',
+    address:   event.address ?? '',
+    state:     event.state ?? '',
+  })
+  const [images, setImages] = useState<string[]>(
+    (event.images ?? []).length > 0
+      ? event.images!
+      : event.coverImage
+        ? [event.coverImage]
+        : []
+  )
+  const [performers, setPerformers] = useState<string[]>(
+    event.performers?.map(p => (typeof p === 'string' ? p : p.name)) ?? []
+  )
+  const [performerInput, setPerformerInput] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [formError, setFormError] = useState('')
+
+  const updateMutation = useMutation({
+    mutationFn: (data: Record<string, unknown>) =>
+      api.patch(`/events/${eventId}`, data).then(r => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: partnerEventKeys.detail(eventId) })
+      qc.invalidateQueries({ queryKey: partnerEventKeys.list() })
+      router.refresh()
+      onClose()
+    },
+    onError: () => setFormError('Failed to save changes. Please try again.'),
+  })
+
+  async function uploadFile(file: File): Promise<string> {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await api.post<{ url: string }>('/upload', fd)
+    return res.data.url
+  }
+
+  async function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return
+    setUploading(true)
+    try {
+      const urls = await Promise.all(Array.from(files).map(f => uploadFile(f)))
+      setImages(prev => [...prev, ...urls].slice(0, 10))
+    } catch {
+      setFormError('Failed to upload image. Please try again.')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  function addPerformer() {
+    const name = performerInput.trim()
+    if (!name) return
+    setPerformers(p => [...p, name])
+    setPerformerInput('')
+  }
+
+  function handleSubmit() {
+    if (!form.name.trim())        { setFormError('Event name is required'); return }
+    if (!form.description.trim()) { setFormError('Description is required'); return }
+    setFormError('')
+    updateMutation.mutate({
+      ...form,
+      images,
+      coverImage: images[0] ?? event.coverImage,
+      performers: performers.length > 0 ? performers : undefined,
+    })
+  }
+
+  return (
+    <div className="space-y-5">
+
+      {/* Name */}
+      <div>
+        <label className={sheetLabel}>
+          Event Name <span className="text-red-400">*</span>
+        </label>
+        <input
+          type="text"
+          value={form.name}
+          onChange={e => setForm({ ...form, name: e.target.value })}
+          placeholder="e.g. Summer Festival 2025"
+          className={sheetInput}
+        />
+      </div>
+
+      {/* Category + Date */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={sheetLabel}>Category</label>
+          <div className="relative">
+            <select
+              value={form.category}
+              onChange={e => setForm({ ...form, category: e.target.value })}
+              className={sheetSelect}
+            >
+              <option value="">Select</option>
+              {EVENT_CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <SheetSelectChevron />
+          </div>
+        </div>
+        <div>
+          <label className={sheetLabel}>
+            Date <span className="text-red-400">*</span>
+          </label>
+          <input
+            type="date"
+            value={form.date}
+            onChange={e => setForm({ ...form, date: e.target.value })}
+            className={sheetInput}
+          />
+        </div>
+      </div>
+
+      {/* Start + End time */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={sheetLabel}>Start Time</label>
+          <input
+            type="time"
+            value={form.startTime}
+            onChange={e => setForm({ ...form, startTime: e.target.value })}
+            className={sheetInput}
+          />
+        </div>
+        <div>
+          <label className={sheetLabel}>End Time</label>
+          <input
+            type="time"
+            value={form.endTime}
+            onChange={e => setForm({ ...form, endTime: e.target.value })}
+            className={sheetInput}
+          />
+        </div>
+      </div>
+
+      {/* Venue */}
+      <div>
+        <label className={sheetLabel}>Venue</label>
+        <input
+          type="text"
+          value={form.venue}
+          onChange={e => setForm({ ...form, venue: e.target.value })}
+          placeholder="e.g. Eko Hotel & Suites"
+          className={sheetInput}
+        />
+      </div>
+
+      {/* Address + State */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={sheetLabel}>Address</label>
+          <input
+            type="text"
+            value={form.address}
+            onChange={e => setForm({ ...form, address: e.target.value })}
+            className={sheetInput}
+          />
+        </div>
+        <div>
+          <label className={sheetLabel}>State</label>
+          <div className="relative">
+            <select
+              value={form.state}
+              onChange={e => setForm({ ...form, state: e.target.value })}
+              className={sheetSelect}
+            >
+              <option value="">Select</option>
+              {NIGERIAN_STATES.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            <SheetSelectChevron />
+          </div>
+        </div>
+      </div>
+
+      {/* Description */}
+      <div>
+        <label className={sheetLabel}>
+          Description <span className="text-red-400">*</span>
+        </label>
+        <textarea
+          value={form.description}
+          onChange={e => setForm({ ...form, description: e.target.value })}
+          placeholder="Tell attendees what this event is about…"
+          rows={4}
+          className={`${sheetInput} resize-none`}
+        />
+      </div>
+
+      {/* Performers */}
+      <div>
+        <label className={sheetLabel}>Performers / Lineup</label>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={performerInput}
+            onChange={e => setPerformerInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addPerformer() } }}
+            placeholder="Name, then Enter"
+            className={`${sheetInput} flex-1`}
+          />
+          <button
+            type="button"
+            onClick={addPerformer}
+            className="px-4 py-2 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            Add
+          </button>
+        </div>
+        {performers.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {performers.map((p, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-violet-200"
+              >
+                {p}
+                <button
+                  type="button"
+                  onClick={() => setPerformers(performers.filter((_, j) => j !== i))}
+                  aria-label={`Remove ${p}`}
+                  className="text-violet-400 hover:text-red-500 transition-colors leading-none focus-visible:outline-none"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Images */}
+      <div>
+        <label className={sheetLabel}>Event Images</label>
+
+        {/* Thumbnail strip */}
+        {images.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-3 -mx-0.5 px-0.5">
+            {images.map((url, i) => (
+              <div key={url} className="relative shrink-0 group">
+                {i === 0 && (
+                  <span className="absolute top-1 left-1 z-10 bg-violet-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider pointer-events-none">
+                    Cover
+                  </span>
+                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt={`Event image ${i + 1}`}
+                  className="w-24 h-16 object-cover rounded-lg border-2 border-zinc-200 group-hover:border-violet-400 transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setImages(images.filter(u => u !== url))}
+                  aria-label="Remove image"
+                  className="absolute top-1 right-1 w-5 h-5 bg-black/60 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity focus-visible:opacity-100 focus-visible:outline-none"
+                >
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Upload trigger */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={e => handleFiles(e.target.files)}
+        />
+        <button
+          type="button"
+          disabled={uploading || images.length >= 10}
+          onClick={() => fileInputRef.current?.click()}
+          className="w-full border-2 border-dashed border-zinc-300 hover:border-violet-400 rounded-xl py-5 flex items-center justify-center gap-2 text-sm font-semibold text-zinc-500 hover:text-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+        >
+          {uploading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-violet-600 border-t-transparent rounded-full animate-spin" />
+              Uploading…
+            </>
+          ) : (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+              </svg>
+              {images.length === 0 ? 'Upload images' : `Add more (${images.length}/10)`}
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Error */}
+      {formError && <ErrorMessage message={formError} />}
+
+      {/* Footer actions */}
+      <div className="flex gap-3 pt-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-1 py-3 px-4 border-2 border-zinc-200 text-zinc-700 text-sm font-bold rounded-2xl hover:bg-zinc-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={updateMutation.isPending || uploading}
+          className="flex-1 py-3 px-4 bg-violet-600 text-white text-sm font-bold rounded-2xl hover:bg-violet-700 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+        >
+          {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── EditTiersForm ─────────────────────────────────────────────────────────────
+
+interface EditTiersFormProps {
+  event: Event
+  eventId: string
+}
+
+interface TierEditState {
+  _id: string
+  name: string
+  price: string
+  capacity: string
+  dirty: boolean
+}
+
+function EditTiersForm({ event, eventId }: EditTiersFormProps) {
+  const [tiers, setTiers] = useState<TierEditState[]>(
+    (event.ticketType ?? []).map(t => ({
+      _id: t._id,
+      name: t.name,
+      price: t.price.toString(),
+      capacity: t.capacity.toString(),
+      dirty: false,
+    }))
+  )
+  const [newTier, setNewTier] = useState({ name: '', price: '', capacity: '' })
+  const [addingNew, setAddingNew] = useState(false)
+  const [tierErrors, setTierErrors] = useState<Record<string, string>>({})
+  const [addError, setAddError] = useState('')
+
+  const updateTierMutation = useUpdateTier()
+  const deleteTierMutation = useDeleteTier()
+  const addTierMutation    = useAddTier()
+
+  function updateTierField(
+    id: string,
+    field: keyof Omit<TierEditState, '_id' | 'dirty'>,
+    value: string
+  ) {
+    setTiers(prev =>
+      prev.map(t => t._id === id ? { ...t, [field]: value, dirty: true } : t)
+    )
+    setTierErrors(prev => ({ ...prev, [id]: '' }))
+  }
+
+  function handleSaveTier(tier: TierEditState) {
+    const price    = Number(tier.price)
+    const capacity = Number(tier.capacity)
+    if (!tier.name.trim() || price < 0 || capacity <= 0) {
+      setTierErrors(prev => ({
+        ...prev,
+        [tier._id]: 'Valid name, price ≥ 0, and capacity > 0 required.',
+      }))
+      return
+    }
+    updateTierMutation.mutate(
+      { eventId, tierId: tier._id, data: { name: tier.name.trim(), price, capacity } },
+      {
+        onSuccess: () =>
+          setTiers(prev => prev.map(t => t._id === tier._id ? { ...t, dirty: false } : t)),
+        onError: () =>
+          setTierErrors(prev => ({
+            ...prev,
+            [tier._id]: 'Failed to save. Please try again.',
+          })),
+      }
+    )
+  }
+
+  function handleDeleteTier(tierId: string) {
+    deleteTierMutation.mutate(
+      { eventId, tierId },
+      { onSuccess: () => setTiers(prev => prev.filter(t => t._id !== tierId)) }
+    )
+  }
+
+  function handleAddTier() {
+    const price    = Number(newTier.price)
+    const capacity = Number(newTier.capacity)
+    if (!newTier.name.trim() || price < 0 || capacity <= 0) {
+      setAddError('Valid name, price ≥ 0, and capacity > 0 required.')
+      return
+    }
+    setAddError('')
+    addTierMutation.mutate(
+      { eventId, data: { name: newTier.name.trim(), price, capacity } },
+      {
+        onSuccess: (data: unknown) => {
+          const raw = data as { data?: { _id?: string } } | { _id?: string }
+          const created = (raw as { data?: { _id?: string } }).data ?? raw as { _id?: string }
+          setTiers(prev => [
+            ...prev,
+            {
+              _id:      created._id ?? `temp-${Date.now()}`,
+              name:     newTier.name.trim(),
+              price:    newTier.price,
+              capacity: newTier.capacity,
+              dirty:    false,
+            },
+          ])
+          setNewTier({ name: '', price: '', capacity: '' })
+          setAddingNew(false)
+        },
+        onError: () => setAddError('Failed to add tier. Please try again.'),
+      }
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {tiers.length === 0 && !addingNew && (
+        <p className="text-sm text-zinc-400 text-center py-8">
+          No tiers yet. Add one below.
+        </p>
+      )}
+
+      {/* Existing tiers */}
+      {tiers.map(tier => (
+        <div
+          key={tier._id}
+          className="bg-zinc-50 border-2 border-zinc-200 rounded-2xl p-4 space-y-3"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+              Tier
+            </span>
+            <button
+              type="button"
+              onClick={() => handleDeleteTier(tier._id)}
+              disabled={deleteTierMutation.isPending}
+              aria-label={`Delete ${tier.name}`}
+              className="text-zinc-300 hover:text-red-500 transition-colors disabled:opacity-40 focus-visible:outline-none"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+
+          <div>
+            <label className={sheetLabel}>Tier Name</label>
+            <input
+              type="text"
+              value={tier.name}
+              onChange={e => updateTierField(tier._id, 'name', e.target.value)}
+              className={sheetInput}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={sheetLabel}>Price (₦)</label>
+              <input
+                type="number"
+                min="0"
+                value={tier.price}
+                onChange={e => updateTierField(tier._id, 'price', e.target.value)}
+                className={sheetInput}
+              />
+            </div>
+            <div>
+              <label className={sheetLabel}>Capacity</label>
+              <input
+                type="number"
+                min="1"
+                value={tier.capacity}
+                onChange={e => updateTierField(tier._id, 'capacity', e.target.value)}
+                className={sheetInput}
+              />
+            </div>
+          </div>
+
+          {tierErrors[tier._id] && (
+            <p className="text-xs text-red-500 font-medium">{tierErrors[tier._id]}</p>
+          )}
+
+          {tier.dirty ? (
+            <button
+              type="button"
+              onClick={() => handleSaveTier(tier)}
+              disabled={updateTierMutation.isPending}
+              className="w-full py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            >
+              {updateTierMutation.isPending ? 'Saving…' : 'Save Changes'}
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+              <CheckCircle2 size={12} />
+              Saved
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* New tier inline form */}
+      {addingNew ? (
+        <div className="bg-violet-50 border-2 border-violet-200 rounded-2xl p-4 space-y-3">
+          <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest">
+            New Tier
+          </span>
+
+          <div>
+            <label className={sheetLabel}>Tier Name</label>
+            <input
+              type="text"
+              value={newTier.name}
+              onChange={e => setNewTier({ ...newTier, name: e.target.value })}
+              placeholder="e.g. VIP, Regular, Table"
+              className={sheetInput}
+              autoFocus
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={sheetLabel}>Price (₦)</label>
+              <input
+                type="number"
+                min="0"
+                value={newTier.price}
+                onChange={e => setNewTier({ ...newTier, price: e.target.value })}
+                placeholder="0"
+                className={sheetInput}
+              />
+            </div>
+            <div>
+              <label className={sheetLabel}>Capacity</label>
+              <input
+                type="number"
+                min="1"
+                value={newTier.capacity}
+                onChange={e => setNewTier({ ...newTier, capacity: e.target.value })}
+                placeholder="50"
+                className={sheetInput}
+              />
+            </div>
+          </div>
+
+          {addError && (
+            <p className="text-xs text-red-500 font-medium">{addError}</p>
+          )}
+
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setAddingNew(false)
+                setAddError('')
+                setNewTier({ name: '', price: '', capacity: '' })
+              }}
+              className="flex-1 py-2.5 border-2 border-violet-200 text-violet-600 text-sm font-bold rounded-xl hover:bg-white transition-colors focus-visible:outline-none"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleAddTier}
+              disabled={addTierMutation.isPending}
+              className="flex-1 py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            >
+              {addTierMutation.isPending ? 'Adding…' : 'Add Tier'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setAddingNew(true)}
+          className="w-full py-3.5 border-2 border-dashed border-zinc-300 hover:border-violet-400 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-zinc-500 hover:text-violet-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+        >
+          <Plus size={16} />
+          Add New Tier
+        </button>
+      )}
+    </div>
+  )
 }
