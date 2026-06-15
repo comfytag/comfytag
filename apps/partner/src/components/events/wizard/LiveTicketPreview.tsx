@@ -60,16 +60,30 @@ export function LiveTicketPreview({ formData }: LiveTicketPreviewProps) {
 
         {/* Cover image — own overflow-hidden + rounded-t-3xl */}
         <div className="relative h-44 rounded-t-3xl overflow-hidden">
-          {formData.coverImage ? (
+          {formData.images[0] ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={formData.coverImage}
+              src={formData.images[0]}
               alt="Event cover"
               className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-700 flex items-center justify-center">
               <TicketPlaceholderIcon />
+            </div>
+          )}
+
+          {/* Multi-image indicator dots */}
+          {formData.images.length > 1 && (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              {formData.images.slice(0, 5).map((_, i) => (
+                <div
+                  key={i}
+                  className={`rounded-full transition-all ${
+                    i === 0 ? 'w-3 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50'
+                  }`}
+                />
+              ))}
             </div>
           )}
 

@@ -28,8 +28,6 @@ export interface CreateEventFormData {
   venue: string
   address: string
   state: string
-  // Step 2: Cover Image
-  coverImage: string
   // Step 3: Tiers
   tiers: TierInput[]
   // Step 4: Details
@@ -94,7 +92,6 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
     venue: '',
     address: '',
     state: '',
-    coverImage: '',
     tiers: [],
     description: '',
     performers: [],
@@ -150,8 +147,8 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
   }
 
   function validateStep2(): boolean {
-    if (!formData.coverImage) {
-      setStepErrors('Please upload a cover image')
+    if (formData.images.length === 0) {
+      setStepErrors('Please upload at least one image')
       return false
     }
     setStepErrors('')
@@ -279,8 +276,8 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
       venue: formData.venue,
       address: formData.address,
       state: formData.state,
-      coverImage: formData.coverImage,
-      images: [formData.coverImage, ...formData.images],
+      coverImage: formData.images[0] ?? '',
+      images: formData.images,
       ticketType: formData.tiers.map(t => ({
         name: t.name,
         price: Number(t.price),

@@ -98,18 +98,34 @@ export function Step5Summary({
           )}
         </SummaryCard>
 
-        <SummaryCard title="Cover Image" onEdit={() => onGoToStep(2)}>
-          {formData.coverImage ? (
-            <div className="mt-1 w-full h-24 rounded-xl overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={formData.coverImage}
-                alt="Cover"
-                className="w-full h-full object-cover"
-              />
+        <SummaryCard title={`Images (${formData.images.length})`} onEdit={() => onGoToStep(2)}>
+          {formData.images.length > 0 ? (
+            <div className="flex gap-2 mt-1 overflow-x-auto pb-1">
+              {formData.images.slice(0, 4).map((url, i) => (
+                <div key={url} className="relative shrink-0">
+                  {i === 0 && (
+                    <span className="absolute top-1 left-1 z-10 bg-violet-600 text-white text-[8px] font-black px-1 py-0.5 rounded-full uppercase pointer-events-none">
+                      Cover
+                    </span>
+                  )}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={url}
+                    alt={`Image ${i + 1}`}
+                    className="w-16 h-11 object-cover rounded-lg border border-zinc-200"
+                  />
+                </div>
+              ))}
+              {formData.images.length > 4 && (
+                <div className="w-16 h-11 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center shrink-0">
+                  <span className="text-[10px] font-bold text-zinc-400">
+                    +{formData.images.length - 4}
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
-            <p className="text-sm text-zinc-400">No cover image uploaded</p>
+            <p className="text-sm text-zinc-400">No images uploaded</p>
           )}
         </SummaryCard>
 

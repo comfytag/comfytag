@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenerativeAI, GoogleGenerativeAIFetchError } from '@google/generative-ai'
 
 interface RequestBody {
   title: string
@@ -35,12 +35,13 @@ export async function POST(req: NextRequest) {
   }
 
   const systemInstruction =
-    'You are an expert event copywriter and promoter. ' +
-    'Write a highly engaging, high-converting event description based on the provided details. ' +
+    'You are a human event promoter. Write punchy, natural, conversational copy. ' +
     `The tone/vibe should strictly match: ${vibe.trim()}. ` +
-    'Keep it concise (max 2-3 short paragraphs). ' +
-    'Make it exciting but professional. ' +
-    'Do not use overly cheesy emojis. ' +
+    'CRITICAL: Do NOT sound robotic. ' +
+    'Completely ban words like: elevate, unleash, embark, delve, unlock, seamless, testament, realm. ' +
+    'Do NOT use em dashes (—), en dashes (–), asterisks, markdown formatting, or excessive special characters. ' +
+    'Use standard, casual punctuation like you are typing on a phone. ' +
+    'Keep it under 3 short paragraphs. ' +
     'Use the draft description as a foundation if provided.'
 
   const userPrompt = [
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
   try {
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-3.5-flash',
       systemInstruction,
     })
 
@@ -63,10 +64,35 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ description })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error'
-    console.error('[ai/generate-description] Gemini error:', message)
+    // Extract rich error info from the SDK's typed error
+    let debugMessage = 'Unknown error'
+    let httpStatus: number | undefined
+    let errorDetails: unknown
+
+    if (err instanceof GoogleGenerativeAIFetchError) {
+      debugMessage = err.message
+      httpStatus = err.status
+      errorDetails = err.errorDetails
+    } else if (err instanceof Error) {
+      debugMessage = err.message
+    }
+
+    console.error('[ai/generate-description] Gemini error:', {
+      message: debugMessage,
+      httpStatus,
+      errorDetails,
+    })
+
+    // Surface debug info in development so you can diagnose without checking server logs
+    const isDev = process.env.NODE_ENV === 'development'
+
     return NextResponse.json(
-      { error: 'Failed to generate description. Please try again.' },
+      {
+        error: 'Failed to generate description. Please try again.',
+        ...(isDev && {
+          debug: { message: debugMessage, httpStatus, errorDetails },
+        }),
+      },
       { status: 500 },
     )
   }
