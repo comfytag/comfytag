@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, AlertCircle, AlertTriangle, Scan } from 'lucide-react'
 import { CameraScanner } from './CameraScanner'
+import { attendeeKeys, partnerEventKeys } from '@/hooks/queryKeys'
 import { api } from '@/lib/api'
 
 interface ScanResult {
@@ -104,7 +105,9 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
           reference,
           timestamp: new Date(),
         }
-        // Invalidate attendees + stats so both panels refresh
+        // Invalidate all attendee + stats query key shapes used across the gate page
+        queryClient.invalidateQueries({ queryKey: attendeeKeys.list(eventId) })
+        queryClient.invalidateQueries({ queryKey: partnerEventKeys.checkin(eventId) })
         queryClient.invalidateQueries({ queryKey: ['gateAttendees', eventId] })
         queryClient.invalidateQueries({ queryKey: ['checkInStats', eventId] })
       } else if (body.alreadyCheckedIn) {
@@ -356,59 +359,40 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
           </div>
         )}
 
-        {/* Last result card */}
-        {lastResult && (
-          <div
-            style={{
-              background: resultColors[lastResult.status].bg,
-              border: `2px solid ${resultColors[lastResult.status].border}`,
-              borderRadius: '12px',
-              padding: '20px',
-              animation: 'fadeIn 0.2s ease',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-              {resultColors[lastResult.status].icon}
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', color: resultColors[lastResult.status].border }}>
-                  {resultColors[lastResult.status].label}
-                </div>
+        {/* Tactical fullscreen HUD — replaces the small inline result card */}
+        {lastResult && lastResult.status === 'success' && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+            <div className="bg-emerald-500/90 text-zinc-950 border-2 border-emerald-300 rounded-3xl px-12 py-10 text-center shadow-2xl font-black animate-in fade-in zoom-in-95 duration-200 max-w-sm mx-4">
+              <p className="text-7xl mb-3">✓</p>
+              <p className="text-3xl font-black tracking-tight mb-1">TICKET VALID</p>
+              <p className="text-xl font-bold mb-4 opacity-90">ACCESS GRANTED</p>
+              {lastResult.attendeeName && (
+                <p className="text-lg font-semibold opacity-80 mb-1">{lastResult.attendeeName}</p>
+              )}
+              {lastResult.ticketType && (
+                <p className="text-sm opacity-70">
+                  {lastResult.ticketType}
+                  {lastResult.numOfTicket != null && lastResult.numOfTicket > 1 && ` × ${lastResult.numOfTicket}`}
+                </p>
+              )}
+              <p className="text-xs font-mono opacity-50 mt-4">REF: {lastResult.reference}</p>
+            </div>
+          </div>
+        )}
 
-                {lastResult.attendeeName && (
-                  <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-text)', marginBottom: '4px' }}>
-                    {lastResult.attendeeName}
-                  </div>
-                )}
-
-                {lastResult.ticketType && (
-                  <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '2px' }}>
-                    {lastResult.ticketType}
-                    {lastResult.numOfTicket != null && lastResult.numOfTicket > 1 && ` Ã— ${lastResult.numOfTicket}`}
-                  </div>
-                )}
-
-                {lastResult.status === 'success' && lastResult.checkedInAt && (
-                  <div style={{ fontSize: '13px', color: 'var(--color-success)', marginTop: '4px' }}>
-                    Checked in at {formatTime(lastResult.checkedInAt)}
-                  </div>
-                )}
-
-                {lastResult.status === 'already' && lastResult.checkedInAt && (
-                  <div style={{ fontSize: '13px', color: '#F59E0B', marginTop: '4px' }}>
-                    Originally checked in at {formatTime(lastResult.checkedInAt)}
-                  </div>
-                )}
-
-                {lastResult.status === 'error' && lastResult.message && (
-                  <div style={{ fontSize: '13px', color: 'var(--color-error)', marginTop: '4px' }}>
-                    {lastResult.message}
-                  </div>
-                )}
-
-                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '8px', fontFamily: 'monospace' }}>
-                  REF: {lastResult.reference}
-                </div>
-              </div>
+        {lastResult && (lastResult.status === 'error' || lastResult.status === 'already') && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+            <div className="bg-red-500 text-white border-2 border-red-400 rounded-3xl px-12 py-10 text-center shadow-2xl font-bold animate-in fade-in zoom-in-95 duration-200 max-w-sm mx-4">
+              <p className="text-7xl mb-3">✗</p>
+              <p className="text-3xl font-black tracking-tight mb-1">TICKET INVALID</p>
+              <p className="text-xl font-bold mb-4 opacity-90">DECLINED</p>
+              {lastResult.status === 'already' && lastResult.attendeeName && (
+                <p className="text-base opacity-80 mb-1">{lastResult.attendeeName} — already checked in</p>
+              )}
+              {lastResult.status === 'error' && lastResult.message && (
+                <p className="text-base opacity-80 mb-1">{lastResult.message}</p>
+              )}
+              <p className="text-xs font-mono opacity-50 mt-4">REF: {lastResult.reference}</p>
             </div>
           </div>
         )}
