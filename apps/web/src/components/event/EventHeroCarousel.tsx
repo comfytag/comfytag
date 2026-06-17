@@ -153,24 +153,14 @@ export function EventHeroCarousel({
       onTouchEnd={handleTouchEnd}
     >
       {/* Aspect-ratio container */}
-      <div
-        style={{
-          position: 'relative',
-          width: '100%',
-          paddingBottom: '56.25%',
-          background: '#09090b',
-          overflow: 'hidden',
-          touchAction: 'pan-y',
-          borderRadius: 'var(--radius-lg)',
-        }}
-      >
+      <div className="relative w-full aspect-4/5 sm:aspect-square bg-[#09090b] overflow-hidden touch-pan-y">
         <Image
           src={slides[current]}
           alt={`${name} — image ${current + 1} of ${total}`}
           fill
           priority={current === 0}
-          style={{ objectFit: 'contain', transition: 'opacity 400ms ease' }}
-          sizes="(max-width: 768px) 100vw, 720px"
+          style={{ objectFit: 'cover', transition: 'opacity 400ms ease' }}
+          sizes="(max-width: 768px) 100vw, 480px"
         />
 
         <div

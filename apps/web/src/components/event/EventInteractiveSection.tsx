@@ -11,13 +11,10 @@ import { TicketTierSheet } from '@/components/event/TicketTierSheet'
 import { AuthGateSheet } from '@/components/ui/AuthGateSheet'
 import { BackLink } from '@/components/ui/BackLink'
 import { CommentSection } from '@/components/event/CommentSection'
-import { CalendarIcon, MapPinIcon, Divider } from '@/components/events/EventIcons'
+import { Divider } from '@/components/events/EventIcons'
 import { useLike } from '@/hooks/useLike'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import {
-  formatDate,
-  formatTime,
-  formatNaira,
   calculatePlatformFee,
   calculatePaystackFee,
 } from '@comfytag/utils'
@@ -289,119 +286,58 @@ export function EventInteractiveSection({
         onCheckout={handleCheckout}
       />
 
-      {/* Main canvas */}
-      <div className="w-full min-h-screen bg-zinc-50/30 pt-8 pb-16 max-w-7xl mx-auto px-4 md:px-8">
-        <BackLink href="/events" marginBottom={16}>Events</BackLink>
+      {/* Page canvas */}
+      <div className="min-h-screen bg-slate-50 text-zinc-900 pb-32 font-sans">
+        {/* Back nav */}
+        <div className="max-w-md mx-auto px-4 pt-4">
+          <BackLink href="/events" marginBottom={16}>Events</BackLink>
+        </div>
 
-        {/* Above-the-fold premium image frame */}
+        {/* Hero image — portrait on mobile, square on sm+ */}
         <div
-          className="w-full h-75 md:h-112.5 rounded-3xl overflow-hidden relative shadow-sm mb-8"
+          className="w-full max-w-md mx-auto rounded-3xl overflow-hidden shadow-md border border-zinc-200/50 mt-4"
           data-testid="event-hero"
         >
           <EventHeroCarousel images={allImages} name={event.name} />
         </div>
 
-        {/* Desktop 2-column split layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        {/* Content column */}
+        <div className="max-w-md mx-auto px-4 py-6 space-y-8">
+          <EventMeta
+            event={displayEvent}
+            isLiked={isLiked}
+            likeCount={likeCount ?? undefined}
+            onLike={handleLike}
+          />
 
-          {/* Left: main content column */}
-          <div className="lg:col-span-2">
-            <EventMeta
-              event={displayEvent}
-              isLiked={isLiked}
-              likeCount={likeCount ?? undefined}
-              onLike={handleLike}
-            />
+          {/* RSC-slotted children: lineup, description, media, location, organizer, related */}
+          {children}
 
-            {/* RSC-slotted children: lineup, description, media, location, organizer, related */}
-            {children}
+          <Divider />
 
-            <Divider />
+          <CommentSection
+            eventId={event._id}
+            initialComments={initialComments}
+            initialHasMore={initialHasMore}
+            organizerId={event.planner_id}
+          />
 
-            <CommentSection
-              eventId={event._id}
-              initialComments={initialComments}
-              initialHasMore={initialHasMore}
-              organizerId={event.planner_id}
-            />
-
-            <EventShareRow
-              onShare={handleShare}
-              onHypeLink={handleHypeLink}
-              shareToast={shareToast}
-              hypeLinkLoading={hypeLinkLoading}
-            />
-          </div>
-
-          {/* Right: sticky purchase widget — desktop only */}
-          <div className="hidden lg:block sticky top-28 bg-white border border-zinc-200 rounded-3xl p-6 shadow-sm">
-            {/* Price display */}
-            <div className="mb-6">
-              <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-1">
-                Tickets from
-              </p>
-              <p className="text-3xl font-extrabold text-zinc-900">
-                {minPrice > 0 ? formatNaira(minPrice) : 'Free'}
-              </p>
-            </div>
-
-            {/* Primary action */}
-            {allSoldOut ? (
-              <div className="w-full py-4 text-center font-bold text-zinc-400 bg-zinc-100 rounded-xl">
-                Sold Out
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setTicketSheetOpen(true)}
-                data-testid="event-cta"
-                className="w-full py-4 bg-linear-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all shadow-md text-center"
-              >
-                Get Tickets
-              </button>
-            )}
-
-            {/* Event quick-summary */}
-            <div className="mt-6 pt-5 border-t border-zinc-100 space-y-3">
-              <div className="flex items-start gap-3 text-sm text-zinc-600">
-                <span
-                  className="shrink-0 mt-0.5 text-zinc-400"
-                  style={{ display: 'inline-flex', width: 16, height: 16 }}
-                >
-                  <CalendarIcon />
-                </span>
-                <span>
-                  {formatDate(event.date)}
-                  {event.startTime ? ` · ${formatTime(event.startTime)}` : ''}
-                  {event.endTime ? ` – ${formatTime(event.endTime)}` : ''}
-                </span>
-              </div>
-              <div className="flex items-start gap-3 text-sm text-zinc-600">
-                <span
-                  className="shrink-0 mt-0.5 text-zinc-400"
-                  style={{ display: 'inline-flex', width: 16, height: 16 }}
-                >
-                  <MapPinIcon />
-                </span>
-                <span>
-                  {event.venue}
-                  {event.state ? `, ${event.state}` : ''}
-                </span>
-              </div>
-            </div>
-          </div>
+          <EventShareRow
+            onShare={handleShare}
+            onHypeLink={handleHypeLink}
+            shareToast={shareToast}
+            hypeLinkLoading={hypeLinkLoading}
+          />
         </div>
       </div>
 
-      {/* Mobile: fixed bottom CTA drawer — hidden on desktop where sidebar handles checkout */}
-      <div className="lg:hidden">
-        <EventStickyBar
-          isVisible={true}
-          minPrice={minPrice}
-          allSoldOut={allSoldOut}
-          onGetTickets={() => setTicketSheetOpen(true)}
-        />
-      </div>
+      {/* Sticky bottom CTA — all screen sizes */}
+      <EventStickyBar
+        isVisible={true}
+        minPrice={minPrice}
+        allSoldOut={allSoldOut}
+        onGetTickets={() => setTicketSheetOpen(true)}
+      />
     </>
   )
 }

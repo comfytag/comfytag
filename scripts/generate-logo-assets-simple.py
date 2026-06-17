@@ -98,19 +98,19 @@ def generate_assets():
 
     # Copy SVG to all apps
     print(f"\n  Copying SVG to all apps...")
-    svg_path = Path(__file__).parent.parent / "apps" / "web" / "public" / "logo.svg"
+    svg_path = Path(__file__).parent.parent / "apps" / "web" / "public" / "logo.png"
 
     if svg_path.exists():
         for app in APPS:
             output_dir = Path(__file__).parent.parent / "apps" / app / "public"
             output_dir.mkdir(parents=True, exist_ok=True)
 
-            output_path = output_dir / "logo.svg"
+            output_path = output_dir / "logo.png"
             with open(svg_path, "r") as src:
                 with open(output_path, "w") as dst:
                     dst.write(src.read())
 
-            print(f"    [+] {app}/public/logo.svg")
+            print(f"    [+] {app}/public/logo.png")
     else:
         print(f"  ⚠ SVG not found at {svg_path}")
 
@@ -133,7 +133,7 @@ def generate_assets():
     print("  - logo.png (256x256)")
     print("  - logo512.png (512x512)")
     print("  - apple-touch-icon.png (180x180)")
-    print("  - logo.svg (scalable)")
+    print("  - logo.png (scalable)")
     print("\nLocations:")
     print("  - apps/web/public/")
     print("  - apps/partner/public/")

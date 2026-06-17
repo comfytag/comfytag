@@ -18,7 +18,7 @@ try {
 
 const sharp = require('sharp');
 
-const SOURCE_SVG = path.join(__dirname, '../apps/web/public/logo.svg');
+const SOURCE_SVG = path.join(__dirname, '../apps/web/public/logo.png');
 const APPS = ['web', 'partner', 'admin'];
 
 const SIZES = [
@@ -75,9 +75,9 @@ async function generateAssets() {
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
-    const outputPath = path.join(outputDir, 'logo.svg');
+    const outputPath = path.join(outputDir, 'logo.png');
     fs.copyFileSync(SOURCE_SVG, outputPath);
-    console.log(`    ✓ ${app}/public/logo.svg`);
+    console.log(`    ✓ ${app}/public/logo.png`);
   }
 
   // Mobile app assets
@@ -111,7 +111,7 @@ async function generateAssets() {
   console.log('  - logo.png (256x256)');
   console.log('  - logo512.png (512x512)');
   console.log('  - apple-touch-icon.png (180x180)');
-  console.log('  - logo.svg (scalable)');
+  console.log('  - logo.png (scalable)');
   console.log('\nLocations:');
   console.log('  - apps/web/public/');
   console.log('  - apps/partner/public/');

@@ -319,9 +319,7 @@ export default async function HomePage() {
       <HowItWorksSection steps={howItWorksSteps.length > 0 ? howItWorksSteps : undefined} />
       <CategoryGridSection categories={featuredCategories.length > 0 ? featuredCategories : undefined} />
       {/* <HomeClientShell /> */}
-      <main 
-      // style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' }}
-      >
+      <main>
         <HomeFeedClient events={events} categories={categories} />
         <TestimonialsSection testimonials={testimonials} />
       </main>

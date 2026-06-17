@@ -1,16 +1,18 @@
 'use client'
 
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
 
-interface Tab {
+interface NavTab {
   label: string
   href: string
   ariaLabel: string
   icon: React.ReactNode
 }
 
-const TABS: Tab[] = [
+const TABS: NavTab[] = [
   {
     label: 'Studio',
     href: '/overview',
@@ -38,14 +40,15 @@ const TABS: Tab[] = [
     ),
   },
   {
-    label: 'Analytics',
-    href: '/analytics',
-    ariaLabel: 'Event analytics',
+    label: 'Attendees',
+    href: '/attendees',
+    ariaLabel: 'Event attendees',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect x="18" y="3" width="4" height="18" rx="1" />
-        <rect x="10" y="8" width="4" height="13" rx="1" />
-        <rect x="2" y="13" width="4" height="8" rx="1" />
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
   },
@@ -61,6 +64,15 @@ const TABS: Tab[] = [
   },
 ]
 
+const MENU_ITEMS = [
+  { label: 'Analytics', href: '/analytics' },
+  { label: 'Team',      href: '/team' },
+  { label: 'Settings',  href: '/settings' },
+]
+
+const TAB_BASE =
+  'flex flex-col items-center gap-0.5 px-3 py-2 rounded-full transition-all duration-200 min-w-10 min-h-11 justify-center'
+
 function isActive(href: string, pathname: string): boolean {
   if (href === '/overview') return pathname === '/overview'
   return pathname.startsWith(href)
@@ -68,6 +80,23 @@ function isActive(href: string, pathname: string): boolean {
 
 export default function BottomPillNav() {
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  const userInitial = session?.user?.name?.charAt(0).toUpperCase() ?? '?'
+  const avatarSrc = session?.user?.logo ?? null
+
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
 
   return (
     <nav
@@ -75,6 +104,7 @@ export default function BottomPillNav() {
       className="md:hidden fixed left-4 right-4 z-50 backdrop-blur-xl bg-white/80 border border-zinc-200/60 p-2 rounded-full shadow-lg flex justify-around items-center"
       style={{ bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
     >
+      {/* Standard link tabs */}
       {TABS.map(({ label, href, ariaLabel, icon }) => {
         const active = isActive(href, pathname)
         return (
@@ -84,17 +114,16 @@ export default function BottomPillNav() {
             aria-label={ariaLabel}
             aria-current={active ? 'page' : undefined}
             className={[
-              'flex flex-col items-center gap-0.5 px-4 py-2 rounded-full transition-all duration-200 min-w-11 min-h-11 justify-center',
-              active
-                ? 'text-violet-600'
-                : 'text-zinc-400 hover:text-zinc-500',
+              TAB_BASE,
+              active ? 'text-violet-600' : 'text-zinc-400 hover:text-zinc-500',
             ].join(' ')}
           >
             <span
-              className={[
-                'transition-transform duration-200',
-                active ? 'scale-110' : 'scale-100',
-              ].join(' ')}
+              className={
+                active
+                  ? 'scale-110 transition-transform duration-200'
+                  : 'scale-100 transition-transform duration-200'
+              }
             >
               {icon}
             </span>
@@ -109,6 +138,71 @@ export default function BottomPillNav() {
           </Link>
         )
       })}
+
+      {/* 5th item — avatar/more dropdown */}
+      <div ref={menuRef} className="relative">
+        <button
+          onClick={() => setMenuOpen((prev) => !prev)}
+          aria-haspopup="true"
+          aria-expanded={menuOpen}
+          aria-label="More options"
+          className={[
+            TAB_BASE,
+            menuOpen ? 'text-violet-600' : 'text-zinc-400 hover:text-zinc-500',
+          ].join(' ')}
+        >
+          <span
+            className={
+              menuOpen
+                ? 'scale-110 transition-transform duration-200'
+                : 'scale-100 transition-transform duration-200'
+            }
+          >
+            <span className="w-5 h-5 rounded-full bg-violet-600 text-white text-[9px] font-bold flex items-center justify-center overflow-hidden">
+              {avatarSrc ? (
+                <img src={avatarSrc} alt="" className="w-full h-full object-cover" />
+              ) : (
+                userInitial
+              )}
+            </span>
+          </span>
+          <span
+            className={[
+              'text-[10px] leading-none',
+              menuOpen ? 'font-bold' : 'font-medium',
+            ].join(' ')}
+          >
+            More
+          </span>
+        </button>
+
+        {/* Upward dropdown */}
+        {menuOpen && (
+          <div className="absolute bottom-full right-0 mb-3 w-48 bg-white border border-zinc-200 rounded-2xl shadow-xl overflow-hidden z-[60]">
+            {MENU_ITEMS.map(({ label, href }, i) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMenuOpen(false)}
+                className={[
+                  'block px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors',
+                  i > 0 ? 'border-t border-zinc-100' : '',
+                ].join(' ')}
+              >
+                {label}
+              </Link>
+            ))}
+            <div className="border-t border-zinc-100">
+              <button
+                onClick={() => void signOut({ callbackUrl: '/login' })}
+                className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-zinc-50 transition-colors"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </nav>
   )
 }

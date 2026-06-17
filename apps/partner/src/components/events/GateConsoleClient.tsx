@@ -107,25 +107,25 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
       {/* Toast HUD — fixed outside the console frame */}
       {toast && (
         toast.type === 'success' ? (
-          <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-zinc-950 border-2 border-emerald-300 rounded-2xl px-8 py-4 shadow-2xl z-50 text-center font-black animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-zinc-950 border-2 border-emerald-300 rounded-2xl px-8 py-4 shadow-2xl z-50 text-center font-bold animate-in fade-in slide-in-from-top-4 duration-200">
             ✓ {toast.message}
           </div>
         ) : (
-          <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-red-500 text-white border-2 border-red-400 rounded-2xl px-8 py-4 shadow-2xl z-50 text-center font-black animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-red-500 text-white border-2 border-red-400 rounded-2xl px-8 py-4 shadow-2xl z-50 text-center font-bold animate-in fade-in slide-in-from-top-4 duration-200">
             ✗ {toast.message}
           </div>
         )
       )}
 
       {/* ── Light Document Console Frame ── */}
-      <div className="max-w-5xl mx-auto bg-white border border-zinc-200/80 shadow-2xl shadow-zinc-200/40 rounded-[2.5rem] p-6 sm:p-8 space-y-8 mt-6">
+      <div className="max-w-5xl mx-auto bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl p-6 sm:p-8 space-y-8 mt-6">
 
         {/* Page header */}
         <div>
           <p className="text-zinc-400 text-xs font-mono tracking-widest uppercase mb-1">
             Gate Console · Live
           </p>
-          <h1 className="text-2xl font-black text-zinc-900 tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
             {event?.name ?? '—'}
           </h1>
         </div>
@@ -135,17 +135,17 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
 
           {/* Live Attendance Strip */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-zinc-50/60 border border-zinc-100 rounded-2xl p-5 text-center flex flex-col justify-center items-center transition-all hover:border-zinc-200">
-              <p className="text-4xl font-black tracking-tight text-emerald-500 tabular-nums">{checkedInCount}</p>
-              <p className="text-zinc-400 font-medium font-mono text-[11px] uppercase tracking-widest mt-2">Checked In</p>
+            <div className="bg-zinc-50/60 border border-zinc-100 rounded-3xl p-5 text-center flex flex-col justify-center items-center transition-all hover:border-zinc-200">
+              <p className="text-4xl font-bold tracking-tight text-emerald-500 tabular-nums">{checkedInCount}</p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold mt-2">Checked In</p>
             </div>
-            <div className="bg-zinc-50/60 border border-zinc-100 rounded-2xl p-5 text-center flex flex-col justify-center items-center transition-all hover:border-zinc-200">
-              <p className="text-4xl font-black tracking-tight text-zinc-900 tabular-nums">{totalSold}</p>
-              <p className="text-zinc-400 font-medium font-mono text-[11px] uppercase tracking-widest mt-2">Total Sold</p>
+            <div className="bg-zinc-50/60 border border-zinc-100 rounded-3xl p-5 text-center flex flex-col justify-center items-center transition-all hover:border-zinc-200">
+              <p className="text-4xl font-bold tracking-tight text-zinc-900 tabular-nums">{totalSold}</p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold mt-2">Total Sold</p>
             </div>
-            <div className="bg-zinc-50/60 border border-zinc-100 rounded-2xl p-5 text-center flex flex-col justify-center items-center transition-all hover:border-zinc-200">
-              <p className="text-4xl font-black tracking-tight text-zinc-900 tabular-nums">{occupancy}%</p>
-              <p className="text-zinc-400 font-medium font-mono text-[11px] uppercase tracking-widest mt-2">Occupancy</p>
+            <div className="bg-zinc-50/60 border border-zinc-100 rounded-3xl p-5 text-center flex flex-col justify-center items-center transition-all hover:border-zinc-200">
+              <p className="text-4xl font-bold tracking-tight text-zinc-900 tabular-nums">{occupancy}%</p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold mt-2">Occupancy</p>
             </div>
           </div>
 
@@ -227,7 +227,7 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search name, email, or ticket ref…"
-              className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-6 py-4 text-zinc-900 font-mono focus:bg-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 transition-all placeholder:text-zinc-400 focus:outline-none"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-3xl px-6 py-4 text-zinc-900 font-mono focus:bg-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 transition-all placeholder:text-zinc-400 focus:outline-none"
               autoComplete="off"
               spellCheck={false}
             />
@@ -248,35 +248,35 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
                 filtered.map((attendee) => (
                   <div
                     key={attendee._id}
-                    className="bg-white border border-zinc-100 rounded-2xl p-5 flex items-center justify-between shadow-xs transition-all hover:border-zinc-200 hover:bg-zinc-50/40 group"
+                    className="bg-white border border-zinc-100 rounded-3xl p-5 flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:border-zinc-200 hover:bg-zinc-50/40 group"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-zinc-900 font-bold text-base tracking-tight truncate">{attendee.name}</p>
-                      <p className="text-zinc-400 font-medium font-mono text-[11px] tracking-wide truncate mt-1">
+                      <p className="text-zinc-900 font-bold tracking-tight text-sm truncate">{attendee.name}</p>
+                      <p className="text-xs font-medium text-zinc-500 truncate mt-1">
                         {attendee.email}
                       </p>
-                      <p className="text-zinc-400 font-medium font-mono text-[11px] tracking-wide mt-0.5">
+                      <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold mt-0.5">
                         {attendee.reference}
                       </p>
                       {attendee.type && (
-                        <p className="text-zinc-400 font-medium font-mono text-[11px] tracking-wide mt-0.5">
+                        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold mt-0.5">
                           {attendee.type}
                         </p>
                       )}
                     </div>
 
-                    <div className="shrink-0">
+                    <div className="shrink-0 ml-4">
                       {attendee.checkedIn ? (
-                        <span className="bg-zinc-800 text-zinc-400 font-bold px-4 py-2 rounded-xl text-sm">
+                        <span className="bg-zinc-100 text-zinc-500 font-bold py-2 px-5 rounded-full text-xs">
                           ✓ IN
                         </span>
                       ) : (
                         <button
                           onClick={() => handleCheckin(attendee._id)}
                           disabled={pendingCheckinId === attendee._id}
-                          className="bg-emerald-400 text-zinc-950 font-black px-5 py-2 rounded-xl text-sm tracking-tight active:scale-95 transition-transform hover:bg-emerald-300 disabled:opacity-50 disabled:active:scale-100"
+                          className="bg-emerald-500 text-white font-bold py-2 px-6 rounded-full shadow-sm active:scale-95 transition-all text-xs disabled:opacity-50 disabled:active:scale-100"
                         >
-                          {pendingCheckinId === attendee._id ? '…' : 'CHECK IN'}
+                          {pendingCheckinId === attendee._id ? '…' : 'Check In'}
                         </button>
                       )}
                     </div>
@@ -291,7 +291,7 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
         {activeMode === 'face' && (
           <div className="w-full border border-violet-200/60 bg-linear-to-br from-violet-50/40 to-white rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-3 shadow-sm">
             <p className="text-5xl">✨</p>
-            <p className="text-zinc-900 font-black text-xl tracking-tight">
+            <p className="text-zinc-900 font-bold text-xl tracking-tight">
               Your face is your ticket.™
             </p>
             <p className="text-zinc-400 text-sm leading-relaxed max-w-xs">

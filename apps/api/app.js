@@ -62,6 +62,7 @@ import teamRouter from './routes/team.js'
 import partnerRouter from './routes/partner.js'
 import { verifyPartner } from './utils/verifyToken.js'
 import adminRouter from './routes/admin.js'
+import webhooksRouter from './routes/webhooks.js'
 import cron from 'node-cron'
 import { updateExpiredTickets } from './jobs/updateExpiredTickets.js'
 
@@ -70,6 +71,11 @@ import { updateExpiredTickets } from './jobs/updateExpiredTickets.js'
 
 
 
+
+// ─── AWS SNS webhook — must be registered BEFORE global bodyParser so that
+//     SNS's text/plain body is parsed as a raw string rather than ignored.
+app.use('/api/webhooks', express.text({ type: ['text/plain', 'application/json', '*/*'] }));
+app.use('/api/webhooks', webhooksRouter);
 
 // Middlewares
 app.use(bodyParser.json({ limit: '50mb' }));

@@ -1,7 +1,7 @@
-﻿'use client'
+'use client'
 
 import { useSession } from 'next-auth/react'
-import { PageHeader, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
+import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { SettingsPanel } from '@/components/settings/SettingsPanel'
 import { useBankAccount, usePartnerProfile } from '@/hooks'
 
@@ -16,7 +16,7 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+      <div className="max-w-6xl mx-auto py-8 flex items-center justify-center min-h-100">
         <LoadingSpinner centered size="lg" />
       </div>
     )
@@ -24,7 +24,7 @@ export default function SettingsPage() {
 
   if (userError || banksError) {
     return (
-      <div style={{ padding: '32px 24px' }}>
+      <div className="max-w-6xl mx-auto py-8">
         <ErrorMessage
           message="Failed to load settings."
           onRetry={() => {
@@ -37,13 +37,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ padding: '28px 16px' }}>
-      <PageHeader title="Settings" subtitle="Manage your profile and payment details" />
-
-      <div style={{ maxWidth: '720px' }}>
-        <SettingsPanel user={user} banks={banks} />
-      </div>
+    <div className="max-w-6xl mx-auto py-8 animate-in fade-in duration-300">
+      <h1 className="text-3xl font-black text-zinc-900 tracking-tight mb-8">Settings</h1>
+      <SettingsPanel user={user} banks={banks} />
     </div>
   )
 }
-

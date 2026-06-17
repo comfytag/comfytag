@@ -7,9 +7,11 @@ import { useSession, signOut } from 'next-auth/react'
 import { NotificationContext } from '@/contexts/NotificationContext'
 
 const NAV_LINKS = [
-  { label: 'Studio', href: '/overview' },
-  { label: 'Events', href: '/events' },
-  { label: 'Payouts', href: '/payouts' },
+  { label: 'Studio',    href: '/overview' },
+  { label: 'Events',    href: '/events' },
+  { label: 'Attendees', href: '/attendees' },
+  { label: 'Analytics', href: '/analytics' },
+  { label: 'Payouts',   href: '/payouts' },
 ]
 
 const DROPDOWN_ITEMS = [

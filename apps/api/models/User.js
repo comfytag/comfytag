@@ -106,6 +106,13 @@ const UserSchema = new Schema({
             type: Boolean,
             default: false,
         },
+        // ─── Email Deliverability (AWS SES bounce/complaint suppression) ───
+        emailStatus: {
+            type: String,
+            enum: ['active', 'BOUNCED', 'COMPLAINED'],
+            default: 'active',
+        },
+
         notificationPreferences: {
             type: {
                 email: { type: Boolean, default: true },

@@ -19,6 +19,7 @@
   "author": "Wabjay",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.1068.0",
     "antd": "^5.5.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^2.2.2",

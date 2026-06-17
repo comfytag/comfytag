@@ -108,8 +108,8 @@ function FeaturedCarousel({ events }: { events: Event[] }) {
   if (events.length === 0) return null
   return (
     <section className="mb-8" aria-label="Featured Experiences">
-      <div className="flex items-center gap-3 mb-4">
-        <h2 className="text-[15px] font-bold text-zinc-900 tracking-tight">
+      <div className="flex items-center gap-3 mb-6">
+        <h2 className="text-2xl font-bold tracking-tight text-zinc-900">
           ✦ Featured Experiences
         </h2>
         <span className="text-[11px] font-semibold bg-violet-100 text-violet-700 px-2.5 py-0.5 rounded-full">
@@ -136,9 +136,9 @@ function TrendingCarousel({ events }: { events: Event[] }) {
   if (events.length === 0) return null
   return (
     <section className="mb-8" aria-label="Trending Near You">
-      <div className="flex items-center gap-3 mb-4">
-        <h2 className="text-[15px] font-bold text-zinc-900 tracking-tight flex items-center gap-1.5">
-          <Flame className="h-4 w-4 text-amber-500" aria-hidden="true" />
+      <div className="flex items-center gap-3 mb-6">
+        <h2 className="text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
+          <Flame className="h-5 w-5 text-amber-500" aria-hidden="true" />
           Trending Near You
         </h2>
         <span className="text-[11px] font-semibold bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full animate-pulse">
@@ -848,13 +848,13 @@ export function EventsBrowseClient({
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="w-full min-h-screen bg-zinc-50/50 pt-24 pb-16">
+    <div className="min-h-screen bg-slate-50 text-zinc-900 pb-24 font-sans pt-24">
       <div className="max-w-[1400px] mx-auto px-4 md:px-8">
 
         {/* ── Page Header ── */}
         <div className="border-b border-zinc-100 pb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900">
               Discover Experiences
             </h1>
             <p className="text-zinc-500 text-sm mt-1">

@@ -37,11 +37,12 @@ export function EventCard({
       ? Math.min(...event.ticketType.map((t) => t.price))
       : 0
 
-  const dateKicker = `${formatDate(event.date)} • ${formatTime(event.startTime)}`
+  const dateKicker = `${formatDate(event.date)} · ${formatTime(event.startTime)}`
+  const overline = event.category ? `${event.category} · ${dateKicker}` : dateKicker
 
   const content = (
     <article
-      className="group flex flex-col bg-white rounded-3xl overflow-hidden border border-zinc-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full"
+      className="group flex flex-col bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full"
       onClick={onSelect}
       role={onSelect ? 'button' : undefined}
       tabIndex={onSelect ? 0 : undefined}
@@ -52,13 +53,13 @@ export function EventCard({
         }
       }}
     >
-      {/* Top: Image area — zooms on group hover */}
-      <div className="relative w-full aspect-4/3 overflow-hidden bg-zinc-100 shrink-0">
+      {/* Image area */}
+      <div className="relative w-full aspect-4/3 sm:aspect-video overflow-hidden bg-zinc-100">
         <Image
           src={imageSrc}
           alt={event.name}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-700"
+          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
           sizes={
             compact
               ? '(max-width: 768px) 50vw, 25vw'
@@ -66,21 +67,14 @@ export function EventCard({
           }
         />
 
-        {/* FOMO pill — top left */}
-        {(isTrending || isSoldOut) && (
-          <div
-            className={[
-              'absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide backdrop-blur-md',
-              isSoldOut
-                ? 'bg-black/70 text-zinc-400'
-                : 'bg-amber-400 text-zinc-900',
-            ].join(' ')}
-          >
-            {isSoldOut ? 'Sold Out' : 'Trending'}
+        {/* Sold-out overlay pill */}
+        {isSoldOut && (
+          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide backdrop-blur-md bg-black/70 text-zinc-300">
+            Sold Out
           </div>
         )}
 
-        {/* Like button — top right */}
+        {/* Like button */}
         {onLike && (
           <button
             type="button"
@@ -91,64 +85,68 @@ export function EventCard({
               e.stopPropagation()
               void onLike(event._id)
             }}
-            className="absolute top-3 right-3 p-2.5 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-md transition-colors text-white"
+            className="absolute top-3 right-3 p-2.5 rounded-full bg-white/80 hover:bg-white backdrop-blur-md transition-colors"
           >
             <Heart
               className="w-4 h-4"
               fill={isLiked ? '#EF4444' : 'none'}
-              stroke={isLiked ? '#EF4444' : 'currentColor'}
+              stroke={isLiked ? '#EF4444' : '#a1a1aa'}
+              strokeWidth={1.5}
               aria-hidden="true"
             />
           </button>
         )}
       </div>
 
-      {/* Bottom: Content area — always white, always readable */}
-      <div className="flex flex-col flex-1 p-5 md:p-6">
-        {/* Date kicker */}
-        <p className="text-xs font-bold text-violet-600 uppercase tracking-wider mb-2">
-          {dateKicker}
+      {/* Content area */}
+      <div className="p-5 flex flex-col flex-1">
+        {/* Date + Category overline */}
+        <p className="text-[10px] font-mono uppercase tracking-widest text-orange-600 font-bold">
+          {overline}
         </p>
 
-        {/* Title — capitalize normalises lowercase organiser input */}
-        <h3 className="text-xl font-extrabold text-zinc-900 leading-tight mb-2 line-clamp-2 capitalize group-hover:text-violet-600 transition-colors">
+        {/* Title */}
+        <h3 className="text-lg font-bold tracking-tight text-zinc-900 line-clamp-1 mt-1.5">
           {event.name}
         </h3>
 
-        {/* Venue */}
-        <div className="flex items-center text-sm text-zinc-500 mb-4">
-          <MapPin className="w-4 h-4 mr-1.5 shrink-0" aria-hidden="true" />
-          <span className="line-clamp-1 capitalize">{event.venue}</span>
+        {/* Venue row */}
+        <div className="flex items-center gap-1.5 mt-1.5">
+          <MapPin
+            className="w-3.5 h-3.5 shrink-0 text-zinc-400"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          <span className="text-xs font-medium text-zinc-500 truncate capitalize">{event.venue}</span>
         </div>
 
-        {/* Footer: price + sold% */}
-        <div className="mt-auto pt-4 border-t border-zinc-100 flex items-center justify-between gap-2">
+        {/* Footer — price + status pill */}
+        <div className="mt-auto border-t border-zinc-100 pt-3 flex items-center justify-between gap-2">
+          {/* Price block */}
           {lowestPrice === 0 ? (
-            <span className="px-3 py-1 bg-emerald-100 text-emerald-700 font-bold text-sm rounded-full">
-              Free
-            </span>
+            <span className="text-sm font-bold text-emerald-600">Free</span>
           ) : (
-            <span className="text-lg font-bold text-zinc-900">
-              {formatNaira(lowestPrice)}
-            </span>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">from</span>
+              <span className="text-sm font-bold text-zinc-900 ml-1">{formatNaira(lowestPrice)}</span>
+            </div>
           )}
 
-          {soldPct > 0 && (
-            <span className="text-xs text-zinc-400 shrink-0">
+          {/* Status pill */}
+          {isSoldOut ? (
+            <span className="px-2.5 py-1 bg-zinc-100 text-zinc-400 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0">
+              Sold Out
+            </span>
+          ) : isTrending ? (
+            <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0">
+              Selling Fast
+            </span>
+          ) : soldPct > 0 ? (
+            <span className="px-2.5 py-1 bg-zinc-100 text-zinc-600 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0">
               {Math.round(soldPct * 100)}% sold
             </span>
-          )}
+          ) : null}
         </div>
-
-        {/* Capacity bar — only visible when tickets are selling */}
-        {soldPct > 0 && (
-          <div className="mt-3 h-0.5 bg-zinc-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-violet-600 transition-all duration-300"
-              style={{ width: `${Math.min(soldPct * 100, 100)}%` }}
-            />
-          </div>
-        )}
       </div>
     </article>
   )

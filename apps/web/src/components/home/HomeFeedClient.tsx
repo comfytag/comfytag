@@ -30,7 +30,7 @@ function FeaturedSection({ events }: { events: Event[] }) {
   if (events.length === 0) return null
   return (
     <section aria-label="Featured events" className="mb-12">
-      <h2 className="text-2xl font-extrabold text-zinc-900 tracking-tight mb-5">Featured</h2>
+      <h2 className="text-2xl font-bold tracking-tight text-zinc-900 mb-6">Featured</h2>
       <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {events.map((event) => (
           <div key={event._id} className="w-[85vw] sm:w-[320px] shrink-0 snap-center">
@@ -48,9 +48,9 @@ function TrendingSection({ events }: { events: Event[] }) {
   if (events.length === 0) return null
   return (
     <section aria-label="Trending events" className="mb-12">
-      <div className="flex items-center gap-2.5 mb-5">
+      <div className="flex items-center gap-2.5 mb-6">
         <Flame className="w-5 h-5 text-amber-500" aria-hidden="true" />
-        <h2 className="text-2xl font-extrabold text-zinc-900 tracking-tight">Trending Now</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-zinc-900">Trending Now</h2>
       </div>
       <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {events.map((event) => {
@@ -80,9 +80,9 @@ function NewReleasesSection({ events }: { events: Event[] }) {
   if (events.length === 0) return null
   return (
     <section aria-label="New releases" className="mb-12">
-      <div className="flex items-center gap-2.5 mb-5">
+      <div className="flex items-center gap-2.5 mb-6">
         <Sparkles className="w-5 h-5 text-violet-600" aria-hidden="true" />
-        <h2 className="text-2xl font-extrabold text-zinc-900 tracking-tight">New Releases</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-zinc-900">New Releases</h2>
       </div>
       <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
         {events.map((event) => (
@@ -155,7 +155,8 @@ export function HomeFeedClient({ events, categories }: HomeFeedClientProps) {
   const filteredGrid = useMemo(() => homepageVisibleEvents.slice(0, 8), [homepageVisibleEvents])
 
   return (
-    <div className="w-full py-16 md:py-24 px-4 md:px-8 max-w-7xl mx-auto" id="events-feed">
+    <div className="min-h-screen bg-slate-50 text-zinc-900 pb-24 font-sans" id="events-feed">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
 
       {/* ── Section A: Featured ── */}
       <FeaturedSection events={dynamicFeatured} />
@@ -204,7 +205,7 @@ export function HomeFeedClient({ events, categories }: HomeFeedClientProps) {
           </div>
 
           <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-zinc-900">
+            <h2 className="text-2xl font-bold tracking-tight text-zinc-900">
               {activeCategoryTitle}
             </h2>
             <span className="text-xs font-medium text-zinc-400 bg-zinc-100 px-2.5 py-1 rounded-md">
@@ -252,6 +253,7 @@ export function HomeFeedClient({ events, categories }: HomeFeedClientProps) {
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
         </Link>
       </div>
+    </div>
     </div>
   )
 }

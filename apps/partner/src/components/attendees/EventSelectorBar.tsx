@@ -28,61 +28,21 @@ export function EventSelectorBar({ events, selectedEventId, onSelectEvent }: Eve
   }, [dropdownOpen])
 
   return (
-    <div ref={dropdownRef} style={{ position: 'relative', display: 'inline-block', minWidth: '280px' }}>
+    <div ref={dropdownRef} className="relative inline-block min-w-70">
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        style={{
-          width: '100%',
-          padding: '12px 16px',
-          backgroundColor: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: 500,
-          color: 'var(--color-text)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          transition: 'border-color var(--duration-fast) ease',
-        }}
-        onMouseEnter={(e) => {
-          if (!dropdownOpen) {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-brand)'
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!dropdownOpen) {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--color-border)'
-          }
-        }}
+        className="w-full flex items-center justify-between gap-2 bg-white border border-zinc-200 rounded-xl px-4 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 hover:border-zinc-300 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
       >
         <span>{selectedEvent?.name ?? 'Select an event'}</span>
         <ChevronDown
           size={16}
-          style={{
-            transition: 'transform var(--duration-fast) ease',
-            transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-          }}
+          aria-hidden="true"
+          className={`text-zinc-400 transition-transform duration-150 ${dropdownOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {dropdownOpen && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 8px)',
-            left: 0,
-            right: 0,
-            backgroundColor: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '8px',
-            maxHeight: '280px',
-            overflowY: 'auto',
-            zIndex: 10,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          }}
-        >
+        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-zinc-200/80 rounded-xl shadow-lg z-10 max-h-72 overflow-y-auto">
           {events.map(event => (
             <button
               key={event._id}
@@ -90,28 +50,21 @@ export function EventSelectorBar({ events, selectedEventId, onSelectEvent }: Eve
                 onSelectEvent(event._id)
                 setDropdownOpen(false)
               }}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                backgroundColor: selectedEventId === event._id ? 'var(--color-surface-2)' : 'transparent',
-                border: 'none',
-                borderBottom: '1px solid var(--color-border)',
-                textAlign: 'left',
-                fontSize: '14px',
-                color: selectedEventId === event._id ? 'var(--color-brand)' : 'var(--color-text)',
-                cursor: 'pointer',
-                transition: 'background var(--duration-fast) ease, color var(--duration-fast) ease',
-              }}
-              onMouseEnter={(e) => {
-                ;(e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-surface-2)'
-              }}
-              onMouseLeave={(e) => {
-                ;(e.currentTarget as HTMLButtonElement).style.backgroundColor = selectedEventId === event._id ? 'var(--color-surface-2)' : 'transparent'
-              }}
+              className={`w-full text-left px-4 py-3 text-sm border-b border-zinc-100 last:border-0 transition-colors ${
+                selectedEventId === event._id
+                  ? 'bg-violet-50 text-violet-700'
+                  : 'text-zinc-900 hover:bg-zinc-50'
+              }`}
             >
-              <div style={{ fontWeight: 500, color: 'inherit' }}>{event.name}</div>
-              <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-                {event.date ? new Date(event.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No date'}
+              <div className="font-semibold">{event.name}</div>
+              <div className="text-xs text-zinc-400 mt-0.5">
+                {event.date
+                  ? new Date(event.date).toLocaleDateString('en-GB', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                    })
+                  : 'No date'}
               </div>
             </button>
           ))}

@@ -29,193 +29,116 @@ export function EventAnalyticsClient({ analytics, eventId }: EventAnalyticsClien
 
   return (
     <>
-      <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 8px 0' }}>
-          {analytics.eventName}
-        </h1>
-        <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', margin: 0 }}>
-          Event performance analytics
-        </p>
+      {/* Event Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-zinc-900 tracking-tight">{analytics.eventName}</h1>
+        <p className="text-zinc-500 text-sm mt-1">Event performance analytics</p>
       </div>
 
       {/* Summary Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '16px',
-          marginBottom: '32px',
-        }}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <ChartCard title="Total Revenue" subtitle="Event earnings">
-          <div style={{ fontSize: '32px', fontWeight: 700, color: 'var(--color-gold)', lineHeight: 1 }}>
+          <div className="text-3xl font-black text-amber-600 leading-none">
             {formatNaira(analytics.totalRevenue)}
           </div>
         </ChartCard>
 
         <ChartCard title="Tickets Sold" subtitle={`/ ${analytics.totalCapacity} capacity`}>
-          <div style={{ fontSize: '32px', fontWeight: 700, color: 'var(--color-text)', lineHeight: 1 }}>
+          <div className="text-3xl font-black text-zinc-900 leading-none">
             {analytics.totalTicketsSold}
           </div>
         </ChartCard>
 
         <ChartCard title="Check-In Rate" subtitle={`${analytics.checkInCount} checked in`}>
-          <div style={{ fontSize: '32px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
+          <div className="text-3xl font-black text-violet-600 leading-none">
             {analytics.checkInRate.toFixed(1)}%
           </div>
         </ChartCard>
 
         <ChartCard title="Checked In" subtitle="Attendees verified">
-          <div style={{ fontSize: '32px', fontWeight: 700, color: 'var(--color-text)', lineHeight: 1 }}>
+          <div className="text-3xl font-black text-zinc-900 leading-none">
             {analytics.checkInCount}
           </div>
         </ChartCard>
       </div>
 
-      {/* Daily Sales Chart */}
+      {/* Daily Sales Chart — Master Chart Canvas */}
       {analytics.dailySales && analytics.dailySales.length > 0 && (
-        <div
-          style={{
-            backgroundColor: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '32px',
-          }}
-        >
-          <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text)', margin: '0 0 16px 0' }}>
-            Daily Sales
-          </h3>
+        <div className="w-full bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] p-6 sm:p-8 overflow-hidden mb-8">
+          <h2 className="text-lg font-bold text-zinc-900 mb-6">Daily Sales</h2>
           <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'center',
-              gap: `${barGap}px`,
-              height: `${chartHeight}px`,
-              padding: '16px 0',
-              borderBottom: '1px solid var(--color-border)',
-              marginBottom: '12px',
-            }}
+            className="flex items-end justify-center border-b border-zinc-100 mb-3"
+            style={{ gap: `${barGap}px`, height: `${chartHeight}px`, padding: '16px 0' }}
           >
             {analytics.dailySales.map((day, idx) => {
               const barHeight = (day.revenue / maxDailySales) * (chartHeight - 40)
               return (
                 <div
                   key={idx}
-                  style={{
-                    flex: 1,
-                    height: `${barHeight}px`,
-                    backgroundColor: 'var(--color-brand)',
-                    borderRadius: '4px 4px 0 0',
-                    minWidth: `${barWidth}px`,
-                    position: 'relative',
-                    transition: 'opacity var(--duration-fast) ease',
-                    cursor: 'pointer',
-                  }}
+                  className="flex-1 bg-violet-600 hover:opacity-70 rounded-t cursor-pointer transition-opacity duration-150"
+                  style={{ height: `${barHeight}px`, minWidth: `${barWidth}px` }}
                   title={`${new Date(day.date).toLocaleDateString('en-GB')}: ${day.sold} tickets, ${formatNaira(day.revenue)}`}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.opacity = '0.7'
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.opacity = '1'
-                  }}
                 />
               )
             })}
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', textAlign: 'center' }}>
+          <p className="text-xs text-zinc-400 text-center font-mono">
             {analytics.dailySales.length} days of sales data
-          </div>
+          </p>
         </div>
       )}
 
-      {/* Tier Performance Table */}
+      {/* Tier Performance — Ledger Table */}
       {analytics.tierStats && analytics.tierStats.length > 0 && (
-        <div
-          style={{
-            backgroundColor: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            marginBottom: '32px',
-          }}
-        >
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border)' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text)', margin: 0 }}>
-              Ticket Tier Performance
-            </h3>
+        <div className="bg-white border border-zinc-200/80 rounded-4xl overflow-hidden shadow-sm mb-8">
+          <div className="px-5 py-4 border-b border-zinc-100">
+            <h2 className="text-lg font-bold text-zinc-900">Ticket Tier Performance</h2>
           </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="w-full border-collapse">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Tier</th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Sold / Capacity</th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Sold %</th>
-                <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Revenue</th>
-                <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '13px', fontWeight: 600, color: 'var(--color-text-muted)' }}>Avg Price</th>
+              <tr className="border-b border-zinc-100">
+                <th className="px-5 py-3 text-left text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider">
+                  Tier
+                </th>
+                <th className="px-5 py-3 text-center text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider">
+                  Sold / Cap
+                </th>
+                <th className="px-5 py-3 text-center text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider">
+                  Fill Rate
+                </th>
+                <th className="px-5 py-3 text-right text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider">
+                  Revenue
+                </th>
+                <th className="px-5 py-3 text-right text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider">
+                  Avg Price
+                </th>
               </tr>
             </thead>
             <tbody>
               {analytics.tierStats.map((tier, idx) => (
                 <tr
                   key={idx}
-                  style={{ borderBottom: '1px solid var(--color-border)' }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLTableRowElement).style.background = 'var(--color-surface-2)'
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'
-                  }}
+                  className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50/50 transition-colors"
                 >
-                  <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--color-text)', fontWeight: 500 }}>
-                    {tier.name}
-                  </td>
-                  <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--color-text)', textAlign: 'center' }}>
+                  <td className="px-5 py-4 text-zinc-900 font-bold text-sm">{tier.name}</td>
+                  <td className="px-5 py-4 text-center font-mono text-sm text-zinc-600 font-semibold">
                     {tier.sold} / {tier.capacity}
                   </td>
-                  <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '24px',
-                        backgroundColor: 'var(--color-surface-2)',
-                        borderRadius: '4px',
-                        overflow: 'hidden',
-                        position: 'relative',
-                      }}
-                    >
+                  <td className="px-5 py-4">
+                    <div className="relative w-full h-5 bg-zinc-100 rounded overflow-hidden">
                       <div
-                        style={{
-                          height: '100%',
-                          width: `${Math.min(100, (tier.soldPercentage ?? 0) * 100)}%`,
-                          backgroundColor: 'var(--color-brand)',
-                          transition: 'width var(--duration-fast) ease',
-                        }}
+                        className="h-full bg-violet-600 transition-all duration-300"
+                        style={{ width: `${Math.min(100, (tier.soldPercentage ?? 0) * 100)}%` }}
                       />
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          color: 'var(--color-text)',
-                        }}
-                      >
+                      <div className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-zinc-700">
                         {((tier.soldPercentage ?? 0) * 100).toFixed(0)}%
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--color-gold)', fontWeight: 600, textAlign: 'right' }}>
+                  <td className="px-5 py-4 text-right font-mono text-sm text-amber-600 font-semibold">
                     {formatNaira(tier.revenue ?? 0)}
                   </td>
-                  <td style={{ padding: '12px 16px', fontSize: '14px', color: 'var(--color-text)', textAlign: 'right' }}>
+                  <td className="px-5 py-4 text-right font-mono text-sm text-zinc-600 font-semibold">
                     {formatNaira(tier.avgPrice ?? 0)}
                   </td>
                 </tr>
@@ -225,24 +148,11 @@ export function EventAnalyticsClient({ analytics, eventId }: EventAnalyticsClien
         </div>
       )}
 
-      {/* Navigation */}
-      <div style={{ paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
+      {/* Back Navigation */}
+      <div className="pt-4 border-t border-zinc-100">
         <Link
           href={`/events/${eventId}`}
-          style={{
-            display: 'inline-block',
-            color: 'var(--color-brand)',
-            fontSize: '14px',
-            fontWeight: 500,
-            textDecoration: 'none',
-            transition: 'color var(--duration-fast) ease',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-brand-dark)'
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLAnchorElement).style.color = 'var(--color-brand)'
-          }}
+          className="text-violet-600 hover:text-violet-700 text-sm font-semibold transition-colors duration-150"
         >
           ← Back to event
         </Link>

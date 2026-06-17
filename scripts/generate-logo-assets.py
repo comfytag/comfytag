@@ -22,7 +22,7 @@ except ImportError:
     print("cairosvg package required. Install with: pip install cairosvg")
     sys.exit(1)
 
-SOURCE_SVG = Path(__file__).parent.parent / "apps" / "web" / "public" / "logo.svg"
+SOURCE_SVG = Path(__file__).parent.parent / "apps" / "web" / "public" / "logo.png"
 APPS = ["web", "partner", "admin"]
 
 SIZES = [
@@ -78,12 +78,12 @@ def generate_assets():
         output_dir = Path(__file__).parent.parent / "apps" / app / "public"
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        output_path = output_dir / "logo.svg"
+        output_path = output_dir / "logo.png"
         with open(SOURCE_SVG, "r") as src:
             with open(output_path, "w") as dst:
                 dst.write(src.read())
 
-        print(f"    ✓ {app}/public/logo.svg")
+        print(f"    ✓ {app}/public/logo.png")
 
     # Mobile app assets
     print(f"\n  Setting up mobile app assets...")
@@ -114,7 +114,7 @@ def generate_assets():
     print("  - logo.png (256x256)")
     print("  - logo512.png (512x512)")
     print("  - apple-touch-icon.png (180x180)")
-    print("  - logo.svg (scalable)")
+    print("  - logo.png (scalable)")
     print("\nLocations:")
     print("  - apps/web/public/")
     print("  - apps/partner/public/")
