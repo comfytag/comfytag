@@ -2,12 +2,12 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { SearchSuggestionsOverlay } from '@/components/ui/SearchSuggestionsOverlay'
-import { MobileMenuDrawer } from '@/components/layout/MobileMenuDrawer'
+
 import { AvatarInitials, LoadingSpinner } from '@comfytag/ui'
 import { authHeader, formatNaira } from '@comfytag/utils'
 import type { Notification, User } from '@comfytag/types'
@@ -25,7 +25,6 @@ export function Navbar({ user, onSearch }: NavbarProps) {
   const [searchVal, setSearchVal] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -193,27 +192,6 @@ export function Navbar({ user, onSearch }: NavbarProps) {
           outline: 2px solid var(--color-brand);
           outline-offset: 2px;
         }
-        /* Hamburger — visible on mobile only */
-        .__ct_nav_hamburger {
-          display: none;
-          width: 38px;
-          height: 38px;
-          border-radius: var(--radius-full);
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: var(--color-text-muted);
-          padding: 0;
-          flex-shrink: 0;
-          align-items: center;
-          justify-content: center;
-          transition: color var(--duration-micro) ease;
-        }
-        .__ct_nav_hamburger:hover { color: var(--color-text); }
-        .__ct_nav_hamburger:focus-visible {
-          outline: 2px solid var(--color-brand);
-          outline-offset: 2px;
-        }
         @media (max-width: 767px) {
           .__ct_navbar {
             height: 56px;
@@ -223,12 +201,6 @@ export function Navbar({ user, onSearch }: NavbarProps) {
             -webkit-backdrop-filter: blur(12px);
             border-bottom-color: rgba(228, 228, 231, 0.50);
           }
-          /* Center logo absolutely so left/right icons sit at edges */
-          .__ct_nav_logo {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-          }
           .__ct_nav_search {
             display: none;
           }
@@ -237,34 +209,14 @@ export function Navbar({ user, onSearch }: NavbarProps) {
             align-items: center;
             justify-content: center;
           }
-          .__ct_nav_hamburger {
-            display: flex;
-          }
-          /* Avatar dropdown moves into drawer on mobile */
+          /* Avatar dropdown handled by Profile tab in bottom nav */
           .__ct_nav_avatar_wrap { display: none; }
-          /* Guest login/signup buttons move into drawer on mobile */
-          .__ct_nav_auth_wrap { display: none; }
         }
       `}</style>
       <nav className="__ct_navbar" aria-label="Main navigation">
-        {/* Hamburger — mobile only; opens slide-out drawer */}
-        <button
-          type="button"
-          className="__ct_nav_hamburger"
-          onClick={() => setMobileMenuOpen(true)}
-          aria-label="Open navigation menu"
-          aria-expanded={mobileMenuOpen}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </button>
-
-        {/* Logo — desktop: flex item left-aligned; mobile: absolute center */}
+        {/* Logo — left-aligned on both desktop and mobile */}
         <Link href="/" className="__ct_nav_logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-          <Image alt="ComfyTag" className="w-auto h-8 object-contain" height={40} priority src="/logo.png" width={120} />
+          <img alt="ComfyTag" className="w-auto h-8 object-contain" src="/logo.png" />
         </Link>
 
         {/* Search — desktop only */}
@@ -417,7 +369,6 @@ export function Navbar({ user, onSearch }: NavbarProps) {
             </div>
           </div>
         ) : (
-          // Guest auth — hidden on mobile (lives in MobileMenuDrawer)
           <div className="__ct_nav_auth_wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button
               type="button"
@@ -437,9 +388,6 @@ export function Navbar({ user, onSearch }: NavbarProps) {
           </div>
         )}
       </nav>
-
-      {/* Mobile slide-out drawer */}
-      <MobileMenuDrawer isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       {/* Mobile search overlay — same autocomplete as desktop */}
       {mobileSearchOpen && (

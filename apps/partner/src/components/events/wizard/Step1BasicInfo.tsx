@@ -11,11 +11,11 @@ interface Step1BasicInfoProps {
   onPrev: () => void
 }
 
-const label = 'block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2'
+const label = 'block text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider mb-2'
 const input =
-  'w-full bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none transition-colors'
+  'w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none'
 const select =
-  'w-full appearance-none bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3.5 pr-10 text-sm text-zinc-900 focus:outline-none transition-colors cursor-pointer'
+  'w-full appearance-none bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 pr-10 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all focus:outline-none focus-visible:outline-none cursor-pointer'
 
 function SelectChevron() {
   return (
@@ -36,24 +36,6 @@ function SelectChevron() {
   )
 }
 
-function BackIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M19 12H5M12 5l-7 7 7 7" />
-    </svg>
-  )
-}
-
 export function Step1BasicInfo({
   formData,
   updateField,
@@ -61,10 +43,12 @@ export function Step1BasicInfo({
   onNext,
 }: Step1BasicInfoProps) {
   return (
-    <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-5">
+    <>
+    <div className="max-w-3xl mx-auto bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl sm:rounded-[2.5rem] p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
       <div>
-        <h2 className="text-xl font-black text-zinc-900">Basic Info</h2>
-        <p className="text-sm text-zinc-500 mt-0.5">Name, category, date, and location</p>
+        <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 1 of 5</span>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Basic Info</h2>
+        <p className="text-sm text-zinc-500 mb-8">Name, category, date, and location</p>
       </div>
 
       {/* Event name */}
@@ -81,6 +65,34 @@ export function Step1BasicInfo({
           className={input}
           autoFocus
         />
+      </div>
+
+      {/* Headline */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label htmlFor="event-headline" className="text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider">
+            Headline <span className="text-zinc-400 font-normal normal-case">(optional)</span>
+          </label>
+          <button
+            type="button"
+            onClick={() => alert('AI Auto-generation coming soon!')}
+            className="text-xs font-bold text-violet-600 bg-violet-50 px-2 py-1 rounded-full hover:bg-violet-100 transition-colors cursor-pointer"
+          >
+            ✨ Enhance
+          </button>
+        </div>
+        <input
+          id="event-headline"
+          type="text"
+          value={formData.headline}
+          onChange={(e) => updateField('headline', e.target.value)}
+          placeholder="e.g. Lagos's biggest music festival is back."
+          maxLength={150}
+          className={input}
+        />
+        <p className="text-[11px] text-zinc-400 mt-1.5 text-right tabular-nums">
+          {formData.headline.length}/150
+        </p>
       </div>
 
       {/* Category + Date */}
@@ -209,25 +221,31 @@ export function Step1BasicInfo({
         </div>
       )}
 
-      {/* Nav */}
-      <div className="flex items-center gap-3 pt-2">
+    </div>
+
+    {/* Sticky nav bar */}
+    <div
+      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50 shadow-[0_-4px_20px_rgb(0,0,0,0.05)]"
+      style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
+    >
+      <div className="max-w-3xl mx-auto flex justify-between items-center">
         <button
           type="button"
           disabled
           aria-disabled="true"
-          className="flex items-center gap-1.5 text-sm font-semibold text-zinc-300 cursor-not-allowed"
+          className="bg-white border border-zinc-200 text-zinc-300 font-bold py-3 px-8 rounded-full cursor-not-allowed text-sm"
         >
-          <BackIcon />
           Back
         </button>
         <button
           type="button"
           onClick={onNext}
-          className="flex-1 bg-violet-600 text-white text-sm font-bold py-4 rounded-2xl hover:bg-violet-700 active:bg-violet-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          className="bg-zinc-900 text-white font-bold py-3 px-8 rounded-full shadow-sm active:scale-95 transition-all text-sm"
         >
           Next: Cover Image →
         </button>
       </div>
     </div>
+    </>
   )
 }

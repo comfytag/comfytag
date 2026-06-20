@@ -3,6 +3,8 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { useAuthModal } from '@/hooks/useAuthModal'
 
 export interface BottomTabBarProps {
   currentPath: string
@@ -13,6 +15,7 @@ interface Tab {
   href: string
   icon: React.ReactNode
   ariaLabel: string
+  protected?: boolean
 }
 
 const TABS: Tab[] = [
@@ -42,6 +45,7 @@ const TABS: Tab[] = [
     label: 'Tickets',
     href: '/tickets',
     ariaLabel: 'My tickets',
+    protected: true,
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M2 7.5V20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-12.5" />
@@ -55,6 +59,7 @@ const TABS: Tab[] = [
     label: 'Profile',
     href: '/profile',
     ariaLabel: 'Profile',
+    protected: true,
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -74,6 +79,8 @@ function isActive(href: string, pathname: string): boolean {
 export function BottomTabBar({ currentPath }: BottomTabBarProps) {
   const pathname = usePathname()
   const path = currentPath || pathname
+  const { data: session } = useSession()
+  const { openModal } = useAuthModal()
 
   return (
     <>
@@ -131,10 +138,12 @@ export function BottomTabBar({ currentPath }: BottomTabBarProps) {
       <nav className="__ct_bottom_tab_bar" aria-label="Mobile navigation">
         {TABS.map((tab) => {
           const active = isActive(tab.href, path)
+          const blocked = tab.protected && !session
           return (
             <Link
               key={tab.href}
               href={tab.href}
+              onClick={blocked ? (e) => { e.preventDefault(); openModal('login') } : undefined}
               className={`__ct_bottom_tab_link ${active ? 'active' : ''}`}
               aria-label={tab.ariaLabel}
               aria-current={active ? 'page' : undefined}

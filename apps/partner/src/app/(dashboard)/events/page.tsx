@@ -119,7 +119,7 @@ export default function EventsPage() {
           placeholder="Search events…"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-white border border-zinc-200 shadow-sm rounded-full pl-10 pr-10 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow"
+          className="w-full bg-white border border-zinc-200 shadow-sm rounded-full pl-10 pr-10 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-shadow"
         />
         {searchQuery && (
           <button

@@ -202,6 +202,7 @@ export default async function EventDetailPage({
       relatedEvents={relatedEvents}
       initialComments={comments}
       initialHasMore={hasMore}
+      organizer={organizer ? { _id: organizer._id, name: organizer.name, image: organizer.avatar, username: organizer.username } : null}
     >
       <EventLineup performers={event.performers ?? []} />
       <Divider />

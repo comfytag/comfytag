@@ -21,24 +21,6 @@ interface Step3TiersProps {
   onPrev: () => void
 }
 
-function BackIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M19 12H5M12 5l-7 7 7 7" />
-    </svg>
-  )
-}
-
 export function Step3Tiers({
   formData,
   handleAddTier,
@@ -56,17 +38,18 @@ export function Step3Tiers({
 }: Step3TiersProps) {
   return (
     <>
-      <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-5">
+      <div className="max-w-3xl mx-auto bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl sm:rounded-[2.5rem] p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-black text-zinc-900">Ticket Tiers</h2>
-            <p className="text-sm text-zinc-500 mt-0.5">Set prices, names, and capacities</p>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 3 of 5</span>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Ticket Tiers</h2>
+            <p className="text-sm text-zinc-500 mb-8">Set prices, names, and capacities</p>
           </div>
           <button
             type="button"
             onClick={handleOpenTierModal}
-            className="flex items-center gap-1.5 text-sm font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 px-4 py-2 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            className="flex items-center gap-1.5 text-sm font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 px-4 py-2 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 shrink-0 mt-10"
           >
             <Plus size={14} aria-hidden="true" />
             Add Tier
@@ -75,7 +58,7 @@ export function Step3Tiers({
 
         {/* Tier list */}
         {formData.tiers.length === 0 ? (
-          <div className="border-2 border-dashed border-zinc-200 rounded-2xl p-8 text-center">
+          <div className="border-2 border-dashed border-zinc-200 rounded-3xl p-8 text-center">
             <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center mx-auto mb-3">
               <Plus size={18} className="text-zinc-400" aria-hidden="true" />
             </div>
@@ -99,7 +82,7 @@ export function Step3Tiers({
 
         {/* Tier count summary pill */}
         {formData.tiers.length > 0 && (
-          <div className="bg-violet-50 border border-violet-200 rounded-xl px-4 py-3 flex items-center justify-between">
+          <div className="bg-violet-50 border border-violet-200 rounded-2xl px-4 py-3 flex items-center justify-between">
             <span className="text-xs font-semibold text-violet-700">
               {formData.tiers.length} tier{formData.tiers.length > 1 ? 's' : ''} configured
             </span>
@@ -115,20 +98,25 @@ export function Step3Tiers({
         {/* Error */}
         {stepErrors && <ErrorMessage message={stepErrors} />}
 
-        {/* Nav */}
-        <div className="flex items-center gap-3 pt-2">
+      </div>
+
+      {/* Sticky nav bar */}
+      <div
+        className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50 shadow-[0_-4px_20px_rgb(0,0,0,0.05)]"
+        style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
+      >
+        <div className="max-w-3xl mx-auto flex justify-between items-center">
           <button
             type="button"
             onClick={onPrev}
-            className="flex items-center gap-1.5 text-sm font-semibold text-zinc-500 hover:text-zinc-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded-lg"
+            className="bg-white border border-zinc-200 text-zinc-700 font-bold py-3 px-8 rounded-full hover:bg-zinc-50 active:scale-95 transition-all text-sm"
           >
-            <BackIcon />
             Back
           </button>
           <button
             type="button"
             onClick={onNext}
-            className="flex-1 bg-violet-600 text-white text-sm font-bold py-4 rounded-2xl hover:bg-violet-700 active:bg-violet-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            className="bg-zinc-900 text-white font-bold py-3 px-8 rounded-full shadow-sm active:scale-95 transition-all text-sm"
           >
             Next: Event Details →
           </button>

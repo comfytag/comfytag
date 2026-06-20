@@ -12,9 +12,9 @@ interface SummaryCardProps {
 
 function SummaryCard({ title, onEdit, children }: SummaryCardProps) {
   return (
-    <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-4">
+    <div className="bg-zinc-50 border border-zinc-100 rounded-2xl p-4">
       <div className="flex items-start justify-between gap-2 mb-2">
-        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{title}</p>
+        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold">{title}</p>
         <button
           type="button"
           onClick={onEdit}
@@ -25,24 +25,6 @@ function SummaryCard({ title, onEdit, children }: SummaryCardProps) {
       </div>
       {children}
     </div>
-  )
-}
-
-function BackIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M19 12H5M12 5l-7 7 7 7" />
-    </svg>
   )
 }
 
@@ -75,18 +57,20 @@ export function Step5Summary({
     .join(', ') || '—'
 
   return (
-    <div className="space-y-5">
+    <>
+    <div className="max-w-3xl mx-auto space-y-5 mt-8 animate-in fade-in duration-300">
       {/* Celebratory launch header */}
-      <div className="bg-white border border-zinc-200 rounded-2xl p-8 text-center shadow-sm">
+      <div className="bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl sm:rounded-[2.5rem] p-8 text-center">
         <div className="text-5xl mb-4" aria-hidden="true">🚀</div>
-        <h2 className="text-2xl font-black text-zinc-900">Ready for launch?</h2>
-        <p className="text-zinc-500 mt-1.5 text-sm max-w-xs mx-auto">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 5 of 5</span>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Ready for launch?</h2>
+        <p className="text-sm text-zinc-500 mb-8 max-w-xs mx-auto">
           Review your event details below. You can always edit before publishing.
         </p>
       </div>
 
       {/* Summary sections */}
-      <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-3">
+      <div className="bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl sm:rounded-[2.5rem] p-6 space-y-3">
         <SummaryCard title="Event Info" onEdit={() => onGoToStep(1)}>
           <p className="text-sm font-bold text-zinc-900 leading-tight">{formData.name || '—'}</p>
           <p className="text-xs text-zinc-500 mt-1">{dateLabel}</p>
@@ -104,7 +88,7 @@ export function Step5Summary({
               {formData.images.slice(0, 4).map((url, i) => (
                 <div key={url} className="relative shrink-0">
                   {i === 0 && (
-                    <span className="absolute top-1 left-1 z-10 bg-violet-600 text-white text-[8px] font-black px-1 py-0.5 rounded-full uppercase pointer-events-none">
+                    <span className="absolute top-1 left-1 z-10 bg-violet-600 text-white text-[8px] font-bold px-1 py-0.5 rounded-full uppercase pointer-events-none">
                       Cover
                     </span>
                   )}
@@ -174,41 +158,41 @@ export function Step5Summary({
           <p className="text-sm text-red-600 font-medium">{stepErrors}</p>
         </div>
       )}
+    </div>
 
-      {/* CTAs */}
-      <div className="space-y-3">
-        {/* Primary — massive publish button */}
+    {/* Sticky launch bar */}
+    <div
+      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50 shadow-[0_-4px_20px_rgb(0,0,0,0.05)]"
+      style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
+    >
+      <div className="max-w-3xl mx-auto flex flex-col gap-2">
         <button
           type="button"
           onClick={() => onSubmit('published')}
           disabled={isPending}
-          className="w-full bg-violet-600 text-white font-black text-base py-5 rounded-full hover:bg-violet-700 active:bg-violet-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-200 hover:shadow-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+          className="w-full bg-zinc-900 text-white font-bold py-3 px-8 rounded-full shadow-sm active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
         >
           {isPending ? 'Launching…' : '🚀 Publish Event'}
         </button>
-
-        {/* Secondary — save as draft */}
-        <button
-          type="button"
-          onClick={() => onSubmit('draft')}
-          disabled={isPending}
-          className="w-full text-sm font-semibold text-zinc-500 hover:text-zinc-700 py-3 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          Save as Draft Instead
-        </button>
-
-        {/* Back */}
-        <div className="flex justify-center">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onPrev}
-            className="flex items-center gap-1.5 text-sm font-semibold text-zinc-400 hover:text-zinc-600 transition-colors"
+            className="bg-white border border-zinc-200 text-zinc-700 font-bold py-2.5 px-6 rounded-full hover:bg-zinc-50 active:scale-95 transition-all text-sm"
           >
-            <BackIcon />
-            Back to Details
+            Back
+          </button>
+          <button
+            type="button"
+            onClick={() => onSubmit('draft')}
+            disabled={isPending}
+            className="flex-1 text-sm font-semibold text-zinc-500 hover:text-zinc-700 transition-colors text-center disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Save as Draft
           </button>
         </div>
       </div>
     </div>
+    </>
   )
 }

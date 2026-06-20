@@ -213,13 +213,6 @@ body {
   -moz-osx-font-smoothing:   grayscale;
 }
 
-/* Focus ring — WCAG AA requirement */
-:focus-visible {
-  outline:        2px solid var(--ring);
-  outline-offset: 2px;
-  border-radius:  var(--radius-sm);
-}
-
 /* ─────────────────────────────────────────────────────────────────
    Custom utilities
    ───────────────────────────────────────────────────────────────── */

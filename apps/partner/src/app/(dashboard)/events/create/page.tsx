@@ -32,7 +32,7 @@ export default function CreateEventPage() {
   const wizard = useCreateEventWizard()
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-slate-50 text-zinc-900 pb-44 md:pb-8">
       {/* Page header */}
       <div className="flex items-center gap-4">
         <Link
@@ -43,7 +43,7 @@ export default function CreateEventPage() {
           Events
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-black text-zinc-900 tracking-tight">Launch Wizard</h1>
+          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Launch Wizard</h1>
           <p className="text-sm text-zinc-500 mt-0.5">Build your event in 5 steps</p>
         </div>
       </div>

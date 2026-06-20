@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useContext } from 'react'
 import Link from 'next/link'
+
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { NotificationContext } from '@/contexts/NotificationContext'
@@ -56,7 +57,8 @@ export default function FloatingIslandNav() {
     >
       {/* Logo */}
       <Link href="/overview" className="flex items-center shrink-0" aria-label="ComfyTag Studio home">
-        <span className="font-black text-white text-lg tracking-tight mr-2 pl-2">comfytag</span>
+        {/* <span className="font-black text-white text-lg tracking-tight mr-2 pl-2">comfytag</span> */}
+          <img alt="ComfyTag" className="w-auto h-8 object-contain" src="/logo.png" />
       </Link>
 
       {/* Primary nav links */}

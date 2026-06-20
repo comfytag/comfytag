@@ -20,9 +20,9 @@ import type { CreateEventFormData, TierInput } from '@/hooks/useCreateEventWizar
 const fieldLabel =
   'block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2'
 const inputCls =
-  'w-full bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none transition-colors'
+  'w-full bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none transition-colors'
 const selectCls =
-  'w-full appearance-none bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3.5 pr-10 text-sm text-zinc-900 focus:outline-none transition-colors cursor-pointer'
+  'w-full appearance-none bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3.5 pr-10 text-sm text-zinc-900 focus:outline-none focus-visible:outline-none transition-colors cursor-pointer'
 
 const VIBES = [
   { key: 'Hype',         label: '🔥 Hype' },
@@ -133,7 +133,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
 
   // ── Form state ──────────────────────────────────────────────────────────────
   const [form, setForm] = useState({
-    name: '', category: '', date: '', startTime: '', endTime: '',
+    name: '', headline: '', category: '', date: '', startTime: '', endTime: '',
     venue: '', address: '', state: '', description: '',
   })
   const [images,       setImages]       = useState<string[]>([])
@@ -162,6 +162,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
 
     setForm({
       name:        event.name ?? '',
+      headline:    event.headline ?? '',
       category:    event.category ?? '',
       date:        event.date ? new Date(event.date).toISOString().split('T')[0] : '',
       startTime:   event.startTime ?? '',
@@ -192,6 +193,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
   // ── Reactive preview data ────────────────────────────────────────────────────
   const previewData: CreateEventFormData = {
     name:        form.name,
+    headline:    form.headline,
     category:    form.category,
     date:        form.date,
     startTime:   form.startTime,
@@ -323,6 +325,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
     setError('')
     mutation.mutate({
       name:        form.name,
+      headline:    form.headline || undefined,
       category:    form.category,
       description: form.description,
       date:        form.date,

@@ -321,7 +321,7 @@ export default async function HomePage() {
       {/* <HomeClientShell /> */}
       <main>
         <HomeFeedClient events={events} categories={categories} />
-        <TestimonialsSection testimonials={testimonials} />
+        {/* <TestimonialsSection testimonials={testimonials} /> */}
       </main>
       <Footer />
     </>

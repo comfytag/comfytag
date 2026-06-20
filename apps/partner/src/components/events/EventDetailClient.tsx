@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -8,9 +8,14 @@ import { useSession } from 'next-auth/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
+  BarChart2,
   CheckCircle2,
   ChevronRight,
+  Megaphone,
+  Pencil,
   Plus,
+  Tag,
+  Ticket,
   Trash2,
   User,
 } from 'lucide-react'
@@ -119,7 +124,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
   const coverImage = event.coverImage ?? event.images?.[0]
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-8 pb-24 px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="min-h-screen bg-slate-50 pt-8 pb-24 px-4 sm:px-6 lg:px-8 space-y-8 max-w-5xl mx-auto">
 
       {/* ── Top Bar ──────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -294,25 +299,48 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
         <div className="lg:col-span-5 space-y-5">
 
           {/* Quick Actions — 2 × 2 grid */}
-          <div className="grid grid-cols-2 gap-3">
-            <QuickAction href={`/events/${eventId}/gate`}      emoji="🔴" label="Activate Gate" />
-            <QuickAction href={`/events/${eventId}/analytics`} emoji="📊" label="Analytics" />
-            <QuickAction emoji="📣" label="Promote" disabled />
-            <QuickAction href={`/events/${eventId}/promos`}    emoji="🎁" label="Create Promo" />
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+            <QuickAction
+              href={`/events/${eventId}/gate`}
+              icon={<Ticket className="w-5 h-5 text-[#FE3503] shrink-0" strokeWidth={2.4} />}
+              label="Activate Gate"
+            />
+            <QuickAction
+              href={`/events/${eventId}/analytics`}
+              icon={<BarChart2 className="w-5 h-5 text-blue-600 shrink-0" strokeWidth={2.4} />}
+              label="Analytics"
+            />
+            <QuickAction
+              icon={<Megaphone className="w-5 h-5 text-zinc-400 shrink-0" strokeWidth={2.4} />}
+              label="Promote"
+              disabled
+            />
+            <QuickAction
+              href={`/events/${eventId}/promos`}
+              icon={<Tag className="w-5 h-5 text-violet-600 shrink-0" strokeWidth={2.4} />}
+              label="Create Promo"
+            />
           </div>
 
           {/* Status Controls */}
           {currentStatus !== 'cancelled' && currentStatus !== 'ended' && (
-            <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm space-y-3">
-              <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
-                Status Controls
+            <div className="bg-white border border-zinc-200/60 rounded-2xl sm:rounded-4xl p-5 sm:p-6 shadow-sm">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-400 mb-4 block">
+                STATUS CONTROLS
               </span>
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
+                <Link
+                  href={`/events/${eventId}/edit`}
+                  className="w-full bg-zinc-900 text-white font-bold py-3 rounded-full hover:bg-zinc-800 active:scale-95 transition-all text-[13px] sm:text-sm flex justify-center items-center gap-2 mb-3"
+                >
+                  <Pencil className="w-4 h-4" strokeWidth={2.4} />
+                  Edit Event
+                </Link>
                 {currentStatus === 'draft' && (
                   <button
                     disabled={statusMutation.isPending}
                     onClick={() => statusMutation.mutate('published')}
-                    className="w-full py-2.5 px-4 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
+                    className="w-full bg-zinc-100 text-zinc-800 font-bold py-3 rounded-full hover:bg-zinc-200 transition-all text-[13px] sm:text-sm flex justify-center disabled:opacity-50 cursor-pointer"
                   >
                     {statusMutation.isPending ? 'Publishing…' : 'Publish Event'}
                   </button>
@@ -321,7 +349,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
                   <button
                     disabled={statusMutation.isPending}
                     onClick={() => statusMutation.mutate('draft')}
-                    className="w-full py-2.5 px-4 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
+                    className="w-full bg-zinc-100 text-zinc-800 font-bold py-3 rounded-full hover:bg-zinc-200 transition-all text-[13px] sm:text-sm flex justify-center disabled:opacity-50 cursor-pointer"
                   >
                     {statusMutation.isPending ? 'Updating…' : 'Move to Draft'}
                   </button>
@@ -329,7 +357,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
                 <button
                   disabled={statusMutation.isPending}
                   onClick={() => statusMutation.mutate('cancelled')}
-                  className="w-full py-2.5 px-4 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold rounded-xl transition-colors disabled:opacity-50 border border-red-200 cursor-pointer"
+                  className="w-full bg-red-50 text-red-600 font-bold py-3 rounded-full border border-red-100 hover:bg-red-100 transition-all text-[13px] sm:text-sm flex justify-center disabled:opacity-50 cursor-pointer"
                 >
                   {statusMutation.isPending ? 'Cancelling…' : 'Cancel Event'}
                 </button>
@@ -436,27 +464,23 @@ function TierRow({ name, sold, capacity, price, pct }: TierRowProps) {
 // ── QuickAction ───────────────────────────────────────────────────────────────
 
 interface QuickActionProps {
-  emoji: string
+  icon: ReactNode
   label: string
   href?: string
   disabled?: boolean
 }
 
-function QuickAction({ emoji, label, href, disabled = false }: QuickActionProps) {
+function QuickAction({ icon, label, href, disabled = false }: QuickActionProps) {
   const inner = (
     <div
-      className={`flex flex-col items-center gap-2 bg-white border border-zinc-200 rounded-2xl p-5 transition-all group
+      className={`flex flex-row items-center justify-start gap-3 bg-white border border-zinc-200/60 rounded-2xl sm:rounded-4xl p-4 sm:p-5 shadow-sm transition-all
         ${disabled
-          ? 'opacity-50 cursor-not-allowed'
-          : 'hover:border-violet-300 hover:shadow-md cursor-pointer'
+          ? 'opacity-40 grayscale pointer-events-none'
+          : 'hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] active:scale-95 cursor-pointer'
         }`}
     >
-      <span className="text-2xl select-none">{emoji}</span>
-      <span
-        className={`text-sm font-bold text-zinc-800 text-center leading-tight ${
-          disabled ? '' : 'group-hover:text-violet-700 transition-colors'
-        }`}
-      >
+      {icon}
+      <span className="text-[13px] sm:text-sm font-bold text-zinc-800 leading-none">
         {label}
       </span>
     </div>
@@ -504,6 +528,7 @@ function EditDetailsForm({ event, eventId, onClose }: EditDetailsFormProps) {
 
   const [form, setForm] = useState({
     name:      event.name ?? '',
+    headline:  event.headline ?? '',
     category:  event.category ?? '',
     description: event.description ?? '',
     date:      event.date ? new Date(event.date).toISOString().split('T')[0] : '',
@@ -594,6 +619,34 @@ function EditDetailsForm({ event, eventId, onClose }: EditDetailsFormProps) {
           placeholder="e.g. Summer Festival 2025"
           className={sheetInput}
         />
+      </div>
+
+      {/* Headline */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <label htmlFor="sheet-headline" className={sheetLabel}>
+            Headline <span className="text-zinc-400 font-normal normal-case">(optional)</span>
+          </label>
+          <button
+            type="button"
+            onClick={() => console.log('AI enhance headline')}
+            className="text-xs font-bold text-violet-600 bg-violet-50 px-2 py-1 rounded-full hover:bg-violet-100 transition-colors cursor-pointer"
+          >
+            ✨ Enhance
+          </button>
+        </div>
+        <input
+          id="sheet-headline"
+          type="text"
+          value={form.headline}
+          onChange={e => setForm({ ...form, headline: e.target.value })}
+          placeholder="e.g. Lagos's biggest music festival is back."
+          maxLength={150}
+          className={sheetInput}
+        />
+        <p className="text-[11px] text-zinc-400 mt-1 text-right tabular-nums">
+          {form.headline.length}/150
+        </p>
       </div>
 
       {/* Category + Date */}

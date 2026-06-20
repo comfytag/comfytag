@@ -15,9 +15,15 @@ interface EventMetaProps {
 export function EventMeta({ event, isLiked, likeCount, onLike }: EventMetaProps) {
   return (
     <div>
-      <h1 className="text-[26px] font-bold tracking-tight text-zinc-900 leading-tight mb-4">
+      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 leading-tight mb-2 capitalize">
         {event.name}
       </h1>
+
+      {event.headline && (
+        <p className="text-lg sm:text-xl font-medium text-zinc-500 mb-6 leading-relaxed">
+          {event.headline}
+        </p>
+      )}
 
       {/* Date row */}
       <div className="flex items-center gap-3 mb-3">
@@ -35,7 +41,7 @@ export function EventMeta({ event, isLiked, likeCount, onLike }: EventMetaProps)
         <div className="p-2 bg-violet-50 text-violet-600 rounded-full shrink-0 mt-0.5">
           <MapPinIcon />
         </div>
-        <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold leading-relaxed">
+        <span className="text-[10px] font-mono capitalize tracking-widest text-zinc-500 font-semibold leading-relaxed">
           {event.venue}
           {event.address ? `, ${event.address}` : ''}
           {event.state ? `, ${event.state}` : ''}

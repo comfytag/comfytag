@@ -26,19 +26,11 @@ const VIBES = [
 
 const AI_LIMIT = 3
 
-const fieldLabel = 'block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2'
+const fieldLabel = 'block text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider mb-2'
 const inputCls =
-  'w-full bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none transition-colors resize-none'
+  'w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none resize-none'
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
-
-function BackIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M19 12H5M12 5l-7 7 7 7" />
-    </svg>
-  )
-}
 
 function SpinnerIcon() {
   return (
@@ -72,7 +64,7 @@ function Toast({ message, onDismiss }: ToastProps) {
   return (
     <div
       role="alert"
-      className="fixed bottom-6 right-6 z-[100] flex items-center gap-3 bg-zinc-900 text-white text-sm font-medium px-4 py-3 rounded-2xl shadow-2xl border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 max-w-xs"
+      className="fixed bottom-6 right-6 z-100 flex items-center gap-3 bg-zinc-900 text-white text-sm font-medium px-4 py-3 rounded-2xl shadow-2xl border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 max-w-xs"
     >
       <span className="text-red-400 shrink-0" aria-hidden="true">⚠</span>
       {message}
@@ -168,10 +160,11 @@ export function Step4Details({
 
   return (
     <>
-      <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-5">
+      <div className="max-w-3xl mx-auto bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl sm:rounded-[2.5rem] p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
         <div>
-          <h2 className="text-xl font-black text-zinc-900">Event Details</h2>
-          <p className="text-sm text-zinc-500 mt-0.5">Description, lineup, and visibility</p>
+          <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 4 of 5</span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Event Details</h2>
+          <p className="text-sm text-zinc-500 mb-8">Description, lineup, and visibility</p>
         </div>
 
         {/* Description + AI Enhance */}
@@ -192,7 +185,7 @@ export function Step4Details({
               >
                 {/* Popover header */}
                 <div className="flex items-start justify-between mb-1">
-                  <p className="text-xs font-black text-zinc-900">Choose a vibe</p>
+                  <p className="text-xs font-bold text-zinc-900">Choose a vibe</p>
                   <span
                     className={`text-[10px] font-bold tabular-nums whitespace-nowrap ${
                       aiUsesLeft > 0 ? 'text-violet-600' : 'text-zinc-400'
@@ -299,13 +292,13 @@ export function Step4Details({
               onChange={(e) => setPerformerInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Add performer and press Enter"
-              className="flex-1 bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none transition-colors"
+              className="flex-1 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none"
             />
             <button
               type="button"
               onClick={handleAddPerformer}
               aria-label="Add performer"
-              className="w-12 h-12 flex items-center justify-center bg-violet-50 border-2 border-violet-200 hover:bg-violet-100 rounded-xl text-violet-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 shrink-0 mt-0.5"
+              className="w-12 h-12 flex items-center justify-center bg-violet-50 border border-violet-200 hover:bg-violet-100 rounded-full text-violet-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 shrink-0 mt-0.5"
             >
               <Plus size={16} aria-hidden="true" />
             </button>
@@ -385,20 +378,25 @@ export function Step4Details({
           </div>
         )}
 
-        {/* Nav */}
-        <div className="flex items-center gap-3 pt-2">
+      </div>
+
+      {/* Sticky nav bar */}
+      <div
+        className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50 shadow-[0_-4px_20px_rgb(0,0,0,0.05)]"
+        style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
+      >
+        <div className="max-w-3xl mx-auto flex justify-between items-center">
           <button
             type="button"
             onClick={onPrev}
-            className="flex items-center gap-1.5 text-sm font-semibold text-zinc-500 hover:text-zinc-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded-lg"
+            className="bg-white border border-zinc-200 text-zinc-700 font-bold py-3 px-8 rounded-full hover:bg-zinc-50 active:scale-95 transition-all text-sm"
           >
-            <BackIcon />
             Back
           </button>
           <button
             type="button"
             onClick={onNext}
-            className="flex-1 bg-violet-600 text-white text-sm font-bold py-4 rounded-2xl hover:bg-violet-700 active:bg-violet-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            className="bg-zinc-900 text-white font-bold py-3 px-8 rounded-full shadow-sm active:scale-95 transition-all text-sm"
           >
             Review & Launch →
           </button>

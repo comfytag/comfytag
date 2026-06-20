@@ -118,7 +118,7 @@ export function EventInteractiveSection({
   }, [session])
 
   const { openModal } = useAuthModal()
-  const { isLiked, likeCount, toggleLike } = useLike(event._id, false, event.sold)
+  const { isLiked, likeCount, toggleLike } = useLike(event._id, false, event.likes ?? 0)
   const { gateOpen, gateTrigger, openGate, closeGate } = useAuthGate()
 
   const handleLike = async () => {

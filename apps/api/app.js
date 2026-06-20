@@ -15,12 +15,16 @@ import { testRedisConnection } from './jobs/emailQueue.js'
 // Validate environment at startup (fail fast if missing env vars)
 await validateEnvironment()
 
-// Test Redis connectivity on every startup — queue crashes in dev are caught early too
-try {
-  await testRedisConnection()
-} catch (err) {
-  console.error(`\n❌ Startup failed: ${err.message}\n`)
-  process.exit(1)
+// Only verify Redis when the email queue is active (production)
+if (config.features.emailQueue) {
+  try {
+    await testRedisConnection()
+  } catch (err) {
+    console.error(`\n❌ Startup failed: ${err.message}\n`)
+    process.exit(1)
+  }
+} else {
+  console.log(`[Email Queue] Skipped in ${config.env} mode — Redis not required`)
 }
 
 const connect = async () => {

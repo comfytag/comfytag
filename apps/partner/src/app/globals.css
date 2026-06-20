@@ -141,9 +141,3 @@ body {
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
 }
-
-/* Smooth focus rings using the primary ring color */
-:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}

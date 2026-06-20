@@ -21,6 +21,7 @@ export interface DetailsState {
 export interface CreateEventFormData {
   // Step 1: Basic Info
   name: string
+  headline: string
   category: string
   date: string
   startTime: string
@@ -85,6 +86,7 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
   // Form state
   const [formData, setFormData] = useState<CreateEventFormData>({
     name: '',
+    headline: '',
     category: '',
     date: '',
     startTime: '',
@@ -268,6 +270,7 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
   function handleSubmit(status: 'draft' | 'published') {
     mutate({
       name: formData.name,
+      headline: formData.headline || undefined,
       category: formData.category,
       description: formData.description,
       date: formData.date,

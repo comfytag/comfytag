@@ -31,11 +31,11 @@ export function formatTime(timeString: string | null | undefined): string {
   const trimmed = timeString.trim()
   if (TIME_ONLY_RE.test(trimmed)) {
     const d = new Date(`1970-01-01 ${trimmed}`)
-    if (isNaN(d.getTime())) return trimmed
+    if (isNaN(d.getTime())) return ''
     return d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })
   }
   const d = new Date(trimmed)
-  if (isNaN(d.getTime())) return trimmed
+  if (isNaN(d.getTime())) return ''
   return d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })
 }
 
@@ -49,7 +49,8 @@ export function isToday(dateString: string): boolean {
   )
 }
 
-export function isUpcoming(dateString: string): boolean {
+export function isUpcoming(dateString: string | null | undefined): boolean {
+  if (!dateString) return false
   return new Date(dateString) > new Date()
 }
 

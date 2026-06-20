@@ -227,7 +227,7 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search name, email, or ticket ref…"
-              className="w-full bg-zinc-50 border border-zinc-200 rounded-3xl px-6 py-4 text-zinc-900 font-mono focus:bg-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 transition-all placeholder:text-zinc-400 focus:outline-none"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-3xl px-6 py-4 text-zinc-900 font-mono focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none"
               autoComplete="off"
               spellCheck={false}
             />

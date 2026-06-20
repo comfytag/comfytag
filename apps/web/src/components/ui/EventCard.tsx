@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { MapPin, Heart } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import type { Event } from '@comfytag/types'
 import { formatDate, formatTime, formatNaira } from '@comfytag/utils'
 
@@ -39,10 +39,19 @@ export function EventCard({
 
   const dateKicker = `${formatDate(event.date)} · ${formatTime(event.startTime)}`
   const overline = event.category ? `${event.category} · ${dateKicker}` : dateKicker
+  const isPast = !!(event.date || event.event_date) && new Date(event.date || event.event_date || '') < new Date()
+
+  const topBadgeLabel = isSoldOut
+    ? 'Sold Out'
+    : isTrending
+      ? 'Selling Fast'
+      : soldPct > 0 && !isPast
+        ? `${Math.round(soldPct * 100)}% sold`
+        : null
 
   const content = (
     <article
-      className="group flex flex-col bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full"
+      className="group relative block w-full aspect-[4/5] sm:aspect-[3/4] rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-1 bg-zinc-900"
       onClick={onSelect}
       role={onSelect ? 'button' : undefined}
       tabIndex={onSelect ? 0 : undefined}
@@ -53,99 +62,81 @@ export function EventCard({
         }
       }}
     >
-      {/* Image area */}
-      <div className="relative w-full aspect-4/3 sm:aspect-video overflow-hidden bg-zinc-100">
-        <Image
-          src={imageSrc}
-          alt={event.name}
-          fill
-          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-          sizes={
-            compact
-              ? '(max-width: 768px) 50vw, 25vw'
-              : '(max-width: 768px) 100vw, 50vw'
-          }
-        />
+      {/* Full-bleed image */}
+      <Image
+        src={imageSrc}
+        alt={event.name}
+        fill
+        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        sizes={
+          compact
+            ? '(max-width: 768px) 50vw, 25vw'
+            : '(max-width: 768px) 100vw, 50vw'
+        }
+      />
 
-        {/* Sold-out overlay pill */}
-        {isSoldOut && (
-          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide backdrop-blur-md bg-black/70 text-zinc-300">
-            Sold Out
-          </div>
-        )}
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
 
-        {/* Like button */}
-        {onLike && (
-          <button
-            type="button"
-            aria-label={isLiked ? 'Unlike event' : 'Like event'}
-            aria-pressed={isLiked}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              void onLike(event._id)
-            }}
-            className="absolute top-3 right-3 p-2.5 rounded-full bg-white/80 hover:bg-white backdrop-blur-md transition-colors"
-          >
-            <Heart
-              className="w-4 h-4"
-              fill={isLiked ? '#EF4444' : 'none'}
-              stroke={isLiked ? '#EF4444' : '#a1a1aa'}
-              strokeWidth={1.5}
-              aria-hidden="true"
-            />
-          </button>
-        )}
-      </div>
+      {/* Top-left status badge */}
+      {topBadgeLabel && (
+        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-zinc-900 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm">
+          {topBadgeLabel}
+        </div>
+      )}
 
-      {/* Content area */}
-      <div className="p-5 flex flex-col flex-1">
-        {/* Date + Category overline */}
-        <p className="text-[10px] font-mono uppercase tracking-widest text-orange-600 font-bold">
-          {overline}
-        </p>
-
-        {/* Title */}
-        <h3 className="text-lg font-bold tracking-tight text-zinc-900 line-clamp-1 mt-1.5">
-          {event.name}
-        </h3>
-
-        {/* Venue row */}
-        <div className="flex items-center gap-1.5 mt-1.5">
-          <MapPin
-            className="w-3.5 h-3.5 shrink-0 text-zinc-400"
+      {/* Top-right heart button */}
+      {onLike && (
+        <button
+          type="button"
+          aria-label={isLiked ? 'Unlike event' : 'Like event'}
+          aria-pressed={isLiked}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            void onLike(event._id)
+          }}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white"
+        >
+          <Heart
+            className="w-4 h-4"
+            fill={isLiked ? '#EF4444' : 'none'}
+            stroke={isLiked ? '#EF4444' : 'white'}
             strokeWidth={1.5}
             aria-hidden="true"
           />
-          <span className="text-xs font-medium text-zinc-500 truncate capitalize">{event.venue}</span>
-        </div>
+        </button>
+      )}
 
-        {/* Footer — price + status pill */}
-        <div className="mt-auto border-t border-zinc-100 pt-3 flex items-center justify-between gap-2">
-          {/* Price block */}
+      {/* Bottom content block */}
+      <div className="absolute bottom-0 inset-x-0 p-5 flex flex-col justify-end">
+        {/* Date / time */}
+        <p className="text-xs font-mono font-medium text-zinc-300 mb-1.5">{overline}</p>
+
+        {/* Title */}
+        <h3 className="text-lg font-bold sm:text-xl tracking-tight text-white line-clamp-2 leading-tight mb-2 capitalize">
+          {event.name}
+        </h3>
+
+        {/* Headline tagline */}
+        {event.headline && (
+          <p className="text-sm text-zinc-300 line-clamp-2 leading-snug mb-3">{event.headline}</p>
+        )}
+
+        {/* Venue */}
+        <p className="text-sm font-medium text-zinc-400 mb-5 truncate capitalize">{event.venue}</p>
+
+        {/* Footer row — price + CTA */}
+        <div className="flex items-center justify-between mt-auto">
           {lowestPrice === 0 ? (
-            <span className="text-sm font-bold text-emerald-600">Free</span>
+            <span className="text-xl font-bold text-white">Free</span>
           ) : (
-            <div className="flex items-baseline gap-0.5">
-              <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">from</span>
-              <span className="text-sm font-bold text-zinc-900 ml-1">{formatNaira(lowestPrice)}</span>
-            </div>
+            <span className="text-xl font-bold text-white">{formatNaira(lowestPrice)}</span>
           )}
 
-          {/* Status pill */}
-          {isSoldOut ? (
-            <span className="px-2.5 py-1 bg-zinc-100 text-zinc-400 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0">
-              Sold Out
-            </span>
-          ) : isTrending ? (
-            <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0">
-              Selling Fast
-            </span>
-          ) : soldPct > 0 ? (
-            <span className="px-2.5 py-1 bg-zinc-100 text-zinc-600 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0">
-              {Math.round(soldPct * 100)}% sold
-            </span>
-          ) : null}
+          <span className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/10 text-white px-5 py-2.5 rounded-full text-sm font-bold transition-colors">
+            {isPast ? 'View Recap' : 'Get Tickets'}
+          </span>
         </div>
       </div>
     </article>

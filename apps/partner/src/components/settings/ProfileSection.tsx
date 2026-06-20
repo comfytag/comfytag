@@ -12,7 +12,7 @@ interface Props {
 }
 
 const INPUT_CLASS =
-  'w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 transition-all placeholder:text-zinc-400 focus:outline-none disabled:opacity-50'
+  'w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none disabled:opacity-50'
 const LABEL_CLASS =
   'block text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider mb-2'
 

@@ -70,7 +70,9 @@ export interface Event {
   planner: string
   category: string
   description?: string
+  headline?: string
   date: string
+  event_date?: string
   startTime: string
   endTime: string
   venue: string
@@ -86,6 +88,7 @@ export interface Event {
   gateRules?: string[]
   status: 'draft' | 'published' | 'ended' | 'cancelled'
   sold: number
+  likes?: number
   featured: boolean
   createdAt: string
   updatedAt: string
