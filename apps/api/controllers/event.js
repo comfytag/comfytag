@@ -502,9 +502,8 @@ export const getAllEvents = async (req, res, next) => {
           query.date = { $lt: new Date() }
         } else {
           query.$or = [
-            { date: { $exists: false } },
-            { date: null },
-            { date: { $gte: new Date() } }
+            { date: { $gte: new Date() } },
+            { event_date: { $gte: new Date() } }
           ]
         }
 
@@ -783,6 +782,10 @@ export const getEventFeed = async (req, res, next) => {
     const query = {
       status: 'published',
       'ticketType.0': { $exists: true },
+      $or: [
+        { date: { $gte: new Date() } },
+        { event_date: { $gte: new Date() } }
+      ]
     }
 
     // Filter by state/location if provided
@@ -817,18 +820,21 @@ export const getEventsByState = async (req, res, next) => {
 
     const skip = (parseInt(page) - 1) * parseInt(limit)
 
-    const events = await Event.find({
+    const stateQuery = {
       status: 'published',
       state: { $regex: state, $options: 'i' },
-    })
+      $or: [
+        { date: { $gte: new Date() } },
+        { event_date: { $gte: new Date() } }
+      ]
+    }
+
+    const events = await Event.find(stateQuery)
       .sort({ date: 1 })
       .limit(parseInt(limit))
       .skip(skip)
 
-    const total = await Event.countDocuments({
-      status: 'published',
-      state: { $regex: state, $options: 'i' },
-    })
+    const total = await Event.countDocuments(stateQuery)
 
     res.status(200).json({
       events,

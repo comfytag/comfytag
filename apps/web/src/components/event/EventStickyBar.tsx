@@ -13,9 +13,8 @@ interface EventStickyBarProps {
 export function EventStickyBar({ isVisible, minPrice, allSoldOut, onGetTickets }: EventStickyBarProps) {
   return (
     <div
-      className="fixed bottom-0 inset-x-0 bg-white/90 backdrop-blur-xl border-t border-zinc-200/80 px-4 pt-4 flex justify-between items-center z-50 shadow-[0_-4px_20px_rgb(0,0,0,0.05)] transition-transform duration-300"
+      className="fixed bottom-[68px] inset-x-0 bg-white/90 backdrop-blur-xl border-t border-zinc-200/80 p-3 z-40 shadow-[0_-8px_30px_rgb(0,0,0,0.06)] flex justify-between items-center transition-transform duration-300 md:hidden"
       style={{
-        paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
         transform: isVisible ? 'translateY(0)' : 'translateY(100%)',
       }}
       data-testid="event-sticky-bar"

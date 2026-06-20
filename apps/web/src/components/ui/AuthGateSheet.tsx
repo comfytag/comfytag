@@ -111,15 +111,11 @@ export function AuthGateSheet({
         </a>
 
         {/* Sign in via modal */}
-        <button
-          type="button"
-          onClick={openLogin}
-          style={{ display: 'block', width: '100%', marginBottom: '20px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-        >
-          <Button variant="ghost" fullWidth>
+        <div style={{ marginBottom: '20px' }}>
+          <Button variant="ghost" fullWidth onClick={openLogin}>
             Sign in with email
           </Button>
-        </button>
+        </div>
 
         {/* Create account */}
         <div style={{ textAlign: 'center' }}>
