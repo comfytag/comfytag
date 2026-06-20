@@ -148,9 +148,6 @@ function TrendingCarousel({ events }: { events: Event[] }) {
       <div className="flex overflow-x-auto gap-4 pb-3 scrollbar-hide snap-x snap-mandatory scroll-smooth -mx-1 px-1">
         {events.map((event) => (
           <div key={event._id} className="shrink-0 w-[260px] snap-start relative rounded-2xl overflow-hidden">
-            <span className="absolute top-3 left-3 z-10 bg-amber-500 text-black text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider shadow-sm animate-pulse">
-              Low Tickets
-            </span>
             <EventCard event={event} href={`/events/${event.slug ?? event._id}`} />
           </div>
         ))}
@@ -637,7 +634,6 @@ export function EventsBrowseClient({
   const [visibleCount, setVisibleCount] = useState(DESKTOP_PAGE_SIZE)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const isFirstRender = useRef(true)
 
   // Detect mobile viewport and sync visibleCount
   useEffect(() => {
@@ -722,7 +718,6 @@ export function EventsBrowseClient({
   )
 
   useEffect(() => {
-    if (isFirstRender.current) { isFirstRender.current = false; return }
     if (debounceRef.current) clearTimeout(debounceRef.current)
     // Reset pagination on new filter query
     setVisibleCount(isMobileView ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE)
@@ -1201,11 +1196,6 @@ export function EventsBrowseClient({
                 <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
                   {visibleEvents.map((event) => (
                     <div key={event._id} className="relative">
-                      {timeFrame === 'upcoming' && isLowTickets(event) && (
-                        <span className="absolute top-3 left-3 bg-amber-500 text-black text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider z-10 shadow-sm animate-pulse">
-                          Low Tickets
-                        </span>
-                      )}
                       <EventCard
                         event={event}
                         href={`/events/${event.slug ?? event._id}`}

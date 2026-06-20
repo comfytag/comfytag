@@ -31,7 +31,7 @@ export function EventFeedSection({
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const { gateOpen, closeGate, openGate } = useAuthGate()
   const { mutate: likeMutate } = useLikeEvent()
-  const eventList = initialEvents.length > 0 ? initialEvents : events
+  const eventList = events.length > 0 ? events : initialEvents
 
   // Tonight row (compact horizontal scroll)
   const tonight = useMemo(
@@ -47,7 +47,7 @@ export function EventFeedSection({
   const allUpcomingEvents = useMemo(
     () =>
       eventList
-        .filter((e) => e.status === 'published' && isUpcoming(e.date) && (!activeCategory || e.category.toLowerCase() === activeCategory.toLowerCase()))
+        .filter((e) => e.status === 'published' && isUpcoming(e.date || e.event_date) && (!activeCategory || e.category.toLowerCase() === activeCategory.toLowerCase()))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
     [eventList, activeCategory]
   )
@@ -59,8 +59,8 @@ export function EventFeedSection({
         .filter(
           (e) =>
             e.status === 'published' &&
-            !!e.date &&
-            !isUpcoming(e.date) &&
+            !!(e.date || e.event_date) &&
+            !isUpcoming(e.date || e.event_date) &&
             (!activeCategory || e.category.toLowerCase() === activeCategory.toLowerCase())
         )
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
