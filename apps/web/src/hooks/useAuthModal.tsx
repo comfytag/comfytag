@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback } from 'react'
 
-export type AuthModalView = 'login' | 'register' | 'forgot_password'
+export type AuthModalView = 'login' | 'register' | 'forgot_password' | 'verify_email'
 export type AuthModalSuccessBanner = 'registered' | 'password-reset' | null
 
 interface AuthModalState {

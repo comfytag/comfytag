@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Button, Input, ErrorMessage } from '@comfytag/ui'
@@ -10,6 +10,7 @@ import type { AuthModalSuccessBanner } from '@/hooks/useAuthModal'
 export interface LoginFormProps {
   onSwitchToRegister: () => void
   onSwitchToForgotPassword: () => void
+  onSwitchToVerifyEmail?: (email: string, password: string) => void
   /** Called after successful sign-in. If omitted, falls back to router.push(callbackUrl). */
   onSuccess?: () => void
   initialEmail?: string
@@ -20,6 +21,7 @@ export interface LoginFormProps {
 export function LoginForm({
   onSwitchToRegister,
   onSwitchToForgotPassword,
+  onSwitchToVerifyEmail,
   onSuccess,
   initialEmail = '',
   successBanner,
@@ -32,6 +34,16 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [magicSent, setMagicSent] = useState(false)
+  const isVerificationError = !!error && error.toLowerCase().includes('not verified')
+
+  useEffect(() => {
+    if (!isVerificationError) return
+    if (onSwitchToVerifyEmail) {
+      onSwitchToVerifyEmail(email, password)
+    } else {
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`)
+    }
+  }, [isVerificationError])  // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleCredentials(e: React.FormEvent) {
     e.preventDefault()
@@ -40,7 +52,14 @@ export function LoginForm({
     const result = await signIn('credentials', { redirect: false, email, password })
     setIsLoading(false)
     if (result?.error) {
-      setError("That email or password doesn't look right. Try again?")
+      // NextAuth returns the literal code 'CredentialsSignin' when authorize()
+      // returns null (wrong password / user not found). Any other string is a
+      // real message thrown by our backend (e.g. the 403 verification gate).
+      setError(
+        result.error === 'CredentialsSignin'
+          ? "That email or password doesn't look right. Try again?"
+          : result.error,
+      )
     } else if (onSuccess) {
       // Modal context: close first so the modal vanishes cleanly, then
       // refresh server components to pick up the new session.
@@ -80,6 +99,7 @@ export function LoginForm({
     setError('')
     setMagicSent(false)
   }
+
 
   return (
     <>
@@ -156,7 +176,11 @@ export function LoginForm({
           <Button type="submit" variant="primary" loading={isLoading} fullWidth>
             Sign in
           </Button>
-          {error && <div style={{ marginTop: '10px' }}><ErrorMessage message={error} /></div>}
+          {error && !isVerificationError && (
+            <div style={{ marginTop: '10px' }}>
+              <ErrorMessage message={error} />
+            </div>
+          )}
           <button
             type="button"
             onClick={() => switchMode('magic-link')}

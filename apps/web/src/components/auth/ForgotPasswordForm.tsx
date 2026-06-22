@@ -22,14 +22,14 @@ export interface ForgotPasswordFormProps {
 export function ForgotPasswordForm({ onSwitchToLogin, onPasswordReset }: ForgotPasswordFormProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [identifier, setIdentifier] = useState('')
-  const [otp, setOtp] = useState<string[]>(Array(6).fill(''))
+  const [otp, setOtp] = useState('')
+  const [otpFocused, setOtpFocused] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [resendCooldown, setResendCooldown] = useState(0)
   const [resetToken, setResetToken] = useState('')
-  const otpRefs = useRef<(HTMLInputElement | null)[]>(Array(6).fill(null))
   const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export function ForgotPasswordForm({ onSwitchToLogin, onPasswordReset }: ForgotP
       const res = await fetch(`${API_BASE}/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, otp: otp.join('') }),
+        body: JSON.stringify({ identifier, otp }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -137,17 +137,22 @@ export function ForgotPasswordForm({ onSwitchToLogin, onPasswordReset }: ForgotP
     }
   }
 
-  function handleOtpChange(index: number, value: string) {
-    const char = value.replace(/[^0-9a-zA-Z]/g, '').slice(-1)
-    const updated = [...otp]
-    updated[index] = char
-    setOtp(updated)
-    if (char && index < 5) otpRefs.current[index + 1]?.focus()
+  function handleOtpChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
+    setOtp(digits)
+    setError('')
+    if (digits.length === 6) {
+      handleStep2({ preventDefault: () => {} } as React.FormEvent)
+    }
   }
 
-  function handleOtpKeyDown(index: number, e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus()
+  function handleOtpPaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    e.preventDefault()
+    const digits = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6)
+    setOtp(digits)
+    setError('')
+    if (digits.length === 6) {
+      handleStep2({ preventDefault: () => {} } as React.FormEvent)
     }
   }
 
@@ -212,35 +217,36 @@ export function ForgotPasswordForm({ onSwitchToLogin, onPasswordReset }: ForgotP
 
       {step === 2 && (
         <form onSubmit={handleStep2}>
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
-            {otp.map((digit, i) => (
-              <input
-                key={i}
-                ref={(el) => { otpRefs.current[i] = el }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleOtpChange(i, e.target.value)}
-                onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--color-brand)')}
-                onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--color-border)')}
-                style={{
-                  width: '44px',
-                  height: '52px',
-                  background: 'var(--color-surface-2)',
-                  border: '1.5px solid var(--color-border)',
-                  borderRadius: '8px',
-                  textAlign: 'center',
-                  fontSize: '20px',
-                  fontWeight: 700,
-                  color: 'var(--color-text)',
-                  outline: 'none',
-                  transition: 'border-color 150ms ease',
-                }}
-              />
-            ))}
-          </div>
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            value={otp}
+            onChange={handleOtpChange}
+            onPaste={handleOtpPaste}
+            onFocus={() => setOtpFocused(true)}
+            onBlur={() => setOtpFocused(false)}
+            placeholder="000000"
+            aria-label="6-digit verification code"
+            autoFocus
+            style={{
+              width: '100%',
+              height: '56px',
+              fontSize: '28px',
+              fontWeight: 700,
+              letterSpacing: '0.35em',
+              textAlign: 'center',
+              background: 'var(--color-surface-2)',
+              border: `1.5px solid ${otpFocused ? 'var(--color-brand)' : 'var(--color-border)'}`,
+              borderRadius: '12px',
+              color: 'var(--color-text)',
+              outline: 'none',
+              boxSizing: 'border-box',
+              transition: 'border-color 150ms ease, box-shadow 150ms ease',
+              boxShadow: otpFocused ? '0 0 0 3px rgba(124,58,237,0.15)' : 'none',
+              marginBottom: '16px',
+            }}
+          />
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             {resendCooldown > 0 ? (
               <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
@@ -249,7 +255,7 @@ export function ForgotPasswordForm({ onSwitchToLogin, onPasswordReset }: ForgotP
             ) : (
               <button
                 type="button"
-                onClick={async () => { const ok = await sendOtp(); if (ok) { setOtp(Array(6).fill('')); startCooldown() } }}
+                onClick={async () => { const ok = await sendOtp(); if (ok) { setOtp(''); startCooldown() } }}
                 disabled={isLoading}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'var(--color-brand)', padding: 0 }}
               >
@@ -257,7 +263,7 @@ export function ForgotPasswordForm({ onSwitchToLogin, onPasswordReset }: ForgotP
               </button>
             )}
           </div>
-          <Button type="submit" variant="primary" loading={isLoading} disabled={otp.some((d) => !d)} fullWidth>
+          <Button type="submit" variant="primary" loading={isLoading} disabled={otp.length < 6} fullWidth>
             Verify code
           </Button>
           {error && <div style={{ marginTop: '10px' }}><ErrorMessage message={error} /></div>}

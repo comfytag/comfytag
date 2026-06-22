@@ -136,7 +136,7 @@ function EditorPickCard({ event, priority }: { event: PickEvent; priority: boole
       {/* Content — pinned to bottom */}
       <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
         <p className="text-zinc-300 text-sm mb-1">{event.date}</p>
-        <h3 className="text-2xl font-bold text-white mb-1 line-clamp-2">{event.title}</h3>
+        <h3 className="text-lg font-bold text-white mb-1 line-clamp-2 capitalize">{event.title}</h3>
         <p className="text-zinc-400 text-sm mb-4">{event.venue}</p>
 
         <div className="flex items-center justify-between">

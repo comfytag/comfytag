@@ -173,8 +173,13 @@ export const enqueueEmail = async (options) => {
   const { to, subject, template, data = {}, from, replyTo, delay = 0, userId, notificationType } = options;
 
   if (!emailQueue) {
-    console.log(`[Email Queue] Skipped (disabled in dev) — would send to: ${to}`);
-    return { success: true, jobId: null, email: to, subject };
+    if (delay > 0) {
+      const hrs = Math.round(delay / 3_600_000)
+      console.log(`[Email Queue] Dev: skipping delayed email (+${hrs}h) to: ${to} — subject: "${subject}"`)
+      return { success: true, jobId: null, email: to, subject }
+    }
+    console.log(`[Email Queue] Dev mode — sending directly (no queue) to: ${to}`);
+    return await sendEmail({ to, subject, template, data, from, replyTo });
   }
 
   try {

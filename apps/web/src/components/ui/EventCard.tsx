@@ -45,7 +45,7 @@ export function EventCard({
     ? 'Sold Out'
     : isTrending
       ? 'Selling Fast'
-      : soldPct > 0 && !isPast
+      : soldPct > 0.5 && !isPast
         ? `${Math.round(soldPct * 100)}% sold`
         : null
 
@@ -114,7 +114,7 @@ export function EventCard({
         <p className="text-xs font-mono font-medium text-zinc-300 mb-1.5">{overline}</p>
 
         {/* Title */}
-        <h3 className="text-lg font-bold sm:text-xl tracking-tight text-white line-clamp-2 leading-tight mb-2 capitalize">
+        <h3 className="text-md font-bold tracking-tight text-white line-clamp-2 leading-tight mb-2 capitalize">
           {event.name}
         </h3>
 
@@ -129,9 +129,9 @@ export function EventCard({
         {/* Footer row — price + CTA */}
         <div className="flex items-center justify-between mt-auto">
           {lowestPrice === 0 ? (
-            <span className="text-xl font-bold text-white">Free</span>
+            <span className="text-md font-bold text-white">Free</span>
           ) : (
-            <span className="text-xl font-bold text-white">{formatNaira(lowestPrice)}</span>
+            <span className="text-md font-bold text-white">{formatNaira(lowestPrice)}</span>
           )}
 
           <span className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/10 text-white px-5 py-2.5 rounded-full text-sm font-bold transition-colors">

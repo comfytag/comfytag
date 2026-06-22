@@ -18,6 +18,7 @@ export interface TicketTierSheetProps {
   onClose: () => void
   eventName?: string
   onCheckout: (tierId: string, qty: number) => void
+  isPast?: boolean
 }
 
 function isSoldOut(tier: TicketTier): boolean {
@@ -39,6 +40,7 @@ export function TicketTierSheet({
   onClose,
   eventName,
   onCheckout,
+  isPast,
 }: TicketTierSheetProps) {
   const firstAvailable = tiers.find((t) => !isSoldOut(t))
   const [selectedId, setSelectedId] = useState<string>(
@@ -355,12 +357,12 @@ export function TicketTierSheet({
       <Button
         variant="primary"
         fullWidth
-        disabled={!selectedTier}
+        disabled={!selectedTier || !!isPast}
         onClick={() => {
           if (selectedTier) onCheckout(selectedTier._id, qty)
         }}
       >
-        Get Tickets
+        {isPast ? 'Ended' : 'Get Tickets'}
       </Button>
     </BottomSheet>
   )

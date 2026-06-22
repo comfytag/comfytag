@@ -57,7 +57,13 @@ export const authOptions: NextAuthOptions = {
               password: credentials.password,
             }),
           })
-          if (!res.ok) return null
+          if (!res.ok) {
+            const errorBody = await res.json().catch(() => ({}))
+            throw new Error(
+              (errorBody as { message?: string }).message ||
+                'Login failed. Please check your credentials.',
+            )
+          }
           const data: {
             status: boolean
             user: {
@@ -84,7 +90,10 @@ export const authOptions: NextAuthOptions = {
             username: data.user.username,
             createdAt: data.user.createdAt,
           }
-        } catch {
+        } catch (err) {
+          // Re-throw Error instances so NextAuth forwards the message to the UI.
+          // Returning null would produce a generic "CredentialsSignin" error instead.
+          if (err instanceof Error) throw err
           return null
         }
       },
@@ -162,6 +171,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/login',
+    error: '/login',
   },
   session: {
     strategy: 'jwt',

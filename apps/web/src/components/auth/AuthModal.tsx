@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Dialog } from 'radix-ui'
 import { useAuthModal } from '@/hooks/useAuthModal'
 import { LoginForm } from './LoginForm'
 import { RegisterForm } from './RegisterForm'
 import { ForgotPasswordForm } from './ForgotPasswordForm'
+import { VerifyEmailForm } from './VerifyEmailForm'
 
 export function AuthModal() {
   const {
@@ -18,6 +19,8 @@ export function AuthModal() {
     _setSuccessBanner,
     _setPrefilledEmail,
   } = useAuthModal()
+
+  const [pendingPassword, setPendingPassword] = useState('')
 
   const handleRegisterSuccess = useCallback(
     (email: string) => {
@@ -33,10 +36,17 @@ export function AuthModal() {
     switchView('login')
   }, [_setSuccessBanner, switchView])
 
+  const handleSwitchToVerify = useCallback((email: string, password: string) => {
+    _setPrefilledEmail(email)
+    setPendingPassword(password)
+    switchView('verify_email')
+  }, [_setPrefilledEmail, switchView])
+
   const viewTitles: Record<typeof view, string> = {
     login: 'Sign in to ComfyTag',
     register: 'Join ComfyTag',
     forgot_password: 'Reset your password',
+    verify_email: 'Verify your email',
   }
 
   return (
@@ -189,6 +199,7 @@ export function AuthModal() {
                 <LoginForm
                   onSwitchToRegister={() => switchView('register')}
                   onSwitchToForgotPassword={() => switchView('forgot_password')}
+                  onSwitchToVerifyEmail={handleSwitchToVerify}
                   initialEmail={prefilledEmail}
                   successBanner={successBanner}
                   onSuccess={closeModal}
@@ -204,6 +215,14 @@ export function AuthModal() {
                 <ForgotPasswordForm
                   onSwitchToLogin={() => switchView('login')}
                   onPasswordReset={handlePasswordReset}
+                />
+              )}
+              {view === 'verify_email' && (
+                <VerifyEmailForm
+                  email={prefilledEmail}
+                  password={pendingPassword}
+                  onSuccess={closeModal}
+                  onBack={() => switchView('login')}
                 />
               )}
             </div>

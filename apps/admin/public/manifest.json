@@ -1,11 +1,11 @@
 {
-  "name": "ComfyTag",
+  "name": "ComfyTag Admin",
   "short_name": "ComfyTag",
-  "description": "Your face is your ticket",
-  "start_url": "/",
+  "description": "Event platform admin dashboard",
+  "start_url": "/overview",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FAFAF9",
+  "background_color": "#0F0F0F",
   "theme_color": "#7C3AED",
   "icons": [
     {
@@ -20,6 +20,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "categories": ["entertainment", "lifestyle"]
+  ]
 }

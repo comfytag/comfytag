@@ -1,9 +1,14 @@
 import { sendViaSES } from "./awsEmailService.js";
 import User from "../models/User.js";
 
-// ─── Sender addresses pulled from SES env vars ───────────────────────────────
-const FROM_DEFAULT = process.env.SES_SENDER_EMAIL || "noreply@comfytag.com";
-const FROM_TICKETS = process.env.SES_SENDER_EMAIL || "tickets@comfytag.com";
+// ─── Sender addresses — one env var per address, all fall back to SES_SENDER_EMAIL ───
+export const FROM_DEFAULT  = process.env.SES_SENDER_EMAIL   || "noreply@comfytag.com";
+export const FROM_TICKETS  = process.env.SES_TICKETS_EMAIL  || FROM_DEFAULT;
+export const FROM_EVENTS   = process.env.SES_EVENTS_EMAIL   || FROM_DEFAULT;
+export const FROM_PAYOUTS  = process.env.SES_PAYOUTS_EMAIL  || FROM_DEFAULT;
+export const FROM_SUPPORT  = process.env.SES_SUPPORT_EMAIL  || FROM_DEFAULT;
+export const FROM_HELLO    = process.env.SES_HELLO_EMAIL    || FROM_DEFAULT;
+export const FROM_PARTNER  = process.env.SES_PARTNER_EMAIL  || FROM_DEFAULT;
 
 // ─── User notification preference gate ───────────────────────────────────────
 const checkNotificationPreference = async (email) => {

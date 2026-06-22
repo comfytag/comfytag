@@ -48,6 +48,11 @@ export const metadata: Metadata = {
     description: 'Find the best events in Ilorin this weekend. Buy tickets in seconds.',
     images: ['/api/og'],
   },
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
   manifest: '/manifest.json',
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'ComfyTag' },
 }

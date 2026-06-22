@@ -12,7 +12,7 @@ import { AuthGateSheet } from '@/components/ui/AuthGateSheet'
 import { BackLink } from '@/components/ui/BackLink'
 import { CommentSection } from '@/components/event/CommentSection'
 import { Divider } from '@/components/events/EventIcons'
-import { useLike } from '@/hooks/useLike'
+import { useLikeEvent } from '@/hooks/useEvents'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import {
   formatNaira,
@@ -96,6 +96,8 @@ export function EventInteractiveSection({
   const [desktopSelectedId, setDesktopSelectedId] = useState<string>(firstAvailable?._id ?? '')
   const [desktopQty, setDesktopQty] = useState(1)
 
+  const isPast = new Date(event.date || event.event_date || '') < new Date()
+
   const desktopSelectedTier = event.ticketType.find((t: TicketTier) => t._id === desktopSelectedId)
   const desktopMaxQty = desktopSelectedTier
     ? Math.min(availableCount(desktopSelectedTier), MAX_TICKETS_PER_ORDER)
@@ -118,12 +120,17 @@ export function EventInteractiveSection({
   }, [session])
 
   const { openModal } = useAuthModal()
-  const { isLiked, likeCount, toggleLike } = useLike(event._id, false, event.likes ?? 0)
+  const { mutate: likeEvent } = useLikeEvent()
+  const [isLiked, setIsLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(event.likes ?? 0)
   const { gateOpen, gateTrigger, openGate, closeGate } = useAuthGate()
 
-  const handleLike = async () => {
+  const handleLike = () => {
     if (!session) { openGate('like'); return }
-    await toggleLike()
+    const wasLiked = isLiked
+    setIsLiked(!wasLiked)
+    setLikeCount((c) => (wasLiked ? c - 1 : c + 1))
+    likeEvent({ eventId: event._id, slug: event.slug ?? event._id })
   }
 
   const handleShare = async () => {
@@ -160,6 +167,7 @@ export function EventInteractiveSection({
   }
 
   const handleDirectCheckout = async (tierId: string, qty: number) => {
+    if (isPast) return
     if (!session) return
     const tier = event.ticketType.find((t: TicketTier) => t._id === tierId)
     if (!tier) return
@@ -335,6 +343,7 @@ export function EventInteractiveSection({
         tiers={event.ticketType}
         eventName={event.name}
         onCheckout={handleCheckout}
+        isPast={isPast}
       />
 
       {/* Page canvas */}
@@ -542,11 +551,11 @@ export function EventInteractiveSection({
                       {/* Desktop checkout button */}
                       <button
                         type="button"
-                        disabled={allSoldOut}
+                        disabled={allSoldOut || isPast}
                         onClick={() => setTicketSheetOpen(true)}
                         className="w-full bg-zinc-900 text-white font-bold py-4 rounded-full shadow-md active:scale-95 transition-all disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed"
                       >
-                        {allSoldOut ? 'Sold Out' : 'Get Tickets'}
+                        {isPast ? 'Ended' : allSoldOut ? 'Sold Out' : 'Get Tickets'}
                       </button>
 
                       {/* Security badge */}
@@ -605,6 +614,7 @@ export function EventInteractiveSection({
         isVisible={true}
         minPrice={minPrice}
         allSoldOut={allSoldOut}
+        isPast={isPast}
         onGetTickets={() => setTicketSheetOpen(true)}
       />
     </>

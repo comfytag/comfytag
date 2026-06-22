@@ -611,6 +611,9 @@ export function EventsBrowseClient({
   const searchParams = useSearchParams()
 
   const [events, setEvents] = useState<Event[]>(initialEvents)
+  const [heroEvents] = useState<Event[]>(() =>
+    initialEvents.filter((e) => !e.date || new Date(e.date) >= new Date())
+  )
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
@@ -618,9 +621,14 @@ export function EventsBrowseClient({
   const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [timeFrame, setTimeFrame] = useState<TimeFrame>('upcoming')
   const [sortOption, setSortOption] = useState<SortOption>('date-earliest')
+  const rawCategory = searchParams.get('category')
+  const normalizedCategory = rawCategory
+    ? QUICK_TYPES.find((t) => t.toLowerCase() === rawCategory.toLowerCase()) ?? rawCategory
+    : null
+
   const [filters, setFilters] = useState<Filters>({
     searchQuery: searchParams.get('q') ?? '',
-    types: searchParams.get('category') ? [searchParams.get('category')!] : [],
+    types: normalizedCategory ? [normalizedCategory] : [],
     state: searchParams.get('state') ?? '',
     minPrice: '',
     maxPrice: '',
@@ -634,6 +642,9 @@ export function EventsBrowseClient({
   const [visibleCount, setVisibleCount] = useState(DESKTOP_PAGE_SIZE)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Flips to true after the first effect run so the SSR bail-out only applies once.
+  const hasHydrated = useRef(false)
+  const hasSyncedUrl = useRef(false)
 
   // Detect mobile viewport and sync visibleCount
   useEffect(() => {
@@ -673,11 +684,11 @@ export function EventsBrowseClient({
 
   // ─── API fetch ────────────────────────────────────────────────────────────
 
-  const buildParams = useCallback((f: Filters, p: number) => {
+  const buildParams = useCallback((f: Filters, p: number, tf: TimeFrame) => {
     const params = new URLSearchParams()
     params.set('limit', '12')
     params.set('page', String(p))
-    params.set('showPast', 'true')
+    if (tf === 'past') params.set('showPast', 'true')
     if (f.searchQuery.trim()) params.set('q', f.searchQuery.trim())
     if (f.types.length > 0) params.set('category', f.types.join(','))
     if (f.state) params.set('state', f.state)
@@ -688,7 +699,7 @@ export function EventsBrowseClient({
   }, [])
 
   const fetchEvents = useCallback(
-    async (f: Filters, p: number, append = false) => {
+    async (f: Filters, p: number, tf: TimeFrame, append = false) => {
       const fresh = p === 1 && !append
       if (fresh) setIsLoading(true)
       else setIsLoadingMore(true)
@@ -696,7 +707,7 @@ export function EventsBrowseClient({
       try {
         const needsSearch = !!f.searchQuery.trim() || !!f.date
         const endpoint = needsSearch ? '/events/search' : '/events'
-        const response = await api.get(`${endpoint}?${buildParams(f, p)}`)
+        const response = await api.get(`${endpoint}?${buildParams(f, p, tf)}`)
         const data = response.data as Record<string, unknown>
         const list: Event[] = Array.isArray(data)
           ? (data as Event[])
@@ -718,13 +729,20 @@ export function EventsBrowseClient({
   )
 
   useEffect(() => {
+    // First mount: server already delivered matching events — bail immediately
+    // so SSR content stays visible with no debounce or events-array clear.
+    if (!hasHydrated.current) {
+      hasHydrated.current = true
+      if (initialEvents.length > 0) return
+    }
+
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    // Reset pagination on new filter query
+    // Reset pagination on new filter query; reads current isMobileView (in deps).
     setVisibleCount(isMobileView ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE)
-    debounceRef.current = setTimeout(() => { void fetchEvents(filters, 1) }, 300)
+    debounceRef.current = setTimeout(() => { void fetchEvents(filters, 1, timeFrame) }, 300)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters])
+  }, [filters, isMobileView, timeFrame])
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
@@ -753,13 +771,29 @@ export function EventsBrowseClient({
     return () => document.removeEventListener('mousedown', handler)
   }, [dateMenuOpen])
 
+  // Sync active filters back to the URL so links are shareable
+  useEffect(() => {
+    if (!hasSyncedUrl.current) {
+      hasSyncedUrl.current = true
+      return
+    }
+    const params = new URLSearchParams()
+    if (filters.searchQuery) params.set('q', filters.searchQuery)
+    if (filters.types.length > 0) params.set('category', filters.types[0].toLowerCase())
+    if (filters.state) params.set('state', filters.state)
+    if (filters.date) params.set('date', filters.date)
+    const qs = params.toString()
+    router.replace(`/events${qs ? `?${qs}` : ''}`, { scroll: false })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters])
+
   function handleLoadMore() {
     const chunk = isMobileView ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE
     const newCount = visibleCount + chunk
     setVisibleCount(newCount)
     // Trigger API fetch if we've exhausted locally cached events
     if (newCount > filteredEvents.length && hasMore) {
-      void fetchEvents(filters, page + 1, true)
+      void fetchEvents(filters, page + 1, timeFrame, true)
     }
   }
 
@@ -784,15 +818,15 @@ export function EventsBrowseClient({
     [events]
   )
 
-  // Curated editorial arrays — derived from all upcoming events regardless of active filters
+  // Curated editorial arrays — pinned to initial SSR data, unaffected by active filters
   const featuredEvents = useMemo(
-    () => upcomingEvents.filter((e) => e.featured),
-    [upcomingEvents]
+    () => heroEvents.filter((e) => e.featured),
+    [heroEvents]
   )
 
   const trendingEvents = useMemo(
-    () => upcomingEvents.filter((e) => isTrending(e)),
-    [upcomingEvents]
+    () => heroEvents.filter((e) => isTrending(e)),
+    [heroEvents]
   )
 
   const filteredEvents = useMemo(() => {
@@ -1075,10 +1109,10 @@ export function EventsBrowseClient({
             </div>
 
             {/* ── Block 1: Dynamic Featured Carousel ── */}
-            {!isLoading && <FeaturedCarousel events={featuredEvents} />}
+            <FeaturedCarousel events={featuredEvents} />
 
             {/* ── Block 2: Dynamic Trending FOMO Carousel ── */}
-            {!isLoading && <TrendingCarousel events={trendingEvents} />}
+            <TrendingCarousel events={trendingEvents} />
 
             {/* ── Block 3: Main Event Catalog Track ── */}
 

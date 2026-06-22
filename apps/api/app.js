@@ -24,7 +24,7 @@ if (config.features.emailQueue) {
     process.exit(1)
   }
 } else {
-  console.log(`[Email Queue] Skipped in ${config.env} mode — Redis not required`)
+  console.log(`[Email Queue] Queue disabled in ${config.env} mode — emails will send directly via SES/Resend`)
 }
 
 const connect = async () => {
@@ -310,7 +310,17 @@ function findDomainIp(domain) {
 
 
 connect()
-  .then(() => {
+  .then(async () => {
+    // Drop the old strict unique index so Mongoose can recreate it as sparse.
+    // This is a one-shot migration — once the sparse index is in place the
+    // dropIndex call silently errors (index not found) and is ignored.
+    try {
+      await mongoose.connection.collection('users').dropIndex('referralFallbackCode_1');
+      console.log('✅ Dropped strict referralFallbackCode index — will be recreated as sparse');
+    } catch {
+      // Already dropped or never existed — safe to ignore
+    }
+
     // Create HTTP server wrapper for Express app
     const httpServer = http.createServer(app)
 
