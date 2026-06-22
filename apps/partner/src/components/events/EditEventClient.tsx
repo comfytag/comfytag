@@ -133,7 +133,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
 
   // ── Form state ──────────────────────────────────────────────────────────────
   const [form, setForm] = useState({
-    name: '', headline: '', category: '', date: '', startTime: '', endTime: '',
+    name: '', headline: '', category: '', secondaryCategory: '', date: '', startTime: '', endTime: '',
     venue: '', address: '', state: '', description: '',
   })
   const [images,       setImages]       = useState<string[]>([])
@@ -161,16 +161,17 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
     seeded.current = true
 
     setForm({
-      name:        event.name ?? '',
-      headline:    event.headline ?? '',
-      category:    event.category ?? '',
-      date:        event.date ? new Date(event.date).toISOString().split('T')[0] : '',
-      startTime:   event.startTime ?? '',
-      endTime:     event.endTime ?? '',
-      venue:       event.venue ?? '',
-      address:     event.address ?? '',
-      state:       event.state ?? '',
-      description: event.description ?? '',
+      name:              event.name ?? '',
+      headline:          event.headline ?? '',
+      category:          event.category ?? '',
+      secondaryCategory: event.secondaryCategory ?? '',
+      date:              event.date ? new Date(event.date).toISOString().split('T')[0] : '',
+      startTime:         event.startTime ?? '',
+      endTime:           event.endTime ?? '',
+      venue:             event.venue ?? '',
+      address:           event.address ?? '',
+      state:             event.state ?? '',
+      description:       event.description ?? '',
     })
     setImages(
       (event.images ?? []).length > 0
@@ -192,10 +193,11 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
 
   // ── Reactive preview data ────────────────────────────────────────────────────
   const previewData: CreateEventFormData = {
-    name:        form.name,
-    headline:    form.headline,
-    category:    form.category,
-    date:        form.date,
+    name:              form.name,
+    headline:          form.headline,
+    category:          form.category,
+    secondaryCategory: form.secondaryCategory,
+    date:              form.date,
     startTime:   form.startTime,
     endTime:     form.endTime,
     venue:       form.venue,
@@ -324,10 +326,11 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
     if (tiers.length === 0)       { setError('Add at least one ticket tier'); return }
     setError('')
     mutation.mutate({
-      name:        form.name,
-      headline:    form.headline || undefined,
-      category:    form.category,
-      description: form.description,
+      name:              form.name,
+      headline:          form.headline || undefined,
+      category:          form.category,
+      secondaryCategory: form.secondaryCategory || undefined,
+      description:       form.description,
       date:        form.date,
       startTime:   form.startTime,
       endTime:     form.endTime,
@@ -423,7 +426,14 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                     <select
                       id="edit-category"
                       value={form.category}
-                      onChange={e => setForm({ ...form, category: e.target.value })}
+                      onChange={e => {
+                        const next = e.target.value
+                        setForm(prev => ({
+                          ...prev,
+                          category: next,
+                          secondaryCategory: prev.secondaryCategory === next ? '' : prev.secondaryCategory,
+                        }))
+                      }}
                       className={selectCls}
                     >
                       <option value="">Select category</option>
@@ -446,6 +456,32 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                     className={inputCls}
                   />
                 </div>
+              </div>
+
+              {/* Second Vibe */}
+              <div>
+                <label htmlFor="edit-secondary-category" className={fieldLabel}>
+                  Second Vibe{' '}
+                  <span className="font-normal normal-case text-zinc-400 tracking-normal">(optional)</span>
+                </label>
+                <div className="relative">
+                  <select
+                    id="edit-secondary-category"
+                    value={form.secondaryCategory}
+                    onChange={e => setForm({ ...form, secondaryCategory: e.target.value })}
+                    disabled={!form.category}
+                    className={`${selectCls} disabled:opacity-40 disabled:cursor-not-allowed`}
+                  >
+                    <option value="">None</option>
+                    {EVENT_CATEGORIES.filter(cat => cat !== form.category).map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <SelectChevron />
+                </div>
+                {!form.category && (
+                  <p className="text-[11px] text-zinc-400 mt-1.5">Select a primary category first</p>
+                )}
               </div>
 
               {/* Times */}

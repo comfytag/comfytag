@@ -69,6 +69,7 @@ export interface Event {
   planner_id: string
   planner: string
   category: string
+  secondaryCategory?: string
   description?: string
   headline?: string
   date: string

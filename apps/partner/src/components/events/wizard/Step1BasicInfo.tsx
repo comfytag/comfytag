@@ -105,7 +105,12 @@ export function Step1BasicInfo({
             <select
               id="event-category"
               value={formData.category}
-              onChange={(e) => updateField('category', e.target.value)}
+              onChange={(e) => {
+                updateField('category', e.target.value)
+                if (e.target.value === formData.secondaryCategory) {
+                  updateField('secondaryCategory', '')
+                }
+              }}
               className={select}
             >
               <option value="">Select category</option>
@@ -131,6 +136,34 @@ export function Step1BasicInfo({
             className={input}
           />
         </div>
+      </div>
+
+      {/* Second Vibe */}
+      <div>
+        <label htmlFor="event-secondary-category" className={label}>
+          Second Vibe{' '}
+          <span className="font-normal normal-case text-zinc-400 tracking-normal">(optional)</span>
+        </label>
+        <div className="relative">
+          <select
+            id="event-secondary-category"
+            value={formData.secondaryCategory}
+            onChange={(e) => updateField('secondaryCategory', e.target.value)}
+            disabled={!formData.category}
+            className={`${select} disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            <option value="">None</option>
+            {EVENT_CATEGORIES.filter((cat) => cat !== formData.category).map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+          <SelectChevron />
+        </div>
+        {!formData.category && (
+          <p className="text-[11px] text-zinc-400 mt-1.5">Select a primary category first</p>
+        )}
       </div>
 
       {/* Start + End time */}

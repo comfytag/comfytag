@@ -38,7 +38,10 @@ export function EventCard({
       : 0
 
   const dateKicker = `${formatDate(event.date)} · ${formatTime(event.startTime)}`
-  const overline = event.category ? `${event.category} · ${dateKicker}` : dateKicker
+  const categoryLabel = event.secondaryCategory
+    ? `${event.category} · ${event.secondaryCategory}`
+    : event.category
+  const overline = categoryLabel ? `${categoryLabel} · ${dateKicker}` : dateKicker
   const isPast = !!(event.date || event.event_date) && new Date(event.date || event.event_date || '') < new Date()
 
   const topBadgeLabel = isSoldOut

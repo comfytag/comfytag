@@ -66,23 +66,39 @@ async function fetchHowItWorksSteps(): Promise<CmsStep[]> {
   }
 }
 
-// ─── Featured categories (CategoryGridSection) ────────────────────────────────
+// ─── Category vibes grid (CategoryGridSection) ───────────────────────────────
 
-async function fetchFeaturedCategories(): Promise<CategoryGridItem[]> {
+const CATEGORY_IMAGES: Record<string, string> = {
+  'Music':                   'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80',
+  'Comedy':                  'https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=800&q=80',
+  'Tech & Innovation':       'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80',
+  'Business & Finance':      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&q=80',
+  'Fashion':                 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+  'Sports':                  'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80',
+  'Food & Drinks':           'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80',
+  'Arts & Culture':          'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&q=80',
+  'Health & Wellness':       'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80',
+  'Education':               'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&q=80',
+  'Kids & Family':           'https://images.unsplash.com/photo-1526634332515-d56c5fd16991?w=800&q=80',
+  'Religion & Spirituality': 'https://images.unsplash.com/photo-1548625149-720634a9b5a8?w=800&q=80',
+  'Networking':              'https://images.unsplash.com/photo-1515169067868-5387ec356754?w=800&q=80',
+  'Film & Media':            'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800&q=80',
+  'Games & Esports':         'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80',
+}
+const CATEGORY_IMAGE_FALLBACK = 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80'
+
+async function fetchCategoryVibes(): Promise<CategoryGridItem[]> {
   try {
-    const res = await fetch(`${API}/categories?featured=true`, { next: { revalidate: 3600 } })
+    const res = await fetch(`${API}/events/category-counts`, { next: { revalidate: 300 } })
     if (!res.ok) return []
-    const data: unknown = await res.json()
-    const raw = (
-      Array.isArray(data)
-        ? data
-        : Array.isArray((data as Record<string, unknown>).data)
-          ? (data as Record<string, unknown>).data
-          : []
-    ) as Array<{ title?: string; slug?: string; image?: string }>
-    return raw
-      .map((c) => ({ label: c.title ?? '', slug: c.slug ?? '', image: c.image ?? '' }))
-      .filter((c) => c.label && c.slug)
+    const json = (await res.json()) as { success: boolean; data: { category: string; count: number }[] }
+    const counts = Array.isArray(json.data) ? json.data : []
+    return counts.slice(0, 4).map((item) => ({
+      label: item.category,
+      slug: item.category,
+      image: CATEGORY_IMAGES[item.category] ?? CATEGORY_IMAGE_FALLBACK,
+      count: `${item.count} ${item.count === 1 ? 'Event' : 'Events'}`,
+    }))
   } catch {
     return []
   }
@@ -250,7 +266,7 @@ export default async function HomePage() {
     fetchSiteConfig(),
     fetchMarqueeItems(),
     fetchHowItWorksSteps(),
-    fetchFeaturedCategories(),
+    fetchCategoryVibes(),
     fetchFaqs(),
   ])
 
@@ -297,7 +313,7 @@ export default async function HomePage() {
         schema={{
           '@context': 'https://schema.org',
           '@type': 'FAQPage',
-          mainEntity: (faqs.length > 0 ? faqs : FALLBACK_FAQS).map((faq) => ({
+          mainEntity: (faqs.length > 0 ? faqs : FALLBACK_FAQS).map((faq: FaqItem) => ({
             '@type': 'Question',
             name: faq.question,
             acceptedAnswer: {

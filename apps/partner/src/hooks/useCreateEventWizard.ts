@@ -23,6 +23,7 @@ export interface CreateEventFormData {
   name: string
   headline: string
   category: string
+  secondaryCategory: string
   date: string
   startTime: string
   endTime: string
@@ -88,6 +89,7 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
     name: '',
     headline: '',
     category: '',
+    secondaryCategory: '',
     date: '',
     startTime: '',
     endTime: '',
@@ -272,6 +274,7 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
       name: formData.name,
       headline: formData.headline || undefined,
       category: formData.category,
+      secondaryCategory: formData.secondaryCategory || undefined,
       description: formData.description,
       date: formData.date,
       startTime: formData.startTime,
