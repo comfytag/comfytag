@@ -87,12 +87,17 @@ export const useNotificationSocket = () => {
 
     // Seed the badge from HTTP on every socket connect / reconnect.
     // Without this the badge resets to 0 after every page reload.
+    const token = session?.user?.token
     const handleConnected = async (_data: any) => {
+      if (!token) return
       try {
         const data = await queryClient.fetchQuery({
           queryKey: notifKey,
           queryFn: () =>
-            api.get('/notification', { params: { page: 1, limit: 50 } }).then((r) => r.data),
+            api.get('/notification', {
+              params: { page: 1, limit: 50 },
+              headers: { Authorization: `Bearer ${token}` },
+            }).then((r) => r.data),
           staleTime: 30_000,
         })
         if (typeof (data as any)?.unreadCount === 'number') {

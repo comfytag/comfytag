@@ -13,6 +13,7 @@ export async function GET() {
   try {
     const response = await api.get<{ notifications: Notification[] }>('/notification', {
       params: { page: 1, limit: 100 },
+      headers: { Authorization: `Bearer ${session.user.token}` },
     })
     const notifications = response.data.notifications ?? []
     const count = notifications.filter((n) => !n.read).length
