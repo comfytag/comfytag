@@ -2,7 +2,7 @@
 import Bank from '../models/Bank.js';
 import Withdraw from '../models/Withdraw.js';
 import User from '../models/User.js';
-import { createNotification } from './notification.js';
+import { createNotification, notifyAdmins } from './notification.js';
 import { createError } from '../utils/error.js';
 
 
@@ -123,6 +123,24 @@ export const createWithdraw = async (req, res, next) => {
     })
     try {
         const savedWithdraw = await newWithdraw.save()
+
+        // Notify finance admins about the new payout request
+        const io = req.app.locals.io
+        const requester = req.user
+        notifyAdmins({
+            roles: ['finance'],
+            type: 'payout_requested',
+            title: 'New payout request',
+            message: `${requester.name || 'An organizer'} requested ₦${Number(req.body.amount || 0).toLocaleString('en-NG')} withdrawal`,
+            data: {
+                withdrawId: savedWithdraw._id.toString(),
+                userId,
+                amount: String(req.body.amount || 0),
+                bankName: req.body.bankName || '',
+            },
+            io,
+        }).catch(() => {})
+
         res.status(200).json(savedWithdraw)
     } catch (err) {
         next(err)

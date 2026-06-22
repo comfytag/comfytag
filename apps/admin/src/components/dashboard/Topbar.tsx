@@ -6,6 +6,7 @@ import { signOut } from 'next-auth/react'
 import { Menu, Bell } from 'lucide-react'
 import type { AdminRole } from '../../lib/roles'
 import { NotificationContext } from '../../contexts/NotificationContext'
+import { NotificationsDropdown } from '../notifications/NotificationsDropdown'
 
 interface TopbarProps {
   onMenuClick: () => void
@@ -41,29 +42,42 @@ function getInitials(name: string | null | undefined): string {
 
 export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
   const pathname = usePathname()
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+
+  const userMenuRef = useRef<HTMLDivElement>(null)
+  const notifRef = useRef<HTMLDivElement>(null)
 
   const segment = pathname.startsWith('/dashboard/')
     ? pathname.slice('/dashboard/'.length).split('/')[0]
-    : 'Dashboard'
+    : pathname.split('/').filter(Boolean)[0] ?? 'Dashboard'
   const pageTitle = toTitleCase(segment || 'Dashboard')
 
   const { unreadCount } = useContext(NotificationContext)
   const badge = ROLE_BADGE[role] || { bg: 'var(--color-brand)', label: 'Admin' }
   const initials = getInitials(userName)
 
+  // Close user menu on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false)
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false)
       }
     }
-    if (dropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
+    if (userMenuOpen) document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [dropdownOpen])
+  }, [userMenuOpen])
+
+  // Close notif dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false)
+      }
+    }
+    if (notifOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [notifOpen])
 
   return (
     <header
@@ -82,6 +96,7 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
     >
       <style>{`@media (min-width: 769px) { .ct-topbar-menu { display: none !important; } }`}</style>
 
+      {/* Mobile menu toggle */}
       <button
         className="ct-topbar-menu"
         onClick={onMenuClick}
@@ -102,18 +117,14 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
         <Menu size={20} />
       </button>
 
-      <span
-        style={{
-          fontSize: '18px',
-          fontWeight: 600,
-          color: 'var(--color-text)',
-          flex: 1,
-        }}
-      >
+      {/* Page title */}
+      <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-text)', flex: 1 }}>
         {pageTitle}
       </span>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+
+        {/* Role badge */}
         <span
           style={{
             display: 'inline-flex',
@@ -129,10 +140,11 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
           {badge.label}
         </span>
 
-        {/* Notification bell */}
-        <div style={{ position: 'relative' }}>
+        {/* ── Notification bell + dropdown ── */}
+        <div ref={notifRef} style={{ position: 'relative' }}>
           <button
             aria-label={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'}
+            onClick={() => setNotifOpen((prev) => !prev)}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -140,14 +152,17 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
               width: '36px',
               height: '36px',
               border: 'none',
-              backgroundColor: 'transparent',
-              color: 'var(--color-text-secondary)',
+              backgroundColor: notifOpen ? 'rgba(124,58,237,0.15)' : 'transparent',
+              color: notifOpen ? 'var(--color-brand)' : 'var(--color-text-muted)',
               cursor: 'pointer',
-              borderRadius: '6px',
+              borderRadius: '8px',
+              transition: 'background-color 150ms, color 150ms',
             }}
           >
             <Bell size={18} />
           </button>
+
+          {/* Unread badge */}
           {unreadCount > 0 && (
             <span
               aria-hidden
@@ -167,16 +182,23 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
                 alignItems: 'center',
                 justifyContent: 'center',
                 lineHeight: 1,
+                pointerEvents: 'none',
               }}
             >
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
+
+          {/* Dropdown panel */}
+          {notifOpen && (
+            <NotificationsDropdown onClose={() => setNotifOpen(false)} />
+          )}
         </div>
 
-        <div ref={dropdownRef} style={{ position: 'relative' }}>
+        {/* ── User avatar + sign-out menu ── */}
+        <div ref={userMenuRef} style={{ position: 'relative' }}>
           <button
-            onClick={() => setDropdownOpen((prev) => !prev)}
+            onClick={() => setUserMenuOpen((prev) => !prev)}
             style={{
               width: '36px',
               height: '36px',
@@ -196,7 +218,7 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
             {initials}
           </button>
 
-          {dropdownOpen && (
+          {userMenuOpen && (
             <div
               style={{
                 position: 'absolute',
@@ -211,6 +233,19 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
                 zIndex: 50,
               }}
             >
+              <div
+                style={{
+                  padding: '10px 16px 8px',
+                  borderBottom: '1px solid var(--color-border)',
+                }}
+              >
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--color-text)' }}>
+                  {userName ?? 'Admin'}
+                </p>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--color-text-muted)' }}>
+                  {badge.label}
+                </p>
+              </div>
               <button
                 onClick={() => signOut({ callbackUrl: '/login' })}
                 style={{

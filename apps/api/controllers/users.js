@@ -8,6 +8,14 @@ import bcrypt from 'bcryptjs'
 import Joi  from  "joi";
 import jwt from 'jsonwebtoken'
 import { generateFallbackCode } from '../utils/referralCode.js'
+import { notifyAdmins } from './notification.js'
+import { v2 as cloudinary } from 'cloudinary'
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 
 // ONBOARDING
@@ -343,7 +351,6 @@ export const getAllUsers = async (req,res,next) =>{
 // Organizer uploads KYC documents
 export const uploadKYC = async (req, res, next) => {
     try {
-        // Handle both JSON body and multipart form data
         if (!req.body) {
             return res.status(400).json({
                 success: false,
@@ -368,39 +375,61 @@ export const uploadKYC = async (req, res, next) => {
             })
         }
 
-        // Map document type to verify field
         const docMap = {
-            photo: 'verify.photo',
-            idCard: 'verify.idCard.front',
-            address: 'verify.address'
+            photo:   'verify.photo',
+            idCard:  'verify.idCard.front',
+            address: 'verify.address',
         }
 
         const updateField = docMap[docType]
         if (!updateField) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid document type'
+                message: 'Invalid document type. Must be photo, idCard, or address.'
             })
         }
+
+        // Upload buffer to Cloudinary (memoryStorage gives us file.buffer)
+        const cloudResult = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                { folder: 'comfytag/kyc', resource_type: 'image' },
+                (err, result) => { if (err) reject(err); else resolve(result) }
+            )
+            stream.end(file.buffer)
+        })
 
         const updatedUser = await Users.findByIdAndUpdate(
             req.params.id,
             {
                 $set: {
-                    [updateField]: file.filename || file.path,
-                }
+                    [updateField]: cloudResult.secure_url,
+                    kycStatus: 'pending',
+                },
             },
             { new: true }
         )
 
+        // Notify KYC reviewers and super admins
+        const io = req.app.locals.io
+        notifyAdmins({
+            roles: ['kyc_reviewer'],
+            type: 'kyc_submitted',
+            title: 'KYC document submitted',
+            message: `${updatedUser.name || 'An organizer'} submitted a ${docType} document for review`,
+            data: { userId: req.params.id, docType },
+            io,
+        }).catch(() => {})
+
         res.status(200).json({
-            message: 'KYC documents uploaded',
+            success: true,
+            message: 'KYC document uploaded successfully',
             user: {
                 _id: updatedUser._id,
                 name: updatedUser.name,
                 email: updatedUser.email,
                 verify: updatedUser.verify,
-            }
+                kycStatus: updatedUser.kycStatus,
+            },
         })
     } catch (err) {
         next(err)

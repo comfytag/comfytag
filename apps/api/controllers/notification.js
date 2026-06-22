@@ -1,4 +1,5 @@
 import Notification from '../models/Notification.js'
+import User from '../models/User.js'
 import { createError } from '../utils/error.js'
 import { emitNotification, emitUnreadCountUpdate, emitNotificationRead, emitAllNotificationsRead } from '../socket/index.js'
 
@@ -138,5 +139,33 @@ export const createNotification = async ({
   } catch (err) {
     // Non-fatal — log but don't crash the parent operation
     console.error('Failed to create notification:', err.message)
+  }
+}
+
+// ─── Admin notification helper ────────────────────────────────────────────────
+// Finds all admin users matching the given role(s) and sends each one a
+// notification. Roles are AND-ed with isAdmin: true.
+// Passing roles: [] sends to ALL admins (super_admin gets everything).
+// Non-fatal — a failure here never blocks the parent operation.
+export const notifyAdmins = async ({ roles = [], type, title, message, data = {}, io = null }) => {
+  try {
+    const filter = { isAdmin: true }
+    if (roles.length > 0) {
+      // Always include super_admin regardless of the role filter
+      filter.$or = [
+        { role: { $in: roles } },
+        { role: 'super_admin' },
+      ]
+    }
+
+    const admins = await User.find(filter).select('_id').lean()
+
+    await Promise.allSettled(
+      admins.map((admin) =>
+        createNotification({ userId: admin._id.toString(), type, title, message, data, io })
+      )
+    )
+  } catch (err) {
+    console.error('[notifyAdmins] Failed:', err.message)
   }
 }

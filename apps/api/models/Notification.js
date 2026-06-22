@@ -10,6 +10,7 @@ const NotificationSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: [
+        // ── Partner / Attendee ──────────────────────────
         'ticket_confirmed',
         'transfer_received',
         'transfer_accepted',
@@ -22,6 +23,10 @@ const NotificationSchema = new mongoose.Schema(
         'kyc_rejected',
         'face_enrolled',
         'ticket_sold',
+        // ── Admin ───────────────────────────────────────
+        'kyc_submitted',         // partner uploaded KYC docs → notify kyc_reviewer
+        'payout_requested',      // partner requested withdrawal → notify finance
+        'organizer_registered',  // new organizer account created → notify support/super_admin
       ],
       required: true,
     },

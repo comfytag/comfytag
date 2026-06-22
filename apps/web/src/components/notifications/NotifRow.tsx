@@ -20,6 +20,9 @@ const TYPE_ICON: Record<NotificationType, string> = {
   kyc_rejected: '👤',
   face_enrolled: '🪪',
   ticket_sold: '🎟️',
+  kyc_submitted: '📄',
+  payout_requested: '💳',
+  organizer_registered: '🏢',
 }
 
 function typeIcon(type: NotificationType): string {

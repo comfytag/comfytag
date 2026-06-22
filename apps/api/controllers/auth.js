@@ -11,7 +11,7 @@ import { constants } from "buffer";
 import { createError } from '../utils/error.js';
 import speakeasy from 'speakeasy';
 import { enqueueEmail } from '../jobs/emailQueue.js';
-import { createNotification } from './notification.js';
+import { createNotification, notifyAdmins } from './notification.js';
 import { generateReferralCode, generateFallbackCode } from '../utils/referralCode.js';
 
 
@@ -259,6 +259,17 @@ export const register = async (req,res,next) =>{
 			enqueueWelcomeSeries(user._id.toString(), 'attendee', user.toObject()).catch(err =>
 				console.error('[Auth] ERROR: Welcome series error (non-blocking) - ' + err.message)
 			);
+		} else {
+			// New organizer — notify support admins
+			const io = req.app?.locals?.io ?? null
+			notifyAdmins({
+				roles: ['support'],
+				type: 'organizer_registered',
+				title: 'New organizer registered',
+				message: `${user.name} (${user.email}) just created an organizer account`,
+				data: { userId: user._id.toString(), email: user.email, name: user.name },
+				io,
+			}).catch(() => {})
 		}
 
 		const { password: _pw, ...safeUser } = user.toObject()
@@ -758,6 +769,17 @@ export const registerAsOrganizer = async (req, res, next) => {
     enqueueWelcomeSeries(updatedUser._id.toString(), 'organizer', updatedUser.toObject()).catch(err =>
       console.error('[Auth] Welcome series error (non-blocking):', err)
     );
+
+    // Notify support admins about the new organizer
+    const io = req.app?.locals?.io ?? null
+    notifyAdmins({
+      roles: ['support'],
+      type: 'organizer_registered',
+      title: 'New organizer registered',
+      message: `${updatedUser.name} (${updatedUser.email}) upgraded to organizer`,
+      data: { userId: updatedUser._id.toString(), email: updatedUser.email, name: updatedUser.name },
+      io,
+    }).catch(() => {})
 
     res.status(200).json({
       message: 'Organizer registration successful',
