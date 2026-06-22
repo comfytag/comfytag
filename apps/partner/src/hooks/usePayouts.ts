@@ -31,7 +31,7 @@ export function useWallet() {
   })
 }
 
-export function useWithdrawals(id: string, token?: string) {
+export function useWithdrawals(id: string) {
   return useQuery({
     queryKey: payoutKeys.withdrawals,
     queryFn: () =>
@@ -39,17 +39,17 @@ export function useWithdrawals(id: string, token?: string) {
         .get<WithdrawRequest[]>(`/withdraw/${id}`)
         .then((r) => r.data ?? []),
     staleTime: 60_000,
-    enabled: !!id && !!token,
+    enabled: !!id,
   })
 }
 
-export function useBankAccount(id: string, token?: string) {
+export function useBankAccount(id: string) {
   return useQuery({
     queryKey: payoutKeys.bank,
     queryFn: () =>
       api.get<BankAccount[]>(`/bank/${id}`).then((r) => r.data ?? []),
     staleTime: 300_000,
-    enabled: !!id && !!token,
+    enabled: !!id,
   })
 }
 

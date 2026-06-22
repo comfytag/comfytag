@@ -45,8 +45,8 @@ export default function PayoutsPage() {
 
   const pendingAmount = withdrawals
     .filter((w) => w.status === 'pending')
-    .reduce((sum, w) => sum + w.amount, 0)
-  const availableAmount = wallet.balance - pendingAmount
+    .reduce((sum, w) => sum + (w.amount ?? 0), 0)
+  const availableAmount = (wallet.balance ?? 0) - pendingAmount
 
   return (
     <>

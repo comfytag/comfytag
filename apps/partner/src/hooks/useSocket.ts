@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { useSession } from 'next-auth/react'
 
@@ -13,55 +13,37 @@ let socketInstance: Socket | null = null
  */
 export const useSocket = (): Socket | null => {
   const { data: session } = useSession()
-  const socketRef = useRef<Socket | null>(null)
+  // useState (not useRef) so callers re-render when the socket becomes available
+  const [socket, setSocket] = useState<Socket | null>(null)
 
-  /**
-   * Initialize Socket.io connection on mount
-   * Only creates one connection even if hook is used in multiple components
-   */
   useEffect(() => {
-    // Skip if no session (user not authenticated)
+    // Disconnect and clear when logged out
     if (!session?.user) {
       if (socketInstance) {
         socketInstance.disconnect()
         socketInstance = null
       }
+      setSocket(null)
       return
     }
 
-    // If socket already exists and is connected, return it
+    // Reuse existing connected singleton
     if (socketInstance && socketInstance.connected) {
-      socketRef.current = socketInstance
+      setSocket(socketInstance)
       return
     }
 
-    // Create new socket connection
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4002'
 
     const newSocket = io(apiUrl, {
       auth: {
-        token: session?.user?.token,
+        token: session.user.token,
       },
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       reconnectionAttempts: 5,
       transports: ['websocket', 'polling'],
-    })
-
-    /**
-     * Connection event handlers
-     */
-    newSocket.on('connect', () => {
-      // Connected
-    })
-
-    newSocket.on('connected', (data) => {
-      // Server confirmed connection
-    })
-
-    newSocket.on('disconnect', (reason) => {
-      // Disconnected
     })
 
     newSocket.on('error', (error) => {
@@ -72,44 +54,22 @@ export const useSocket = (): Socket | null => {
       console.error('[Socket.io] Connection error:', error)
     })
 
-    // Store in singleton and ref
+    // Persist as singleton and expose to callers via state
     socketInstance = newSocket
-    socketRef.current = newSocket
+    setSocket(newSocket)
 
-    // Cleanup: Disconnect on unmount (only if no other components using it)
-    return () => {
-      // Note: We don't disconnect here to maintain singleton pattern
-      // Socket persists across navigation and only disconnects on logout
-    }
+    // Socket persists across navigation — only disconnects on logout
   }, [session])
 
-  // Disconnect on logout
-  useEffect(() => {
-    if (!session && socketInstance) {
-      socketInstance.disconnect()
-      socketInstance = null
-      socketRef.current = null
-    }
-  }, [session])
-
-  return socketRef.current
+  return socket
 }
 
-/**
- * Helper function to get socket instance without React hooks
- * Useful for calling from non-component code
- */
-export const getSocketInstance = (): Socket | null => {
-  return socketInstance
-}
+export const getSocketInstance = (): Socket | null => socketInstance
 
-/**
- * Helper function to disconnect socket
- * Called on logout
- */
 export const disconnectSocket = () => {
   if (socketInstance) {
     socketInstance.disconnect()
     socketInstance = null
   }
 }
+

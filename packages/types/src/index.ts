@@ -173,6 +173,8 @@ export type NotificationType =
   | 'payout_rejected'
   | 'kyc_approved'
   | 'kyc_rejected'
+  | 'face_enrolled'
+  | 'ticket_sold'
 
 export interface Notification {
   _id: string

@@ -72,8 +72,8 @@ export default function WithdrawPage() {
   const [selectedEventId, setSelectedEventId] = useState('')
   const [formError, setFormError] = useState('')
 
-  const requestsQuery = useWithdrawals(sessionStatus === 'authenticated' ? (userId ?? '') : '', token)
-  const banksQuery = useBankAccount(sessionStatus === 'authenticated' ? (userId ?? '') : '', token)
+  const requestsQuery = useWithdrawals(sessionStatus === 'authenticated' ? (userId ?? '') : '')
+  const banksQuery = useBankAccount(sessionStatus === 'authenticated' ? (userId ?? '') : '')
   const eventsQuery = useMyEvents()
   const revenueQuery = usePartnerRevenue()
   const withdrawMutation = useRequestPayout()

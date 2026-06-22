@@ -1,9 +1,11 @@
 'use client'
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Plus, Edit2, Trash2 } from 'lucide-react'
 import { ErrorMessage } from '@comfytag/ui'
 import { api } from '@/lib/api'
+import { payoutKeys } from '@/hooks/queryKeys'
 import type { BankAccount } from '@comfytag/types'
 
 interface BankFormData {
@@ -23,6 +25,7 @@ const LABEL_CLASS =
 
 export function BankSection({ banks: initialBanks }: Props) {
   const { data: session } = useSession()
+  const qc = useQueryClient()
   const [banks, setBanks] = useState<BankAccount[]>(initialBanks)
   const [mode, setMode] = useState<'view' | 'add' | 'edit'>('view')
   const [editingBank, setEditingBank] = useState<BankAccount | null>(null)
@@ -56,12 +59,14 @@ export function BankSection({ banks: initialBanks }: Props) {
           form
         )
         setBanks(prev => [...prev, res.data.data ?? res.data])
+        qc.invalidateQueries({ queryKey: payoutKeys.bank })
       } else if (mode === 'edit' && editingBank) {
         const res = await api.put(
           `/bank/edit/${editingBank._id}`,
           form
         )
         setBanks(prev => prev.map(b => b._id === editingBank._id ? (res.data.data ?? res.data) : b))
+        qc.invalidateQueries({ queryKey: payoutKeys.bank })
       }
       setMode('view')
     } catch (err) {
@@ -76,6 +81,7 @@ export function BankSection({ banks: initialBanks }: Props) {
     try {
       await api.delete(`/bank/${bankId}`)
       setBanks(prev => prev.filter(b => b._id !== bankId))
+      qc.invalidateQueries({ queryKey: payoutKeys.bank })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete bank account')
     }

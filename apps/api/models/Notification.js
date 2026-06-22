@@ -20,6 +20,8 @@ const NotificationSchema = new mongoose.Schema(
         'payout_rejected',
         'kyc_approved',
         'kyc_rejected',
+        'face_enrolled',
+        'ticket_sold',
       ],
       required: true,
     },

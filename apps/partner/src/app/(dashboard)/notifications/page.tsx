@@ -1,11 +1,13 @@
 ﻿'use client'
 
+import { useContext, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader, ErrorMessage, LoadingSpinner } from '@comfytag/ui'
 import type { Notification } from '@comfytag/types'
 import { NotificationsPanel } from '@/components/notifications/NotificationsPanel'
 import { api } from '@/lib/api'
+import { NotificationContext } from '@/contexts/NotificationContext'
 
 interface NotificationsResponse {
   notifications: Notification[]
@@ -17,6 +19,7 @@ interface NotificationsResponse {
 
 export default function NotificationsPage() {
   const { data: session } = useSession()
+  const { setUnreadCount } = useContext(NotificationContext)
 
   const { data, isLoading, isError } = useQuery<NotificationsResponse>({
     queryKey: ['notifications', session?.user.id],
@@ -24,10 +27,17 @@ export default function NotificationsPage() {
       api
         .get<NotificationsResponse>('/notification', {
           params: { page: 1, limit: 50 },
-          })
+        })
         .then((r) => r.data),
     enabled: !!session?.user.id,
   })
+
+  // Sync badge count from HTTP response (handles cold loads before socket connects)
+  useEffect(() => {
+    if (typeof data?.unreadCount === 'number') {
+      setUnreadCount(data.unreadCount)
+    }
+  }, [data?.unreadCount, setUnreadCount])
 
   const notifications = data?.notifications ?? []
   const unreadCount = data?.unreadCount ?? 0
@@ -35,14 +45,14 @@ export default function NotificationsPage() {
   if (isLoading) {
     return (
       <div style={{ padding: '28px 32px' }}>
-        <PageHeader title="Notifications" subtitle="Loadingâ€¦" />
+        <PageHeader title="Notifications" subtitle="Loading…" />
         <LoadingSpinner centered size="lg" />
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '28px 32px' }}>
+    <div style={{ padding: '28px 0px' }}>
       <PageHeader
         title="Notifications"
         subtitle={unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}

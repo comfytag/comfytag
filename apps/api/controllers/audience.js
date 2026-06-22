@@ -107,6 +107,26 @@ export const createFreeAudience = async (req, res, next) => {
           },
           from: 'tickets@comfytag.com',
         }).catch(err => console.error('[FreeTicket] Email queue failed:', err.message))
+
+        // Notify organizer that a free ticket was claimed
+        if (event?.planner_id) {
+            const io = req.app.locals.io
+            const qty = savedAudience.numOfTicket || 1
+            await createNotification({
+                userId: event.planner_id,
+                type: 'ticket_sold',
+                title: 'Free ticket claimed',
+                message: `${qty} free ticket${qty > 1 ? 's' : ''} claimed for ${savedAudience.eventname}`,
+                data: {
+                    eventId: eventId,
+                    eventName: savedAudience.eventname,
+                    ticketId: savedAudience._id.toString(),
+                    qty: String(qty),
+                    revenue: '0',
+                },
+                io,
+            }).catch(err => console.error('[Notification] Organizer ticket_sold failed:', err.message))
+        }
     } catch (err) {
         next(err)
     }
@@ -218,6 +238,26 @@ export const createAudience = async (req, res, next) => {
           io,
         }).catch(err => console.error('[Notification] In-app creation failed:', err.message))
 
+        // Notify organizer of the sale
+        if (event?.planner_id) {
+          const netEarning = tier.price * numOfTicket
+          await createNotification({
+            userId: event.planner_id,
+            type: 'ticket_sold',
+            title: 'New ticket sale 🎟',
+            message: `${numOfTicket} ticket${numOfTicket > 1 ? 's' : ''} sold for ${savedAudience.eventname} — ₦${netEarning.toLocaleString('en-NG')}`,
+            data: {
+              eventId: eventId,
+              eventName: savedAudience.eventname,
+              ticketId: savedAudience._id.toString(),
+              qty: String(numOfTicket),
+              revenue: String(netEarning),
+              tierName,
+            },
+            io,
+          }).catch(err => console.error('[Notification] Organizer ticket_sold failed:', err.message))
+        }
+
         // Enqueue ticket confirmation email (CRITICAL PATH — must succeed)
         const ticketEmailResult = await enqueueEmail({
           to: savedAudience.email,
@@ -246,68 +286,6 @@ export const createAudience = async (req, res, next) => {
 
         if (!ticketEmailResult.success) {
           console.error(`[Audience] ERROR: Ticket confirmation email queue failed for ${savedAudience.email}: ${ticketEmailResult.error}`);
-        }
-
-        // ─── FLOW 3A: EVENT REMINDER SERIES ────────────────────────────────────
-        // Schedule 48h and 4h reminders based on event start time
-        // Guard: event.date may be null — NaN propagates into BullMQ/Redis Lua and crashes the queue
-        const rawHours = event.date ? (event.date - new Date()) / (1000 * 60 * 60) : NaN;
-        const hoursUntilEvent = Number.isFinite(rawHours) ? rawHours : 0;
-        const delay48h = Math.max(0, (hoursUntilEvent - 48) * 60 * 60 * 1000);
-        const delay4h = Math.max(0, (hoursUntilEvent - 4) * 60 * 60 * 1000);
-
-        // Email 1: 48 hours before event
-        const reminder48hResult = await enqueueEmail({
-          to: savedAudience.email,
-          subject: `You're going to ${event.name} in 2 days`,
-          template: 'eventReminder48h.hbs',
-          data: {
-            firstName: savedAudience.name?.split(' ')[0] || '',
-            eventName: event.name,
-            eventId: eventId,
-            eventDate: moment(event.date).format('ddd, MMM D, YYYY'),
-            eventTime: event.startTime || 'TBA',
-            eventVenue: event.venue || 'TBA',
-            viewTicketLink: `${baseUrl}/tickets/${savedAudience._id}`,
-            year: new Date().getFullYear(),
-            unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
-            preferencesUrl: `${baseUrl}/preferences`,
-          },
-          delay: delay48h,
-          from: 'tickets@comfytag.com',
-          userId: userId,
-          notificationType: 'event_reminder',
-        });
-
-        if (!reminder48hResult.success) {
-          console.error(`[Audience] ERROR: 48h reminder queue failed for ${savedAudience.email}: ${reminder48hResult.error}`);
-        }
-
-        // Email 2: 4 hours before event
-        const reminder4hResult = await enqueueEmail({
-          to: savedAudience.email,
-          subject: `${event.name} starts in 4 hours — here's what you need`,
-          template: 'eventReminder4h.hbs',
-          data: {
-            firstName: savedAudience.name?.split(' ')[0] || '',
-            eventName: event.name,
-            eventId: eventId,
-            eventTime: event.startTime || 'TBA',
-            eventAddress: event.address || '',
-            eventVenue: event.venue || 'TBA',
-            ticketLink: `${baseUrl}/tickets/${savedAudience._id}`,
-            year: new Date().getFullYear(),
-            unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
-            preferencesUrl: `${baseUrl}/preferences`,
-          },
-          delay: delay4h,
-          from: 'tickets@comfytag.com',
-          userId: userId,
-          notificationType: 'event_reminder',
-        });
-
-        if (!reminder4hResult.success) {
-          console.error(`[Audience] ERROR: 4h reminder queue failed for ${savedAudience.email}: ${reminder4hResult.error}`);
         }
     } catch (err) {
         next(err)

@@ -4,7 +4,6 @@ import Event from '../models/Event.js'
 import SiteConfig from '../models/SiteConfig.js'
 import { createError } from '../utils/error.js'
 import { createNotification } from './notification.js'
-import { enqueueEmail } from '../jobs/emailQueue.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // KYC Management  (full implementation)
@@ -56,22 +55,6 @@ export const approveKyc = async (req, res, next) => {
             io,
         }).catch(err => console.error('[Admin KYC] Notification error:', err.message))
 
-        enqueueEmail({
-            to: user.email,
-            subject: "Identity verified ✓ You're ready",
-            template: 'kycApproved.hbs',
-            data: {
-                organizerName: user.name,
-                bankSetupLink: `${baseUrl}/partner/settings/bank`,
-                supportEmail: 'support@comfytag.com',
-                year: new Date().getFullYear(),
-                unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`,
-                preferencesUrl: `${baseUrl}/partner/preferences`,
-            },
-            from: 'support@comfytag.com',
-            replyTo: 'support@comfytag.com',
-        }).catch(err => console.error('[Admin KYC] Approval email queue error:', err.message))
-
         return res.status(200).json({
             success: true,
             message: `KYC '${kycType}' approved for user ${userId}.`,
@@ -119,23 +102,6 @@ export const rejectKyc = async (req, res, next) => {
             data: { rejectionReason: reason, reuploadLink: `${baseUrl}/partner/kyc` },
             io,
         }).catch(err => console.error('[Admin KYC] Rejection notification error:', err.message))
-
-        enqueueEmail({
-            to: user.email,
-            subject: "We need clearer documents — here's how",
-            template: 'kycRejected.hbs',
-            data: {
-                organizerName: user.name,
-                rejectionReason: reason,
-                reuploadLink: `${baseUrl}/partner/kyc`,
-                supportChatLink: `${baseUrl}/support/chat`,
-                year: new Date().getFullYear(),
-                unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`,
-                preferencesUrl: `${baseUrl}/partner/preferences`,
-            },
-            from: 'support@comfytag.com',
-            replyTo: 'support@comfytag.com',
-        }).catch(err => console.error('[Admin KYC] Rejection email queue error:', err.message))
 
         return res.status(200).json({
             success: true,
@@ -364,25 +330,6 @@ export const processPayout = async (req, res, next) => {
             io,
         }).catch(err => console.error('[Admin Payout] Notification error:', err.message))
 
-        User.findById(withdrawal.user_id).select('email name').then(user => {
-            if (!user) return
-            enqueueEmail({
-                to: user.email,
-                subject: 'Your payout has been sent',
-                template: 'payoutSent.hbs',
-                data: {
-                    organizerName: user.name,
-                    amount: withdrawal.amount,
-                    bankName: withdrawal.bankName,
-                    acctName: withdrawal.acctName,
-                    dashboardLink: `${baseUrl}/partner/withdraw`,
-                    year: new Date().getFullYear(),
-                },
-                from: 'support@comfytag.com',
-                replyTo: 'support@comfytag.com',
-            }).catch(err => console.error('[Admin Payout] Email error:', err.message))
-        }).catch(err => console.error('[Admin Payout] User lookup error:', err.message))
-
         return res.status(200).json({
             success: true,
             message: 'Payout marked as sent.',
@@ -424,25 +371,6 @@ export const rejectPayout = async (req, res, next) => {
             },
             io,
         }).catch(err => console.error('[Admin Payout] Rejection notification error:', err.message))
-
-        User.findById(withdrawal.user_id).select('email name').then(user => {
-            if (!user) return
-            enqueueEmail({
-                to: user.email,
-                subject: 'Your payout request could not be processed',
-                template: 'payoutRejected.hbs',
-                data: {
-                    organizerName: user.name,
-                    amount: withdrawal.amount,
-                    rejectionReason,
-                    supportChatLink: `${baseUrl}/support/chat`,
-                    resubmitLink: `${baseUrl}/partner/withdraw`,
-                    year: new Date().getFullYear(),
-                },
-                from: 'support@comfytag.com',
-                replyTo: 'support@comfytag.com',
-            }).catch(err => console.error('[Admin Payout] Rejection email error:', err.message))
-        }).catch(err => console.error('[Admin Payout] User lookup error:', err.message))
 
         return res.status(200).json({
             success: true,

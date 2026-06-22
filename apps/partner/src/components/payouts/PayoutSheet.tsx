@@ -57,7 +57,6 @@ export function PayoutSheet({
     },
   })
 
-  const activeBanks = banks.filter((b) => b.isActive)
   const amountNum = parseInt(amount, 10)
   const isAmountValid = !isNaN(amountNum) && amountNum > 0 && amountNum <= maxAmount
   const isValid = isAmountValid && !!selectedBankId && !isPending
@@ -132,7 +131,7 @@ export function PayoutSheet({
           >
             Destination Account
           </label>
-          {activeBanks.length === 0 ? (
+          {banks.length === 0 ? (
             <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
               <p className="text-sm text-amber-700 font-medium">
                 No active bank accounts. Add one in Settings.
@@ -147,7 +146,7 @@ export function PayoutSheet({
                 className="w-full appearance-none bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3 pr-10 text-sm font-medium text-zinc-800 focus:outline-none transition-colors cursor-pointer"
               >
                 <option value="">Choose bank account…</option>
-                {activeBanks.map((bank) => (
+                {banks.map((bank) => (
                   <option key={bank._id} value={bank._id}>
                     {bank.bankName} — {bank.acctNumber} ({bank.acctName})
                   </option>
