@@ -1,5 +1,5 @@
 import express from 'express'
-import { createEvent, deleteEvent, eventsByCategory, eventsByPayment, eventsByState, getAllEvents, getEvent, getPlannerEvents, updateEvent, eventsByPick, eventsBySales, eventsByFilter, eventsBySingleFilter, getEventFeed, getEventsByState, updateTicketTier, deleteTicketTier, getTicketTierStats, getEventCategories, getEventStates, publishEvent, cancelEvent } from '../controllers/event.js';
+import { createEvent, deleteEvent, eventsByCategory, eventsByPayment, eventsByState, getAllEvents, getEvent, getPlannerEvents, updateEvent, eventsByPick, eventsBySales, eventsByFilter, eventsBySingleFilter, getEventFeed, getEventsByState, updateTicketTier, deleteTicketTier, getTicketTierStats, getEventCategories, getEventStates, publishEvent, cancelEvent, getCategoryCounts } from '../controllers/event.js';
 import { verifyAdmin, verifyUser, verifyToken } from '../utils/verifyToken.js';
 
 const router = express.Router()
@@ -18,6 +18,7 @@ const router = express.Router()
 router.get("/feed", getEventFeed)
 router.get("/nearby", getEventsByState)
 router.get("/categories", getEventCategories)
+router.get("/category-counts", getCategoryCounts)
 router.get("/states", getEventStates)
 router.get("/category/byCategory", eventsByCategory)
 router.get("/filter/byType", eventsByFilter)
@@ -33,8 +34,8 @@ router.post("/:userId", verifyUser, createEvent)
 
 // Ticket tier management
 router.get("/:id/tiers/stats", getTicketTierStats)
-router.put("/:id/tiers/:tierId", verifyToken, updateTicketTier)
-router.delete("/:id/tiers/:tierId", verifyToken, deleteTicketTier)
+router.put("/:id/tiers/:tierId", verifyUser, updateTicketTier)
+router.delete("/:id/tiers/:tierId", verifyUser, deleteTicketTier)
 
 // Event status transitions (explicit state machine)
 router.post("/:id/publish", verifyUser, publishEvent)

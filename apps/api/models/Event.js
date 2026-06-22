@@ -19,9 +19,18 @@ const EventSchema = new Schema({
         type: String,
         required: true,
     },
+    secondaryCategory: {
+        type: String,
+        default: '',
+    },
     description: {
         type: String,
         required: true,
+    },
+    headline: {
+        type: String,
+        trim: true,
+        maxlength: 150,
     },
     date: {
         type: Date,

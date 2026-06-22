@@ -30,19 +30,27 @@ export const config = {
   },
 
   // CORS configuration
-  // Dev allows localhost, Prod allows real domains
+  // Dev allows localhost, Prod allows real domains.
+  // Set CORS_MOBILE_ORIGINS (comma-separated) to add LAN IP origins for mobile testing.
   cors: {
-    origins: process.env.NODE_ENV === 'development'
-      ? [
-          'http://localhost:3000',
-          'http://localhost:3001',
-          'http://localhost:3002',
-        ]
-      : [
-          process.env.WEB_URL,
-          process.env.PARTNER_URL,
-          process.env.ADMIN_URL,
-        ].filter(Boolean),
+    origins: [
+      ...(process.env.NODE_ENV === 'development'
+        ? [
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'http://localhost:3002',
+          ]
+        : [
+            process.env.WEB_URL,
+            process.env.PARTNER_URL,
+            process.env.ADMIN_URL,
+          ].filter(Boolean)
+      ),
+      ...(process.env.CORS_MOBILE_ORIGINS
+        ? process.env.CORS_MOBILE_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
+        : []
+      ),
+    ],
   },
 
   // Feature flags - enable/disable per environment

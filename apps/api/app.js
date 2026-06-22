@@ -15,12 +15,16 @@ import { testRedisConnection } from './jobs/emailQueue.js'
 // Validate environment at startup (fail fast if missing env vars)
 await validateEnvironment()
 
-// Test Redis connectivity on every startup — queue crashes in dev are caught early too
-try {
-  await testRedisConnection()
-} catch (err) {
-  console.error(`\n❌ Startup failed: ${err.message}\n`)
-  process.exit(1)
+// Only verify Redis when the email queue is active (production)
+if (config.features.emailQueue) {
+  try {
+    await testRedisConnection()
+  } catch (err) {
+    console.error(`\n❌ Startup failed: ${err.message}\n`)
+    process.exit(1)
+  }
+} else {
+  console.log(`[Email Queue] Queue disabled in ${config.env} mode — emails will send directly via SES/Resend`)
 }
 
 const connect = async () => {
@@ -52,6 +56,7 @@ import referralRouter from './routes/referral.js'
 import walletRouter from './routes/wallet.js'
 import ticketTokenRouter from './routes/ticketToken.js'
 import configRouter from './routes/config.js'
+import cmsRouter from './routes/cms.js'
 import paystackVerifyRouter from './routes/paystackVerify.js'
 import testimonialRouter from './routes/testimonial.js'
 import uploadRouter from './routes/upload.js'
@@ -61,6 +66,7 @@ import teamRouter from './routes/team.js'
 import partnerRouter from './routes/partner.js'
 import { verifyPartner } from './utils/verifyToken.js'
 import adminRouter from './routes/admin.js'
+import webhooksRouter from './routes/webhooks.js'
 import cron from 'node-cron'
 import { updateExpiredTickets } from './jobs/updateExpiredTickets.js'
 
@@ -69,6 +75,11 @@ import { updateExpiredTickets } from './jobs/updateExpiredTickets.js'
 
 
 
+
+// ─── AWS SNS webhook — must be registered BEFORE global bodyParser so that
+//     SNS's text/plain body is parsed as a raw string rather than ignored.
+app.use('/api/webhooks', express.text({ type: ['text/plain', 'application/json', '*/*'] }));
+app.use('/api/webhooks', webhooksRouter);
 
 // Middlewares
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -159,6 +170,7 @@ app.use('/referral', referralRouter)
 app.use('/wallet', walletRouter)
 app.use('/tickets', ticketTokenRouter)
 app.use('/config', configRouter)
+app.use('/cms', cmsRouter)
 app.use('/paystack', paystackVerifyRouter)
 app.use('/testimonials', testimonialRouter)
 app.use('/upload', uploadRouter)
@@ -298,7 +310,17 @@ function findDomainIp(domain) {
 
 
 connect()
-  .then(() => {
+  .then(async () => {
+    // Drop the old strict unique index so Mongoose can recreate it as sparse.
+    // This is a one-shot migration — once the sparse index is in place the
+    // dropIndex call silently errors (index not found) and is ignored.
+    try {
+      await mongoose.connection.collection('users').dropIndex('referralFallbackCode_1');
+      console.log('✅ Dropped strict referralFallbackCode index — will be recreated as sparse');
+    } catch {
+      // Already dropped or never existed — safe to ignore
+    }
+
     // Create HTTP server wrapper for Express app
     const httpServer = http.createServer(app)
 

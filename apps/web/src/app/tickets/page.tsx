@@ -1,47 +1,38 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
+import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-
-const TICKETS_PAGE_STYLES = `
-  .__ct_tickets_heading {
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--color-text);
-  }
-
-  .__ct_tickets_wrap {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 32px 24px 80px;
-  }
-`
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import type { Ticket, User } from '@comfytag/types'
 import { LoadingSpinner, EmptyState } from '@comfytag/ui'
-import { authHeader } from '@comfytag/utils'
 import { api } from '@/lib/api'
 import { Navbar } from '@/components/layout/Navbar'
 import { TicketListItem } from '@/components/tickets/TicketListItem'
 import { FaceEnrollmentBanner } from '@/components/tickets/FaceEnrollmentBanner'
-import { TabBar } from '@/components/ui/TabBar'
 import { useMyTickets } from '@/hooks/useTickets'
-
-type Tab = 'upcoming' | 'past'
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function TicketsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { data: tickets = [], isLoading } = useMyTickets()
-  const [activeTab, setActiveTab] = useState<Tab>('upcoming')
 
   const { data: profileData } = useQuery({
     queryKey: ['profile', session?.user?.id],
     queryFn: () => api.get(`/users/${session!.user.id}`).then(r => r.data?.data ?? r.data),
     enabled: !!session?.user?.id,
     staleTime: 60_000,
+  })
+
+  const { data: faceEnrollmentBannerConfig } = useQuery<{ title?: string; body?: string } | null>({
+    queryKey: ['cms-banner', 'face-enrollment'],
+    queryFn: () =>
+      api
+        .get('/cms/banners?key=face-enrollment')
+        .then((r) => (r.data?.data as Array<{ title?: string; body?: string }>)?.[0] ?? null),
+    staleTime: 3_600_000,
   })
 
   if (status === 'loading') {
@@ -64,11 +55,10 @@ export default function TicketsPage() {
     if (!rawDate) return null
 
     const base = new Date(rawDate)
-    const startTime = t.eventTime    // 'HH:MM'
-    const endTime   = t.eventEndTime // 'HH:MM'
+    const startTime = t.eventTime
+    const endTime   = t.eventEndTime
 
     if (!startTime || !endTime) {
-      // Fallback: treat end-of-day on the event date
       base.setHours(23, 59, 59, 999)
       return base
     }
@@ -79,11 +69,8 @@ export default function TicketsPage() {
     const endDateTime = new Date(base)
     endDateTime.setHours(endH, endM, 0, 0)
 
-    // Overnight check: if the end hour is strictly before the start hour the
-    // event wraps past midnight, so the actual end is the following morning.
-    if (endH < startH) {
-      endDateTime.setDate(endDateTime.getDate() + 1)
-    }
+    // Overnight check: end before start means event wraps past midnight.
+    if (endH < startH) endDateTime.setDate(endDateTime.getDate() + 1)
 
     return endDateTime
   }
@@ -100,9 +87,6 @@ export default function TicketsPage() {
     return end ? now > end : false
   })
 
-  // Adapter: build a User-compatible object for FaceEnrollmentBanner.
-  // faceEnrolled is not stored in the JWT session, so we default to false —
-  // the banner handles its own localStorage dismiss state internally.
   const bannerUser = {
     _id: session.user.id,
     name: session.user.name,
@@ -119,49 +103,118 @@ export default function TicketsPage() {
     updatedAt: new Date().toISOString(),
   } as User
 
+  const showFaceBanner = upcoming.length > 0 && !bannerUser.faceEnrolled
+
+  const handleTicketAction = (
+    action: 'show-qr' | 'transfer' | 'details',
+    ticket: Ticket
+  ): void => {
+    if (action === 'transfer') {
+      router.push(`/tickets/${ticket._id}/transfer`)
+    } else {
+      router.push(`/tickets/${ticket._id}`)
+    }
+  }
+
   return (
     <>
-      <style>{TICKETS_PAGE_STYLES}</style>
       <Navbar />
-      <main className="__ct_tickets_wrap">
-        <h1 className="__ct_tickets_heading" style={{ marginBottom: '24px' }}>My Tickets</h1>
+      <div className="w-full min-h-screen bg-zinc-50/50 pt-24 pb-16">
+        <div className="max-w-5xl mx-auto px-4 md:px-8">
 
-        <FaceEnrollmentBanner
-          user={bannerUser}
-          onDismiss={() => {}}
-        />
+          {/* ── Page Header ── */}
+          <div className="flex items-center gap-3 mb-8">
+            <h1 className="text-3xl font-black text-zinc-900 tracking-tight">My Wallet</h1>
+            {!isLoading && upcoming.length > 0 && (
+              <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-700 text-xs font-bold tabular-nums">
+                {upcoming.length} active
+              </span>
+            )}
+          </div>
 
-        <TabBar
-          tabs={[
-            { label: 'Upcoming', value: 'upcoming', count: upcoming.length },
-            { label: 'Past', value: 'past', count: past.length },
-          ]}
-          activeTab={activeTab}
-          onChange={(value) => setActiveTab(value as Tab)}
-          variant="pill"
-        />
-
-        {isLoading ? (
-          <LoadingSpinner size="lg" centered />
-        ) : activeTab === 'upcoming' ? (
-          upcoming.length === 0 ? (
-            <EmptyState
-              title="No upcoming tickets"
-              subtitle="Browse events and get your first ticket."
-              action={{ label: 'Browse events', href: '/' }}
+          {/* ── Face Biometric Promo Banner ── */}
+          {showFaceBanner && (
+            <FaceEnrollmentBanner
+              user={bannerUser}
+              onDismiss={() => {}}
+              title={faceEnrollmentBannerConfig?.title}
+              body={faceEnrollmentBannerConfig?.body}
             />
+          )}
+
+          {/* ── Loading state ── */}
+          {isLoading ? (
+            <div className="mt-12">
+              <LoadingSpinner size="lg" centered />
+            </div>
+
+          ) : tickets.length === 0 ? (
+            /* ── Empty wallet placeholder ── */
+            <div className="border-2 border-dashed border-zinc-200 rounded-3xl bg-white p-16 text-center flex flex-col items-center justify-center mt-8">
+              <div className="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="w-8 h-8 text-zinc-400"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z"
+                  />
+                </svg>
+              </div>
+              <p className="text-base font-semibold text-zinc-700 mb-2">Your wallet is currently empty.</p>
+              <p className="text-sm text-zinc-500 mb-6 max-w-xs leading-relaxed">
+                Explore active vibes to book your next live pass.
+              </p>
+              <Link
+                href="/events"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white text-sm font-semibold rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2"
+              >
+                Browse Events
+              </Link>
+            </div>
+
           ) : (
-            upcoming.map((t) => <TicketListItem key={t._id} ticket={t} />)
-          )
-        ) : past.length === 0 ? (
-          <EmptyState
-            title="No past events yet"
-            subtitle="Your attended events will appear here."
-          />
-        ) : (
-          past.map((t) => <TicketListItem key={t._id} ticket={t} isPast />)
-        )}
-      </main>
+            /* ── Ticket pass list ── */
+            <div className="space-y-4 mt-8">
+
+              {upcoming.length > 0 && (
+                <section>
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">
+                    Upcoming Passes
+                  </h2>
+                  <div className="space-y-3">
+                    {upcoming.map((t) => (
+                      <TicketListItem key={t._id} ticket={t} onAction={handleTicketAction} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {past.length > 0 && (
+                <section className={upcoming.length > 0 ? 'mt-8' : ''}>
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">
+                    Past Passes
+                  </h2>
+                  <div className="space-y-3">
+                    {past.map((t) => (
+                      <TicketListItem key={t._id} ticket={t} isPast onAction={handleTicketAction} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+            </div>
+          )}
+
+        </div>
+      </div>
     </>
   )
 }

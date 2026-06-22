@@ -36,7 +36,7 @@ export function AvatarInitials({
   const fontSizeValue = fontSize ?? Math.max(12, Math.floor(size / 3))
 
   return (
-    <div
+    <span
       className={className}
       style={{
         width: size,
@@ -53,6 +53,6 @@ export function AvatarInitials({
       }}
     >
       {initials(name)}
-    </div>
+    </span>
   )
 }

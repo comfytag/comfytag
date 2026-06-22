@@ -62,8 +62,8 @@ const UserSchema = new Schema({
         // ─── KYC Tracking ─────────────────────────────
         kycStatus: {
             type: String,
-            enum: ['pending', 'verified', 'rejected'],
-            default: null,
+            enum: ['unverified', 'pending', 'verified', 'rejected'],
+            default: 'unverified',
         },
         kycRejectionReason: { type: String, default: null },
         kycRejectedAt: { type: Date, default: null },
@@ -106,6 +106,13 @@ const UserSchema = new Schema({
             type: Boolean,
             default: false,
         },
+        // ─── Email Deliverability (AWS SES bounce/complaint suppression) ───
+        emailStatus: {
+            type: String,
+            enum: ['active', 'BOUNCED', 'COMPLAINED'],
+            default: 'active',
+        },
+
         notificationPreferences: {
             type: {
                 email: { type: Boolean, default: true },
@@ -129,10 +136,11 @@ const UserSchema = new Schema({
         referralFallbackCode: {
             // Stable 8-digit numeric code derived from _id.
             // Used for referral tracking when user has no valid username.
+            // No default — leaving the field absent (undefined) so the sparse
+            // index ignores new documents until the code is generated post-save.
             type: String,
             unique: true,
             sparse: true,
-            default: null,
         },
     // },
     // password: { type: String, required: true, }

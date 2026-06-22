@@ -1,53 +1,26 @@
 'use client'
 
 import React from 'react'
-import { Edit2 } from 'lucide-react'
-import { Button, ErrorMessage } from '@comfytag/ui'
 import { formatDate, formatTime, formatNaira } from '@comfytag/utils'
-import { cardStyle } from '@/lib/formStyles'
 import type { CreateEventFormData } from '@/hooks/useCreateEventWizard'
 
-interface SummaryFieldProps {
+interface SummaryCardProps {
   title: string
-  step: 1 | 2 | 3 | 4 | 5
-  onClick: () => void
+  onEdit: () => void
   children: React.ReactNode
 }
 
-function SummaryField({ title, onClick, children }: SummaryFieldProps) {
+function SummaryCard({ title, onEdit, children }: SummaryCardProps) {
   return (
-    <div
-      style={{
-        background: 'var(--color-bg)',
-        borderRadius: '8px',
-        padding: '12px',
-        position: 'relative',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-        <h5 style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)', margin: 0 }}>
-          {title}
-        </h5>
+    <div className="bg-zinc-50 border border-zinc-100 rounded-2xl p-4">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold">{title}</p>
         <button
           type="button"
-          onClick={onClick}
-          aria-label={`Edit ${title}`}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '2px',
-            color: 'var(--color-text-muted)',
-            transition: 'color var(--duration-fast) ease',
-          }}
-          onMouseEnter={e => {
-            (e.target as HTMLElement).style.color = 'var(--color-brand)'
-          }}
-          onMouseLeave={e => {
-            (e.target as HTMLElement).style.color = 'var(--color-text-muted)'
-          }}
+          onClick={onEdit}
+          className="text-violet-600 text-xs font-bold hover:text-violet-700 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded"
         >
-          <Edit2 size={14} />
+          Edit
         </button>
       </div>
       {children}
@@ -72,156 +45,154 @@ export function Step5Summary({
   isPending,
   onPrev,
 }: Step5SummaryProps) {
+  const dateLabel =
+    formData.date && formData.startTime
+      ? `${formatDate(formData.date)} at ${formatTime(formData.startTime)}`
+      : formData.date
+        ? formatDate(formData.date)
+        : '—'
+
+  const locationLabel = [formData.venue, formData.address, formData.state]
+    .filter(Boolean)
+    .join(', ') || '—'
+
   return (
-    <div style={cardStyle}>
-      <h2 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 24px 0', color: 'var(--color-text)' }}>
-        Review & Publish
-      </h2>
+    <>
+    <div className="max-w-3xl mx-auto space-y-5 mt-8 animate-in fade-in duration-300">
+      {/* Celebratory launch header */}
+      <div className="bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl sm:rounded-[2.5rem] p-8 text-center">
+        <div className="text-5xl mb-4" aria-hidden="true">🚀</div>
+        <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 5 of 5</span>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Ready for launch?</h2>
+        <p className="text-sm text-zinc-500 mb-8 max-w-xs mx-auto">
+          Review your event details below. You can always edit before publishing.
+        </p>
+      </div>
 
-      {/* Live Preview */}
-      <div
-        style={{
-          background: 'var(--color-surface-2)',
-          border: '1px solid var(--color-border)',
-          borderRadius: '12px',
-          padding: '24px',
-          marginBottom: '28px',
-        }}
-      >
-        <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text)', margin: '0 0 16px 0' }}>
-          Event Preview
-        </h3>
-
-        {/* Cover + Info */}
-        <div
-          style={{
-            background: 'var(--color-surface)',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            marginBottom: '16px',
-          }}
-        >
-          {formData.coverImage && (
-            <div style={{ width: '100%', height: '200px', position: 'relative', overflow: 'hidden' }}>
-              <img
-                src={formData.coverImage}
-                alt={formData.name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
+      {/* Summary sections */}
+      <div className="bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl sm:rounded-[2.5rem] p-6 space-y-3">
+        <SummaryCard title="Event Info" onEdit={() => onGoToStep(1)}>
+          <p className="text-sm font-bold text-zinc-900 leading-tight">{formData.name || '—'}</p>
+          <p className="text-xs text-zinc-500 mt-1">{dateLabel}</p>
+          <p className="text-xs text-zinc-500 mt-0.5">{locationLabel}</p>
+          {formData.category && (
+            <span className="inline-block mt-2 text-[10px] font-bold bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
+              {formData.category}
+            </span>
           )}
+        </SummaryCard>
 
-          <div style={{ padding: '16px' }}>
-            <h4 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 8px 0' }}>
-              {formData.name || 'Event Name'}
-            </h4>
-            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: 0 }}>
-              {formData.date && formData.startTime
-                ? `${formatDate(formData.date)} at ${formatTime(formData.startTime)}`
-                : 'Date & time'}
-            </p>
-            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '4px 0 0 0' }}>
-              {formData.venue || 'Venue'} • {formData.state || 'State'}
-            </p>
-          </div>
-        </div>
-
-        {/* Summary Sections */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          {/* Description */}
-          <SummaryField
-            title="Description"
-            step={4}
-            onClick={() => onGoToStep(4)}
-          >
-            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.5 }}>
-              {formData.description || 'Add description...'}
-            </p>
-          </SummaryField>
-
-          {/* Tickets */}
-          <SummaryField
-            title={`Tickets (${formData.tiers.length})`}
-            step={3}
-            onClick={() => onGoToStep(3)}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {formData.tiers.slice(0, 2).map((tier, i) => (
-                <div key={i} style={{ fontSize: '13px', color: 'var(--color-text)' }}>
-                  {tier.name} – {formatNaira(Number(tier.price))} (×{tier.capacity})
+        <SummaryCard title={`Images (${formData.images.length})`} onEdit={() => onGoToStep(2)}>
+          {formData.images.length > 0 ? (
+            <div className="flex gap-2 mt-1 overflow-x-auto pb-1">
+              {formData.images.slice(0, 4).map((url, i) => (
+                <div key={url} className="relative shrink-0">
+                  {i === 0 && (
+                    <span className="absolute top-1 left-1 z-10 bg-violet-600 text-white text-[8px] font-bold px-1 py-0.5 rounded-full uppercase pointer-events-none">
+                      Cover
+                    </span>
+                  )}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={url}
+                    alt={`Image ${i + 1}`}
+                    className="w-16 h-11 object-cover rounded-lg border border-zinc-200"
+                  />
                 </div>
               ))}
-              {formData.tiers.length > 2 && (
-                <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                  +{formData.tiers.length - 2} more tier{formData.tiers.length - 2 > 1 ? 's' : ''}
+              {formData.images.length > 4 && (
+                <div className="w-16 h-11 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center shrink-0">
+                  <span className="text-[10px] font-bold text-zinc-400">
+                    +{formData.images.length - 4}
+                  </span>
                 </div>
               )}
             </div>
-          </SummaryField>
+          ) : (
+            <p className="text-sm text-zinc-400">No images uploaded</p>
+          )}
+        </SummaryCard>
 
-          {/* Performers */}
-          <SummaryField
-            title={`Lineup (${formData.performers.length})`}
-            step={4}
-            onClick={() => onGoToStep(4)}
-          >
-            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-              {formData.performers.length > 0 ? (
-                formData.performers.slice(0, 3).map((p, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      fontSize: '12px',
-                      background: 'var(--color-brand)',
-                      color: '#fff',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                    }}
-                  >
-                    {p}
+        <SummaryCard title={`Ticket Tiers (${formData.tiers.length})`} onEdit={() => onGoToStep(3)}>
+          {formData.tiers.length > 0 ? (
+            <div className="space-y-1 mt-1">
+              {formData.tiers.map((tier, i) => (
+                <div key={i} className="flex items-center justify-between text-sm">
+                  <span className="font-semibold text-zinc-800">{tier.name}</span>
+                  <span className="text-zinc-500 text-xs">
+                    {Number(tier.price) === 0 ? 'Free' : formatNaira(Number(tier.price))} · {Number(tier.capacity).toLocaleString()} cap
                   </span>
-                ))
-              ) : (
-                <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>None added</span>
-              )}
+                </div>
+              ))}
             </div>
-          </SummaryField>
+          ) : (
+            <p className="text-sm text-red-500 font-medium">No tiers added — required</p>
+          )}
+        </SummaryCard>
 
-          {/* Visibility */}
-          <SummaryField
-            title="Visibility"
-            step={4}
-            onClick={() => onGoToStep(4)}
+        <SummaryCard title="Description & Details" onEdit={() => onGoToStep(4)}>
+          <p className="text-sm text-zinc-700 leading-relaxed line-clamp-3">
+            {formData.description || <span className="text-zinc-400">No description added</span>}
+          </p>
+          {formData.performers.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {formData.performers.map((p, i) => (
+                <span
+                  key={i}
+                  className="text-[11px] font-semibold bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full"
+                >
+                  {p}
+                </span>
+              ))}
+            </div>
+          )}
+          <p className="text-xs text-zinc-500 mt-2">
+            {formData.details.isPublic ? '🌐 Public event' : '🔒 Private event'}
+          </p>
+        </SummaryCard>
+      </div>
+
+      {/* Mutation error */}
+      {stepErrors && (
+        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+          <p className="text-sm text-red-600 font-medium">{stepErrors}</p>
+        </div>
+      )}
+    </div>
+
+    {/* Sticky launch bar */}
+    <div
+      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50 shadow-[0_-4px_20px_rgb(0,0,0,0.05)]"
+      style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
+    >
+      <div className="max-w-3xl mx-auto flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={() => onSubmit('published')}
+          disabled={isPending}
+          className="w-full bg-zinc-900 text-white font-bold py-3 px-8 rounded-full shadow-sm active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+        >
+          {isPending ? 'Launching…' : '🚀 Publish Event'}
+        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onPrev}
+            className="bg-white border border-zinc-200 text-zinc-700 font-bold py-2.5 px-6 rounded-full hover:bg-zinc-50 active:scale-95 transition-all text-sm"
           >
-            <p style={{ fontSize: '13px', color: 'var(--color-text)', margin: 0 }}>
-              {formData.details.isPublic ? '🌐 Public' : '🔒 Private'}
-            </p>
-          </SummaryField>
+            Back
+          </button>
+          <button
+            type="button"
+            onClick={() => onSubmit('draft')}
+            disabled={isPending}
+            className="flex-1 text-sm font-semibold text-zinc-500 hover:text-zinc-700 transition-colors text-center disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Save as Draft
+          </button>
         </div>
       </div>
-
-      {stepErrors && <ErrorMessage message={stepErrors} />}
-
-      <div style={{ display: 'flex', gap: '12px' }}>
-        <Button variant="ghost" onClick={onPrev}>
-          ← Back
-        </Button>
-        <Button
-          variant="ghost"
-          loading={isPending}
-          onClick={() => onSubmit('draft')}
-        >
-          Save as Draft
-        </Button>
-        <Button
-          variant="primary"
-          loading={isPending}
-          onClick={() => onSubmit('published')}
-          fullWidth
-        >
-          Publish Event
-        </Button>
-      </div>
     </div>
+    </>
   )
 }

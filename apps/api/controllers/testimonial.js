@@ -35,12 +35,14 @@ export const getTestimonial = async (req,res,next) =>{
     }
 }
 
-// GET ALL
-export const getAllTestimonials = async (req,res,next) =>{
-    try{
-        const getTestimonials = await Testimonial.find( )
+// GET ALL — public endpoint returns only approved testimonials, sorted.
+// Admin callers can pass ?all=true to bypass the isApproved filter.
+export const getAllTestimonials = async (req, res, next) => {
+    try {
+        const filter = req.query.all === 'true' ? {} : { isApproved: true }
+        const getTestimonials = await Testimonial.find(filter).sort({ sortOrder: 1, createdAt: -1 })
         res.status(200).json(getTestimonials)
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }

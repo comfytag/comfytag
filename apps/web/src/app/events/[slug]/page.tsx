@@ -202,21 +202,17 @@ export default async function EventDetailPage({
       relatedEvents={relatedEvents}
       initialComments={comments}
       initialHasMore={hasMore}
+      organizer={organizer ? { _id: organizer._id, name: organizer.name, image: organizer.avatar, username: organizer.username } : null}
     >
       <EventLineup performers={event.performers ?? []} />
       <Divider />
       {event.description ? (
-        <p
-          style={{
-            fontSize: '15px',
-            color: 'var(--color-text)',
-            lineHeight: 1.7,
-            marginBottom: '24px',
-            whiteSpace: 'pre-wrap',
-          }}
-        >
-          {event.description}
-        </p>
+        <div>
+          <p className="text-base font-bold text-zinc-900 mb-3">About this event</p>
+          <p className="text-[15px] text-zinc-600 leading-[1.7] whitespace-pre-wrap">
+            {event.description}
+          </p>
+        </div>
       ) : null}
       <EventMediaGallery event={event} />
       <EventLocation event={event} />
@@ -225,10 +221,8 @@ export default async function EventDetailPage({
       {event.planner_id && (
         <>
           <Divider />
-          <div style={{ marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)', marginBottom: '16px' }}>
-              About the Organizer
-            </h3>
+          <div className="mb-6">
+            <h3 className="text-base font-bold text-zinc-900 mb-4">About the Organizer</h3>
             {organizer ? (
               <>
                 <OrganizerCard

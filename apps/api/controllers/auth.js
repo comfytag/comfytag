@@ -4,7 +4,7 @@ import {validatRegister, validatePasswordReset} from "../models/User.js";
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import Token from '../models/token.js'
-import {sendEmails}  from '../utils/sendEmail.js'
+import { sendEmails, FROM_HELLO, FROM_PARTNER } from '../utils/sendEmail.js'
 import crypto from 'crypto'
 import Joi  from  "joi";
 import { constants } from "buffer";
@@ -51,6 +51,7 @@ const enqueueWelcomeSeries = async (userId, type, userData) => {
 				template: 'attendeeWelcome1.hbs',
 				data: templateData,
 				delay: 0,
+				from: FROM_HELLO,
 			}).catch(err => console.error(`[Welcome Series] Failed to queue Email 1:`, err));
 
 			// Email 2: +24h (conditional: email not verified)
@@ -63,6 +64,7 @@ const enqueueWelcomeSeries = async (userId, type, userData) => {
 					verifyUrl: `${baseUrl}/verify-email`,
 				},
 				delay: 24 * 60 * 60 * 1000, // 24 hours
+				from: FROM_HELLO,
 			}).catch(err => console.error(`[Welcome Series] Failed to queue Email 2:`, err));
 
 			// Email 3: +72h (conditional: face not enrolled)
@@ -76,6 +78,7 @@ const enqueueWelcomeSeries = async (userId, type, userData) => {
 					enrollUrl: `${baseUrl}/app/enroll-face`,
 				},
 				delay: 72 * 60 * 60 * 1000, // 72 hours
+				from: FROM_HELLO,
 			}).catch(err => console.error(`[Welcome Series] Failed to queue Email 3:`, err));
 
 		} else if (type === 'organizer') {
@@ -98,6 +101,7 @@ const enqueueWelcomeSeries = async (userId, type, userData) => {
 				template: 'organizerWelcome1.hbs',
 				data: templateData,
 				delay: 0,
+				from: FROM_PARTNER,
 			}).catch(err => console.error(`[Welcome Series] Failed to queue Organizer Email 1:`, err));
 
 			// Email 2: +2d (conditional: KYC not verified)
@@ -110,6 +114,7 @@ const enqueueWelcomeSeries = async (userId, type, userData) => {
 					kycUrl: `${baseUrl}/partner/kyc`,
 				},
 				delay: 2 * 24 * 60 * 60 * 1000, // 2 days
+				from: FROM_PARTNER,
 			}).catch(err => console.error(`[Welcome Series] Failed to queue Organizer Email 2:`, err));
 
 			// Email 3: +4d (conditional: Bank doc not uploaded)
@@ -122,6 +127,7 @@ const enqueueWelcomeSeries = async (userId, type, userData) => {
 					bankUrl: `${baseUrl}/partner/settings/bank`,
 				},
 				delay: 4 * 24 * 60 * 60 * 1000, // 4 days
+				from: FROM_PARTNER,
 			}).catch(err => console.error(`[Welcome Series] Failed to queue Organizer Email 3:`, err));
 
 			// Email 4: +7d (conditional: no events created)
@@ -137,6 +143,7 @@ const enqueueWelcomeSeries = async (userId, type, userData) => {
 					testimonialRole: 'Event Organizer, Lagos',
 				},
 				delay: 7 * 24 * 60 * 60 * 1000, // 7 days
+				from: FROM_PARTNER,
 			}).catch(err => console.error(`[Welcome Series] Failed to queue Organizer Email 4:`, err));
 
 			// Email 5: +12d (conditional: still no events created)
@@ -150,6 +157,7 @@ const enqueueWelcomeSeries = async (userId, type, userData) => {
 					tutorialUrl: `${baseUrl}/partner/help/getting-started`,
 				},
 				delay: 12 * 24 * 60 * 60 * 1000, // 12 days
+				from: FROM_PARTNER,
 			}).catch(err => console.error(`[Welcome Series] Failed to queue Organizer Email 5:`, err));
 		}
 
@@ -184,18 +192,27 @@ export const register = async (req,res,next) =>{
 		// Generate referral code
 		const referralCode = generateReferralCode(req.body.username, req.body.name);
 
+		// Defensive: strip kycStatus if the payload explicitly passes null so the
+		// schema default ('unverified') is applied cleanly and no ValidationError fires.
+		const { kycStatus: _ks, ...safeBody } = req.body;
+
 		user = await new User({
-			name:      req.body.name,
-			username:  req.body.username,
-			email:     req.body.email,
+			name:      safeBody.name,
+			username:  safeBody.username,
+			email:     safeBody.email,
 			password:  hashPassword,
-			isPartner: req.body.isPartner === true,
+			isPartner: safeBody.isPartner === true,
 			referralCode,
 		}).save();
 
-		// Generate and persist the deterministic fallback code now that _id is known
-		user.referralFallbackCode = generateFallbackCode(user._id);
-		await user.save();
+		// Generate and persist the deterministic fallback code now that _id is known.
+		// Only assign + save if the code is a non-empty string — writing null here
+		// would hit the unique sparse index and cause an E11000 duplicate key error.
+		const fallbackCode = generateFallbackCode(user._id);
+		if (fallbackCode) {
+			user.referralFallbackCode = fallbackCode;
+			await user.save();
+		}
 
 		// Track referral if a ref param was supplied on the registration URL
 		const refParam = req.query.ref;
@@ -210,18 +227,23 @@ export const register = async (req,res,next) =>{
 			}).catch(err => console.error('[Referral] Lookup error:', err.message));
 		}
 
-		const token = await new Token({
+		const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+		await new Token({
 			userId: user._id,
-			token: crypto.randomBytes(32).toString("hex")
+			token: otpCode,
 		}).save();
-		// const url = `${process.env.BASE_URL}partner/auth/${user._id}/verify/${token.token}`;
-		const url =`Please click on the click below to verify your email \n
-		${process.env.BASE_URL}partner/auth/${user._id}/verify/${token.token}`
-		console.log(url)
 
-		// Send verification email with error handling
+		// Send OTP verification email
 		try {
-			const emailResult = await sendEmails(user.email, "Verify Email", url);
+			const emailResult = await enqueueEmail({
+				to: user.email,
+				subject: 'Your ComfyTag Verification Code',
+				template: 'otp.hbs',
+				data: {
+					otp: otpCode,
+					year: new Date().getFullYear(),
+				},
+			});
 			if (!emailResult.success) {
 				console.error(`[Auth] ERROR: Verification email failed for ${user.email}: ${emailResult.error}`);
 				return res.status(500).json({ message: "Failed to send verification email. Please try again." });
@@ -270,10 +292,8 @@ export const register = async (req,res,next) =>{
 		});
 		if (!token) return res.status(400).send({ message: "Invalid link or token expired" });
 		await User.findByIdAndUpdate({ _id: user._id},
-			{ $set: {
-				isVerify: {email : true }
-			   }},
-			   {new: true}
+			{ $set: { "isVerify.email": true } },
+			{ new: true }
 		)
 		await token.deleteOne();
 
@@ -296,6 +316,10 @@ export const login = async (req,res,next) =>{
 		const validPassword = await bcrypt.compare(password, user.password);
 		if (!validPassword)
 			return res.status(401).json({ error: 'Invalid credentials', message: "Invalid username or Password" });
+
+		if (!user.isVerify?.email) {
+			return res.status(403).json({ message: "Your account is not verified yet. Please check your email for the verification link to complete registration." });
+		}
 
 		// Check if user has 2FA enabled (has totpSecret set)
 		if (user.totpSecret) {
@@ -417,10 +441,39 @@ export const googleSignIn = async (req, res) => {
 	}
 };
 
+export const verifyEmailOTP = async (req, res) => {
+	try {
+		const { email, otp } = req.body;
+		if (!email || !otp) {
+			return res.status(400).json({ message: 'Email and verification code are required.' });
+		}
+
+		const user = await User.findOne({ email: email.toLowerCase().trim() });
+		if (!user) {
+			return res.status(400).json({ message: 'User not found.' });
+		}
+
+		const tokenDoc = await Token.findOne({ userId: user._id, token: otp.toString().trim() });
+		if (!tokenDoc) {
+			return res.status(400).json({ message: 'Invalid or expired verification code.' });
+		}
+
+		await User.findByIdAndUpdate(user._id, { $set: { 'isVerify.email': true } });
+		await tokenDoc.deleteOne();
+
+		return res.status(200).json({ success: true, message: 'Email verified successfully!' });
+	} catch (error) {
+		console.error(`[Auth] ERROR: verifyEmailOTP - ${error.message}`);
+		return res.status(500).json({ message: 'Internal Server Error' });
+	}
+};
+
 export const sendVerifyEmail = async (req,res,next) =>{
 
 	try {
-		const user = await User.findOne({ email: req.params.email });
+		// Supports both GET /verify/:email (legacy) and POST /resend-verification { email }
+		const emailParam = req.params.email ?? req.body?.email
+		const user = await User.findOne({ email: emailParam });
 		if (!user) return res.status(404).json({ message: 'User not found' })
 		const userid = user._id
 
@@ -429,18 +482,24 @@ export const sendVerifyEmail = async (req,res,next) =>{
 		if(checkToken){
 			await checkToken.deleteOne();
 		}
-		// Always create a new verification token
-		const token = await new Token({
+		// Always create a new verification token (6-digit OTP)
+		const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+		await new Token({
 			userId: userid,
-			token: crypto.randomBytes(32).toString("hex")
+			token: otpCode,
 		}).save();
-		// const url = `${process.env.BASE_URL}partner/auth/${user._id}/verify/${token.token}`;
-		const url =`Please click on the click below to verify your email \n
-		${process.env.BASE_URL}partner/auth/${token.userId}/verify/${token.token}`
 
-		// Send verification email with error handling
+		// Send OTP verification email
 		try {
-			const emailResult = await sendEmails(user.email, "Verify Email", url);
+			const emailResult = await enqueueEmail({
+				to: user.email,
+				subject: 'Your ComfyTag Verification Code',
+				template: 'otp.hbs',
+				data: {
+					otp: otpCode,
+					year: new Date().getFullYear(),
+				},
+			});
 			if (!emailResult.success) {
 				console.error(`[Auth] ERROR: Resend verify email failed for ${user.email}: ${emailResult.error}`);
 				return res.status(500).json({ message: "Failed to send verification email. Please try again." });
@@ -449,8 +508,6 @@ export const sendVerifyEmail = async (req,res,next) =>{
 			console.error(`[Auth] ERROR: Exception sending resend verify email - ${err.message}`);
 			return res.status(500).json({ message: "Failed to send verification email. Please try again." });
 		}
-
-		console.log(url)
 		res
 			.status(201)
 			.send({ message: "An Email sent to " + user.email + " please verify", data: user });

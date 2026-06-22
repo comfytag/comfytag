@@ -1,59 +1,287 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  /* Public System: Warm Light (Attendee + Mobile) */
-  --color-brand: #7C3AED;
-  --color-brand-dark: #5B21B6;
-  --color-brand-light: #EDE9FE;
-  --color-brand-alpha-4: rgba(124, 58, 237, 0.04);
-  --color-brand-alpha-8: rgba(124, 58, 237, 0.08);
-  --color-bg: #FAFAF9;
-  --color-surface: #FFFFFF;
-  --color-surface-2: #F5F3FF;
-  --color-text: #1C1917;
-  --color-text-muted: #78716C;
-  --color-text-secondary: #78716C;
-  --color-border: #E8E5E0;
-  --color-success: #10B981;
-  --color-error: #EF4444;
-  --color-warning: #F59E0B;
-  --color-energy: #F59E0B;
-  --color-gold: #D97706;
-  --color-info: #3B82F6;
+@custom-variant dark (&:is(.dark *));
 
-  /* Overlay + on-brand text */
-  --color-overlay: rgba(28, 25, 23, 0.60);
-  --color-text-on-brand: #ffffff;
+@source "../";
+@source "../../../packages/ui/src";
 
-  /* Radius scale */
-  --radius-sm:   6px;
-  --radius-md:   12px;
-  --radius-lg:   16px;
-  --radius-xl:   20px;
-  --radius-2xl:  24px;
-  --radius-full: 9999px;
+/* ─────────────────────────────────────────────────────────────────
+   Tailwind v4 theme registration
+   @theme inline → utilities (bg-primary, text-foreground, etc.)
+   reference the CSS vars below so runtime overrides work
+   ───────────────────────────────────────────────────────────────── */
+@theme inline {
+  /* Semantic surface */
+  --color-background:            var(--background);
+  --color-foreground:            var(--foreground);
+  --color-card:                  var(--card);
+  --color-card-foreground:       var(--card-foreground);
+  --color-popover:               var(--popover);
+  --color-popover-foreground:    var(--popover-foreground);
 
-  /* Shadows (public system: low opacity) */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+  /* Brand & action */
+  --color-primary:               var(--primary);
+  --color-primary-foreground:    var(--primary-foreground);
+  --color-secondary:             var(--secondary);
+  --color-secondary-foreground:  var(--secondary-foreground);
+  --color-accent:                var(--accent);
+  --color-accent-foreground:     var(--accent-foreground);
+  --color-muted:                 var(--muted);
+  --color-muted-foreground:      var(--muted-foreground);
+  --color-destructive:           var(--destructive);
 
-  /* Motion */
-  --duration-micro:    100ms;
-  --duration-fast:     200ms;
-  --duration-default:  250ms;
-  --duration-entrance: 300ms;
-  --ease-entrance: cubic-bezier(0.0, 0.0, 0.2, 1.0);
-  --ease-exit:     cubic-bezier(0.4, 0.0, 1.0, 1.0);
-  --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1.0);
+  /* Chrome */
+  --color-border:                var(--border);
+  --color-input:                 var(--input);
+  --color-ring:                  var(--ring);
+
+  /* Status */
+  --color-success:               var(--color-success);
+  --color-error:                 var(--color-error);
+  --color-warning:               var(--color-warning);
+  --color-energy:                var(--color-energy);
+  --color-gold:                  var(--color-gold);
+  --color-info:                  var(--color-info);
+
+  /* Brand legacy (components use --color-brand directly) */
+  --color-brand:                 var(--color-brand);
+  --color-brand-dark:            var(--color-brand-dark);
+  --color-brand-light:           var(--color-brand-light);
+
+  /* Radius — maps to rounded-* utilities */
+  --radius-sm:   var(--radius-sm);
+  --radius-md:   var(--radius-md);
+  --radius-lg:   var(--radius-lg);
+  --radius-xl:   var(--radius-xl);
+  --radius-2xl:  var(--radius-2xl);
+  --radius-full: var(--radius-full);
+
+  /* Font families */
+  --font-sans:            var(--font-sans);
+  --font-display: var(--font-anybody), var(--font-space-grotesk), sans-serif;
+  --font-mono:    var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Animations */
+  --animate-marquee: marquee 30s linear infinite;
+  --font-heading:            var(--font-sans);
+  --color-sidebar-ring:            var(--sidebar-ring);
+  --color-sidebar-border:            var(--sidebar-border);
+  --color-sidebar-accent-foreground:            var(--sidebar-accent-foreground);
+  --color-sidebar-accent:            var(--sidebar-accent);
+  --color-sidebar-primary-foreground:            var(--sidebar-primary-foreground);
+  --color-sidebar-primary:            var(--sidebar-primary);
+  --color-sidebar-foreground:            var(--sidebar-foreground);
+  --color-sidebar:            var(--sidebar);
+  --color-chart-5:            var(--chart-5);
+  --color-chart-4:            var(--chart-4);
+  --color-chart-3:            var(--chart-3);
+  --color-chart-2:            var(--chart-2);
+  --color-chart-1:            var(--chart-1);
+  --radius-3xl:            calc(var(--radius) * 2.2);
+  --radius-4xl:            calc(var(--radius) * 2.6);
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─────────────────────────────────────────────────────────────────
+   :root — Zinc base + Violet-600 primary
+   Zinc is the cleanest neutral: no warm (stone) or cool (slate) cast
+   ───────────────────────────────────────────────────────────────── */
+:root {
+  /* ── Zinc surface scale ──────────────────────────────────────── */   /* zinc-50  */   /* zinc-900 */
+  --card:            oklch(1 0 0);
+  --card-foreground:            oklch(0.145 0 0);   /* zinc-900 */
+  --popover:            oklch(1 0 0);
+  --popover-foreground:            oklch(0.145 0 0);
+
+  /* ── Violet-600 primary ──────────────────────────────────────── */
+  --primary:            oklch(0.205 0 0);   /* violet-600 */
+  --primary-foreground:            oklch(0.985 0 0);
+
+  /* ── Zinc-100 secondary ──────────────────────────────────────── */
+  --secondary:            oklch(0.97 0 0);   /* zinc-100 */
+  --secondary-foreground:            oklch(0.205 0 0);   /* zinc-900 */
+
+  /* ── Muted (zinc-100 / zinc-500) ─────────────────────────────── */
+  --muted:            oklch(0.97 0 0);   /* zinc-100 */
+  --muted-foreground:            oklch(0.556 0 0);   /* zinc-500 */
+
+  /* ── Accent (violet tint for hover/selected states) ──────────── */
+  --accent:            oklch(0.97 0 0);   /* violet-100 */
+  --accent-foreground:            oklch(0.205 0 0);   /* violet-800 */
+
+  /* ── Destructive ─────────────────────────────────────────────── */
+  --destructive:            oklch(0.577 0.245 27.325);   /* red-500 */
+  --destructive-foreground: #FFFFFF;
+
+  /* ── Chrome (zinc-200 for clean borders) ─────────────────────── */
+  --border:            oklch(0.922 0 0);   /* zinc-200 */
+  --input:            oklch(0.922 0 0);   /* zinc-200 */
+  --ring:            oklch(0.708 0 0);   /* violet-600 — focus ring */
+
+  /* ── shadcn default radius ───────────────────────────────────── */
+  --radius:            0.625rem;
+
+  /* ─────────────────────────────────────────────────────────────
+     ComfyTag brand tokens (used directly by components)
+     ───────────────────────────────────────────────────────────── */
+  --color-brand:            #7C3AED;   /* violet-600 */
+  --color-brand-dark:       #5B21B6;   /* violet-700 — hover/pressed */
+  --color-brand-light:      #EDE9FE;   /* violet-100 — tinted bg */
+  --color-brand-alpha-4:    rgba(124, 58, 237, 0.04);
+  --color-brand-alpha-8:    rgba(124, 58, 237, 0.08);
+
+  /* ── Semantic surface aliases (backward compat) ──────────────── */
+  --color-bg:               #FAFAFA;   /* zinc-50  */
+  --color-surface:          #FFFFFF;
+  --color-surface-2:        #F4F4F5;   /* zinc-100 */
+  --color-text:             #18181B;   /* zinc-900 */
+  --color-text-muted:       #71717A;   /* zinc-500 */
+  --color-text-secondary:   #71717A;   /* zinc-500 */
+  --color-border:           #E4E4E7;   /* zinc-200 */
+
+  /* ── Status tokens ───────────────────────────────────────────── */
+  --color-success:          #10B981;   /* emerald-500 */
+  --color-error:            #EF4444;   /* red-500 */
+  --color-warning:          #F59E0B;   /* amber-500 */
+  --color-energy:           #F59E0B;   /* amber-500 — FOMO badges only */
+  --color-gold:             #D97706;   /* amber-600 — revenue/payouts only */
+  --color-info:             #3B82F6;   /* blue-500 */
+
+  /* ── Overlay + on-brand ──────────────────────────────────────── */
+  --color-overlay:          rgba(24, 24, 27, 0.60);  /* zinc-900 overlay */
+  --color-text-on-brand:    #FFFFFF;
+
+  /* ── Radius scale ────────────────────────────────────────────── */
+  --radius-sm:    6px;
+  --radius-md:    12px;
+  --radius-lg:    16px;
+  --radius-xl:    20px;
+  --radius-2xl:   24px;
+  --radius-full:  9999px;
+
+  /* ── Shadows (zinc-tinted, cool tone) ────────────────────────── */
+  --shadow-sm: 0 1px 3px  rgba(24, 24, 27, 0.07);
+  --shadow-md: 0 4px 12px rgba(24, 24, 27, 0.09);
+  --shadow-lg: 0 8px 24px rgba(24, 24, 27, 0.11);
+  --shadow-xl: 0 16px 48px rgba(24, 24, 27, 0.15);
+
+  /* ── Motion tokens ───────────────────────────────────────────── */
+  --duration-micro:     100ms;
+  --duration-fast:      200ms;
+  --duration-default:   250ms;
+  --duration-entrance:  300ms;
+  --ease-entrance:  cubic-bezier(0.0, 0.0, 0.2, 1.0);
+  --ease-exit:      cubic-bezier(0.4, 0.0, 1.0, 1.0);
+  --ease-standard:  cubic-bezier(0.4, 0.0, 0.2, 1.0);
+  --background:            oklch(1 0 0);
+  --foreground:            oklch(0.145 0 0);
+  --chart-1:            oklch(0.87 0 0);
+  --chart-2:            oklch(0.556 0 0);
+  --chart-3:            oklch(0.439 0 0);
+  --chart-4:            oklch(0.371 0 0);
+  --chart-5:            oklch(0.269 0 0);
+  --sidebar:            oklch(0.985 0 0);
+  --sidebar-foreground:            oklch(0.145 0 0);
+  --sidebar-primary:            oklch(0.205 0 0);
+  --sidebar-primary-foreground:            oklch(0.985 0 0);
+  --sidebar-accent:            oklch(0.97 0 0);
+  --sidebar-accent-foreground:            oklch(0.205 0 0);
+  --sidebar-border:            oklch(0.922 0 0);
+  --sidebar-ring:            oklch(0.708 0 0);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Base reset
+   ───────────────────────────────────────────────────────────────── */
+/* *, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+} */
+
+html {
+  scroll-behavior: smooth;
+  text-size-adjust: 100%;
+}
 
 body {
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-inter), -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
+  font-family:               var(--font-space-grotesk), var(--font-inter), -apple-system, sans-serif;
+  font-size:                 16px;
+  line-height:               1.6;
+  -webkit-font-smoothing:    antialiased;
+  -moz-osx-font-smoothing:   grayscale;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Custom utilities
+   ───────────────────────────────────────────────────────────────── */
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Marquee animation (FomoStrip)
+   ───────────────────────────────────────────────────────────────── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:   0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration:  0.01ms !important;
+    scroll-behavior:      auto !important;
+  }
+}
+
+.dark {
+  --background:            oklch(0.145 0 0);
+  --foreground:            oklch(0.985 0 0);
+  --card:            oklch(0.205 0 0);
+  --card-foreground:            oklch(0.985 0 0);
+  --popover:            oklch(0.205 0 0);
+  --popover-foreground:            oklch(0.985 0 0);
+  --primary:            oklch(0.922 0 0);
+  --primary-foreground:            oklch(0.205 0 0);
+  --secondary:            oklch(0.269 0 0);
+  --secondary-foreground:            oklch(0.985 0 0);
+  --muted:            oklch(0.269 0 0);
+  --muted-foreground:            oklch(0.708 0 0);
+  --accent:            oklch(0.269 0 0);
+  --accent-foreground:            oklch(0.985 0 0);
+  --destructive:            oklch(0.704 0.191 22.216);
+  --border:            oklch(1 0 0 / 10%);
+  --input:            oklch(1 0 0 / 15%);
+  --ring:            oklch(0.556 0 0);
+  --chart-1:            oklch(0.87 0 0);
+  --chart-2:            oklch(0.556 0 0);
+  --chart-3:            oklch(0.439 0 0);
+  --chart-4:            oklch(0.371 0 0);
+  --chart-5:            oklch(0.269 0 0);
+  --sidebar:            oklch(0.205 0 0);
+  --sidebar-foreground:            oklch(0.985 0 0);
+  --sidebar-primary:            oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground:            oklch(0.985 0 0);
+  --sidebar-accent:            oklch(0.269 0 0);
+  --sidebar-accent-foreground:            oklch(0.985 0 0);
+  --sidebar-border:            oklch(1 0 0 / 10%);
+  --sidebar-ring:            oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

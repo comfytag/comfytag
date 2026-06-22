@@ -1,37 +1,35 @@
 'use client'
 
 import { type ReactNode } from 'react'
-import PartnerNav from './PartnerNav'
-import { PartnerBottomTabBar } from './PartnerBottomTabBar'
+import { ShellStoreProvider } from '@/hooks/useShellStore'
+import FloatingIslandNav from '@/components/layout/FloatingIslandNav'
+import MobileTopHeader from '@/components/layout/MobileTopHeader'
+import ContextRibbon from '@/components/layout/ContextRibbon'
+import BottomPillNav from '@/components/layout/BottomPillNav'
+import { useNotificationSocket } from '@/hooks/useNotificationSocket'
 
-interface ShellClientProps {
-  children: ReactNode
-}
+function ShellInner({ children }: { children: ReactNode }) {
+  // Single mount point for real-time notification listener
+  useNotificationSocket()
 
-export default function ShellClient({ children }: ShellClientProps) {
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'var(--color-bg)',
-      }}
-    >
-      <PartnerNav />
-      <main
-        style={{
-          maxWidth: 1280,
-          margin: '0 auto',
-          padding: '0px',
-          paddingBottom: 'calc(80px + env(safe-area-inset-bottom))',
-          width: '100%',
-          flex: 1,
-        }}
-      >
+    <div className="min-h-screen bg-slate-50">
+      {/* Mobile-only branding header; FloatingIslandNav handles desktop */}
+      <MobileTopHeader />
+      <FloatingIslandNav />
+      <ContextRibbon />
+      <main className="min-h-screen bg-slate-50 pt-0 md:pt-32 pb-28 md:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {children}
       </main>
-      <PartnerBottomTabBar />
+      <BottomPillNav />
     </div>
+  )
+}
+
+export default function ShellClient({ children }: { children: ReactNode }) {
+  return (
+    <ShellStoreProvider>
+      <ShellInner>{children}</ShellInner>
+    </ShellStoreProvider>
   )
 }

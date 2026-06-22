@@ -1,6 +1,8 @@
 import { withAuth } from 'next-auth/middleware'
 
 const PROTECTED_PATHS = [
+  '/checkout',
+  '/handoff',
   '/tickets',
   '/my-following',
   '/notifications',
@@ -22,6 +24,7 @@ export default withAuth({
   },
   pages: {
     signIn: '/login',
+    error: '/login',
   },
 })
 

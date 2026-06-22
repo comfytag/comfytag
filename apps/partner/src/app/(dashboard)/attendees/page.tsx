@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { Download } from 'lucide-react'
-import { Skeleton, EmptyState, ErrorMessage } from '@comfytag/ui'
+import { Download, Users } from 'lucide-react'
+import { Skeleton, ErrorMessage } from '@comfytag/ui'
 import type { Ticket } from '@comfytag/types'
 import { EventSelectorBar } from '@/components/attendees/EventSelectorBar'
 import { AttendeeSearchFilter } from '@/components/attendees/AttendeeSearchFilter'
@@ -16,26 +16,19 @@ export default function AttendeesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('all')
 
-  // Fetch organizer's events
   const { data: events = [], isLoading: eventsLoading, isError: eventsError } = useMyEvents()
 
-  // Set first event as default when events load
   useEffect(() => {
     if (events.length > 0 && !selectedEventId) {
       setSelectedEventId(events[0]._id)
     }
   }, [events, selectedEventId])
 
-  // Fetch attendees for selected event
   const { data: attendees = [], isLoading: attendeesLoading, isError: attendeesError } = useAttendees(selectedEventId)
 
-  // Check-in mutation
   const checkInMutation = useCheckin()
-
-  // Export mutation
   const exportMutation = useExportAttendees()
 
-  // CSV export handler
   const handleExport = () => {
     if (!selectedEventId) return
     exportMutation.mutate(selectedEventId, {
@@ -54,7 +47,6 @@ export default function AttendeesPage() {
     })
   }
 
-  // Filter attendees
   const filtered = useMemo(() => {
     let result = (attendees as Ticket[])
 
@@ -75,119 +67,100 @@ export default function AttendeesPage() {
   }, [attendees, statusFilter, searchQuery])
 
   return (
-    <div>
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', paddingTop: '32px', paddingBottom: '32px' }}>
-        {/* Header */}
-        <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-text)', margin: 0, marginBottom: '4px' }}>
-            ATTENDEES
-          </h1>
-          <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', margin: 0 }}>
-            Manage attendees across all your events
+    <div className="max-w-6xl mx-auto space-y-8">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-zinc-900 tracking-tight">Attendees</h1>
+          <p className="mt-1 text-sm text-zinc-500">Manage your global guestlist</p>
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={!selectedEventId || exportMutation.isPending}
+          className="bg-white border border-zinc-200 text-zinc-900 font-semibold py-2.5 px-5 rounded-xl shadow-sm hover:bg-zinc-50 hover:border-zinc-300 transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+        >
+          <Download size={16} aria-hidden="true" />
+          {exportMutation.isPending ? 'Exporting…' : 'Export CSV'}
+        </button>
+      </div>
+
+      {/* Error states */}
+      {eventsError && <ErrorMessage message="Failed to load events." />}
+      {attendeesError && <ErrorMessage message="Failed to load attendees." />}
+
+      {/* Event selector */}
+      {eventsLoading ? (
+        <Skeleton height={44} width={280} borderRadius={12} />
+      ) : (
+        <EventSelectorBar
+          events={events}
+          selectedEventId={selectedEventId}
+          onSelectEvent={setSelectedEventId}
+        />
+      )}
+
+      {/* Search + filter hub */}
+      {selectedEventId && (
+        <AttendeeSearchFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          attendeeCount={filtered.length}
+        />
+      )}
+
+      {/* Directory */}
+      {!selectedEventId ? (
+        <div className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-zinc-200 rounded-[2rem] bg-zinc-50/50">
+          <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
+            <Users size={28} className="text-zinc-400" aria-hidden="true" />
+          </div>
+          <h3 className="text-zinc-900 font-bold text-lg tracking-tight">No event selected</h3>
+          <p className="mt-2 text-zinc-400 text-sm max-w-xs">
+            Select an event above to view and manage its attendees.
           </p>
         </div>
-
-        {/* Error states */}
-        {eventsError && (
-          <div style={{ marginBottom: '20px' }}>
-            <ErrorMessage message="Failed to load events." />
+      ) : attendeesLoading ? (
+        <div className="bg-white border border-zinc-200/80 shadow-sm rounded-[2rem] overflow-hidden">
+          <div className="divide-y divide-zinc-100">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="px-6 py-4">
+                <Skeleton height={48} borderRadius={8} />
+              </div>
+            ))}
           </div>
-        )}
-        {attendeesError && (
-          <div style={{ marginBottom: '20px' }}>
-            <ErrorMessage message="Failed to load attendees." />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-zinc-200 rounded-[2rem] bg-zinc-50/50">
+          <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
+            <Users size={28} className="text-zinc-400" aria-hidden="true" />
           </div>
-        )}
-
-        {/* Event selector */}
-        {eventsLoading ? (
-          <div style={{ marginBottom: '24px' }}>
-            <Skeleton height={40} width={280} borderRadius={8} />
-          </div>
-        ) : (
-          <div style={{ marginBottom: '24px' }}>
-            <EventSelectorBar
-              events={events}
-              selectedEventId={selectedEventId}
-              onSelectEvent={setSelectedEventId}
-            />
-          </div>
-        )}
-
-        {/* Search + Filter + Export */}
-        {selectedEventId && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', gap: '16px', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: '280px' }}>
-              <AttendeeSearchFilter
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                statusFilter={statusFilter}
-                onStatusFilterChange={setStatusFilter}
-                attendeeCount={filtered.length}
+          <h3 className="text-zinc-900 font-bold text-lg tracking-tight">
+            {searchQuery || statusFilter !== 'all' ? 'No attendees found' : 'No attendees yet'}
+          </h3>
+          <p className="mt-2 text-zinc-400 text-sm max-w-xs">
+            {searchQuery || statusFilter !== 'all'
+              ? 'No attendees match your filters. Try adjusting your search.'
+              : 'Attendees will appear here once tickets are sold for this event.'}
+          </p>
+        </div>
+      ) : (
+        <div className="bg-white border border-zinc-200/80 shadow-sm rounded-[2rem] overflow-hidden">
+          <div className="max-h-[800px] overflow-y-auto">
+            {filtered.map((attendee) => (
+              <AttendeeRow
+                key={attendee._id}
+                attendee={attendee}
+                onCheckInToggle={() =>
+                  checkInMutation.mutate({ attendeeId: attendee._id, eventId: selectedEventId, payload: {} })
+                }
+                isCheckingIn={checkInMutation.isPending}
               />
-            </div>
-            <button
-              onClick={handleExport}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                backgroundColor: 'var(--color-surface)',
-                color: 'var(--color-text)',
-                border: '1px solid var(--color-border)',
-                padding: '10px 16px',
-                fontSize: '14px',
-                fontWeight: 500,
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'background var(--duration-fast) ease',
-              }}
-            >
-              <Download size={16} />
-              Export CSV
-            </button>
+            ))}
           </div>
-        )}
-
-        {/* Attendees table */}
-        {!selectedEventId ? (
-          <div style={{ padding: '32px' }}>
-            <EmptyState
-              title="No event selected"
-              subtitle="Select an event above to view attendees"
-            />
-          </div>
-        ) : attendeesLoading ? (
-          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', overflow: 'hidden' }}>
-            <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} height={56} />
-              ))}
-            </div>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div style={{ padding: '32px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px' }}>
-            <EmptyState
-              title={searchQuery || statusFilter !== 'all' ? 'No attendees found' : 'No attendees yet'}
-              subtitle={searchQuery ? 'Try adjusting your search' : 'Attendees will appear once tickets are sold'}
-            />
-          </div>
-        ) : (
-          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', overflow: 'hidden' }}>
-            <div style={{ maxHeight: '800px', overflowY: 'auto' }}>
-              {filtered.map((attendee) => (
-                <AttendeeRow
-                  key={attendee._id}
-                  attendee={attendee}
-                  onCheckInToggle={() => checkInMutation.mutate({ attendeeId: attendee._id, eventId: selectedEventId, payload: {} })}
-                  isCheckingIn={checkInMutation.isPending}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
-

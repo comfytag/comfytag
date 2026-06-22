@@ -8,6 +8,7 @@ export interface EventHeroCarouselProps {
   name: string
   currentIndex?: number
   onIndexChange?: (index: number) => void
+  containerClassName?: string
 }
 
 const AUTO_ADVANCE_MS = 5000
@@ -73,6 +74,7 @@ export function EventHeroCarousel({
   name,
   currentIndex,
   onIndexChange,
+  containerClassName,
 }: EventHeroCarouselProps) {
   const slides = images.length > 0 ? images : ['/placeholder.svg']
   const total = slides.length
@@ -153,23 +155,14 @@ export function EventHeroCarousel({
       onTouchEnd={handleTouchEnd}
     >
       {/* Aspect-ratio container */}
-      <div
-        style={{
-          position: 'relative',
-          width: '100%',
-          paddingBottom: '56.25%',
-          background: 'var(--color-surface-2)',
-          overflow: 'hidden',
-          touchAction: 'pan-y',
-        }}
-      >
+      <div className={containerClassName ?? 'relative w-full aspect-4/5 sm:aspect-square bg-[#09090b] overflow-hidden touch-pan-y'}>
         <Image
           src={slides[current]}
           alt={`${name} — image ${current + 1} of ${total}`}
           fill
           priority={current === 0}
           style={{ objectFit: 'cover', transition: 'opacity 400ms ease' }}
-          sizes="(max-width: 768px) 100vw, 720px"
+          sizes="(max-width: 768px) 100vw, 480px"
         />
 
         <div

@@ -5,6 +5,10 @@ import Image from 'next/image'
 import { formatDate, formatNaira } from '@comfytag/utils'
 import type { Event, TicketTier } from '@comfytag/types'
 
+function toTitleCase(str: string): string {
+  return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
 interface CheckoutSummaryProps {
   event: Event
   tier: TicketTier
@@ -61,7 +65,7 @@ export function CheckoutSummary({
               whiteSpace: 'nowrap',
             }}
           >
-            {event.name}
+            {toTitleCase(event.name)}
           </p>
           <p
             style={{

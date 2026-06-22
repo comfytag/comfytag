@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Event } from '@comfytag/types'
 import { formatDate } from '@comfytag/utils'
 import { api } from '@/lib/api'
@@ -16,6 +17,10 @@ function normalizeEvents(data: unknown): Event[] {
   if (Array.isArray(data)) return data as Event[]
   const obj = data as Record<string, unknown>
   return (Array.isArray(obj.events) ? obj.events : Array.isArray(obj.data) ? obj.data : []) as Event[]
+}
+
+function toTitleCase(str: string): string {
+  return str.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
 }
 
 export function SearchSuggestionsOverlay({ query, isOpen, onClose }: SearchSuggestionsOverlayProps) {
@@ -55,113 +60,104 @@ export function SearchSuggestionsOverlay({ query, isOpen, onClose }: SearchSugge
   const isEmpty = hasQuery && !loading && results.length === 0
 
   return (
-    <>
-      <style>{`
-        .__ct_sugg_row { display:flex; align-items:center; gap:12px; padding:10px 16px; text-decoration:none; border-bottom:1px solid var(--color-border); background:transparent; transition:background 120ms ease; }
-        .__ct_sugg_row:hover { background:var(--color-surface-2); }
-        .__ct_sugg_row:last-of-type { border-bottom:none; }
-      `}</style>
-      <div
-        onMouseDown={(e) => e.preventDefault()}
-        role="listbox"
-        aria-label="Search suggestions"
-        style={{
-          position: 'absolute',
-          top: 'calc(100% + 6px)',
-          left: 0,
-          right: 0,
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-lg)',
-          zIndex: 300,
-          overflow: 'hidden',
-          maxHeight: '420px',
-          overflowY: 'auto',
-        }}
-      >
-        {/* Header label */}
-        <div style={{ padding: '10px 16px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>
-            {loading ? 'Searching…' : hasQuery ? `Results` : 'Trending Events'}
-          </span>
-          {hasQuery && !loading && results.length > 0 && (
-            <Link
-              href={`/events?q=${encodeURIComponent(query.trim())}`}
-              onClick={onClose}
-              style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-brand)', textDecoration: 'none' }}
-            >
-              See all →
-            </Link>
-          )}
+    <div
+      onMouseDown={(e) => e.preventDefault()}
+      role="listbox"
+      aria-label="Search suggestions"
+      className="absolute top-full mt-2 w-full z-100 bg-white border border-zinc-100 rounded-2xl shadow-xl overflow-hidden flex flex-col"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-4 pb-2">
+        <span className="text-xs font-bold text-zinc-400 tracking-wider uppercase">
+          {loading ? 'Searching…' : hasQuery ? 'Results' : 'Trending Events'}
+        </span>
+        {hasQuery && !loading && results.length > 0 && (
+          <Link
+            href={`/events?q=${encodeURIComponent(query.trim())}`}
+            onClick={onClose}
+            className="text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors"
+          >
+            See all →
+          </Link>
+        )}
+      </div>
+
+      {/* Empty state */}
+      {isEmpty && (
+        <p className="px-5 py-8 text-center text-sm text-zinc-400">
+          No events found for &ldquo;{query}&rdquo;
+        </p>
+      )}
+
+      {/* Loading skeleton */}
+      {loading && (
+        <div className="flex flex-col">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="flex items-center gap-4 px-5 py-3 border-b border-zinc-50 last:border-0 animate-pulse">
+              <div className="w-12 h-12 shrink-0 rounded-lg bg-zinc-100" />
+              <div className="flex flex-col flex-1 gap-2">
+                <div className="h-3.5 rounded bg-zinc-100 w-3/5" />
+                <div className="h-3 rounded bg-zinc-100 w-2/5" />
+              </div>
+            </div>
+          ))}
         </div>
+      )}
 
-        {/* Empty state */}
-        {isEmpty && (
-          <div style={{ padding: '20px 16px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '14px', borderTop: '1px solid var(--color-border)' }}>
-            No events found for &ldquo;{query}&rdquo;
-          </div>
-        )}
+      {/* Results */}
+      {!loading && items.map((event) => {
+        const thumb = event.coverImage ?? event.images?.[0]
+        return (
+          <Link
+            key={event._id}
+            href={`/events/${event.slug ?? event._id}`}
+            onClick={onClose}
+            role="option"
+            aria-selected="false"
+            className="w-full flex items-center gap-4 px-5 py-3 hover:bg-zinc-50 transition-colors border-b border-zinc-50 last:border-0 group cursor-pointer"
+          >
+            {/* Thumbnail */}
+            <div className="relative w-12 h-12 shrink-0 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center overflow-hidden">
+              {thumb && (
+                <Image
+                  src={thumb}
+                  alt=""
+                  fill
+                  className="object-cover"
+                />
+              )}
+            </div>
 
-        {/* Loading skeleton rows */}
-        {loading && (
-          <div style={{ borderTop: '1px solid var(--color-border)' }}>
-            {[0, 1, 2].map(i => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', borderBottom: '1px solid var(--color-border)' }}>
-                <div style={{ width: 44, height: 44, borderRadius: 'var(--radius-sm)', background: 'var(--color-surface-2)', flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ height: 14, borderRadius: 4, background: 'var(--color-surface-2)', marginBottom: 6, width: '60%' }} />
-                  <div style={{ height: 11, borderRadius: 4, background: 'var(--color-surface-2)', width: '40%' }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+            {/* Text block */}
+            <div className="flex flex-col flex-1 min-w-0 text-left">
+              <p className="text-base font-bold text-zinc-900 truncate group-hover:text-violet-600 transition-colors">
+                {toTitleCase(event.name)}
+              </p>
+              <p className="text-sm font-medium text-zinc-500 truncate mt-0.5">
+                {formatDate(event.date)}
+                {event.venue ? ` · ${toTitleCase(event.venue)}` : ''}
+              </p>
+            </div>
 
-        {/* Results */}
-        {!loading && items.map((event) => {
-          const thumb = event.coverImage ?? event.images?.[0]
-          return (
-            <Link
-              key={event._id}
-              href={`/events/${event.slug ?? event._id}`}
-              onClick={onClose}
-              className="__ct_sugg_row"
-              role="option"
-              aria-selected="false"
-            >
-              {/* Thumbnail */}
-              <div style={{
-                width: 44,
-                height: 44,
-                borderRadius: 'var(--radius-sm)',
-                background: 'var(--color-surface-2)',
-                flexShrink: 0,
-                overflow: 'hidden',
-              }}>
-                {thumb && (
-                  <img src={thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                )}
-              </div>
-
-              {/* Text */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {event.name}
-                </p>
-                <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {formatDate(event.date)}{event.venue ? ` · ${event.venue}` : ''}
-                </p>
-              </div>
-
-              {/* Arrow */}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true">
+            {/* Chevron */}
+            <div className="shrink-0 text-zinc-300 group-hover:text-violet-500 transition-colors">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <path d="M9 18l6-6-6-6" />
               </svg>
-            </Link>
-          )
-        })}
-      </div>
-    </>
+            </div>
+          </Link>
+        )
+      })}
+    </div>
   )
 }

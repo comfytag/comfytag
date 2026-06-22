@@ -1,5 +1,4 @@
 import type { Notification, NotificationType } from '@comfytag/types'
-import { authHeader } from '@comfytag/utils'
 import { api } from '@/lib/api'
 
 interface NotifRowProps {
@@ -52,55 +51,37 @@ export function NotifRow({ notif, onRead, token }: NotifRowProps) {
       role="button"
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClick() }}
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 12,
-        padding: '14px 20px',
-        borderBottom: '1px solid var(--color-border)',
-        borderLeft: notif.read ? '3px solid transparent' : '3px solid var(--color-brand)',
-        background: notif.read ? 'transparent' : 'rgba(124, 58, 237, 0.04)',
-        cursor: notif.read ? 'default' : 'pointer',
-        outline: 'none',
-      }}
+      className={[
+        'flex items-start gap-3 px-5 py-4 border-b border-zinc-100 last:border-b-0 outline-none',
+        'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-600 transition-colors',
+        notif.read
+          ? 'bg-white cursor-default border-l-4 border-l-transparent'
+          : 'bg-violet-50/50 cursor-pointer border-l-4 border-l-violet-600',
+      ].join(' ')}
     >
-      <div style={{
-        width: 32,
-        height: 32,
-        borderRadius: 'var(--radius-full)',
-        background: 'var(--color-surface-2)',
-        border: '1px solid var(--color-border)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 15,
-        flexShrink: 0,
-      }}>
+      {/* Icon bubble */}
+      <div className="w-8 h-8 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-sm shrink-0">
         {typeIcon(notif.type)}
       </div>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{
-          fontSize: 14,
-          fontWeight: notif.read ? 400 : 700,
-          color: 'var(--color-text)',
-          margin: '0 0 2px',
-          lineHeight: 1.4,
-        }}>
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <p
+          className={[
+            'text-sm leading-snug mb-0.5',
+            notif.read ? 'font-normal text-zinc-600' : 'font-bold text-zinc-900',
+          ].join(' ')}
+        >
           {notif.title}
         </p>
-        <p style={{
-          fontSize: 12,
-          color: 'var(--color-text-muted)',
-          margin: '0 0 4px',
-          lineHeight: 1.4,
-        }}>
-          {notif.message}
-        </p>
-        <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
-          {relativeTime(notif.createdAt)}
-        </span>
+        <p className="text-xs text-zinc-500 leading-snug mb-1">{notif.message}</p>
+        <span className="text-[11px] text-zinc-400">{relativeTime(notif.createdAt)}</span>
       </div>
+
+      {/* Unread dot */}
+      {!notif.read && (
+        <div className="w-2 h-2 rounded-full bg-violet-600 shrink-0 mt-1.5" aria-hidden="true" />
+      )}
     </div>
   )
 }

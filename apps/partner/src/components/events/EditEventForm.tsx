@@ -34,6 +34,7 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
   })
   const [form, setForm] = useState({
     name: '',
+    headline: '',
     category: '',
     description: '',
     date: '',
@@ -54,8 +55,13 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    const rawState = event.state ?? ''
+    const normalizedState =
+      NIGERIAN_STATES.find(s => s.toLowerCase() === rawState.toLowerCase()) ?? rawState
+
     setForm({
       name: event.name ?? '',
+      headline: event.headline ?? '',
       category: event.category ?? '',
       description: event.description ?? '',
       date: event.date ? new Date(event.date).toISOString().split('T')[0] : '',
@@ -63,7 +69,7 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
       endTime: event.endTime ?? '',
       venue: event.venue ?? '',
       address: event.address ?? '',
-      state: event.state ?? '',
+      state: normalizedState,
     })
     setTiers(
       event.ticketType?.map(t => ({ name: t.name, price: t.price.toString(), capacity: t.capacity.toString() })) ?? []
@@ -140,6 +146,34 @@ export function EditEventForm({ event, eventId }: EditEventFormProps) {
             onChange={e => setForm({ ...form, name: e.target.value })}
             required
           />
+        </div>
+
+        {/* Headline */}
+        <div style={fieldGroupStyle}>
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="edit-headline" className="text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider">
+              Headline <span className="text-zinc-400 font-normal normal-case">(optional)</span>
+            </label>
+            <button
+              type="button"
+              onClick={() => alert('AI Auto-generation coming soon!')}
+              className="text-xs font-bold text-violet-600 bg-violet-50 px-2 py-1 rounded-full hover:bg-violet-100 transition-colors cursor-pointer"
+            >
+              ✨ Enhance
+            </button>
+          </div>
+          <input
+            id="edit-headline"
+            type="text"
+            value={form.headline}
+            onChange={e => setForm({ ...form, headline: e.target.value })}
+            placeholder="e.g. Lagos's biggest music festival is back."
+            maxLength={150}
+            style={fieldStyle}
+          />
+          <p className="text-[11px] text-zinc-400 mt-1.5 text-right tabular-nums">
+            {form.headline.length}/150
+          </p>
         </div>
 
         <div style={fieldGroupStyle}>

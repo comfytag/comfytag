@@ -3,6 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Heart } from 'lucide-react'
 import type { Event } from '@comfytag/types'
 import { formatDate, formatTime, formatNaira } from '@comfytag/utils'
 
@@ -27,243 +28,129 @@ export function EventCard({
   isLiked = false,
   onLike,
 }: EventCardProps) {
-  const [hovered, setHovered] = React.useState(false)
-
   const totalCap = event.ticketType.reduce((s, t) => s + t.capacity, 0)
   const soldPct = totalCap > 0 ? event.sold / totalCap : 0
   const imageSrc = event.coverImage ?? event.images[0] ?? '/placeholder.svg'
 
-  // Derive the lowest price across all ticket tiers (0 = free event).
   const lowestPrice =
     event.ticketType.length > 0
       ? Math.min(...event.ticketType.map((t) => t.price))
       : 0
-  const priceLabel = lowestPrice === 0 ? 'Free' : formatNaira(lowestPrice)
 
-  const height = compact ? 180 : 240
+  const dateKicker = `${formatDate(event.date)} · ${formatTime(event.startTime)}`
+  const categoryLabel = event.secondaryCategory
+    ? `${event.category} · ${event.secondaryCategory}`
+    : event.category
+  const overline = categoryLabel ? `${categoryLabel} · ${dateKicker}` : dateKicker
+  const isPast = !!(event.date || event.event_date) && new Date(event.date || event.event_date || '') < new Date()
+
+  const topBadgeLabel = isSoldOut
+    ? 'Sold Out'
+    : isTrending
+      ? 'Selling Fast'
+      : soldPct > 0.5 && !isPast
+        ? `${Math.round(soldPct * 100)}% sold`
+        : null
 
   const content = (
-    <>
-      <style>{`
-        .__ct_eventcard { text-decoration: none; display: block; }
-        .__ct_eventcard:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; border-radius: 16px; }
-      `}</style>
-      <div
-        style={{
-          position: 'relative',
-          borderRadius: 'var(--radius-lg)',
-          overflow: 'hidden',
-          display: 'block',
-          height: `${height}px`,
-          transform: hovered ? 'scale(1.02)' : 'scale(1)',
-          transition: `transform var(--duration-fast) ease, box-shadow var(--duration-fast) ease`,
-          cursor: onSelect ?? href ? 'pointer' : 'default',
-          boxShadow: hovered ? '0 0 24px rgba(124, 58, 237, 0.45)' : 'none',
-        }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        onClick={onSelect}
-        role={onSelect ? 'button' : undefined}
-        tabIndex={onSelect ? 0 : undefined}
-        onKeyDown={(e) => {
-          if (onSelect && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault()
-            onSelect()
-          }
-        }}
-      >
-        {/* Image — 16:9 full-bleed */}
-        <Image
-          src={imageSrc}
-          alt={event.name}
-          fill
-          style={{ objectFit: 'cover' }}
-          sizes={compact ? '(max-width: 768px) 50vw, 25vw' : '(max-width: 768px) 100vw, 50vw'}
-        />
+    <article
+      className="group relative block w-full aspect-[4/5] sm:aspect-[3/4] rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-1 bg-zinc-900"
+      onClick={onSelect}
+      role={onSelect ? 'button' : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (onSelect && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault()
+          onSelect()
+        }
+      }}
+    >
+      {/* Full-bleed image */}
+      <Image
+        src={imageSrc}
+        alt={event.name}
+        fill
+        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        sizes={
+          compact
+            ? '(max-width: 768px) 50vw, 25vw'
+            : '(max-width: 768px) 100vw, 50vw'
+        }
+      />
 
-        {/* Gradient overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(to top, rgba(0,0,0,0.65) 100%, rgba(0,0,0,0) 40%)',
-          }}
-        />
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
 
-        {/* FOMO pill overlay — conditional */}
-        {(isTrending || isSoldOut) && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '12px',
-              left: '12px',
-              background: isSoldOut ? 'rgba(0,0,0,0.7)' : 'var(--color-energy)',
-              color: isSoldOut ? 'var(--color-text-muted)' : 'var(--color-text)',
-              fontSize: '11px',
-              fontWeight: 700,
-              padding: '4px 10px',
-              borderRadius: 'var(--radius-full)',
-              backdropFilter: 'blur(4px)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            {isSoldOut ? 'Sold Out' : 'Trending'}
-          </div>
-        )}
-
-        {/* Bottom content */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: compact ? '12px' : '16px',
-          }}
-        >
-          {/* Event name — Anybody font (bold headers) */}
-          <div
-            style={{
-              color: 'var(--color-text-on-brand)',
-              fontFamily: 'var(--font-anybody), sans-serif',
-              fontSize: '17px',
-              fontWeight: 800, // NEW: Anybody weight for extra boldness
-              lineHeight: 1.2,
-              marginBottom: '6px',
-              overflow: 'hidden',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-            }}
-          >
-            {event.name}
-          </div>
-
-          {/* Date + venue + price — muted row */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-end',
-              gap: '8px',
-            }}
-          >
-            <div
-              style={{
-                color: 'var(--color-text-muted)',
-                fontSize: '12px',
-                lineHeight: 1.4,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '2px',
-                minWidth: 0,
-                flex: 1,
-              }}
-            >
-              <div>{formatDate(event.date)} at {formatTime(event.startTime)}</div>
-              <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {event.venue}
-              </div>
-            </div>
-
-            {/* Price chip — hidden on compact cards to save space */}
-            {!compact && (
-              <div
-                style={{
-                  flexShrink: 0,
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  letterSpacing: '0.02em',
-                  color: lowestPrice === 0 ? '#10B981' : 'var(--color-text-on-brand)',
-                  background:
-                    lowestPrice === 0
-                      ? 'rgba(16, 185, 129, 0.18)'
-                      : 'rgba(255, 255, 255, 0.14)',
-                  padding: '3px 8px',
-                  borderRadius: 'var(--radius-full)',
-                  backdropFilter: 'blur(4px)',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {priceLabel}
-              </div>
-            )}
-          </div>
+      {/* Top-left status badge */}
+      {topBadgeLabel && (
+        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-zinc-900 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm">
+          {topBadgeLabel}
         </div>
+      )}
 
-        {/* Like button — top right corner */}
-        {onLike && (
-          <button
-            type="button"
-            aria-label={isLiked ? 'Unlike event' : 'Like event'}
-            aria-pressed={isLiked}
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              void onLike(event._id)
-            }}
-            style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              width: '30px',
-              height: '30px',
-              borderRadius: '50%',
-              background: 'rgba(0,0,0,0.45)',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backdropFilter: 'blur(4px)',
-              color: isLiked ? 'var(--color-error)' : 'var(--color-text-on-brand)',
-              transition: 'color var(--duration-fast) ease',
-            }}
-          >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill={isLiked ? 'currentColor' : 'none'}
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          </button>
+      {/* Top-right heart button */}
+      {onLike && (
+        <button
+          type="button"
+          aria-label={isLiked ? 'Unlike event' : 'Like event'}
+          aria-pressed={isLiked}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            void onLike(event._id)
+          }}
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white"
+        >
+          <Heart
+            className="w-4 h-4"
+            fill={isLiked ? '#EF4444' : 'none'}
+            stroke={isLiked ? '#EF4444' : 'white'}
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+        </button>
+      )}
+
+      {/* Bottom content block */}
+      <div className="absolute bottom-0 inset-x-0 p-5 flex flex-col justify-end">
+        {/* Date / time */}
+        <p className="text-xs font-mono font-medium text-zinc-300 mb-1.5">{overline}</p>
+
+        {/* Title */}
+        <h3 className="text-md font-bold tracking-tight text-white line-clamp-2 leading-tight mb-2 capitalize">
+          {event.name}
+        </h3>
+
+        {/* Headline tagline */}
+        {event.headline && (
+          <p className="text-sm text-zinc-300 line-clamp-2 leading-snug mb-3">{event.headline}</p>
         )}
 
-        {/* Capacity progress bar — bottom edge */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '3px',
-            background: 'var(--color-border)',
-          }}
-        >
-          <div
-            style={{
-              height: '100%',
-              width: `${Math.min(soldPct * 100, 100)}%`,
-              background: 'var(--color-brand)',
-              transition: 'width var(--duration-default) ease',
-            }}
-          />
+        {/* Venue */}
+        <p className="text-sm font-medium text-zinc-400 mb-5 truncate capitalize">{event.venue}</p>
+
+        {/* Footer row — price + CTA */}
+        <div className="flex items-center justify-between mt-auto">
+          {lowestPrice === 0 ? (
+            <span className="text-md font-bold text-white">Free</span>
+          ) : (
+            <span className="text-md font-bold text-white">{formatNaira(lowestPrice)}</span>
+          )}
+
+          <span className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/10 text-white px-5 py-2.5 rounded-full text-sm font-bold transition-colors">
+            {isPast ? 'View Recap' : 'Get Tickets'}
+          </span>
         </div>
       </div>
-    </>
+    </article>
   )
 
   if (href) {
     return (
-      <Link href={href} className="__ct_eventcard">
+      <Link
+        href={href}
+        className="block h-full rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
+      >
         {content}
       </Link>
     )

@@ -1,185 +1,130 @@
-'use client'
+import { Ticket, ScanFace, CheckCircle, type LucideIcon } from 'lucide-react'
 
-import { isUpcoming } from '@comfytag/utils'
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-interface Step {
+export interface CmsStep {
+  stepNumber: number
   title: string
   description: string
-  icon: React.ReactNode
+  iconType: string
   isComingSoon?: boolean
 }
 
-const steps: Step[] = [
+interface Step {
+  icon: LucideIcon
+  title: string
+  description: string
+  step: number
+  isComingSoon?: boolean
+}
+
+// ─── Hardcoded fallback ───────────────────────────────────────────────────────
+
+const STEPS_FALLBACK: Step[] = [
   {
-    title: 'Enroll Your Face',
-    description: 'Coming soon on the ComfyTag app. One scan, infinite entry.',
-    isComingSoon: true,
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
-        <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    ),
+    icon: Ticket,
+    title: 'Buy your ticket',
+    description: 'Checkout in 60s. Pay securely via Paystack.',
+    step: 1,
   },
   {
-    title: 'Find & Buy Tickets',
-    description: 'Browse events by vibe, date, or city. Check out via Paystack in seconds.',
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2" />
-        <path d="M2 9h20" stroke="currentColor" strokeWidth="2" />
-      </svg>
-    ),
+    icon: ScanFace,
+    title: 'Enroll your face once',
+    description: 'Takes 30 seconds in the app. Encrypted and NDPR compliant.',
+    step: 2,
+    isComingSoon: true,
   },
   {
-    title: 'Show Your Face',
-    description: 'Coming soon. No QR code needed. Walk straight in.',
-    isComingSoon: true,
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2" />
-        <path d="M19 12c0-3.866-3.134-7-7-7S5 8.134 5 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M7 18c.5.667 2.5 2 5 2s4.5-1.333 5-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    ),
+    icon: CheckCircle,
+    title: 'Just show up',
+    description: 'Your face is your pass. No phone, no QR codes. Walk straight in.',
+    step: 3,
   },
 ]
 
-export function HowItWorksSection() {
+// ─── Icon mapping (iconType string → Lucide component) ────────────────────────
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  'ticket':       Ticket,
+  'scan-face':    ScanFace,
+  'check-circle': CheckCircle,
+}
+
+function resolveIcon(iconType: string): LucideIcon {
+  return ICON_MAP[iconType] ?? CheckCircle
+}
+
+function cmsStepToStep(s: CmsStep): Step {
+  return {
+    icon: resolveIcon(s.iconType),
+    title: s.title,
+    description: s.description,
+    step: s.stepNumber,
+    isComingSoon: s.isComingSoon,
+  }
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export function HowItWorksSection({ steps }: { steps?: CmsStep[] }) {
+  const activeSteps: Step[] =
+    steps && steps.length > 0 ? steps.map(cmsStepToStep) : STEPS_FALLBACK
+
   return (
-    <>
-      <style>{`
-        .__ct_how_section {
-          padding: 64px 16px;
-          background: var(--color-bg);
-        }
+    <section
+      className="w-full py-16 md:py-24 bg-zinc-950 relative overflow-hidden"
+      aria-labelledby="how-it-works-heading"
+    >
+      {/* Violet ambient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-violet-600/20 blur-[120px] rounded-full pointer-events-none" />
 
-        .__ct_how_wrapper {
-          max-width: 1280px;
-          margin: 0 auto;
-        }
-
-        .__ct_how_header {
-          margin-bottom: 48px;
-          text-align: center;
-        }
-
-        .__ct_how_eyebrow {
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--color-brand);
-          margin-bottom: 12px;
-          display: block;
-        }
-
-        .__ct_how_h2 {
-          font-size: 24px;
-          font-weight: 700;
-          color: var(--color-text);
-          margin: 0;
-          letter-spacing: -0.01em;
-        }
-
-        .__ct_how_grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 32px;
-        }
-
-        .__ct_how_card {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 16px;
-        }
-
-        .__ct_how_icon_badge {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 8px;
-          background: var(--color-brand-light);
-          color: var(--color-brand-dark);
-          flex-shrink: 0;
-        }
-
-        .__ct_how_title {
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--color-text);
-          margin: 0;
-          letter-spacing: -0.01em;
-        }
-
-        .__ct_how_description {
-          font-size: 14px;
-          color: var(--color-text-muted);
-          margin: 0;
-          line-height: 1.6;
-        }
-
-        .__ct_how_badge {
-          display: inline-block;
-          background: var(--color-brand-light);
-          color: var(--color-brand-dark);
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          padding: 4px 8px;
-          border-radius: 4px;
-          margin-left: 8px;
-          white-space: nowrap;
-        }
-
-        /* Mobile: stacked on smaller screens */
-        @media (max-width: 767px) {
-          .__ct_how_section {
-            padding: 48px 16px;
-          }
-
-          .__ct_how_header {
-            margin-bottom: 36px;
-          }
-
-          .__ct_how_h2 {
-            font-size: 20px;
-          }
-
-          .__ct_how_grid {
-            gap: 24px;
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
-
-      <section className="__ct_how_section" aria-label="How it works">
-        <div className="__ct_how_wrapper">
-          {/* Header */}
-          <div className="__ct_how_header">
-            <span className="__ct_how_eyebrow">How ComfyTag Works</span>
-            <h2 className="__ct_how_h2">Biometric ticketing made simple</h2>
-          </div>
-
-          {/* 3-column grid */}
-          <div className="__ct_how_grid">
-            {steps.map((step, index) => (
-              <div key={index} className="__ct_how_card">
-                <div className="__ct_how_icon_badge">{step.icon}</div>
-                <h3 className="__ct_how_title">
-                  {step.title}
-                  {step.isComingSoon && <span className="__ct_how_badge">Coming Soon</span>}
-                </h3>
-                <p className="__ct_how_description">{step.description}</p>
-              </div>
-            ))}
-          </div>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
+        {/* Header */}
+        <div className="text-center">
+          <h2
+            id="how-it-works-heading"
+            className="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-4 text-center"
+          >
+            Biometric ticketing made simple.
+          </h2>
+          <p className="text-lg text-zinc-400 max-w-2xl mx-auto text-center mb-16">
+            Three steps stand between you and the best events in Nigeria — and one of them is just your face.
+          </p>
         </div>
-      </section>
-    </>
+
+        {/* Step cards */}
+        <div className="flex overflow-x-auto gap-4 pb-8 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:snap-none md:mx-0 md:px-0 md:pb-0">
+          {activeSteps.map((step) => {
+            const Icon = step.icon
+            return (
+              <div
+                key={step.step}
+                className="relative overflow-hidden bg-zinc-900 rounded-3xl p-6 md:p-8 border border-zinc-800 flex flex-col hover:border-violet-500/50 transition-colors group shrink-0 w-[85vw] sm:w-85 snap-center md:w-auto md:shrink"
+              >
+                {/* Giant background step number */}
+                <span className="absolute -bottom-8 -right-4 text-[12rem] font-black text-zinc-800/40 leading-none select-none group-hover:text-zinc-800/60 transition-colors">
+                  {step.step}
+                </span>
+
+                {/* Glowing icon */}
+                <div className="h-14 w-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mb-8 text-violet-400 relative z-10">
+                  <Icon className="w-6 h-6" aria-hidden />
+                </div>
+
+                <h3 className="text-xl font-bold text-white mb-3 relative z-10">
+                  {step.title}
+                  {step.isComingSoon && (
+                    <span className="inline-flex items-center justify-center bg-violet-500/20 text-violet-300 text-[10px] tracking-widest uppercase font-bold px-2 py-0.5 rounded-full ml-3 border border-violet-500/30 align-middle">Coming Soon</span>
+                  )}
+                </h3>
+                <p className="text-zinc-400 leading-relaxed relative z-10">
+                  {step.description}
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </section>
   )
 }

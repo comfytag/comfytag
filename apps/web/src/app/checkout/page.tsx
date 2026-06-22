@@ -280,28 +280,13 @@ function CheckoutInner() {
 
   // ── Ready state ─────────────────────────────────────────
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'var(--color-bg)',
-        display: 'flex',
-        justifyContent: 'center',
-        padding: '32px 16px 64px',
-      }}
-    >
-      <div style={{ maxWidth: '480px', width: '100%' }}>
+    <div className="min-h-screen bg-zinc-50/50 flex justify-center py-20 px-4">
+      <div className="w-full max-w-lg bg-white p-8 rounded-[2rem] shadow-xl border border-zinc-100">
         {/* Back link */}
         <Link
           href={`/events/${checkout.event.slug ?? checkout.event._id}`}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '14px',
-            color: 'var(--color-text-muted)',
-            textDecoration: 'none',
-            marginBottom: '20px',
-          }}
+          className="inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-600 mb-6 transition-colors no-underline"
+          style={{ textDecoration: 'none' }}
         >
           ← Back to event
         </Link>

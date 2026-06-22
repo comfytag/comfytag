@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { Button, Input, ErrorMessage } from '@comfytag/ui'
-import { SectionCard } from './SectionCard'
+import { Plus, Edit2, Trash2 } from 'lucide-react'
+import { ErrorMessage } from '@comfytag/ui'
 import { api } from '@/lib/api'
 import type { BankAccount } from '@comfytag/types'
 
@@ -15,6 +15,11 @@ interface BankFormData {
 interface Props {
   banks: BankAccount[]
 }
+
+const INPUT_CLASS =
+  'w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none disabled:opacity-50'
+const LABEL_CLASS =
+  'block text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider mb-2'
 
 export function BankSection({ banks: initialBanks }: Props) {
   const { data: session } = useSession()
@@ -77,40 +82,66 @@ export function BankSection({ banks: initialBanks }: Props) {
   }
 
   return (
-    <SectionCard>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h3 style={{ margin: 0, color: 'var(--color-text-primary)', fontSize: '16px', fontWeight: 600 }}>Bank Details</h3>
-        {mode === 'view' && <Button variant="ghost" size="sm" onClick={handleAdd}>Add Bank</Button>}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-zinc-900">Bank Details</h2>
+        {mode === 'view' && (
+          <button
+            onClick={handleAdd}
+            className="flex items-center gap-1.5 text-sm font-semibold text-violet-600 hover:text-violet-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Bank
+          </button>
+        )}
       </div>
 
       {error && <ErrorMessage message={error} />}
 
       {mode === 'view' ? (
-        <div>
+        <div className="space-y-3">
           {banks.length === 0 ? (
-            <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>No bank accounts added yet</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {banks.map(bank => (
-                <div key={bank._id} style={{ padding: '12px', background: 'var(--color-surface-2)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>{bank.bankName}</div>
-                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '12px' }}>****{bank.acctNumber.slice(-4)}</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(bank)}>Edit</Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(bank._id)}>Delete</Button>
-                  </div>
-                </div>
-              ))}
+            <div className="text-center py-12 text-zinc-400 text-sm">
+              No bank accounts added yet
             </div>
+          ) : (
+            banks.map(bank => (
+              <div
+                key={bank._id}
+                className="flex items-center justify-between p-4 bg-zinc-50 border border-zinc-200 rounded-xl"
+              >
+                <div>
+                  <p className="text-sm font-semibold text-zinc-900">{bank.bankName}</p>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    {bank.acctName} · ****{bank.acctNumber.slice(-4)}
+                  </p>
+                </div>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => handleEdit(bank)}
+                    aria-label="Edit bank account"
+                    className="p-2 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200 transition-all"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(bank._id)}
+                    aria-label="Delete bank account"
+                    className="p-2 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))
           )}
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="space-y-6">
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', display: 'block', marginBottom: '4px' }}>Bank Name</label>
-            <Input
+            <label className={LABEL_CLASS}>Bank Name</label>
+            <input
+              className={INPUT_CLASS}
               value={form.bankName}
               onChange={(e) => setForm(p => ({ ...p, bankName: e.target.value }))}
               placeholder="e.g. GTBank, First Bank"
@@ -118,8 +149,9 @@ export function BankSection({ banks: initialBanks }: Props) {
             />
           </div>
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', display: 'block', marginBottom: '4px' }}>Account Name</label>
-            <Input
+            <label className={LABEL_CLASS}>Account Name</label>
+            <input
+              className={INPUT_CLASS}
               value={form.acctName}
               onChange={(e) => setForm(p => ({ ...p, acctName: e.target.value }))}
               placeholder="Name on account"
@@ -127,21 +159,33 @@ export function BankSection({ banks: initialBanks }: Props) {
             />
           </div>
           <div>
-            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)', display: 'block', marginBottom: '4px' }}>Account Number</label>
-            <Input
+            <label className={LABEL_CLASS}>Account Number</label>
+            <input
+              className={INPUT_CLASS}
               value={form.acctNumber}
               onChange={(e) => setForm(p => ({ ...p, acctNumber: e.target.value }))}
               placeholder="10-digit NUBAN"
               disabled={isSubmitting}
             />
           </div>
-          <div style={{ display: 'flex', gap: '8px', paddingTop: '8px' }}>
-            <Button variant="ghost" onClick={() => setMode('view')} disabled={isSubmitting} className="flex-1">Cancel</Button>
-            <Button variant="primary" onClick={handleSave} disabled={isSubmitting} className="flex-1">{isSubmitting ? 'Saving...' : 'Save'}</Button>
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => setMode('view')}
+              disabled={isSubmitting}
+              className="text-sm font-medium text-zinc-500 hover:text-zinc-900 py-3 px-5 rounded-xl hover:bg-zinc-100 transition-all border border-zinc-200 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSubmitting}
+              className="bg-zinc-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-zinc-800 transition-all active:scale-95 w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Saving...' : mode === 'add' ? 'Add Account' : 'Save Changes'}
+            </button>
           </div>
         </div>
       )}
-    </SectionCard>
+    </div>
   )
 }
-

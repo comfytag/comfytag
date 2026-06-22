@@ -69,8 +69,11 @@ export interface Event {
   planner_id: string
   planner: string
   category: string
+  secondaryCategory?: string
   description?: string
+  headline?: string
   date: string
+  event_date?: string
   startTime: string
   endTime: string
   venue: string
@@ -86,6 +89,7 @@ export interface Event {
   gateRules?: string[]
   status: 'draft' | 'published' | 'ended' | 'cancelled'
   sold: number
+  likes?: number
   featured: boolean
   createdAt: string
   updatedAt: string
@@ -309,6 +313,115 @@ export interface PaginatedResponse<T> {
   page: number
   limit: number
   hasMore: boolean
+}
+
+// ─── CMS ───────────────────────────────────────────────
+export interface SiteConfig {
+  _id: string
+  supportEmail: string
+  heroHeadline: string
+  heroSubtitle: string
+  statAttendees: string
+  statEvents: string
+  statCities: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface MarqueeItem {
+  _id: string
+  text: string
+  pulse: boolean
+  dotColor: 'red' | 'violet'
+  isActive: boolean
+  cityTarget?: string
+  sortOrder: number
+  startsAt?: string
+  expiresAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PromoBanner {
+  /** Absent on GET /cms/banners — that endpoint excludes _id via .select('-_id') */
+  _id?: string
+  bannerKey: string
+  title: string
+  body: string
+  isActive: boolean
+  targetPage?: string
+  targetAudience?: string
+  startsAt?: string
+  expiresAt?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface HowItWorksStep {
+  /** Absent on GET /cms/how-it-works — that endpoint excludes _id via .select('-_id') */
+  _id?: string
+  stepNumber: number
+  title: string
+  description: string
+  iconType: string
+  isComingSoon: boolean
+  isActive: boolean
+  sortOrder: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+/** CuratedSection — backed by /cms/curated-sections/:key */
+export interface CuratedSection {
+  _id?: string
+  sectionKey: string
+  title: string
+  eyebrow: string
+  isActive: boolean
+  maxItems?: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface FaqItem {
+  _id: string
+  question: string
+  answer: string
+  category?: string
+  sortOrder: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface LegalSection {
+  heading: string
+  body: string
+}
+
+export interface LegalDocument {
+  _id?: string
+  docType: 'terms' | 'privacy'
+  lastUpdated: string
+  version?: string
+  sections: LegalSection[]
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface PageSection {
+  heading?: string
+  body: string
+}
+
+export interface PageContent {
+  _id?: string
+  pageKey: 'about'
+  title?: string
+  sections: PageSection[]
+  isPublished: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 // ─── Face ──────────────────────────────────────────────

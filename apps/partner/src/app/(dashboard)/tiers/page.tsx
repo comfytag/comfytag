@@ -1,66 +1,32 @@
 ﻿'use client'
 
-import { useState, useMemo } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Skeleton, EmptyState, ErrorMessage } from '@comfytag/ui'
 import type { TierStats } from '@comfytag/types'
 import { TiersEventAccordion } from '@/components/tiers/TiersEventAccordion'
 import { TierEditModal } from '@/components/tiers/TierEditModal'
-import { useMyEvents, useEventTierStats } from '@/hooks'
-import { api } from '@/lib/api'
+import { useMyEvents, useEventTierStats, useUpdateTier, useDeleteTier } from '@/hooks'
 
 interface EditingTier extends TierStats {
   eventId: string
 }
 
 export default function TiersPage() {
-  const queryClient = useQueryClient()
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null)
   const [editingTier, setEditingTier] = useState<EditingTier | null>(null)
 
-  // Fetch organizer's events
   const { data: events = [], isLoading: eventsLoading, isError: eventsError } = useMyEvents()
+  const expandedEventTiersQuery = useEventTierStats(expandedEventId ?? '')
 
-  // Fetch tiers for expanded event
-  const expandedEventTiersQuery = useEventTierStats(expandedEventId || '')
-
-  // Edit tier mutation
-  const editTierMutation = useMutation({
-    mutationFn: async (data: { name: string; price: number; capacity: number }) => {
-      if (!editingTier) throw new Error('No tier selected')
-      return api.put(
-        `/events/${editingTier.eventId}/tiers/${editingTier._id}`,
-        data
-      ).then(r => r.data)
-    },
-    onSuccess: () => {
-      if (expandedEventId) {
-        queryClient.invalidateQueries({ queryKey: ['partner-events', 'tiers', expandedEventId] })
-      }
-      setEditingTier(null)
-    },
-  })
-
-  // Delete tier mutation
-  const deleteTierMutation = useMutation({
-    mutationFn: async (params: [string, string]) => {
-      const [eventId, tierId] = params
-      return api.delete(
-        `/events/${eventId}/tiers/${tierId}`
-      ).then(r => r.data)
-    },
-    onSuccess: () => {
-      if (expandedEventId) {
-        queryClient.invalidateQueries({ queryKey: ['partner-events', 'tiers', expandedEventId] })
-      }
-    },
-  })
+  const updateTierMutation = useUpdateTier()
+  const deleteTierMutation = useDeleteTier()
 
   const tiersLoading = expandedEventId && expandedEventTiersQuery.isLoading
-  const tiersMap = expandedEventTiersQuery.data?.tiers?.reduce((map, tier) => {
-    if (expandedEventId) map[expandedEventId] = [tier]
-    return map
-  }, {} as Record<string, TierStats[]>) || {}
+
+  const tiersMap: Record<string, TierStats[]> = {}
+  if (expandedEventId && expandedEventTiersQuery.data?.tiers) {
+    tiersMap[expandedEventId] = expandedEventTiersQuery.data.tiers
+  }
 
   const eventsWithTiers = events.map(event => ({
     ...event,
@@ -119,7 +85,7 @@ export default function TiersPage() {
                 onEditTier={setEditingTier}
                 onDeleteTier={(tierId) => {
                   if (confirm('Delete this tier?')) {
-                    void deleteTierMutation.mutate([event._id, tierId])
+                    void deleteTierMutation.mutate({ eventId: event._id, tierId })
                   }
                 }}
               />
@@ -131,8 +97,13 @@ export default function TiersPage() {
         {editingTier && (
           <TierEditModal
             tier={editingTier}
-            isLoading={editTierMutation.isPending}
-            onSave={(data) => editTierMutation.mutate(data)}
+            isLoading={updateTierMutation.isPending}
+            onSave={(data) =>
+              updateTierMutation.mutate(
+                { eventId: editingTier.eventId, tierId: editingTier._id, data },
+                { onSuccess: () => setEditingTier(null) }
+              )
+            }
             onCancel={() => setEditingTier(null)}
           />
         )}

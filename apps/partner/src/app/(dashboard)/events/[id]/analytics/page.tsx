@@ -20,7 +20,7 @@ export default function EventAnalyticsPage({ params }: EventAnalyticsPageProps) 
 
   if (isLoading) {
     return (
-      <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+      <div className="flex items-center justify-center min-h-[40vh]">
         <LoadingSpinner centered size="lg" />
       </div>
     )
@@ -28,7 +28,7 @@ export default function EventAnalyticsPage({ params }: EventAnalyticsPageProps) 
 
   if (analyticsError || !analytics) {
     return (
-      <div style={{ padding: '24px' }}>
+      <div className="max-w-6xl mx-auto py-8 px-4">
         <ErrorMessage
           message="Failed to load analytics."
           onRetry={() => refetchAnalytics()}
@@ -38,7 +38,7 @@ export default function EventAnalyticsPage({ params }: EventAnalyticsPageProps) 
   }
 
   return (
-    <div style={{ padding: '28px 32px' }}>
+    <div className="max-w-6xl mx-auto py-8 px-4 animate-in fade-in duration-300">
       <Breadcrumb
         items={[
           { label: 'Events', href: '/events' },
@@ -46,7 +46,9 @@ export default function EventAnalyticsPage({ params }: EventAnalyticsPageProps) 
           { label: 'Analytics' },
         ]}
       />
-      <EventAnalyticsClient analytics={analytics} eventId={eventId} />
+      <div className="mt-6">
+        <EventAnalyticsClient analytics={analytics} eventId={eventId} />
+      </div>
     </div>
   )
 }

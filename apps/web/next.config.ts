@@ -1,11 +1,31 @@
 import type { NextConfig } from 'next'
+import fs from 'fs'
+import path from 'path'
 import withPWAInit from 'next-pwa'
+
+// When MOBILE_DEV=true (set by scripts/dev-mobile.ps1), load .env.mobile.local
+// overrides. This runs after Next.js's own env loading, so it wins over .env.local,
+// giving the mobile dev server the correct LAN IP without touching .env.local.
+if (process.env.MOBILE_DEV === 'true') {
+  const mobileEnvPath = path.join(process.cwd(), '.env.mobile.local')
+  if (fs.existsSync(mobileEnvPath)) {
+    const lines = fs.readFileSync(mobileEnvPath, 'utf-8').split('\n')
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('#')) continue
+      const eqIdx = trimmed.indexOf('=')
+      if (eqIdx === -1) continue
+      const key = trimmed.slice(0, eqIdx).trim()
+      const value = trimmed.slice(eqIdx + 1).trim()
+      if (key) process.env[key] = value
+    }
+  }
+}
 
 const withPWA = withPWAInit({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
 })
 
 const nextConfig: NextConfig = {
@@ -19,5 +39,8 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withPWA(nextConfig)
+// Bypass the PWA wrapper entirely in development — even with `disable: true`,
+// next-pwa still wraps the config object and can intercept Next.js internal
+// route resolution, causing /api/* endpoints to return 404 HTML instead of JSON.
+export default process.env.NODE_ENV === 'development' ? nextConfig : withPWA(nextConfig)
 

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -19,6 +20,15 @@ import {
   Settings,
   LogOut,
   Tag,
+  Globe,
+  Megaphone,
+  Image as ImageIcon,
+  HelpCircle,
+  Layers,
+  ChevronDown,
+  MessageSquare,
+  Scale,
+  LayoutTemplate,
   type LucideIcon,
 } from 'lucide-react'
 import type { AdminRole } from '../../lib/roles'
@@ -47,6 +57,20 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Settings',        href: '/settings',    icon: Settings,        roles: 'all' },
 ]
 
+const CMS_NAV_ITEMS: NavItem[] = [
+  { label: 'Settings',      href: '/cms/settings',      icon: Globe,           roles: ['super_admin'] },
+  { label: 'Marquee Strip', href: '/cms/marquee',       icon: Megaphone,       roles: ['super_admin', 'moderator'] },
+  { label: 'Banners',       href: '/cms/banners',       icon: ImageIcon,       roles: ['super_admin', 'moderator'] },
+  { label: 'How It Works',  href: '/cms/how-it-works',  icon: HelpCircle,      roles: ['super_admin', 'moderator'] },
+  { label: 'Curated',       href: '/cms/curated',       icon: Layers,          roles: ['super_admin', 'moderator'] },
+  { label: 'FAQs',          href: '/cms/faqs',          icon: MessageSquare,   roles: ['super_admin', 'moderator'] },
+  { label: 'Legal',         href: '/cms/legal',         icon: Scale,           roles: ['super_admin'] },
+  { label: 'Pages',         href: '/cms/pages',         icon: LayoutTemplate,  roles: ['super_admin'] },
+]
+
+// Insertion index: CMS group goes after Categories (index 7)
+const CMS_INSERT_AFTER_INDEX = 7
+
 interface SidebarProps {
   isOpen: boolean
   onClose: () => void
@@ -55,10 +79,19 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
   const pathname = usePathname()
+  const isCmsActive = pathname.startsWith('/cms/')
+  const [cmsOpen, setCmsOpen] = useState(isCmsActive)
 
   const visibleItems = NAV_ITEMS.filter((item) =>
     item.roles === 'all' ? true : hasRole(role, item.roles)
   )
+
+  const visibleCmsItems = CMS_NAV_ITEMS.filter((item) =>
+    item.roles === 'all' ? true : hasRole(role, item.roles)
+  )
+
+  const beforeCms = visibleItems.slice(0, CMS_INSERT_AFTER_INDEX + 1)
+  const afterCms  = visibleItems.slice(CMS_INSERT_AFTER_INDEX + 1)
 
   return (
     <>
@@ -114,19 +147,34 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
             gap: '8px',
           }}
         >
-          <Image src="/logo.svg" alt="ComfyTag" width={24} height={24} style={{ flexShrink: 0 }} />
-          <div>
-            <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-brand)' }}>
-              ComfyTag
-            </span>
-            <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginLeft: '6px' }}>
-              Admin
-            </span>
-          </div>
+          <Image alt="ComfyTag" className="w-auto h-8 object-contain" height={40} priority src="/logo.png" width={120} />
+          <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
+            Admin
+          </span>
         </div>
 
         <nav style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
-          {visibleItems.map((item) => {
+          {beforeCms.map((item) => {
+            const isActive = pathname.startsWith(item.href)
+            const Icon = item.icon
+            return (
+              <NavLink key={item.href} href={item.href} isActive={isActive}>
+                <Icon size={18} />
+                {item.label}
+              </NavLink>
+            )
+          })}
+
+          {visibleCmsItems.length > 0 && (
+            <CmsNavGroup
+              items={visibleCmsItems}
+              isOpen={cmsOpen}
+              onToggle={() => setCmsOpen((v) => !v)}
+              pathname={pathname}
+            />
+          )}
+
+          {afterCms.map((item) => {
             const isActive = pathname.startsWith(item.href)
             const Icon = item.icon
             return (
@@ -143,6 +191,93 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
         </div>
       </aside>
     </>
+  )
+}
+
+function CmsNavGroup({
+  items,
+  isOpen,
+  onToggle,
+  pathname,
+}: {
+  items: NavItem[]
+  isOpen: boolean
+  onToggle: () => void
+  pathname: string
+}) {
+  const hasActive = items.some((item) => pathname.startsWith(item.href))
+
+  return (
+    <div style={{ marginBottom: '2px' }}>
+      <button
+        onClick={onToggle}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          width: '100%',
+          padding: '9px 12px',
+          borderRadius: '8px',
+          border: 'none',
+          backgroundColor: hasActive
+            ? 'color-mix(in srgb, var(--color-brand) 10%, transparent)'
+            : 'transparent',
+          borderLeft: hasActive
+            ? '3px solid var(--color-brand)'
+            : '3px solid transparent',
+          color: hasActive ? 'var(--color-brand)' : 'var(--color-text)',
+          fontSize: '14px',
+          fontWeight: hasActive ? 600 : 400,
+          cursor: 'pointer',
+          textAlign: 'left',
+          transition: 'background-color 0.15s ease',
+        }}
+        onMouseEnter={(e) => {
+          if (!hasActive) {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-surface-2)'
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!hasActive) {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
+          }
+        }}
+      >
+        <Globe size={18} style={{ flexShrink: 0 }} />
+        <span style={{ flex: 1 }}>Content</span>
+        <ChevronDown
+          size={14}
+          style={{
+            flexShrink: 0,
+            transition: 'transform 0.2s ease',
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}
+        />
+      </button>
+
+      {isOpen && (
+        <div
+          style={{
+            paddingLeft: '12px',
+            paddingBottom: '4px',
+            marginTop: '2px',
+            borderLeft: '1px solid var(--color-border)',
+            marginLeft: '20px',
+          }}
+        >
+          {items.map((item) => {
+            const isActive = pathname.startsWith(item.href)
+            const Icon = item.icon
+            return (
+              <NavLink key={item.href} href={item.href} isActive={isActive}>
+                <Icon size={16} />
+                {item.label}
+              </NavLink>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
 

@@ -8,12 +8,17 @@ import type { TicketTier } from '@comfytag/types'
 
 const MAX_TICKETS_PER_ORDER = 10
 
+function toTitleCase(str: string): string {
+  return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
 export interface TicketTierSheetProps {
   tiers: TicketTier[]
   isOpen: boolean
   onClose: () => void
   eventName?: string
   onCheckout: (tierId: string, qty: number) => void
+  isPast?: boolean
 }
 
 function isSoldOut(tier: TicketTier): boolean {
@@ -35,6 +40,7 @@ export function TicketTierSheet({
   onClose,
   eventName,
   onCheckout,
+  isPast,
 }: TicketTierSheetProps) {
   const firstAvailable = tiers.find((t) => !isSoldOut(t))
   const [selectedId, setSelectedId] = useState<string>(
@@ -73,7 +79,7 @@ export function TicketTierSheet({
     setQty((prev) => Math.min(maxQty, prev + 1))
   }
 
-  const displayEventName = eventName ?? 'Event'
+  const displayEventName = toTitleCase(eventName ?? 'Event')
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} title={displayEventName}>
@@ -297,19 +303,9 @@ export function TicketTierSheet({
         </div>
       )}
 
-      {/* Fee breakdown */}
+      {/* Fee breakdown — receipt block */}
       {selectedTier && (
-        <div
-          style={{
-            background: 'var(--color-surface-2)',
-            borderRadius: '12px',
-            padding: '14px 16px',
-            marginBottom: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-          }}
-        >
+        <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-100 space-y-2 mt-4 text-sm" style={{ marginBottom: '20px' }}>
           <FeeRow label="Ticket subtotal" value={formatNaira(subtotal)} />
           <FeeRow label="Platform fee (4%)" value={formatNaira(platformFee)} muted />
           <FeeRow
@@ -361,12 +357,12 @@ export function TicketTierSheet({
       <Button
         variant="primary"
         fullWidth
-        disabled={!selectedTier}
+        disabled={!selectedTier || !!isPast}
         onClick={() => {
           if (selectedTier) onCheckout(selectedTier._id, qty)
         }}
       >
-        Get Tickets
+        {isPast ? 'Ended' : 'Get Tickets'}
       </Button>
     </BottomSheet>
   )

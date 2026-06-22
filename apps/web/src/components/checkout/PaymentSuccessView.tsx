@@ -1,9 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@comfytag/ui'
-import { WhatsAppButton } from '@/components/ui/WhatsAppButton'
 
 interface PaymentSuccessViewProps {
   eventId: string
@@ -14,23 +12,25 @@ interface PaymentSuccessViewProps {
   guestEmail?: string
 }
 
-const CONFETTI_COLORS = ['#7C3AED', '#F59E0B', '#10B981', '#EF4444', '#3B82F6', '#EC4899']
+function toTitleCase(str: string): string {
+  return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+}
 
 export function PaymentSuccessView({
   eventId,
   eventName,
-  successRef,
   contactInfo,
   magicLinkSent,
   guestEmail,
 }: PaymentSuccessViewProps) {
   const router = useRouter()
-  const [shareImgBroken, setShareImgBroken] = useState(false)
 
   const shareUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}/events/${eventId}`
       : `https://comfytag.com/events/${eventId}`
+
+  const displayName = toTitleCase(eventName)
 
   const handleShare = () => {
     if (navigator.share) {
@@ -41,235 +41,102 @@ export function PaymentSuccessView({
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'var(--color-bg)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <style>{`
-        @keyframes __ct_confetti {
-          0%   { transform: translateY(0)   rotate(0deg);   opacity: 1; }
-          100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-        }
-      `}</style>
+    <div className="min-h-screen bg-zinc-50/50 flex flex-col items-center justify-center px-4 py-16">
+      <div className="w-full max-w-md flex flex-col items-center">
 
-      {/* Confetti pieces */}
-      {Array.from({ length: 20 }).map((_, i) => {
-        const colors = CONFETTI_COLORS
-        const size = 8 + (i % 5) * 4
-        return (
-          <div
-            key={i}
-            aria-hidden="true"
-            style={{
-              position: 'fixed',
-              top: `-${size}px`,
-              left: `${(i * 5 + 3) % 100}%`,
-              width: `${size}px`,
-              height: `${size}px`,
-              borderRadius: i % 3 === 0 ? '50%' : '2px',
-              background: colors[i % colors.length],
-              animation: `__ct_confetti ${2 + (i % 4) * 0.5}s ease-in ${(i * 0.15) % 2}s both`,
-              pointerEvents: 'none',
-              zIndex: 0,
-            }}
-          />
-        )
-      })}
+        {/* Apple-style animated success header */}
+        <div className="animate-in fade-in zoom-in duration-500 flex flex-col items-center">
+          {/* Glowing emerald checkmark */}
+          <div className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center shadow-lg shadow-emerald-200/80 ring-8 ring-emerald-100">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="12" fill="#10B981" />
+              <path
+                d="M7 12.5l3.5 3.5 6.5-7"
+                stroke="#ffffff"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
 
-      {/* Success card */}
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          maxWidth: '400px',
-          width: '100%',
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: '16px',
-          padding: '32px 24px',
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '16px',
-        }}
-      >
-        {/* Checkmark SVG */}
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="12" cy="12" r="12" style={{ fill: 'var(--color-success)' }} />
-          <path
-            d="M7 12.5l3.5 3.5 6.5-7"
-            stroke="#ffffff"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+          <h1 className="text-3xl font-black mt-6 text-zinc-900 text-center leading-tight">
+            {displayName}
+          </h1>
+          <p className="text-zinc-500 mt-2 text-base text-center">
+            Your ticket is confirmed! 🎟️
+          </p>
+        </div>
 
-        <h1
-          style={{
-            fontSize: '24px',
-            fontWeight: 800,
-            color: 'var(--color-text)',
-            margin: 0,
-          }}
-        >
-          Ticket Secured!
-        </h1>
+        {/* Confirmation info */}
+        {contactInfo && (
+          <p className="mt-4 text-sm text-zinc-500 text-center leading-relaxed">
+            Your ticket has been sent to{' '}
+            <strong className="text-zinc-800">{contactInfo}</strong> via email.
+          </p>
+        )}
 
-        <p
-          style={{
-            fontSize: '16px',
-            color: 'var(--color-text-muted)',
-            margin: 0,
-          }}
-        >
-          {eventName}
-        </p>
-
-        <p
-          style={{
-            fontSize: '14px',
-            color: 'var(--color-text-muted)',
-            margin: 0,
-            lineHeight: 1.6,
-          }}
-        >
-          Your ticket has been sent to{' '}
-          <strong style={{ color: 'var(--color-text)' }}>{contactInfo}</strong> via email.
-        </p>
-
+        {/* Magic link notification */}
         {magicLinkSent && (
-          <div
-            style={{
-              width: '100%',
-              background: 'color-mix(in srgb, var(--color-brand) 6%, transparent)',
-              border: '1px solid color-mix(in srgb, var(--color-brand) 20%, transparent)',
-              borderRadius: '10px',
-              padding: '12px 16px',
-              fontSize: '13px',
-              color: 'var(--color-text)',
-              lineHeight: 1.5,
-              textAlign: 'left',
-            }}
-          >
+          <div className="mt-4 w-full bg-violet-50 border border-violet-200 rounded-2xl px-4 py-3 text-sm text-zinc-700 leading-relaxed">
             📧 We sent a login link to <strong>{guestEmail}</strong> — tap it to access your
             tickets anytime.
           </div>
         )}
 
-        {/* Shareable OG card */}
-        <div style={{ width: '100%' }}>
-          {shareImgBroken ? (
-            <div
-              role="button"
-              tabIndex={0}
-              aria-label={`Share ${eventName}`}
-              onClick={handleShare}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleShare() }}
-              style={{
-                width: '100%',
-                aspectRatio: '400 / 209',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark, #5B21B6) 100%)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-                cursor: 'pointer',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                justifyContent: 'center',
-                padding: '24px 28px',
-                gap: '10px',
-              }}
-            >
-              <div style={{ fontSize: '28px', lineHeight: 1 }} aria-hidden="true">🎟️</div>
-              <div
-                style={{
-                  fontSize: '18px',
-                  fontWeight: 800,
-                  color: '#ffffff',
-                  lineHeight: 1.3,
-                }}
-              >
-                {eventName}
-              </div>
-              <div
-                style={{
-                  background: 'rgba(255,255,255,0.18)',
-                  borderRadius: '8px',
-                  padding: '5px 14px',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  color: '#ffffff',
-                  letterSpacing: '0.02em',
-                }}
-              >
-                Just Got My Ticket! ✨
-              </div>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>
-                comfytag.com
-              </div>
-            </div>
-          ) : (
-            <img
-              src={`/api/og?eventId=${eventId}&ref=${successRef}`}
-              width={400}
-              height={209}
-              alt={`Share card for ${eventName}`}
-              onError={() => setShareImgBroken(true)}
-              onClick={handleShare}
-              style={{
-                width: '100%',
-                height: 'auto',
-                borderRadius: '12px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-                cursor: 'pointer',
-                display: 'block',
-              }}
-            />
-          )}
-          <p
-            style={{
-              fontSize: '12px',
-              color: 'var(--color-text-muted)',
-              margin: '6px 0 0',
-              textAlign: 'center',
-            }}
-          >
-            Tap to share
-          </p>
+        {/* Instagram-ready glossy share card */}
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label={`Share ${eventName}`}
+          onClick={handleShare}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleShare() }}
+          className="mt-8 w-full max-w-sm bg-gradient-to-br from-violet-600 to-indigo-600 rounded-[2rem] p-8 shadow-2xl text-white relative overflow-hidden transform hover:scale-[1.02] transition-transform cursor-pointer"
+        >
+          {/* Decorative ticket-texture circles */}
+          <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/5 rounded-full" aria-hidden="true" />
+          <div className="absolute -bottom-12 -left-12 w-56 h-56 bg-white/5 rounded-full" aria-hidden="true" />
+          <div className="absolute top-1/2 right-3 -translate-y-1/2 w-20 h-20 bg-white/5 rounded-full" aria-hidden="true" />
+
+          <div className="relative z-10 flex flex-col items-center text-center gap-3">
+            <div className="text-4xl" aria-hidden="true">🎟️</div>
+            <p className="text-sm font-semibold uppercase tracking-widest text-white/70">
+              Just Got My Ticket! ✨
+            </p>
+            <p className="text-xl font-black leading-tight">
+              {displayName}
+            </p>
+            <p className="text-xs text-white/50 font-medium mt-1">
+              comfytag.com
+            </p>
+          </div>
         </div>
+        <p className="text-xs text-zinc-400 mt-2 text-center">Tap card to share</p>
 
         {/* WhatsApp share button */}
-        <WhatsAppButton
+        <a
           href={`https://wa.me/?text=${encodeURIComponent(
             `Omo, e be like I just got my ticket for ${eventName} 🎟️ This thing go mad! Get yours: ${shareUrl}`,
           )}`}
-          label="Share on WhatsApp"
-          fullWidth
-        />
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-6 w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#1EBE5D] text-white rounded-xl py-4 font-bold transition-colors no-underline"
+          style={{ textDecoration: 'none' }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-5.031 1.378L.057 24l1.687-6.163a9.855 9.855 0 01-1.587-5.946c.003-5.45 4.436-9.884 9.888-9.884 2.64.001 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.887 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .06 5.435.058 12.001a11.95 11.95 0 001.6 6l-1.7 6.196 6.354-1.664a11.967 11.967 0 005.74 1.463h.005c6.554 0 11.89-5.435 11.893-12.001a11.84 11.84 0 00-3.48-8.412" />
+          </svg>
+          Share on WhatsApp
+        </a>
 
-        {/* View tickets */}
-        <div style={{ width: '100%' }}>
-          <Button
-            variant="ghost"
-            fullWidth
-            onClick={() => {
-              router.push('/tickets')
-            }}
-          >
-            View My Tickets
-          </Button>
-        </div>
+        {/* View My Tickets */}
+        <button
+          type="button"
+          onClick={() => router.push('/tickets')}
+          className="mt-3 w-full border-2 border-zinc-200 hover:border-violet-600 hover:text-violet-700 text-zinc-700 rounded-xl py-4 font-bold transition-all bg-transparent cursor-pointer"
+        >
+          View My Tickets
+        </button>
       </div>
     </div>
   )

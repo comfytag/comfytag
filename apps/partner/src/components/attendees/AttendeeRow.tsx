@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { formatNaira, formatDate } from '@comfytag/utils'
 import { AttendeeStatusBadge } from './AttendeeStatusBadge'
 
@@ -25,77 +24,69 @@ interface AttendeeRowProps {
 }
 
 export function AttendeeRow({ attendee, onCheckInToggle, isCheckingIn = false }: AttendeeRowProps) {
-  const [isHovered, setIsHovered] = useState(false)
+  const initial = attendee.name?.[0]?.toUpperCase() ?? '?'
 
   return (
-    <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr auto',
-        alignItems: 'center',
-        padding: '16px',
-        borderBottom: '1px solid var(--color-border)',
-        backgroundColor: isHovered ? 'var(--color-surface-2)' : 'transparent',
-        transition: 'background var(--duration-fast) ease',
-      }}
-    >
-      {/* Left: Info */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <div style={{ fontWeight: 500, color: 'var(--color-text)', fontSize: '14px' }}>
-            {attendee.name}
+    <div className="group border-b border-zinc-100 last:border-0 hover:bg-zinc-50/50 transition-colors px-6 py-4">
+      <div className="flex items-center justify-between gap-4">
+        {/* Left: attendee info */}
+        <div className="flex items-center gap-4 min-w-0">
+          {/* Avatar */}
+          <div className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
+            <span className="text-zinc-500 font-bold text-sm" aria-hidden="true">
+              {initial}
+            </span>
           </div>
-          <AttendeeStatusBadge status={attendee.status} />
-        </div>
-        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--color-text-muted)' }}>
-          <span>{attendee.email}</span>
-          {attendee.phone && <span>{attendee.phone}</span>}
-          {attendee.ticketType && <span>Tier: {attendee.ticketType}</span>}
-          {attendee.amount && <span>{formatNaira(attendee.amount)} · {attendee.numOfTicket} ticket{attendee.numOfTicket !== 1 ? 's' : ''}</span>}
-        </div>
-        {attendee.checkedIn && attendee.checkInDate && (
-          <div style={{ fontSize: '12px', color: 'var(--color-success)', marginTop: '4px' }}>
-            ✓ Checked in {formatDate(attendee.checkInDate)}
-          </div>
-        )}
-      </div>
 
-      {/* Right: Check-in toggle (for active tickets only) */}
-      {attendee.status === 'active' && (
-        <div style={{ marginLeft: '16px' }}>
+          <div className="min-w-0">
+            {/* Name + status badge */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-zinc-900 font-bold tracking-tight text-sm">
+                {attendee.name}
+              </span>
+              <AttendeeStatusBadge status={attendee.status} />
+            </div>
+
+            {/* Meta row */}
+            <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+              <span className="text-xs font-medium text-zinc-500">{attendee.email}</span>
+              {attendee.phone && (
+                <span className="text-xs font-medium text-zinc-500">{attendee.phone}</span>
+              )}
+              {attendee.ticketType && (
+                <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold">{attendee.ticketType}</span>
+              )}
+              {attendee.amount != null && (
+                <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold">
+                  {formatNaira(attendee.amount)} · {attendee.numOfTicket}×
+                </span>
+              )}
+            </div>
+
+            {/* Check-in timestamp */}
+            {attendee.checkedIn && attendee.checkInDate && (
+              <p className="text-[10px] font-mono uppercase tracking-widest text-emerald-600 font-semibold mt-1">
+                ✓ Checked in {formatDate(attendee.checkInDate)}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Right: check-in action */}
+        {attendee.status === 'active' && (
           <button
             onClick={onCheckInToggle}
             disabled={isCheckingIn}
-            style={{
-              padding: '8px 14px',
-              backgroundColor: attendee.checkedIn ? 'var(--color-success)' : 'var(--color-surface)',
-              color: attendee.checkedIn ? 'white' : 'var(--color-text)',
-              border: attendee.checkedIn ? 'none' : '1px solid var(--color-border)',
-              borderRadius: '6px',
-              fontSize: '13px',
-              fontWeight: 500,
-              cursor: isCheckingIn ? 'not-allowed' : 'pointer',
-              opacity: isCheckingIn ? 0.6 : 1,
-              transition: 'background var(--duration-fast) ease, color var(--duration-fast) ease',
-              whiteSpace: 'nowrap',
-            }}
-            onMouseEnter={(e) => {
-              if (!isCheckingIn && !attendee.checkedIn) {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-surface-2)'
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isCheckingIn && !attendee.checkedIn) {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-surface)'
-              }
-            }}
+            className={
+              attendee.checkedIn
+                ? 'shrink-0 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs py-2 px-6 rounded-full transition-all disabled:opacity-60 cursor-pointer'
+                : 'shrink-0 bg-zinc-900 text-white font-bold text-xs py-2 px-6 rounded-full shadow-sm active:scale-95 transition-all hover:bg-zinc-800 disabled:opacity-60 cursor-pointer'
+            }
           >
-            {isCheckingIn ? 'Checking in...' : attendee.checkedIn ? '✓ Checked in' : 'Check in'}
+            {isCheckingIn ? 'Checking in…' : attendee.checkedIn ? '✓ Checked in' : 'Check in'}
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

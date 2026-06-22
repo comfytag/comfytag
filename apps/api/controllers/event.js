@@ -495,18 +495,22 @@ export const getAllEvents = async (req, res, next) => {
         else query.status = 'published';
         if (req.query.planner_id) query.planner_id = req.query.planner_id;
         if (req.query.state) query.state = req.query.state;
-        if (req.query.category) query.category = req.query.category;
+        const andClauses = []
 
         // Handle past vs. upcoming events
         if (req.query.showPast === 'true') {
           query.date = { $lt: new Date() }
         } else {
-          query.$or = [
-            { date: { $exists: false } },
-            { date: null },
-            { date: { $gte: new Date() } }
-          ]
+          andClauses.push({ $or: [{ date: { $gte: new Date() } }, { event_date: { $gte: new Date() } }] })
         }
+
+        // Category: match primary or secondary
+        if (req.query.category) {
+          const cat = req.query.category
+          andClauses.push({ $or: [{ category: cat }, { secondaryCategory: cat }] })
+        }
+
+        if (andClauses.length > 0) query.$and = andClauses
 
         if (req.query.priceMin || req.query.priceMax) {
           query['ticketType.price'] = {}
@@ -552,7 +556,7 @@ export const eventsBySingleFilter = async (req, res, next) => {
     const filter = eventsfilter.toLowerCase()
     try {
         const singleFilter = await Event.find({$or :[
-            {state: filter},{category: filter}, 
+            {state: filter},{category: filter},{secondaryCategory: filter},
             {ticketType: filter}, {planner_id: filter}
         ]})
         res.status(200).json(singleFilter)
@@ -604,6 +608,41 @@ export const getEventCategories = async (req, res, next) => {
     }
 }
 
+// GET /events/category-counts — upcoming published event counts per category (primary + secondary)
+export const getCategoryCounts = async (req, res, next) => {
+    try {
+        const now = new Date()
+        const results = await Event.aggregate([
+            {
+                $match: {
+                    status: 'published',
+                    $or: [{ date: { $gte: now } }, { event_date: { $gte: now } }],
+                },
+            },
+            {
+                $project: {
+                    allCategories: {
+                        $filter: {
+                            input: ['$category', '$secondaryCategory'],
+                            as: 'c',
+                            cond: { $and: [{ $ne: ['$$c', null] }, { $ne: ['$$c', ''] }] },
+                        },
+                    },
+                },
+            },
+            { $unwind: '$allCategories' },
+            { $group: { _id: '$allCategories', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+        ])
+        res.status(200).json({
+            success: true,
+            data: results.map(r => ({ category: r._id, count: r.count })),
+        })
+    } catch (err) {
+        next(err)
+    }
+}
+
 // GET /events/states — distinct states that have published events
 export const getEventStates = async (req, res, next) => {
     try {
@@ -646,6 +685,11 @@ export const updateTicketTier = async (req, res, next) => {
 
         const event = await Event.findById(eventId)
         if (!event) return next(createError(404, 'Event not found'))
+
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (event.planner_id.toString() !== requesterId && !req.user.isAdmin) {
+            return next(createError(403, 'Not authorized to update this event'))
+        }
 
         const tierIndex = event.ticketType.findIndex(t => t._id.toString() === tierId)
         if (tierIndex === -1) return next(createError(404, 'Ticket tier not found'))
@@ -759,7 +803,9 @@ export const eventsByCategory = async (req, res, next) => {
     try {
         const list = await Promise.all(categories.map(category=>{
             return Event.find(
-                category == "" || category == "all" ?  req.query : {category:category})
+                category == "" || category == "all"
+                  ? req.query
+                  : { $or: [{ category: category }, { secondaryCategory: category }] })
         }))
         res.status(200).json(list)
     } catch (err) {
@@ -778,6 +824,10 @@ export const getEventFeed = async (req, res, next) => {
     const query = {
       status: 'published',
       'ticketType.0': { $exists: true },
+      $or: [
+        { date: { $gte: new Date() } },
+        { event_date: { $gte: new Date() } }
+      ]
     }
 
     // Filter by state/location if provided
@@ -812,18 +862,21 @@ export const getEventsByState = async (req, res, next) => {
 
     const skip = (parseInt(page) - 1) * parseInt(limit)
 
-    const events = await Event.find({
+    const stateQuery = {
       status: 'published',
       state: { $regex: state, $options: 'i' },
-    })
+      $or: [
+        { date: { $gte: new Date() } },
+        { event_date: { $gte: new Date() } }
+      ]
+    }
+
+    const events = await Event.find(stateQuery)
       .sort({ date: 1 })
       .limit(parseInt(limit))
       .skip(skip)
 
-    const total = await Event.countDocuments({
-      status: 'published',
-      state: { $regex: state, $options: 'i' },
-    })
+    const total = await Event.countDocuments(stateQuery)
 
     res.status(200).json({
       events,

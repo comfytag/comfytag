@@ -1,22 +1,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import type { User } from '@comfytag/types'
 
 export interface FaceEnrollmentBannerProps {
   user: User
   onDismiss: () => void
+  title?: string
+  body?: string
 }
 
-export function FaceEnrollmentBanner({ user, onDismiss }: FaceEnrollmentBannerProps) {
+const DEFAULT_TITLE = 'Your face is your entry pass.'
+const DEFAULT_BODY  =
+  'Tired of scrambling for emails at the door? Link your biometric pass now to step cleanly through gate check-ins automatically.'
+
+export function FaceEnrollmentBanner({ user, onDismiss, title, body }: FaceEnrollmentBannerProps) {
   const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
-    // Check if user has dismissed this banner
     const isDismissed = localStorage.getItem('face-enrollment-banner-dismissed')
-    if (isDismissed) {
-      setIsVisible(false)
-    }
+    if (isDismissed) setIsVisible(false)
   }, [])
 
   const handleDismiss = () => {
@@ -28,82 +32,43 @@ export function FaceEnrollmentBanner({ user, onDismiss }: FaceEnrollmentBannerPr
   if (!isVisible) return null
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 16,
-        padding: '16px 20px',
-        background: 'var(--color-surface)',
-        border: `1px solid var(--color-border)`,
-        borderRadius: 'var(--radius-md)',
-        marginBottom: 20,
-      }}
-    >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontSize: 15,
-            fontWeight: 600,
-            color: 'var(--color-text)',
-            marginBottom: 4,
-          }}
-        >
-          Face Check-In — Coming Soon
-        </div>
-        <div
-          style={{
-            fontSize: 13,
-            color: 'var(--color-text-muted)',
-            lineHeight: 1.4,
-          }}
-        >
-          Skip the queue with your face — no QR code needed. Launching soon on the ComfyTag app.
-        </div>
+    <div className="p-6 bg-linear-to-br from-violet-600 to-indigo-600 text-white rounded-3xl shadow-md relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 mb-2">
+      {/* Decorative ambient glows */}
+      <div
+        aria-hidden="true"
+        className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/10 blur-3xl pointer-events-none"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute -bottom-10 left-1/3 w-36 h-36 rounded-full bg-indigo-400/20 blur-2xl pointer-events-none"
+      />
+
+      {/* ── Left: conversion copy ── */}
+      <div className="flex-1 min-w-0 relative z-10">
+        <span className="inline-block text-[10px] font-semibold uppercase tracking-widest bg-white/20 text-white/90 px-3 py-1 rounded-full mb-3">
+          Exclusive Upgrade
+        </span>
+        <h2 className="text-xl font-bold tracking-tight mb-2 leading-snug">
+          {title ?? DEFAULT_TITLE}
+        </h2>
+        <p className="text-sm text-white/80 leading-relaxed max-w-sm">
+          {body ?? DEFAULT_BODY}
+        </p>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          flexShrink: 0,
-        }}
-      >
-
+      {/* ── Right: CTA + dismiss ── */}
+      <div className="flex items-center gap-3 shrink-0 relative z-10">
+        <Link
+          href="/enroll"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-violet-700 text-sm font-semibold rounded-xl hover:bg-violet-50 transition-colors whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-violet-600"
+        >
+          Enroll Face Pass
+        </Link>
         <button
+          type="button"
           onClick={handleDismiss}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 32,
-            height: 32,
-            background: 'var(--color-surface-2)',
-            border: `1px solid var(--color-border)`,
-            borderRadius: 'var(--radius-md)',
-            cursor: 'pointer',
-            fontSize: 16,
-            color: 'var(--color-text-muted)',
-            transition: `background var(--duration-fast) var(--ease-standard)`,
-            flexShrink: 0,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(124, 58, 237, 0.1)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'var(--color-surface-2)'
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.outline = `2px solid var(--color-brand)`
-            e.currentTarget.style.outlineOffset = '2px'
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.outline = 'none'
-          }}
-          aria-label="Dismiss face enrollment coming soon banner"
-          title="Dismiss"
+          aria-label="Dismiss face enrollment banner"
+          className="flex items-center justify-center w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 transition-colors text-white/80 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-1 focus-visible:ring-offset-violet-600"
         >
           ✕
         </button>

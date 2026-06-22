@@ -140,6 +140,74 @@ export function useDeleteEvent() {
   })
 }
 
+export function useUpdateTier() {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      eventId,
+      tierId,
+      data,
+    }: {
+      eventId: string
+      tierId: string
+      data: { name: string; price: number; capacity: number }
+    }) =>
+      api.put(`/events/${eventId}/tiers/${tierId}`, data).then((r) => r.data),
+    onSuccess: (_, { eventId }) => {
+      qc.invalidateQueries({ queryKey: partnerEventKeys.tiers(eventId) })
+    },
+  })
+}
+
+export function useDeleteTier() {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ eventId, tierId }: { eventId: string; tierId: string }) =>
+      api.delete(`/events/${eventId}/tiers/${tierId}`).then((r) => r.data),
+    onSuccess: (_, { eventId }) => {
+      qc.invalidateQueries({ queryKey: partnerEventKeys.tiers(eventId) })
+    },
+  })
+}
+
+export function useUpdateEvent() {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      eventId,
+      data,
+    }: {
+      eventId: string
+      data: Record<string, unknown>
+    }) => api.patch(`/events/${eventId}`, data).then(r => r.data),
+    onSuccess: (_, { eventId }) => {
+      qc.invalidateQueries({ queryKey: partnerEventKeys.detail(eventId) })
+      qc.invalidateQueries({ queryKey: partnerEventKeys.list() })
+    },
+  })
+}
+
+export function useAddTier() {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      eventId,
+      data,
+    }: {
+      eventId: string
+      data: { name: string; price: number; capacity: number }
+    }) => api.post(`/events/${eventId}/tiers`, data).then(r => r.data),
+    onSuccess: (_, { eventId }) => {
+      qc.invalidateQueries({ queryKey: partnerEventKeys.tiers(eventId) })
+      qc.invalidateQueries({ queryKey: partnerEventKeys.detail(eventId) })
+    },
+  })
+}
+
 export function useDuplicateEvent() {
   const { data: session } = useSession()
   const qc = useQueryClient()

@@ -4,6 +4,31 @@ import type { Metadata } from 'next'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
+
+interface PageSection {
+  heading?: string
+  body: string
+}
+
+interface PageCmsData {
+  pageKey: string
+  title?: string
+  sections: PageSection[]
+  isPublished: boolean
+}
+
+async function fetchPageContent(key: 'about'): Promise<PageCmsData | null> {
+  try {
+    const res = await fetch(`${API}/cms/pages/${key}`, { next: { revalidate: 3600 } })
+    if (!res.ok) return null
+    const json = (await res.json()) as { success: boolean; data: PageCmsData | null }
+    return json.data ?? null
+  } catch {
+    return null
+  }
+}
+
 export const metadata: Metadata = {
   title: "About ComfyTag — Nigeria's Face-Powered Event Ticketing Platform",
   description: "ComfyTag is Nigeria's first face-powered event ticketing platform. Show your face for instant entry—no QR codes, pure frictionless experience.",
@@ -15,7 +40,9 @@ export const metadata: Metadata = {
   },
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const pageContent = await fetchPageContent('about')
+  const hasCmsSections = pageContent && pageContent.sections.length > 0
   return (
     <>
       <Navbar />
@@ -54,139 +81,170 @@ export default function AboutPage() {
           }}
         >
 
-          {/* Mission */}
-          <div>
-            <h2
-              style={{
-                fontSize: '28px',
-                fontWeight: 700,
-                color: 'var(--color-text)',
-                marginBottom: '16px',
-              }}
-            >
-              Our Mission
-            </h2>
-            <p
-              style={{
-                fontSize: '16px',
-                color: 'var(--color-text-muted)',
-                lineHeight: 1.8,
-              }}
-            >
-              We believe events are about vibes, not logistics. ComfyTag removes the friction — no more fumbling for QR codes, no more checking bags at entry. Organizers get instant analytics. Attendees get a seamless, secure experience.
-            </p>
-          </div>
-
-          {/* Nigerian-First */}
-          <div>
-            <h2
-              style={{
-                fontSize: '28px',
-                fontWeight: 700,
-                color: 'var(--color-text)',
-                marginBottom: '16px',
-              }}
-            >
-              Built for Nigerian Gen Z
-            </h2>
-            <p
-              style={{
-                fontSize: '16px',
-                color: 'var(--color-text-muted)',
-                lineHeight: 1.8,
-              }}
-            >
-              We get it: you don't have time for nonsense. You want to buy event tickets in Ilorin, roll up to the venue, and get straight to the party. That's what we built. Nigeria-native, Gen Z-first, zero gatekeeping.
-            </p>
-          </div>
-
-          {/* What We Do */}
-          <div>
-            <h2
-              style={{
-                fontSize: '28px',
-                fontWeight: 700,
-                color: 'var(--color-text)',
-                marginBottom: '20px',
-              }}
-            >
-              What We Do
-            </h2>
-            <ul
-              style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '16px',
-              }}
-            >
-              {[
-                {
-                  title: 'Biometric Check-In',
-                  body: 'Enroll your face once, show it at any venue for instant entry — no QR code, no delays.',
-                },
-                {
-                  title: 'Organizer Dashboard',
-                  body: 'Real-time attendee tracking, revenue analytics, and full event management tools.',
-                },
-                {
-                  title: 'Hype Link Referral',
-                  body: 'Earn ₦500 for every friend who buys a ticket through your personal link.',
-                },
-                {
-                  title: 'Secure Payments',
-                  body: 'Paystack integration for safe transactions with instant settlements.',
-                },
-              ].map(({ title, body }) => (
-                <li
-                  key={title}
-                  style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}
-                >
-                  <span
+          {hasCmsSections ? (
+            pageContent.sections.map((sec, i) => (
+              <div key={sec.heading ?? i}>
+                {sec.heading && (
+                  <h2
                     style={{
-                      color: 'var(--color-brand)',
+                      fontSize: '28px',
                       fontWeight: 700,
-                      fontSize: '16px',
-                      flexShrink: 0,
-                      marginTop: '2px',
+                      color: 'var(--color-text)',
+                      marginBottom: '16px',
                     }}
                   >
-                    ✓
-                  </span>
-                  <span style={{ fontSize: '16px', color: 'var(--color-text-muted)', lineHeight: 1.7 }}>
-                    <strong style={{ color: 'var(--color-text)' }}>{title}:</strong> {body}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+                    {sec.heading}
+                  </h2>
+                )}
+                <p
+                  style={{
+                    fontSize: '16px',
+                    color: 'var(--color-text-muted)',
+                    lineHeight: 1.8,
+                    whiteSpace: 'pre-line',
+                  }}
+                >
+                  {sec.body}
+                </p>
+              </div>
+            ))
+          ) : (
+            <>
+              {/* Mission */}
+              <div>
+                <h2
+                  style={{
+                    fontSize: '28px',
+                    fontWeight: 700,
+                    color: 'var(--color-text)',
+                    marginBottom: '16px',
+                  }}
+                >
+                  Our Mission
+                </h2>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    color: 'var(--color-text-muted)',
+                    lineHeight: 1.8,
+                  }}
+                >
+                  We believe events are about vibes, not logistics. ComfyTag removes the friction — no more fumbling for QR codes, no more checking bags at entry. Organizers get instant analytics. Attendees get a seamless, secure experience.
+                </p>
+              </div>
 
-          {/* Team */}
-          <div>
-            <h2
-              style={{
-                fontSize: '28px',
-                fontWeight: 700,
-                color: 'var(--color-text)',
-                marginBottom: '16px',
-              }}
-            >
-              Security & Privacy
-            </h2>
-            <p
-              style={{
-                fontSize: '16px',
-                color: 'var(--color-text-muted)',
-                lineHeight: 1.8,
-              }}
-            >
-              Your biometric data is yours. We're fully NDPR-compliant. Face templates are encrypted on-device and never sent to servers. We don't sell, share, or log-crawl your data. Period.
-            </p>
-          </div>
+              {/* Nigerian-First */}
+              <div>
+                <h2
+                  style={{
+                    fontSize: '28px',
+                    fontWeight: 700,
+                    color: 'var(--color-text)',
+                    marginBottom: '16px',
+                  }}
+                >
+                  Built for Nigerian Gen Z
+                </h2>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    color: 'var(--color-text-muted)',
+                    lineHeight: 1.8,
+                  }}
+                >
+                  We get it: you don&apos;t have time for nonsense. You want to buy event tickets in Ilorin, roll up to the venue, and get straight to the party. That&apos;s what we built. Nigeria-native, Gen Z-first, zero gatekeeping.
+                </p>
+              </div>
 
-          {/* Contact CTA */}
+              {/* What We Do */}
+              <div>
+                <h2
+                  style={{
+                    fontSize: '28px',
+                    fontWeight: 700,
+                    color: 'var(--color-text)',
+                    marginBottom: '20px',
+                  }}
+                >
+                  What We Do
+                </h2>
+                <ul
+                  style={{
+                    listStyle: 'none',
+                    padding: 0,
+                    margin: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '16px',
+                  }}
+                >
+                  {[
+                    {
+                      title: 'Biometric Check-In',
+                      body: 'Enroll your face once, show it at any venue for instant entry — no QR code, no delays.',
+                    },
+                    {
+                      title: 'Organizer Dashboard',
+                      body: 'Real-time attendee tracking, revenue analytics, and full event management tools.',
+                    },
+                    {
+                      title: 'Hype Link Referral',
+                      body: 'Earn ₦500 for every friend who buys a ticket through your personal link.',
+                    },
+                    {
+                      title: 'Secure Payments',
+                      body: 'Paystack integration for safe transactions with instant settlements.',
+                    },
+                  ].map(({ title, body }) => (
+                    <li
+                      key={title}
+                      style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}
+                    >
+                      <span
+                        style={{
+                          color: 'var(--color-brand)',
+                          fontWeight: 700,
+                          fontSize: '16px',
+                          flexShrink: 0,
+                          marginTop: '2px',
+                        }}
+                      >
+                        ✓
+                      </span>
+                      <span style={{ fontSize: '16px', color: 'var(--color-text-muted)', lineHeight: 1.7 }}>
+                        <strong style={{ color: 'var(--color-text)' }}>{title}:</strong> {body}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Security */}
+              <div>
+                <h2
+                  style={{
+                    fontSize: '28px',
+                    fontWeight: 700,
+                    color: 'var(--color-text)',
+                    marginBottom: '16px',
+                  }}
+                >
+                  Security &amp; Privacy
+                </h2>
+                <p
+                  style={{
+                    fontSize: '16px',
+                    color: 'var(--color-text-muted)',
+                    lineHeight: 1.8,
+                  }}
+                >
+                  Your biometric data is yours. We&apos;re fully NDPR-compliant. Face templates are encrypted on-device and never sent to servers. We don&apos;t sell, share, or log-crawl your data. Period.
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* Contact CTA — always hardcoded */}
           <div
             style={{
               background: 'var(--color-surface)',

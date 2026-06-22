@@ -5,10 +5,14 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Navbar } from '@/components/layout/Navbar'
-import { AvatarInitials, Button, Input, LoadingSpinner, EmptyState, ErrorMessage } from '@comfytag/ui'
-import { authHeader, formatDate } from '@comfytag/utils'
+import { LoadingSpinner, EmptyState, ErrorMessage } from '@comfytag/ui'
+import { formatDate } from '@comfytag/utils'
 import { api } from '@/lib/api'
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile'
+
+function toTitleCase(str: string): string {
+  return str.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+}
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
@@ -77,7 +81,7 @@ export default function ProfilePage() {
     return (
       <>
         <Navbar />
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 24px' }}>
+        <div className="flex justify-center pt-20 px-6">
           <LoadingSpinner size="lg" centered />
         </div>
       </>
@@ -97,245 +101,169 @@ export default function ProfilePage() {
   }
 
   const displayName = name || session.user.name || ''
+  const titleCaseName = toTitleCase(displayName)
+  const referralCode = user?.referralCode || session?.user?.referralCode
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://comfytag.com'
+  const referralLink = referralCode ? `${baseUrl}?ref=${referralCode}` : null
 
   return (
     <>
       <Navbar />
-      <main
-        style={{
-          maxWidth: '520px',
-          margin: '0 auto',
-          padding: '32px 24px 80px',
-        }}
-      >
-        {/* Avatar section */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          {session.user.image ? (
-            <div style={{ margin: '0 auto 12px', width: '80px', height: '80px' }}>
-              <Image
-                src={session.user.image}
-                alt={displayName}
-                width={80}
-                height={80}
-                style={{ borderRadius: '50%', objectFit: 'cover' }}
-              />
-            </div>
-          ) : (
-            <div style={{ margin: '0 auto 12px', width: 80 }}>
-              <AvatarInitials name={displayName || '?'} size={80} fontSize={28} />
-            </div>
-          )}
-          <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>
-            {displayName}
-          </div>
-          <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-            {session.user.email}
-          </div>
-        </div>
+      <main className="min-h-screen bg-zinc-50/30 pt-28 pb-32 px-4 flex flex-col items-center">
+        <div className="w-full max-w-2xl space-y-6">
 
-        {/* Edit section */}
-        <div
-          style={{
-            backgroundColor: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '12px',
-            padding: '20px',
-          }}
-        >
-          <h2 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px', color: 'var(--color-text)', margin: '0 0 16px' }}>
-            Edit Profile
-          </h2>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <Input
-              label="Display Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-
-            <Input
-              label="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
-            />
-
-            <div>
-              <Input
-                label="Email"
-                type="email"
-                value={session.user.email}
-                onChange={() => undefined}
-                disabled
-              />
-              <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '4px', margin: '4px 0 0' }}>
-                Email changes require contacting support
-              </p>
-            </div>
+          {/* Avatar Section */}
+          <div className="flex flex-col items-center">
+            {session.user.image ? (
+              <div className="ring-4 ring-white shadow-md rounded-full mx-auto">
+                <Image
+                  src={session.user.image}
+                  alt={displayName}
+                  width={96}
+                  height={96}
+                  className="w-24 h-24 rounded-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-violet-600 text-white flex items-center justify-center text-3xl font-black ring-4 ring-white shadow-md mx-auto">
+                {(displayName || '?').charAt(0).toUpperCase()}
+              </div>
+            )}
+            <h1 className="text-2xl font-black text-zinc-900 mt-4">
+              {titleCaseName || session.user.email}
+            </h1>
+            <p className="text-sm text-zinc-500 mt-1">{session.user.email}</p>
           </div>
 
-          <div style={{ marginTop: '20px' }}>
+          {/* Edit Profile Card */}
+          <div className="w-full bg-white border border-zinc-200 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col">
+            <h2 className="text-lg font-bold text-zinc-900 mb-6">Edit Profile</h2>
+
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                  Display Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-zinc-50 border border-zinc-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-xl px-4 py-3 transition-all text-zinc-900 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                  className="w-full bg-zinc-50 border border-zinc-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-xl px-4 py-3 transition-all text-zinc-900 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={session.user.email}
+                  onChange={() => undefined}
+                  disabled
+                  className="w-full bg-zinc-100 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-400 cursor-not-allowed outline-none"
+                />
+                <p className="text-xs text-zinc-400 mt-1.5">
+                  Email changes require contacting support
+                </p>
+              </div>
+            </div>
+
             {saveSuccess && (
-              <div
-                style={{
-                  /* --color-success at 10% alpha */
-                  backgroundColor: 'rgba(16,185,129,0.1)',
-                  /* --color-success at 25% alpha */
-                  border: '1px solid rgba(16,185,129,0.25)',
-                  borderRadius: '8px',
-                  padding: '10px 14px',
-                  fontSize: '14px',
-                  color: 'var(--color-success)',
-                  marginBottom: '12px',
-                }}
-              >
+              <div className="mt-4 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-700">
                 Profile saved successfully.
               </div>
             )}
 
-            <Button variant="primary" fullWidth loading={isSaving} onClick={handleSave}>
-              Save Changes
-            </Button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="w-full py-4 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white font-bold rounded-xl transition-all shadow-md mt-4"
+            >
+              {isSaving ? 'Saving…' : 'Save Changes'}
+            </button>
 
             {saveError && (
-              <div style={{ marginTop: '12px' }}>
+              <div className="mt-3">
                 <ErrorMessage message={saveError} />
               </div>
             )}
           </div>
-        </div>
 
-        {/* Referral Link section */}
-        {(user?.referralCode || session?.user?.referralCode) && (
-          <div
-            style={{
-              backgroundColor: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              borderRadius: '12px',
-              padding: '20px',
-              marginTop: '20px',
-            }}
-          >
-            <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 16px' }}>
-              Your Referral Link
-            </h2>
-
-            <div style={{ marginBottom: '12px' }}>
-              <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '0 0 8px' }}>
-                Share this link to earn rewards
-              </p>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '8px',
-                  backgroundColor: 'rgba(124, 58, 237, 0.05)',
-                  border: '1px solid rgba(124, 58, 237, 0.2)',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  alignItems: 'center',
-                }}
-              >
-                <code
-                  style={{
-                    flex: 1,
-                    fontSize: '13px',
-                    color: 'var(--color-brand)',
-                    fontFamily: 'monospace',
-                    margin: 0,
-                    wordBreak: 'break-all',
-                    padding: 0,
-                  }}
-                >
-                  ?ref={user?.referralCode || session?.user?.referralCode}
-                </code>
-                <Button
-                  variant="secondary"
-                  size="sm"
+          {/* Referral Link Card */}
+          {referralLink && (
+            <div className="w-full bg-white border border-zinc-200 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col">
+              <h2 className="text-lg font-bold text-zinc-900 mb-6">Your Referral Link</h2>
+              <p className="text-sm text-zinc-500 mb-2">Share this link to earn rewards</p>
+              <div className="w-full bg-violet-50 border border-violet-100 rounded-xl p-2 pl-4 flex items-center justify-between mt-2">
+                <span className="text-sm font-mono text-violet-700 truncate mr-4">
+                  {referralLink}
+                </span>
+                <button
                   onClick={handleCopyReferralLink}
-                  className="text-xs whitespace-nowrap"
+                  className="bg-white hover:bg-violet-100 text-violet-700 border border-violet-200 rounded-lg px-4 py-2 text-sm font-bold transition-colors shrink-0"
                 >
                   {copiedReferral ? '✓ Copied' : 'Copy'}
-                </Button>
+                </button>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Account section */}
-        <div
-          style={{
-            backgroundColor: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '12px',
-            padding: '20px',
-            marginTop: '20px',
-          }}
-        >
-          <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 12px' }}>
-            Account
-          </h2>
+          {/* Account Card */}
+          <div className="w-full bg-white border border-zinc-200 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col">
+            <h2 className="text-lg font-bold text-zinc-900 mb-6">Account</h2>
 
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              fontSize: '14px',
-              paddingBottom: '12px',
-              borderBottom: '1px solid var(--color-border)',
-              marginBottom: '12px',
-            }}
-          >
-            <span style={{ color: 'var(--color-text-muted)' }}>Account type</span>
-            <span style={{ color: 'var(--color-text)' }}>
-              {session.user.isPartner ? 'Organizer' : 'Attendee'}
-            </span>
-          </div>
+            <div className="flex justify-between items-center text-sm pb-4 border-b border-zinc-100 mb-4">
+              <span className="text-zinc-500">Account type</span>
+              <span className="font-medium text-zinc-900">
+                {session.user.isPartner ? 'Organizer' : 'Attendee'}
+              </span>
+            </div>
 
-          <div style={{ marginBottom: '12px' }}>
+            <div className="flex justify-between items-center text-sm pb-4 border-b border-zinc-100 mb-6">
+              <span className="text-zinc-500">Member since</span>
+              <span className="font-medium text-zinc-900">
+                {session.user.createdAt ? formatDate(session.user.createdAt) : '—'}
+              </span>
+            </div>
+
             {session.user.isPartner ? (
-              <Button
-                variant="primary"
-                fullWidth
-                onClick={() => {
-                  router.push(`https://partner.comfytag.com/handoff?t=${session.user.token}`)
-                }}
+              <button
+                onClick={() => router.push(`https://partner.comfytag.com/handoff?t=${session.user.token}`)}
+                className="w-full py-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-all shadow-md mb-4"
               >
                 Go to Partner Dashboard
-              </Button>
+              </button>
             ) : (
-              <Button
-                variant="secondary"
-                fullWidth
-                loading={isUpgrading}
+              <button
                 onClick={handleBecomePartner}
+                disabled={isUpgrading}
+                className="w-full py-4 border-2 border-zinc-200 hover:border-violet-600 hover:text-violet-700 text-zinc-900 font-bold rounded-xl transition-all mb-4 disabled:opacity-60"
               >
-                Become a Partner
-              </Button>
+                {isUpgrading ? 'Upgrading…' : 'Become a Partner'}
+              </button>
             )}
+
+            <button
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="w-full py-4 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl transition-all"
+            >
+              Log Out
+            </button>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              fontSize: '14px',
-              marginBottom: '20px',
-            }}
-          >
-            <span style={{ color: 'var(--color-text-muted)' }}>Member since</span>
-            <span style={{ color: 'var(--color-text)' }}>
-              {session.user.createdAt ? formatDate(session.user.createdAt) : '—'}
-            </span>
-          </div>
-
-          <Button
-            variant="danger"
-            fullWidth
-            onClick={() => signOut({ callbackUrl: '/' })}
-          >
-            Log Out
-          </Button>
         </div>
       </main>
     </>

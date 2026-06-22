@@ -3,6 +3,8 @@ import { sendEmail } from "../utils/sendEmail.js";
 import { getGlobalIoInstance, emitNotification, emitUnreadCountUpdate } from "../socket/index.js";
 import Notification from "../models/Notification.js";
 
+const isQueueEnabled = process.env.NODE_ENV === 'production' || process.env.EMAIL_QUEUE_ENABLED === 'true';
+
 const redisConnection = {
   host: process.env.REDIS_HOST || "localhost",
   port: parseInt(process.env.REDIS_PORT || "6379"),
@@ -34,7 +36,7 @@ export const testRedisConnection = async () => {
  * Initialize BullMQ email queue
  * Job format: { to, subject, template, data, from, replyTo, delay }
  */
-export const emailQueue = new Queue("email", {
+export const emailQueue = isQueueEnabled ? new Queue("email", {
   connection: redisConnection,
   defaultJobOptions: {
     attempts: 3,
@@ -47,13 +49,13 @@ export const emailQueue = new Queue("email", {
     },
     removeOnFail: false, // Keep failed jobs for debugging
   },
-});
+}) : null;
 
 /**
  * Process email jobs from the queue (BullMQ v5+ Worker pattern)
  * v2 PRODUCTION READY: Email worker now fully enabled
  */
-export const emailWorker = new Worker("email", async (job) => {
+export const emailWorker = isQueueEnabled ? new Worker("email", async (job) => {
   const { to, subject, template, data = {}, from, replyTo, userId, notificationType } = job.data;
 
   try {
@@ -126,32 +128,34 @@ export const emailWorker = new Worker("email", async (job) => {
   } catch (error) {
     throw new Error(`Email send error: ${error.message}`);
   }
-}, { connection: redisConnection });
+}, { connection: redisConnection }) : null;
 
 /**
- * Worker event listeners
+ * Worker event listeners (only registered when queue is active)
  */
-emailWorker.on("waiting", (job) => {
-  console.log(`[Email Queue] Job ${job.id} waiting`);
-});
+if (emailWorker) {
+  emailWorker.on("waiting", (job) => {
+    console.log(`[Email Queue] Job ${job.id} waiting`);
+  });
 
-emailWorker.on("active", (job) => {
-  console.log(`[Email Queue] Job ${job.id} processing`);
-});
+  emailWorker.on("active", (job) => {
+    console.log(`[Email Queue] Job ${job.id} processing`);
+  });
 
-emailWorker.on("completed", (job) => {
-  console.log(`[Email Queue] Job ${job.id} completed`);
-});
+  emailWorker.on("completed", (job) => {
+    console.log(`[Email Queue] Job ${job.id} completed`);
+  });
 
-emailWorker.on("failed", (job, err) => {
-  console.error(
-    `[Email Queue] ERROR: Job ${job.id} failed after ${job.attemptsMade} attempts - ${err.message}`
-  );
-});
+  emailWorker.on("failed", (job, err) => {
+    console.error(
+      `[Email Queue] ERROR: Job ${job.id} failed after ${job.attemptsMade} attempts - ${err.message}`
+    );
+  });
 
-emailWorker.on("error", (err) => {
-  console.error(`[Email Queue] ERROR: Worker error - ${err.message}`);
-});
+  emailWorker.on("error", (err) => {
+    console.error(`[Email Queue] ERROR: Worker error - ${err.message}`);
+  });
+}
 
 /**
  * Enqueue a single email
@@ -167,6 +171,16 @@ emailWorker.on("error", (err) => {
  */
 export const enqueueEmail = async (options) => {
   const { to, subject, template, data = {}, from, replyTo, delay = 0, userId, notificationType } = options;
+
+  if (!emailQueue) {
+    if (delay > 0) {
+      const hrs = Math.round(delay / 3_600_000)
+      console.log(`[Email Queue] Dev: skipping delayed email (+${hrs}h) to: ${to} — subject: "${subject}"`)
+      return { success: true, jobId: null, email: to, subject }
+    }
+    console.log(`[Email Queue] Dev mode — sending directly (no queue) to: ${to}`);
+    return await sendEmail({ to, subject, template, data, from, replyTo });
+  }
 
   try {
     const job = await emailQueue.add(
@@ -223,6 +237,7 @@ export const enqueueBulkEmails = async (recipients, options) => {
  * @returns {Promise<Object>} Queue status object
  */
 export const getQueueStatus = async () => {
+  if (!emailQueue) return { waiting: 0, active: 0, completed: 0, failed: 0, isPaused: true };
   try {
     const counts = await emailQueue.getJobCounts(
       "waiting",

@@ -1,50 +1,163 @@
-﻿'use client'
+'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { formatNaira } from '@comfytag/utils'
 import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
-import { ChartCard } from '@/components/ui/ChartCard'
-import { EventCard } from '@/components/ui/EventCard'
 import { usePartnerProfile, usePartnerRevenue, usePartnerAnalytics, useMyEvents } from '@/hooks'
+import { TicketPulseRing } from '@/components/overview/TicketPulseRing'
+import { MilestoneTrack } from '@/components/overview/MilestoneTrack'
+import { EventTimelineStrip } from '@/components/overview/EventTimelineStrip'
+
+// ── Private helpers ────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
-  const now = new Date()
-  const hour = now.getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 17) return 'Good afternoon'
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 17) return 'Good afternoon'
   return 'Good evening'
 }
 
+function toTitleCase(str: string): string {
+  return str.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+}
+
+function useCountUp(target: number, duration = 1400): number {
+  const [value, setValue] = useState(0)
+
+  useEffect(() => {
+    if (target <= 0) {
+      setValue(0)
+      return
+    }
+    let rafId: number
+    let startTime: number | null = null
+
+    const step = (timestamp: number) => {
+      if (startTime === null) startTime = timestamp
+      const elapsed = timestamp - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      // Ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setValue(Math.round(eased * target))
+      if (progress < 1) rafId = requestAnimationFrame(step)
+    }
+
+    rafId = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(rafId)
+  }, [target, duration])
+
+  return value
+}
+
+// ── Skeleton placeholder ───────────────────────────────────────────────────────
+
+function OverviewSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      {/* Header skeleton */}
+      <div className="space-y-2">
+        <div className="h-7 w-56 rounded-xl bg-zinc-200" />
+        <div className="h-4 w-72 rounded-lg bg-zinc-100" />
+      </div>
+      {/* Hero grid skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 h-64 rounded-[2.5rem] bg-zinc-900 border border-zinc-800" />
+        <div className="h-64 rounded-[2.5rem] bg-zinc-100 border border-zinc-200" />
+      </div>
+      {/* Chip row skeleton */}
+      <div className="grid grid-cols-3 gap-4">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-20 rounded-2xl bg-zinc-100 border border-zinc-200" />
+        ))}
+      </div>
+      {/* Milestone skeleton */}
+      <div className="h-28 rounded-2xl bg-zinc-100 border border-zinc-200" />
+    </div>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function OverviewPage() {
-  const router = useRouter()
   const { data: session } = useSession()
-  const { data: organizer, isLoading: profileLoading, isError: profileError, refetch: refetchProfile } = usePartnerProfile()
-  const { data: revenue, isLoading: revenueLoading, isError: revenueError, refetch: refetchRevenue } = usePartnerRevenue()
-  const { data: analytics, isLoading: analyticsLoading, isError: analyticsError, refetch: refetchAnalytics } = usePartnerAnalytics()
-  const { data: events = [], isLoading: eventsLoading, isError: eventsError, refetch: refetchEvents } = useMyEvents()
+
+  // ── Data hooks — ALL PRESERVED, identical signatures ──────────────────────
+  const {
+    data: organizer,
+    isLoading: profileLoading,
+    isError: profileError,
+    refetch: refetchProfile,
+  } = usePartnerProfile()
+
+  const {
+    data: revenue,
+    isLoading: revenueLoading,
+    isError: revenueError,
+    refetch: refetchRevenue,
+  } = usePartnerRevenue()
+
+  const {
+    data: analytics,
+    isLoading: analyticsLoading,
+    isError: analyticsError,
+    refetch: refetchAnalytics,
+  } = usePartnerAnalytics()
+
+  const {
+    data: events = [],
+    isLoading: eventsLoading,
+    isError: eventsError,
+    refetch: refetchEvents,
+  } = useMyEvents()
+
+  // ── Derived values ─────────────────────────────────────────────────────────
+
+  const organizerName = toTitleCase(
+    organizer?.name ?? session?.user?.name ?? 'Organizer'
+  )
 
   const upcomingEvents = events
-    .filter((e) => new Date(e.date) > new Date() && e.status === 'published')
+    .filter((e) => new Date(e.date) > new Date() || e.status === 'published')
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 6)
+    .slice(0, 8)
 
-  const organizerName = organizer?.name || session?.user?.name || 'Organizer'
+  const today = new Date().toDateString()
+  const ticketsSoldToday = events
+    .filter((e) => new Date(e.date).toDateString() === today)
+    .reduce((sum, e) => sum + (e.sold ?? 0), 0)
+
+  const totalCapacity = events.reduce(
+    (sum, e) => sum + e.ticketType.reduce((s, t) => s + t.capacity, 0),
+    0
+  )
+
+  const totalRevenue = revenue?.totalRevenue ?? 0
+  const availableBalance = revenue?.availableBalance ?? 0
+  const totalTicketsSold = revenue?.totalTicketsSold ?? 0
+  const totalEvents = revenue?.totalEvents ?? 0
+  const followers = analytics?.followers ?? 0
+
+  // Count-up animated values
+  const animRevenue = useCountUp(totalRevenue, 1400)
+  const animBalance = useCountUp(availableBalance, 1200)
+
+  // ── States ─────────────────────────────────────────────────────────────────
 
   const isLoading = profileLoading || revenueLoading || analyticsLoading || eventsLoading
 
   if (isLoading) {
     return (
-      <div style={{ padding: '32px 24px', textAlign: 'center' }}>
-        <LoadingSpinner centered size="lg" />
+      <div className="py-2">
+        <OverviewSkeleton />
       </div>
     )
   }
 
   if (profileError || revenueError || analyticsError || eventsError) {
     return (
-      <div style={{ padding: '32px 24px' }}>
+      <div className="py-8">
         <ErrorMessage
           message="Failed to load dashboard data. Please try again."
           onRetry={() => {
@@ -58,215 +171,223 @@ export default function OverviewPage() {
     )
   }
 
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
-    <main
-      style={{
-        maxWidth: '1280px',
-        margin: '0 auto',
-        padding: '0 24px',
-      }}
-    >
-      {/* Greeting */}
-      <div
-        style={{
-          paddingTop: '32px',
-          paddingBottom: '16px',
-          fontFamily: 'var(--font-anybody), sans-serif', // NEW: Bold Anybody font
-          fontSize: '24px',
-          fontWeight: 800,
-          color: 'var(--color-text)',
-        }}
-      >
-        {getGreeting()}, {organizerName}.
-      </div>
+    <div className="bg-zinc-50/50 space-y-8">
 
-        {/* Stats Grid: 4 cards */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '20px',
-            marginBottom: '40px',
-          }}
-        >
-          <ChartCard title="Total Revenue" subtitle="All-time earnings">
-            <div
-              style={{
-                fontSize: '36px',
-                fontWeight: 700,
-                color: 'var(--color-gold)',
-                lineHeight: 1,
-              }}
-            >
-              {formatNaira(revenue?.totalRevenue ?? 0)}
-            </div>
-          </ChartCard>
+      {/* ── 1. Page Header ─────────────────────────────────────────────────── */}
+      <header>
+        <h1 className="text-2xl font-black text-zinc-900 tracking-tight leading-tight">
+          {getGreeting()}, {organizerName}.
+        </h1>
+        <p className="mt-1 text-sm text-zinc-500">
+          Your studio ecosystem is fully operational.
+        </p>
+      </header>
 
-          <ChartCard title="Tickets Sold" subtitle="All-time tickets sold">
-            <div
-              style={{
-                fontSize: '36px',
-                fontWeight: 700,
-                color: 'var(--color-text)',
-                lineHeight: 1,
-              }}
-            >
-              {(revenue?.totalTicketsSold ?? 0).toLocaleString('en-NG')}
-            </div>
-          </ChartCard>
+      {/* ── 2. Revenue Hero + Pulse Ring ───────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          <ChartCard title="Total Events" subtitle="Events created">
-            <div
-              style={{
-                fontSize: '36px',
-                fontWeight: 700,
-                color: 'var(--color-brand)',
-                lineHeight: 1,
-              }}
-            >
-              {(revenue?.totalEvents ?? 0).toLocaleString('en-NG')}
-            </div>
-          </ChartCard>
+        {/* Revenue Hero Card — spans 2 cols */}
+        <div className="lg:col-span-2 relative overflow-hidden rounded-[2rem] border border-zinc-800 bg-zinc-900 p-8 shadow-xl text-white">
+          {/* Gold ambient glow — top-left bleed */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(ellipse 60% 50% at 10% 0%, rgba(217,119,6,0.18) 0%, transparent 70%)',
+            }}
+          />
+          {/* Violet secondary glow — bottom right */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(ellipse 50% 40% at 90% 110%, rgba(124,58,237,0.12) 0%, transparent 70%)',
+            }}
+          />
 
-          <ChartCard title="Followers" subtitle="Organizer followers">
-            <div
-              style={{
-                fontSize: '36px',
-                fontWeight: 700,
-                color: 'var(--color-text)',
-                lineHeight: 1,
-              }}
-            >
-              {(analytics?.followers ?? 0).toLocaleString('en-NG')}
+          {/* Content */}
+          <div className="relative z-10 flex flex-col h-full gap-6">
+            {/* Label */}
+            <div className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className="w-2 h-2 rounded-full bg-amber-400"
+              />
+              <span className="text-xs font-semibold text-zinc-400 uppercase tracking-widest">
+                Total Revenue
+              </span>
             </div>
-          </ChartCard>
+
+            {/* Big revenue figure */}
+            <div>
+              <p className="text-5xl font-black text-zinc-50 leading-none tracking-tight tabular-nums">
+                {formatNaira(animRevenue)}
+              </p>
+              <p className="mt-2 text-sm text-zinc-400">All-time earnings across all events</p>
+            </div>
+
+            {/* Sub-stats row */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2 border-t border-zinc-800">
+              <div>
+                <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+                  Available
+                </p>
+                <p className="text-lg font-black text-amber-400 tabular-nums">
+                  {formatNaira(animBalance)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+                  Pending
+                </p>
+                <p className="text-lg font-black text-zinc-300 tabular-nums">
+                  {formatNaira(revenue?.pendingWithdrawals ?? 0)}
+                </p>
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+                  Paid Out
+                </p>
+                <p className="text-lg font-black text-zinc-300 tabular-nums">
+                  {formatNaira(revenue?.sentWithdrawals ?? 0)}
+                </p>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div>
+              <Link
+                href="/payouts"
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+              >
+                Manage payouts
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </Link>
+            </div>
+          </div>
         </div>
 
-        {/* Upcoming Events Section */}
-        <section
-          style={{
-            marginBottom: '40px',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '16px',
-            }}
-          >
-            <h2
-              style={{
-                fontFamily: 'var(--font-anybody), sans-serif', // NEW: Bold Anybody font
-                margin: 0,
-                fontSize: '20px',
-                fontWeight: 800,
-                color: 'var(--color-text)',
-              }}
-            >
-              YOUR UPCOMING EVENTS
-            </h2>
+        {/* Ticket Pulse Ring — spans 1 col */}
+        <div className="bg-white border border-zinc-200/80 rounded-[2rem] p-8 shadow-sm flex flex-col items-center justify-center text-center relative">
+          <TicketPulseRing count={ticketsSoldToday} label="Tickets Today" />
+        </div>
+      </div>
+
+      {/* ── 3. Metric Milestone Chips ──────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Total Events */}
+        <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 flex items-center gap-3 shadow-sm hover:border-zinc-300 transition-colors">
+          <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-violet-600" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
           </div>
+          <div className="min-w-0">
+            <p className="text-2xl font-black text-zinc-900 leading-none tabular-nums">
+              {totalEvents.toLocaleString('en-NG')}
+            </p>
+            <p className="mt-0.5 text-xs text-zinc-500 font-medium">Total Events</p>
+          </div>
+        </div>
 
-          {upcomingEvents.length > 0 ? (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns:
-                  'repeat(auto-fill, minmax(240px, 1fr))',
-                gap: '16px',
-                marginBottom: '16px',
-              }}
-            >
-              {upcomingEvents.map((event) => (
-                <EventCard
-                  key={event._id}
-                  event={event}
-                  status={event.status === 'published' ? 'live' : 'draft'}
-                  onEdit={() => {
-                    router.push(`/events/${event._id}/edit`)
-                  }}
-                />
-              ))}
+        {/* Followers */}
+        <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 flex items-center gap-3 shadow-sm hover:border-zinc-300 transition-colors">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <div className="min-w-0">
+            <p className="text-2xl font-black text-zinc-900 leading-none tabular-nums">
+              {followers.toLocaleString('en-NG')}
+            </p>
+            <p className="mt-0.5 text-xs text-zinc-500 font-medium">Followers</p>
+          </div>
+        </div>
 
-              {/* Create New Event Button */}
-              <Link
-                href="/events/create"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  aspectRatio: '4/5',
-                  background: 'var(--color-surface)',
-                  border: '2px dashed var(--color-border)',
-                  borderRadius: 'var(--radius-lg)',
-                  cursor: 'pointer',
-                  transition: 'all var(--duration-fast) ease',
-                  textDecoration: 'none',
-                  flexDirection: 'column',
-                  gap: '8px',
-                  color: 'var(--color-text-muted)',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                }}
-                onMouseEnter={(e) => {
-                  ;(e.currentTarget as HTMLAnchorElement).style.borderColor =
-                    'var(--color-brand)'
-                  ;(e.currentTarget as HTMLAnchorElement).style.color =
-                    'var(--color-brand)'
-                }}
-                onMouseLeave={(e) => {
-                  ;(e.currentTarget as HTMLAnchorElement).style.borderColor =
-                    'var(--color-border)'
-                  ;(e.currentTarget as HTMLAnchorElement).style.color =
-                    'var(--color-text-muted)'
-                }}
-              >
-                <span style={{ fontSize: '24px' }}>+</span>
-                Create New Event
-              </Link>
-            </div>
-          ) : (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '40px 20px',
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-lg)',
-                marginBottom: '16px',
-              }}
+        {/* Tickets Sold */}
+        <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 flex items-center gap-3 shadow-sm hover:border-zinc-300 transition-colors">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600" aria-hidden="true">
+              <path d="M22 12.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5c1.1 0 2 .9 2 2s-.9 2-2 2v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.5" />
+              <polyline points="16 8 9 15 6 12" />
+            </svg>
+          </div>
+          <div className="min-w-0">
+            <p className="text-2xl font-black text-zinc-900 leading-none tabular-nums">
+              {totalTicketsSold.toLocaleString('en-NG')}
+            </p>
+            <p className="mt-0.5 text-xs text-zinc-500 font-medium">Tickets Sold</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 4. Milestone Progress Rail ─────────────────────────────────────── */}
+      <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-sm font-bold text-zinc-900 tracking-tight">
+              Your Progress
+            </h2>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              {totalTicketsSold.toLocaleString('en-NG')} tickets sold all-time
+            </p>
+          </div>
+          <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-3 py-1">
+            Level up
+          </span>
+        </div>
+        <MilestoneTrack
+          ticketsSold={totalTicketsSold}
+          totalCapacity={totalCapacity || undefined}
+        />
+      </div>
+
+      {/* ── 5. Live Event Timeline ─────────────────────────────────────────── */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold text-zinc-900 tracking-tight uppercase tracking-wider">
+            Your Events
+          </h2>
+          <Link
+            href="/events/create"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200 rounded-full px-3 py-1.5 transition-all"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Event
+          </Link>
+        </div>
+
+        <EventTimelineStrip events={upcomingEvents} />
+
+        {events.length > 8 && (
+          <div className="mt-4 text-center">
+            <Link
+              href="/events"
+              className="text-sm font-semibold text-zinc-400 hover:text-zinc-700 transition-colors"
             >
-              <p
-                style={{
-                  margin: '0 0 12px',
-                  fontSize: '14px',
-                  color: 'var(--color-text-muted)',
-                }}
-              >
-                No upcoming events yet
-              </p>
-              <Link
-                href="/events/create"
-                style={{
-                  display: 'inline-block',
-                  padding: '8px 16px',
-                  background: 'var(--color-brand)',
-                  color: 'var(--color-text-on-brand)',
-                  borderRadius: 'var(--radius-md)',
-                  textDecoration: 'none',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                }}
-              >
-                Create First Event
-              </Link>
-            </div>
-          )}
+              View all {events.length} events →
+            </Link>
+          </div>
+        )}
       </section>
 
-    </main>
+    </div>
   )
 }
-

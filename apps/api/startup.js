@@ -53,7 +53,9 @@ export async function validateEnvironment() {
       'CLOUDINARY_CLOUD_NAME',
       'CLOUDINARY_API_KEY',
       'CLOUDINARY_API_SECRET',
-      'RESEND_API_KEY',  // Email service (production required)
+      'AWS_ACCESS_KEY_ID',       // AWS SES credentials
+      'AWS_SECRET_ACCESS_KEY',
+      'SES_SENDER_EMAIL',
     ]
 
     for (const key of prodRequired) {

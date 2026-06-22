@@ -1,6 +1,6 @@
+import React from 'react'
 import Link from 'next/link'
 import type { Ticket } from '@comfytag/types'
-import { formatNaira, formatDate } from '@comfytag/utils'
 
 export interface TicketListItemProps {
   ticket: Ticket
@@ -8,169 +8,182 @@ export interface TicketListItemProps {
   onAction?: (action: 'show-qr' | 'transfer' | 'details', ticket: Ticket) => void
 }
 
-export function TicketListItem({ ticket, isPast, onAction }: TicketListItemProps): React.ReactElement {
-  const getStatusBadge = (): { label: string; color: string } | null => {
-    switch (ticket.status) {
-      case 'used':
-        return { label: 'Used', color: 'var(--color-text-muted)' }
-      case 'transferred':
-        return { label: 'Transferred', color: 'var(--color-error)' }
-      case 'refunded':
-        return { label: 'Refunded', color: 'var(--color-warning)' }
-      case 'active':
-        return null
-      default:
-        return null
-    }
+// ── Title case helper ─────────────────────────────────────────────────────────
+function toTitleCase(str: string): string {
+  return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase())
+}
+
+// ── Tier badge colour map ──────────────────────────────────────────────────────
+const TIER_STYLES: Array<[string, string]> = [
+  ['early bird', 'bg-amber-50 text-amber-700 border-amber-200'],
+  ['vip',        'bg-violet-50 text-violet-700 border-violet-200'],
+  ['early',      'bg-amber-50 text-amber-700 border-amber-200'],
+]
+
+function resolveTierStyle(type: string): string {
+  const lower = type.toLowerCase()
+  for (const [key, cls] of TIER_STYLES) {
+    if (lower.includes(key)) return cls
+  }
+  return 'bg-zinc-100 text-zinc-600 border-zinc-200'
+}
+
+// ── Calendar date block ───────────────────────────────────────────────────────
+function CalendarBlock({ dateStr }: { dateStr?: string }) {
+  if (!dateStr) {
+    return (
+      <div className="w-12 h-12 rounded-xl bg-zinc-100 shrink-0 flex flex-col items-center justify-center">
+        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">—</span>
+      </div>
+    )
   }
 
-  const statusBadge = getStatusBadge()
-  const isExpired = ticket.status === 'used' || ticket.status === 'transferred' || ticket.status === 'refunded'
+  const d = new Date(dateStr)
+  const month = d.toLocaleString('en', { month: 'short' }).toUpperCase()
+  const day   = d.getDate()
+
+  return (
+    <div className="w-12 h-14 rounded-xl bg-zinc-100 shrink-0 flex flex-col items-center justify-center gap-0.5">
+      <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest leading-none">{month}</span>
+      <span className="text-xl font-black text-zinc-800 leading-none">{day}</span>
+    </div>
+  )
+}
+
+// ── Map pin icon ─────────────────────────────────────────────────────────────
+function PinIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      className="w-3 h-3 shrink-0"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M8 1.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM2.5 6a5.5 5.5 0 1 1 9.448 3.832l-3.33 4.163a.75.75 0 0 1-1.236 0L4.052 9.832A5.48 5.48 0 0 1 2.5 6ZM8 5a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  )
+}
+
+// ── Clock icon ───────────────────────────────────────────────────────────────
+function ClockIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      className="w-3 h-3 shrink-0"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7-4.75a.75.75 0 0 1 .75.75v3.75h2.5a.75.75 0 0 1 0 1.5h-3.25a.75.75 0 0 1-.75-.75V4a.75.75 0 0 1 .75-.75Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  )
+}
+
+// ── TicketListItem ────────────────────────────────────────────────────────────
+export function TicketListItem({ ticket, isPast, onAction }: TicketListItemProps) {
+  const isExpired =
+    isPast ||
+    ticket.status === 'used' ||
+    ticket.status === 'transferred' ||
+    ticket.status === 'refunded'
+
+  const tierStyle = resolveTierStyle(ticket.type)
 
   const handleAction = (
     e: React.MouseEvent<HTMLButtonElement>,
     action: 'show-qr' | 'transfer' | 'details'
   ): void => {
     e.preventDefault()
+    e.stopPropagation()
     onAction?.(action, ticket)
   }
 
   return (
     <Link
       href={`/tickets/${ticket._id}`}
-      style={{
-        display: 'flex',
-        alignItems: 'stretch',
-        gap: '12px',
-        padding: '16px',
-        border: `1px solid var(--color-border)`,
-        borderRadius: 'var(--radius-md)',
-        marginBottom: '12px',
-        background: 'var(--color-surface)',
-        opacity: isPast || isExpired ? 0.65 : 1,
-        textDecoration: 'none',
-        color: 'inherit',
-        cursor: 'pointer',
-        transition: `all var(--duration-fast)`,
-      }}
-      onMouseEnter={(e) => {
-        if (!isExpired) {
-          ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--color-brand)'
-          ;(e.currentTarget as HTMLAnchorElement).style.background = 'var(--color-surface-2)'
-        }
-      }}
-      onMouseLeave={(e) => {
-        ;(e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--color-border)'
-        ;(e.currentTarget as HTMLAnchorElement).style.background = 'var(--color-surface)'
-      }}
+      className={[
+        'w-full bg-white border border-zinc-200 rounded-2xl p-4 sm:p-5',
+        'hover:border-zinc-300 hover:shadow-sm transition-all',
+        'flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 relative',
+        'no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2',
+        isExpired ? 'opacity-60' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
     >
-      {/* Left accent bar */}
-      <div
-        aria-hidden="true"
-        style={{
-          width: '4px',
-          background: isExpired ? 'var(--color-text-muted)' : 'var(--color-brand)',
-          borderRadius: '2px',
-          flexShrink: 0,
-        }}
-      />
+      {/* ── Top block: calendar + event info (badge lives inside) ── */}
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <CalendarBlock dateStr={ticket.eventDate || ticket.date} />
 
-      {/* Main content */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text)' }}>
-          {ticket.eventname}
-        </div>
-
-        <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: '1.3' }}>
-          <div>{ticket.type}</div>
-          <div>{formatDate(ticket.eventDate || ticket.date)}</div>
-        </div>
-
-        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-brand)' }}>
-          {formatNaira(ticket.amount)}
-        </div>
-
-        {statusBadge && (
-          <div
-            style={{
-              fontSize: '11px',
-              fontWeight: 600,
-              color: statusBadge.color,
-              marginTop: '4px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            {statusBadge.label}
+        <div className="min-w-0 flex-1">
+          {/* Title row: event name + tier badge inline */}
+          <div className="flex items-start gap-2 min-w-0">
+            <p className="text-lg font-bold text-zinc-900 line-clamp-1 leading-snug flex-1 min-w-0">
+              {toTitleCase(ticket.eventname)}
+            </p>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span
+                className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-lg border uppercase tracking-wide whitespace-nowrap ${tierStyle}`}
+              >
+                {ticket.type}
+              </span>
+              {ticket.numOfTicket > 1 && (
+                <span className="text-xs text-zinc-500 font-medium tabular-nums">
+                  ×{ticket.numOfTicket}
+                </span>
+              )}
+            </div>
           </div>
-        )}
+
+          {ticket.eventVenue && (
+            <p className="flex items-center gap-1 text-xs text-zinc-500 truncate mt-0.5">
+              <PinIcon />
+              {toTitleCase(ticket.eventVenue)}
+            </p>
+          )}
+
+          {ticket.eventTime && (
+            <p className="flex items-center gap-1 text-xs text-zinc-400 mt-0.5">
+              <ClockIcon />
+              {ticket.eventTime}
+              {ticket.eventEndTime && ` – ${ticket.eventEndTime}`}
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* Action buttons (for non-expired tickets) */}
-      {!isExpired && onAction && (
+      {/* ── Bottom block: action buttons / chevron ── */}
+      {!isExpired ? (
         <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-            flexShrink: 0,
-          }}
-          onClick={(e) => {
-            e.preventDefault()
-          }}
+          className="w-full sm:w-auto flex items-center gap-3 mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-zinc-100"
+          onClick={(e) => e.preventDefault()}
         >
           <button
+            type="button"
             onClick={(e) => handleAction(e, 'show-qr')}
-            style={{
-              padding: '8px 12px',
-              background: 'var(--color-brand)',
-              color: 'var(--color-text-on-brand)',
-              border: 'none',
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '11px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: `background var(--duration-fast)`,
-              whiteSpace: 'nowrap',
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLButtonElement).style.background = 'var(--color-brand-dark)'
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLButtonElement).style.background = 'var(--color-brand)'
-            }}
+            className="w-full sm:w-auto flex-1 sm:flex-none px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-xl transition-colors whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1"
           >
-            QR Code
+            View Pass
           </button>
           <button
+            type="button"
             onClick={(e) => handleAction(e, 'transfer')}
-            style={{
-              padding: '8px 12px',
-              background: 'var(--color-surface-2)',
-              color: 'var(--color-text)',
-              border: `1px solid var(--color-border)`,
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '11px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: `all var(--duration-fast)`,
-              whiteSpace: 'nowrap',
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLButtonElement).style.borderColor = 'var(--color-text)'
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLButtonElement).style.borderColor = 'var(--color-border)'
-            }}
+            className="w-full sm:w-auto flex-1 sm:flex-none px-4 py-2 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-semibold rounded-xl border border-zinc-200 hover:border-zinc-300 transition-all whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1"
           >
             Transfer
           </button>
         </div>
-      )}
-
-      {/* Chevron for expired tickets */}
-      {isExpired && (
-        <span style={{ fontSize: '20px', color: 'var(--color-text-muted)', flexShrink: 0, alignSelf: 'center' }} aria-hidden="true">
+      ) : (
+        <span className="hidden sm:block text-zinc-300 text-xl shrink-0 select-none" aria-hidden="true">
           ›
         </span>
       )}

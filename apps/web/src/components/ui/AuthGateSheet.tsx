@@ -3,6 +3,7 @@
 import React from 'react'
 import { Button } from '@comfytag/ui'
 import { BottomSheet } from './BottomSheet'
+import { useAuthModal } from '@/hooks/useAuthModal'
 
 export interface AuthGateSheetProps {
   isOpen: boolean
@@ -46,6 +47,17 @@ export function AuthGateSheet({
 }: AuthGateSheetProps) {
   const copy = COPY[trigger]
   const callbackUrl = redirectTo ?? '/'
+  const { openModal } = useAuthModal()
+
+  function openLogin() {
+    onClose()
+    openModal('login')
+  }
+
+  function openRegister() {
+    onClose()
+    openModal('register')
+  }
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose}>
@@ -88,7 +100,7 @@ export function AuthGateSheet({
           {copy.subtitle}
         </p>
 
-        {/* Continue with Google */}
+        {/* Continue with Google — OAuth always navigates away, keep as link */}
         <a
           href={`/api/auth/signin?provider=google&callbackUrl=${encodeURIComponent(callbackUrl)}`}
           style={{ display: 'block', marginBottom: '10px', textDecoration: 'none' }}
@@ -98,28 +110,30 @@ export function AuthGateSheet({
           </Button>
         </a>
 
-        {/* Magic link */}
-        <a
-          href={`/login?magic=1&callbackUrl=${encodeURIComponent(callbackUrl)}`}
-          style={{ display: 'block', marginBottom: '20px', textDecoration: 'none' }}
-        >
-          <Button variant="ghost" fullWidth>
-            Send me a magic link
+        {/* Sign in via modal */}
+        <div style={{ marginBottom: '20px' }}>
+          <Button variant="ghost" fullWidth onClick={openLogin}>
+            Sign in with email
           </Button>
-        </a>
+        </div>
 
-        {/* Already have account */}
+        {/* Create account */}
         <div style={{ textAlign: 'center' }}>
-          <a
-            href="/login"
+          <button
+            type="button"
+            onClick={openRegister}
             style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
               fontSize: '13px',
               color: 'var(--color-text-muted)',
               textDecoration: 'underline',
+              padding: 0,
             }}
           >
-            Already have an account?
-          </a>
+            Create a free account
+          </button>
         </div>
       </div>
     </BottomSheet>

@@ -58,6 +58,7 @@ export function Input({
     fontSize: '16px',
     minHeight: '48px',
     outline: 'none',
+    boxShadow: 'none',
     boxSizing: 'border-box',
     transition: 'border-color 150ms ease',
   }
@@ -106,6 +107,7 @@ export function Input({
           required={required}
           disabled={disabled}
           style={inputStyle}
+          className="focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />

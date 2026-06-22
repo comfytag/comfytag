@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { Button, Input, ErrorMessage } from '@comfytag/ui'
 import { OtpInput } from '@/components/ui/OtpInput'
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
+import { api } from '@/lib/api'
 
 function maskIdentifier(value: string): string {
   if (value.includes('@')) {
@@ -48,19 +47,11 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
     setError('')
     try {
-      const res = await fetch(`${API_BASE}/partner/auth/forgot-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError((data as { message?: string }).message ?? 'Failed to send OTP')
-        return false
-      }
+      await api.post('/partner/auth/forgot-password', { identifier })
       return true
-    } catch {
-      setError('Network error. Please try again.')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } }
+      setError(e.response?.data?.message ?? 'Network error. Please try again.')
       return false
     } finally {
       setIsLoading(false)
@@ -83,21 +74,15 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
     setError('')
     try {
-      const res = await fetch(`${API_BASE}/partner/auth/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, otp: otp.join('') }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError((data as { message?: string }).message ?? 'Invalid OTP')
-      } else {
-        const data = await res.json()
-        setResetToken(data.resetToken ?? '')
-        setStep(3)
-      }
-    } catch {
-      setError('Network error. Please try again.')
+      const { data } = await api.post<{ resetToken?: string }>(
+        '/partner/auth/verify-otp',
+        { identifier, otp: otp.join('') }
+      )
+      setResetToken(data.resetToken ?? '')
+      setStep(3)
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } }
+      setError(e.response?.data?.message ?? 'Network error. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -110,19 +95,11 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
     setError('')
     try {
-      const res = await fetch(`${API_BASE}/partner/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, resetToken, newPassword }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError((data as { message?: string }).message ?? 'Failed to reset password')
-      } else {
-        router.push('/login?success=1')
-      }
-    } catch {
-      setError('Network error. Please try again.')
+      await api.post('/partner/auth/reset-password', { identifier, resetToken, newPassword })
+      router.push('/login?success=1')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } }
+      setError(e.response?.data?.message ?? 'Network error. Please try again.')
     } finally {
       setIsLoading(false)
     }

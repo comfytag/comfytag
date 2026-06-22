@@ -2,15 +2,17 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { SearchSuggestionsOverlay } from '@/components/ui/SearchSuggestionsOverlay'
+
 import { AvatarInitials, LoadingSpinner } from '@comfytag/ui'
 import { authHeader, formatNaira } from '@comfytag/utils'
 import type { Notification, User } from '@comfytag/types'
 import { api } from '@/lib/api'
+import { useAuthModal } from '@/hooks/useAuthModal'
 
 export interface NavbarProps {
   user?: User
@@ -22,6 +24,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
   const router = useRouter()
   const [searchVal, setSearchVal] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -32,6 +35,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
   const notifRef = useRef<HTMLDivElement>(null)
 
   const currentUser = user || session?.user
+  const { openModal } = useAuthModal()
 
   // Close avatar dropdown on outside click
   useEffect(() => {
@@ -99,8 +103,25 @@ export function Navbar({ user, onSearch }: NavbarProps) {
       .catch(() => {})
   }, [dropdownOpen, session])
 
-  function handleSearch() {
-    const query = searchVal.trim()
+  // Escape key closes mobile search overlay
+  useEffect(() => {
+    if (!mobileSearchOpen) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return
+      setMobileSearchOpen(false)
+      setSearchVal('')
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [mobileSearchOpen])
+
+  function closeMobileSearch() {
+    setMobileSearchOpen(false)
+    setSearchVal('')
+  }
+
+  function handleSearch(q?: string) {
+    const query = (q ?? searchVal).trim()
     if (query) {
       if (onSearch) {
         onSearch(query)
@@ -175,6 +196,10 @@ export function Navbar({ user, onSearch }: NavbarProps) {
           .__ct_navbar {
             height: 56px;
             padding: 0 16px;
+            background: rgba(255, 255, 255, 0.80);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom-color: rgba(228, 228, 231, 0.50);
           }
           .__ct_nav_search {
             display: none;
@@ -184,13 +209,14 @@ export function Navbar({ user, onSearch }: NavbarProps) {
             align-items: center;
             justify-content: center;
           }
+          /* Avatar dropdown handled by Profile tab in bottom nav */
+          .__ct_nav_avatar_wrap { display: none; }
         }
       `}</style>
       <nav className="__ct_navbar" aria-label="Main navigation">
-        {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '18px', color: 'var(--color-brand)', textDecoration: 'none', letterSpacing: '-0.3px' }}>
-          <Image src="/logo.svg" alt="ComfyTag" width={24} height={24} style={{ flexShrink: 0 }} />
-          ComfyTag
+        {/* Logo — left-aligned on both desktop and mobile */}
+        <Link href="/" className="__ct_nav_logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <img alt="ComfyTag" className="w-auto h-8 object-contain" src="/logo.png" />
         </Link>
 
         {/* Search — desktop only */}
@@ -216,7 +242,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
         <button
           type="button"
           className="__ct_nav_mobile_search_btn"
-          onClick={() => router.push('/events')}
+          onClick={() => setMobileSearchOpen(true)}
           aria-label="Search events"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -301,8 +327,8 @@ export function Navbar({ user, onSearch }: NavbarProps) {
 
             </div>
 
-            {/* Avatar + dropdown */}
-            <div ref={dropdownRef} style={{ position: 'relative' }}>
+            {/* Avatar + dropdown — hidden on mobile (lives in MobileMenuDrawer) */}
+            <div ref={dropdownRef} className="__ct_nav_avatar_wrap" style={{ position: 'relative' }}>
               <button
                 type="button"
                 onClick={() => setDropdownOpen((o) => !o)}
@@ -318,22 +344,17 @@ export function Navbar({ user, onSearch }: NavbarProps) {
                   <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-border)' }}>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text)' }}>{currentUser.name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentUser.email}</div>
-                    {walletBalance !== null && (
+                    {/* {walletBalance !== null && (
                       <div style={{ fontSize: '12px', color: 'var(--color-brand)', marginTop: '4px', fontWeight: 600 }}>
                         Hype Credits: {formatNaira(walletBalance)}
                       </div>
-                    )}
+                    )} */}
                   </div>
-                  {[
-                    { label: 'My Tickets', href: '/tickets' },
-                    { label: 'Saved Events', href: '/my-following' },
-                    { label: 'My Hype Link', href: '/hype-link' },
-                    { label: 'Settings', href: '/profile' },
-                  ].map((item) => (
-                    <Link key={item.href} href={item.href} className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>
-                      {item.label}
-                    </Link>
-                  ))}
+                  <Link href="/tickets" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>My Tickets</Link>
+                  <Link href="/my-following" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>Saved Events</Link>
+                  {/* MVP: Hype Links affiliate feature disabled for initial launch — re-enable when affiliate system is ready */}
+                  {/* <Link href="/hype-link" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>My Hype Link</Link> */}
+                  <Link href="/profile" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>Settings</Link>
                   <div style={{ borderTop: '1px solid var(--color-border)' }}>
                     <button
                       type="button"
@@ -348,19 +369,101 @@ export function Navbar({ user, onSearch }: NavbarProps) {
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Link href="/login" className="__ct_nav_login_link" style={{ fontSize: '14px', fontWeight: 500, textDecoration: 'none', padding: '6px 10px' }}>
+          <div className="__ct_nav_auth_wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={() => openModal('login')}
+              className="__ct_nav_login_link"
+              style={{ fontSize: '14px', fontWeight: 500, padding: '6px 10px', background: 'none', border: 'none', cursor: 'pointer' }}
+            >
               Log In
-            </Link>
-            <Link
-              href="/register"
-              style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-on-brand)', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', padding: '8px 16px', textDecoration: 'none' }}
+            </button>
+            <button
+              type="button"
+              onClick={() => openModal('register')}
+              style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-on-brand)', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', padding: '8px 16px', border: 'none', cursor: 'pointer' }}
             >
               Sign Up
-            </Link>
+            </button>
           </div>
         )}
       </nav>
+
+      {/* Mobile search overlay — same autocomplete as desktop */}
+      {mobileSearchOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            aria-hidden="true"
+            onClick={closeMobileSearch}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.4)',
+              zIndex: 98,
+            }}
+          />
+
+          {/* Panel */}
+          <div
+            role="search"
+            aria-label="Search"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 99,
+              background: 'var(--color-bg)',
+              borderBottom: '1px solid var(--color-border)',
+              padding: '10px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+          >
+            {/* Back button */}
+            <button
+              type="button"
+              onClick={closeMobileSearch}
+              aria-label="Close search"
+              style={{
+                flexShrink: 0,
+                width: 36,
+                height: 36,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--color-text-muted)',
+                borderRadius: 'var(--radius-full)',
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
+            </button>
+
+            {/* Input + suggestions (position:relative so suggestions anchor to input) */}
+            <div style={{ flex: 1, position: 'relative' }}>
+              <SearchInput
+                value={searchVal}
+                onChange={setSearchVal}
+                onSearch={(q) => { handleSearch(q); closeMobileSearch() }}
+                autoFocus
+                placeholder="Search events, artists, venues…"
+              />
+              <SearchSuggestionsOverlay
+                query={searchVal}
+                isOpen={true}
+                onClose={closeMobileSearch}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </>
   )
 }

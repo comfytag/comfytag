@@ -1,9 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
 import { formatNaira } from '@comfytag/utils'
-import { ChartCard } from '@/components/ui/ChartCard'
 import { usePartnerAnalytics } from '@/hooks'
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -29,6 +28,32 @@ interface PartnerAnalytics {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// MetricCard — hero stat block
+// ─────────────────────────────────────────────────────────────────────────
+
+interface MetricCardProps {
+  label: string
+  value: string
+  caption?: string
+}
+
+function MetricCard({ label, value, caption }: MetricCardProps) {
+  return (
+    <div className="bg-white border border-zinc-200/80 rounded-4xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <span className="text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider mb-2 block">
+        {label}
+      </span>
+      <div className="text-4xl font-black text-zinc-900 tracking-tight">
+        {value}
+      </div>
+      {caption && (
+        <p className="text-xs text-zinc-400 mt-2">{caption}</p>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // AnalyticsPage (thin composer)
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -39,259 +64,173 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div>
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <LoadingSpinner centered size="lg" />
-        </div>
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <LoadingSpinner centered size="lg" />
       </div>
     )
   }
 
   if (isError) {
     return (
-      <div>
-        <div style={{ padding: '32px 24px' }}>
-          <ErrorMessage
-            message="Failed to load analytics."
-            onRetry={() => refetch()}
-          />
-        </div>
+      <div className="max-w-6xl mx-auto py-8 px-4">
+        <ErrorMessage message="Failed to load analytics." onRetry={() => refetch()} />
       </div>
     )
   }
 
   const ticketTypes = analytics?.ticketTypes ?? []
+  const monthlyRevenue = analytics?.monthlyRevenue ?? []
+  const maxRevenue = Math.max(...monthlyRevenue.map((m) => m.revenue), 1)
 
   return (
-    <div>
-      <main style={{ flex: 1, padding: '32px 24px' }}>
-        {/* Max-width container */}
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          {/* Page Title */}
-          <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 32px', letterSpacing: '-0.02em' }}>
-            ANALYTICS
-          </h1>
+    <div className="max-w-6xl mx-auto py-8 px-4 space-y-8 animate-in fade-in duration-300">
 
-          {/* Top Stats Grid: flexible wrap on desktop, stack on mobile */}
+      {/* Page Header */}
+      <div>
+        <h1 className="text-3xl font-black text-zinc-900 tracking-tight">Analytics</h1>
+        <p className="text-zinc-500 text-sm mt-1">Your performance at a glance</p>
+      </div>
+
+      {/* Hero Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <MetricCard
+          label="Lifetime Revenue"
+          value={formatNaira(analytics?.totalLifetimeRevenue ?? 0)}
+          caption="All-time earnings"
+        />
+        <MetricCard
+          label="Tickets Sold"
+          value={(analytics?.totalTicketsSold ?? 0).toLocaleString('en-NG')}
+          caption="Across all events"
+        />
+        <MetricCard
+          label="Avg Order Value"
+          value={formatNaira(analytics?.averageTicketPrice ?? 0)}
+          caption="Per ticket revenue"
+        />
+        <MetricCard
+          label="Total Events"
+          value={(analytics?.totalEvents ?? 0).toLocaleString('en-NG')}
+          caption="All-time events created"
+        />
+        <MetricCard
+          label="Followers"
+          value={(analytics?.followers ?? 0).toLocaleString('en-NG')}
+          caption="Profile followers"
+        />
+      </div>
+
+      {/* Revenue Over Time — Master Chart Canvas */}
+      <div className="w-full bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] p-6 sm:p-8 overflow-hidden">
+        <h2 className="text-lg font-bold text-zinc-900 mb-6">Revenue Over Time</h2>
+        {monthlyRevenue.length === 0 ? (
+          <div className="flex items-center justify-center h-48 text-sm text-zinc-400">
+            No revenue data available yet
+          </div>
+        ) : (
           <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-              gap: '20px',
-              marginBottom: '40px',
-            }}
+            className="flex items-end gap-1.5 sm:gap-2 justify-around"
+            style={{ height: '220px' }}
           >
-            {/* Sales Chart */}
-            <ChartCard title="Sales" subtitle="Revenue over time">
-              <div style={{ height: '240px', display: 'flex', alignItems: 'flex-end', gap: '6px', justifyContent: 'space-around' }}>
-                {(analytics?.monthlyRevenue ?? []).map((item, idx) => {
-                  const maxRev = Math.max(...(analytics?.monthlyRevenue ?? [{ revenue: 1 }]).map((m) => m.revenue))
-                  const h = ((item.revenue || 0) / maxRev) * 200
-                  return (
-                    <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
-                      <div
-                        style={{
-                          width: '100%',
-                          height: `${Math.max(h, 20)}px`,
-                          backgroundColor: 'var(--color-brand)',
-                          borderRadius: '4px',
-                        }}
-                      />
-                      <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                        {new Date(item.month + '-01').toLocaleString('default', { month: 'short' })}
+            {monthlyRevenue.map((item, idx) => {
+              const h = ((item.revenue || 0) / maxRevenue) * 180
+              return (
+                <div key={idx} className="flex flex-col items-center gap-2 flex-1">
+                  <div
+                    className="w-full rounded-t bg-violet-600 hover:bg-violet-500 transition-colors duration-150 cursor-pointer"
+                    style={{ height: `${Math.max(h, 8)}px` }}
+                    title={`${new Date(item.month + '-01').toLocaleString('default', { month: 'long' })}: ${formatNaira(item.revenue)}`}
+                  />
+                  <span className="text-[10px] font-mono text-zinc-400">
+                    {new Date(item.month + '-01').toLocaleString('default', { month: 'short' })}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Ticket Breakdown Ledger */}
+      <div>
+        <h2 className="text-lg font-bold text-zinc-900 mb-4">Ticket Breakdown</h2>
+        {ticketTypes.length === 0 ? (
+          <div className="bg-white border border-zinc-200/80 rounded-4xl p-8 text-center text-sm text-zinc-400 shadow-sm">
+            No ticket type data available
+          </div>
+        ) : (
+          <div className="bg-white border border-zinc-200/80 rounded-4xl overflow-hidden shadow-sm">
+            {ticketTypes.map((ticketType: TicketTypeBreakdown) => {
+              const percentageSold =
+                ticketType.capacity > 0
+                  ? (ticketType.sold / ticketType.capacity) * 100
+                  : 0
+              const avgPrice =
+                ticketType.sold > 0 ? ticketType.revenue / ticketType.sold : 0
+              const isExpanded = expandedTicketType === ticketType.name
+
+              return (
+                <div key={ticketType.name} className="border-b border-zinc-100 last:border-0">
+                  {/* Ledger Row */}
+                  <button
+                    onClick={() =>
+                      setExpandedTicketType(isExpanded ? null : ticketType.name)
+                    }
+                    className="flex items-center justify-between p-5 w-full text-left hover:bg-zinc-50/50 transition-colors group"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="text-zinc-900 font-bold text-sm">{ticketType.name}</div>
+                      <div className="text-xs text-zinc-400 mt-0.5">
+                        {ticketType.sold} / {ticketType.capacity} sold ({percentageSold.toFixed(0)}%)
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="font-mono text-sm text-zinc-600 font-semibold">
+                        {formatNaira(ticketType.revenue)}
                       </span>
-                    </div>
-                  )
-                })}
-              </div>
-            </ChartCard>
-
-            {/* Total Orders */}
-            <ChartCard title="Orders" subtitle="Total tickets sold">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
-                    {(analytics?.totalTicketsSold ?? 0).toLocaleString('en-NG')}
-                  </div>
-                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '12px 0 0' }}>
-                    tickets across all events
-                  </p>
-                </div>
-              </div>
-            </ChartCard>
-
-            {/* Followers */}
-            <ChartCard title="Followers" subtitle="Profile followers">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
-                    {(analytics?.followers ?? 0).toLocaleString('en-NG')}
-                  </div>
-                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '12px 0 0' }}>
-                    total followers
-                  </p>
-                </div>
-              </div>
-            </ChartCard>
-
-            {/* Total Events */}
-            <ChartCard title="Events" subtitle="Total created events">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
-                    {(analytics?.totalEvents ?? 0).toLocaleString('en-NG')}
-                  </div>
-                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '12px 0 0' }}>
-                    all-time events
-                  </p>
-                </div>
-              </div>
-            </ChartCard>
-
-            {/* Average Order Value */}
-            <ChartCard title="Avg Order Value" subtitle="Per ticket revenue">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '240px' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-brand)', lineHeight: 1 }}>
-                    {(analytics?.averageTicketPrice ?? 0) > 0
-                      ? formatNaira(analytics?.averageTicketPrice ?? 0)
-                      : formatNaira(0)}
-                  </div>
-                  <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: '12px 0 0' }}>
-                    average price per ticket
-                  </p>
-                </div>
-              </div>
-            </ChartCard>
-          </div>
-
-          {/* Divider */}
-          <div style={{ height: '1px', background: 'var(--color-border)', margin: '24px 0 40px' }} />
-
-          {/* Detailed Breakdown */}
-          <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              DETAILED BREAKDOWN
-            </h2>
-
-            {ticketTypes.length === 0 ? (
-              <div
-                style={{
-                  padding: '32px 24px',
-                  textAlign: 'center',
-                  color: 'var(--color-text-muted)',
-                  fontSize: '14px',
-                }}
-              >
-                No ticket type data available
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {ticketTypes.map((ticketType: TicketTypeBreakdown) => {
-                  const percentageSold = (ticketType.sold / ticketType.capacity) * 100
-                  const avgPrice = ticketType.sold > 0 ? ticketType.revenue / ticketType.sold : 0
-                  const isExpanded = expandedTicketType === ticketType.name
-
-                  return (
-                    <div
-                      key={ticketType.name}
-                      style={{
-                        background: 'var(--color-surface)',
-                        border: '1px solid var(--color-border)',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {/* Collapsible Row */}
-                      <button
-                        onClick={() =>
-                          setExpandedTicketType(isExpanded ? null : ticketType.name)
-                        }
-                        style={{
-                          width: '100%',
-                          padding: '16px 20px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          background: 'transparent',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: 'var(--color-text)',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                        }}
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className={`text-zinc-400 transition-transform duration-150 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
                       >
-                        <div style={{ flex: 1, textAlign: 'left' }}>
-                          <div style={{ fontWeight: 600, marginBottom: '4px' }}>
-                            {ticketType.name}
-                          </div>
-                          <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                            {ticketType.sold} / {ticketType.capacity} sold ({percentageSold.toFixed(0)}%)
-                          </div>
-                        </div>
-
-                        <div style={{ textAlign: 'right', marginRight: '16px' }}>
-                          <div style={{ fontWeight: 600, color: 'var(--color-brand)' }}>
-                            {formatNaira(ticketType.revenue)}
-                          </div>
-                        </div>
-
-                        {/* Chevron Icon */}
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          style={{
-                            transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                            transition: 'transform 150ms ease',
-                          }}
-                        >
-                          <polyline points="6 9 12 15 18 9" />
-                        </svg>
-                      </button>
-
-                      {/* Expanded Details */}
-                      {isExpanded && (
-                        <div
-                          style={{
-                            padding: '16px 20px',
-                            borderTop: '1px solid var(--color-border)',
-                            background: 'var(--color-surface-2)',
-                            fontSize: '13px',
-                          }}
-                        >
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                            <div>
-                              <div style={{ color: 'var(--color-text-muted)', marginBottom: '4px' }}>
-                                Revenue
-                              </div>
-                              <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>
-                                {formatNaira(ticketType.revenue)}
-                              </div>
-                            </div>
-                            <div>
-                              <div style={{ color: 'var(--color-text-muted)', marginBottom: '4px' }}>
-                                Avg Price per Ticket
-                              </div>
-                              <div style={{ fontWeight: 600, color: 'var(--color-text)' }}>
-                                {formatNaira(avgPrice)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
                     </div>
-                  )
-                })}
-              </div>
-            )}
+                  </button>
+
+                  {/* Expanded Detail Panel */}
+                  {isExpanded && (
+                    <div className="px-5 py-4 bg-zinc-50 border-t border-zinc-100">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
+                            Revenue
+                          </span>
+                          <span className="text-sm font-bold text-zinc-900">
+                            {formatNaira(ticketType.revenue)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
+                            Avg Price
+                          </span>
+                          <span className="text-sm font-bold text-zinc-900">
+                            {formatNaira(avgPrice)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
-        </div>
-      </main>
+        )}
+      </div>
     </div>
   )
 }
-
