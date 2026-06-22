@@ -69,6 +69,7 @@ import adminRouter from './routes/admin.js'
 import webhooksRouter from './routes/webhooks.js'
 import cron from 'node-cron'
 import { updateExpiredTickets } from './jobs/updateExpiredTickets.js'
+import { scheduleEventReminders } from './jobs/eventReminderJob.js'
 
 
 
@@ -336,6 +337,9 @@ connect()
     // Schedule ticket status update job — runs every hour at minute 0
     cron.schedule('0 * * * *', updateExpiredTickets)
     console.log('[Jobs] Ticket status update job scheduled to run every hour')
+
+    // Schedule event reminder notifications (24h + 2h before each event)
+    scheduleEventReminders()
 
     // Run once on startup to catch any missed updates from downtime
     updateExpiredTickets().catch(console.error)

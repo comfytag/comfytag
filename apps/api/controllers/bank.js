@@ -2,8 +2,7 @@
 import Bank from '../models/Bank.js';
 import Withdraw from '../models/Withdraw.js';
 import User from '../models/User.js';
-import { enqueueEmail } from '../jobs/emailQueue.js';
-import { createNotification } from './notification.js';
+import { createNotification, notifyAdmins } from './notification.js';
 import { createError } from '../utils/error.js';
 
 
@@ -17,6 +16,7 @@ export const createBank = async (req, res, next) => {
         ...req.body,
         user_id: userId,
         acctName: acctName.name,
+        isActive: true,
      });
     try {
         const savedBank = await newBank.save()
@@ -40,11 +40,11 @@ export const updateBank = async (req, res, next) => {
 
         // Strict whitelist — only bank detail fields; never user_id, status, or flags
         const updateData = {}
-        if ('account_number' in req.body) updateData.account_number = req.body.account_number
-        if ('bank_code' in req.body) updateData.bank_code = req.body.bank_code
-        if ('account_name' in req.body) updateData.account_name = req.body.account_name
+        if ('bankName' in req.body) updateData.bankName = req.body.bankName
+        if ('acctName' in req.body) updateData.acctName = req.body.acctName
+        if ('acctNumber' in req.body) updateData.acctNumber = req.body.acctNumber
         if (Object.keys(updateData).length === 0) {
-            return res.status(400).json({ success: false, message: 'No valid fields to update. Allowed: account_number, bank_code, account_name.' })
+            return res.status(400).json({ success: false, message: 'No valid fields to update. Allowed: bankName, acctName, acctNumber.' })
         }
 
         const updatedBank = await Bank.findByIdAndUpdate(
@@ -123,6 +123,24 @@ export const createWithdraw = async (req, res, next) => {
     })
     try {
         const savedWithdraw = await newWithdraw.save()
+
+        // Notify finance admins about the new payout request
+        const io = req.app.locals.io
+        const requester = req.user
+        notifyAdmins({
+            roles: ['finance'],
+            type: 'payout_requested',
+            title: 'New payout request',
+            message: `${requester.name || 'An organizer'} requested ₦${Number(req.body.amount || 0).toLocaleString('en-NG')} withdrawal`,
+            data: {
+                withdrawId: savedWithdraw._id.toString(),
+                userId,
+                amount: String(req.body.amount || 0),
+                bankName: req.body.bankName || '',
+            },
+            io,
+        }).catch(() => {})
+
         res.status(200).json(savedWithdraw)
     } catch (err) {
         next(err)
@@ -166,24 +184,6 @@ export const updateWithdraw = async (req,res,next) =>{
               io,
             }).catch(err => console.error('[Notification] Payout approved failed:', err.message))
 
-            enqueueEmail({
-              to: user.email,
-              subject: `Your ₦${withdraw.amount?.toLocaleString()} payout is on the way`,
-              template: 'payoutApproved.hbs',
-              data: {
-                organizerName: user.name,
-                amount: `₦${withdraw.amount?.toLocaleString()}`,
-                bankName: withdraw.bankName || 'Your bank',
-                last4Digits: withdraw.acctNumber?.slice(-4) || '****',
-                payoutReference: withdrawId.toString(),
-                arrivalTime: '24–48 hours',
-                dashboardLink: `${baseUrl}/partner/payouts`,
-                year: new Date().getFullYear(),
-                unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`,
-                preferencesUrl: `${baseUrl}/partner/preferences`,
-              },
-              from: 'payouts@comfytag.com',
-            }).catch(err => console.error('[Payout Approved] Queue failed:', err.message))
         } else if (status === 'rejected') {
             // PAYOUT REJECTED
             await createNotification({
@@ -199,23 +199,6 @@ export const updateWithdraw = async (req,res,next) =>{
               io,
             }).catch(err => console.error('[Notification] Payout rejected failed:', err.message))
 
-            enqueueEmail({
-              to: user.email,
-              subject: 'Payout request needs attention',
-              template: 'payoutRejected.hbs',
-              data: {
-                organizerName: user.name,
-                amount: `₦${withdraw.amount?.toLocaleString()}`,
-                rejectionReason: rejectionReason || 'Please review your bank details',
-                actionStep: 'Review your bank details and resubmit',
-                resubmitLink: `${baseUrl}/partner/payouts/${withdrawId}/resubmit`,
-                year: new Date().getFullYear(),
-                unsubscribeUrl: `${baseUrl}/partner/preferences?unsub=email`,
-                preferencesUrl: `${baseUrl}/partner/preferences`,
-              },
-              from: 'payouts@comfytag.com',
-              replyTo: 'payouts@comfytag.com',
-            }).catch(err => console.error('[Payout Rejected] Queue failed:', err.message))
         }
 
         res.status(200).json(updatedWithdraw)

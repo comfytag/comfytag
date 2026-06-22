@@ -7,7 +7,7 @@ interface NotifRowProps {
   token: string
 }
 
-const TYPE_ICON: Record<NotificationType, string> = {
+const TYPE_ICON: Partial<Record<NotificationType, string>> = {
   ticket_confirmed: '🎟️',
   transfer_received: '🎟️',
   transfer_accepted: '🎟️',
@@ -18,6 +18,8 @@ const TYPE_ICON: Record<NotificationType, string> = {
   payout_rejected: '💳',
   kyc_approved: '👤',
   kyc_rejected: '👤',
+  face_enrolled: '🪪',
+  ticket_sold: '🎟️',
 }
 
 function typeIcon(type: NotificationType): string {

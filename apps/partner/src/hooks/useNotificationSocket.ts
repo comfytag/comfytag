@@ -115,7 +115,6 @@ export const useNotificationSocket = () => {
     socket.on('unreadCount:update', handleUnreadCountUpdate)
     socket.on('notification:read', handleNotificationRead)
     socket.on('notification:readAll', handleAllNotificationsRead)
-    socket.on('allNotifications:read', handleAllNotificationsRead)
     socket.on('connected', handleConnected)
 
     /**
@@ -126,7 +125,6 @@ export const useNotificationSocket = () => {
       socket.off('unreadCount:update', handleUnreadCountUpdate)
       socket.off('notification:read', handleNotificationRead)
       socket.off('notification:readAll', handleAllNotificationsRead)
-      socket.off('allNotifications:read', handleAllNotificationsRead)
       socket.off('connected', handleConnected)
     }
   }, [socket, userId, queryClient, setUnreadCount, incrementUnreadCount])

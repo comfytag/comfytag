@@ -163,6 +163,7 @@ export interface Category {
 
 // ─── Notification ──────────────────────────────────────
 export type NotificationType =
+  // ── Partner / Attendee ──────────────────────────────
   | 'ticket_confirmed'
   | 'transfer_received'
   | 'transfer_accepted'
@@ -173,6 +174,12 @@ export type NotificationType =
   | 'payout_rejected'
   | 'kyc_approved'
   | 'kyc_rejected'
+  | 'face_enrolled'
+  | 'ticket_sold'
+  // ── Admin ───────────────────────────────────────────
+  | 'kyc_submitted'
+  | 'payout_requested'
+  | 'organizer_registered'
 
 export interface Notification {
   _id: string

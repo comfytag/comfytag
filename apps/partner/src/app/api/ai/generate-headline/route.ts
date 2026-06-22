@@ -3,9 +3,9 @@ import { GoogleGenerativeAI, GoogleGenerativeAIFetchError } from '@google/genera
 
 interface RequestBody {
   title: string
-  draftDescription?: string
+  category?: string
+  draftHeadline?: string
   vibe: string
-  extraDetails?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 })
   }
 
-  const { title, draftDescription, vibe, extraDetails } = body
+  const { title, category, draftHeadline, vibe } = body
 
   if (!title?.trim() || !vibe?.trim()) {
     return NextResponse.json(
@@ -35,21 +35,21 @@ export async function POST(req: NextRequest) {
   }
 
   const systemInstruction =
-    'You are writing hype copy for a Nigerian event promoter texting their audience directly. ' +
-    'Write like a real person, not a brand. Short sentences. Real energy. No fluff. ' +
+    'You are writing a one-line hook for a Nigerian event flyer or ticket page. ' +
+    'Output exactly one sentence. Max 120 characters. No punctuation at the end. ' +
     `Tone must match strictly: ${vibe.trim()}. ` +
     'HARD RULES — breaking any of these fails the task: ' +
-    'No em dash (—). No en dash (–). No colon (:). No asterisks. No markdown. No bullet points. No numbered lists. ' +
-    'Banned words — do not use any of these: elevate, unleash, embark, delve, unlock, seamless, testament, realm, curated, foster, leverage, vibrant, journey. ' +
-    'Do not start consecutive sentences with the same word. ' +
-    'Write in 2 to 3 short paragraphs. Each paragraph max 2 sentences. Total output under 120 words. ' +
-    'Casual punctuation only — commas and full stops. Use an exclamation mark at most once across the entire output. ' +
-    'If a draft description is provided, keep its core facts but make it sound more human. Do not start with the event title.'
+    'One sentence only. No period, exclamation mark, or question mark at the end. ' +
+    'No em dash (—). No en dash (–). No colon (:). No asterisks. No quote marks. ' +
+    'Banned words — do not use any of these: elevate, experience, join us, embark, curated, vibrant, seamless, testament. ' +
+    'Write like it belongs on a flyer someone would reshare on Instagram. ' +
+    'If a draft headline is provided, improve it, do not ignore it. ' +
+    'If event category is provided, the hook should feel relevant to that type of event.'
 
   const userPrompt = [
     `Event Title: ${title.trim()}`,
-    draftDescription?.trim() ? `Draft Description: ${draftDescription.trim()}` : null,
-    extraDetails?.trim() ? `Extra Details: ${extraDetails.trim()}` : null,
+    category?.trim() ? `Category: ${category.trim()}` : null,
+    draftHeadline?.trim() ? `Draft Headline: ${draftHeadline.trim()}` : null,
   ]
     .filter(Boolean)
     .join('\n')
@@ -62,11 +62,10 @@ export async function POST(req: NextRequest) {
     })
 
     const result = await model.generateContent(userPrompt)
-    const description = result.response.text().trim()
+    const headline = result.response.text().trim()
 
-    return NextResponse.json({ description })
+    return NextResponse.json({ headline })
   } catch (err) {
-    // Extract rich error info from the SDK's typed error
     let debugMessage = 'Unknown error'
     let httpStatus: number | undefined
     let errorDetails: unknown
@@ -79,18 +78,17 @@ export async function POST(req: NextRequest) {
       debugMessage = err.message
     }
 
-    console.error('[ai/generate-description] Gemini error:', {
+    console.error('[ai/generate-headline] Gemini error:', {
       message: debugMessage,
       httpStatus,
       errorDetails,
     })
 
-    // Surface debug info in development so you can diagnose without checking server logs
     const isDev = process.env.NODE_ENV === 'development'
 
     return NextResponse.json(
       {
-        error: 'Failed to generate description. Please try again.',
+        error: 'Failed to generate headline. Please try again.',
         ...(isDev && {
           debug: { message: debugMessage, httpStatus, errorDetails },
         }),
