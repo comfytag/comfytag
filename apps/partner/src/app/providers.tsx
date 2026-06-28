@@ -4,6 +4,7 @@ import { SessionProvider } from 'next-auth/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import { ApiTokenSync } from '@/components/layout/ApiTokenSync'
+import { PushNotificationInit } from '@/components/layout/PushNotificationInit'
 import { NotificationProvider } from '@/contexts/NotificationContext'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -22,6 +23,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <ApiTokenSync />
+      <PushNotificationInit />
       <QueryClientProvider client={queryClient}>
         <NotificationProvider>
           {children}

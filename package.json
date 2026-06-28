@@ -23,6 +23,7 @@
   },
   "packageManager": "pnpm@11.0.9",
   "dependencies": {
+    "cross-env": "^10.1.0",
     "otplib": "^13.4.0"
   }
 }

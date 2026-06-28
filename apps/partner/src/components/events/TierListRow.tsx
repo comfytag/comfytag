@@ -33,7 +33,7 @@ export function TierListRow({ name, price, capacity, onRemove, onEdit }: TierLis
       <div>
         <div style={{ fontWeight: 500, color: 'var(--color-text)' }}>{name}</div>
         <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
-          {formatNaira(Number(price))} · {capacity} spots
+          {formatNaira(Number(price))} · {capacity === '' || capacity == null ? 'Unlimited' : `${capacity} spots`}
         </div>
       </div>
       <div style={{ display: 'flex', gap: '8px' }}>

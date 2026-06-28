@@ -39,6 +39,8 @@ export const createFreeAudience = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'This ticket tier is sold out.' })
         }
 
+        const existingCount = await Audience.countDocuments({ event_id: eventId })
+
         const newAudience = new Audience({
             name,
             email,
@@ -52,6 +54,7 @@ export const createFreeAudience = async (req, res, next) => {
             event_id: eventId,
             user_id: userId || 'guest',
             totpSecret: generateSecret(),
+            ticketNumber: existingCount + 1,
         })
 
         const savedAudience = await newAudience.save()
@@ -187,6 +190,8 @@ export const createAudience = async (req, res, next) => {
         }
 
         // Build document from explicit field list — never spread req.body
+        const existingTicketCount = await Audience.countDocuments({ event_id: eventId })
+
         const newAudience = new Audience({
             name: req.body.name,
             email: req.body.email,
@@ -201,6 +206,7 @@ export const createAudience = async (req, res, next) => {
             totpSecret: generateSecret(),
             isFreeTicket,
             status: 'active',
+            ticketNumber: existingTicketCount + 1,
         })
 
         const savedAudience = await newAudience.save()

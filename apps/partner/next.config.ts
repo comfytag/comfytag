@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next'
 import fs from 'fs'
 import path from 'path'
+import withPWAInit from '@ducanh2912/next-pwa'
 
 // When MOBILE_DEV=true (set by scripts/dev-mobile.ps1), load .env.mobile.local
 // overrides. This runs after Next.js's own env loading, so it wins over .env.local,
@@ -21,6 +22,13 @@ if (process.env.MOBILE_DEV === 'true') {
   }
 }
 
+const withPWA = withPWAInit({
+  dest: 'public',
+  register: true,
+  workboxOptions: { skipWaiting: true },
+  customWorkerSrc: 'worker/index.ts',
+})
+
 const nextConfig: NextConfig = {
   output: 'standalone',
   turbopack: {},
@@ -33,4 +41,5 @@ const nextConfig: NextConfig = {
     ],
   },
 }
-export default nextConfig
+
+export default withPWA(nextConfig)

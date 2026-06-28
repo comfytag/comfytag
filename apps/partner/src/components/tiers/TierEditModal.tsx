@@ -40,7 +40,6 @@ export function TierEditModal({ tier, isLoading = false, onSave, onCancel }: Tie
         justifyContent: 'center',
         zIndex: 50,
       }}
-      onClick={onCancel}
     >
       <div
         style={{

@@ -55,7 +55,8 @@ export default function ProfilePage() {
     try {
       const res = await api.put(`/auth/register-organizer/${session?.user?.id}`)
       const { token } = res.data
-      router.push(`https://partner.comfytag.com/handoff?t=${token}`)
+      const partnerUrl = process.env.NEXT_PUBLIC_PARTNER_URL ?? 'http://localhost:3001'
+      window.location.href = `${partnerUrl}/handoff?t=${token}`
     } catch {
       setSaveError('Failed to upgrade. Please try again.')
       setIsUpgrading(false)

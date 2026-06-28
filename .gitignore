@@ -16,6 +16,9 @@ dist/
 build/
 out/
 
+# TypeScript incremental build artifacts
+*.tsbuildinfo
+
 # Turbo
 .turbo/
 
@@ -33,6 +36,7 @@ test_*.log
 
 # Claude Code (local workspace config)
 .claude/
+.mcp.json
 
 # IDE
 .vscode/settings.json
@@ -47,3 +51,34 @@ test-results/
 tests/
 docs/
 dev-mobile.ps1
+
+# Dev/audit documentation not needed on server
+files/
+BACKEND_AUDIT_CORRUPTED_STRINGS.md
+BACKEND_CHANGES_SUMMARY.md
+DEVELOPMENT_CONTRACTS.md
+EXECUTION_SUMMARY.txt
+FINAL_VERIFICATION_REPORT.md
+PHASE_3_FINDINGS.md
+SYSTEM_AUDIT.md
+TESTING_CHECKLIST.md
+WEEK4_AUDIT_REPORT.md
+notes.txt
+
+# Root-level test scripts & artifacts
+test-email-v2.sh
+.deployment-test
+
+# API dev artifacts (test scripts, stray assets, docs, npm lockfile)
+apps/api/email-previews/
+apps/api/QRCode.png
+apps/api/logo.png
+apps/api/package-lock.json
+apps/api/test-cloudinary.js
+apps/api/test-emails.js
+apps/api/PROFILE_CORRUPTION_FIX.md
+apps/api/RETENTION_CRONS_INTEGRATION.md
+apps/api/SOCKET_IO_INTEGRATION.md
+
+# Mobile dev-only tooling
+apps/mobile/.maestro/

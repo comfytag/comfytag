@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { SearchSuggestionsOverlay } from '@/components/ui/SearchSuggestionsOverlay';
@@ -133,6 +134,14 @@ export function HeroSection({
               }}
             />
           </div>
+
+          {/* Organizer CTA */}
+          <p className="mt-5 text-sm text-zinc-400">
+            Are you an organiser?{' '}
+            <Link href="/profile" className="text-violet-300 hover:text-violet-200 font-semibold underline underline-offset-2 transition-colors">
+              Host your event on ComfyTag →
+            </Link>
+          </p>
         </div>
 
         {/* Stats — z-10 keeps them visible above the bg layer but below the search module (z-20) */}

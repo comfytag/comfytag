@@ -89,7 +89,9 @@ export function Step3Tiers({
             <span className="text-xs text-violet-500">
               Total capacity:{' '}
               <span className="font-bold">
-                {formData.tiers.reduce((s, t) => s + Number(t.capacity), 0).toLocaleString()}
+                {formData.tiers.some(t => t.capacity.trim() === '')
+                  ? 'Unlimited'
+                  : formData.tiers.reduce((s, t) => s + Number(t.capacity), 0).toLocaleString()}
               </span>
             </span>
           </div>
@@ -127,6 +129,7 @@ export function Step3Tiers({
       <Modal
         isOpen={tierModal}
         onClose={() => setTierModal(false)}
+        closeOnBackdropClick={false}
         title={editingIndex !== null ? 'Edit Ticket Tier' : 'Add Ticket Tier'}
         footer={
           <>
@@ -154,9 +157,9 @@ export function Step3Tiers({
             onChange={(e) => setCurrentTier({ ...currentTier, price: e.target.value })}
           />
           <Input
-            label="Capacity"
+            label="Capacity (blank = unlimited)"
             type="number"
-            placeholder="0"
+            placeholder="Unlimited"
             value={currentTier.capacity}
             onChange={(e) => setCurrentTier({ ...currentTier, capacity: e.target.value })}
           />

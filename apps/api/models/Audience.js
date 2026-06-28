@@ -30,6 +30,10 @@ const AudienceSchema = new Schema({
         type: Number,
         require: true,
     },
+    ticketNumber: {
+        type: Number,
+        default: null,
+    },
     reference: {
         type: String,
         uppercase: true,

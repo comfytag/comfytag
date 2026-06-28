@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -72,7 +72,12 @@ interface UseCreateEventWizardReturn {
   setPerformerInput: (val: string) => void
   // Media upload
   handleUpload: (file: File) => Promise<string>
+  // Draft persistence
+  hasDraft: boolean
+  discardDraft: () => void
 }
+
+const DRAFT_KEY = 'comfytag_event_wizard_draft'
 
 // ─── Hook Implementation ────────────────────────────────────────────────────
 export function useCreateEventWizard(): UseCreateEventWizardReturn {
@@ -83,25 +88,60 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
   // Wizard state
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1)
   const [stepErrors, setStepErrors] = useState('')
+  const [hasDraft, setHasDraft] = useState(false)
 
-  // Form state
-  const [formData, setFormData] = useState<CreateEventFormData>({
-    name: '',
-    headline: '',
-    category: '',
-    secondaryCategory: '',
-    date: '',
-    startTime: '',
-    endTime: '',
-    venue: '',
-    address: '',
-    state: '',
-    tiers: [],
-    description: '',
-    performers: [],
-    details: { specialNotes: '', isPublic: true },
-    images: [],
+  // Form state — initialized from localStorage if a draft exists
+  const [formData, setFormData] = useState<CreateEventFormData>(() => {
+    const empty: CreateEventFormData = {
+      name: '',
+      headline: '',
+      category: '',
+      secondaryCategory: '',
+      date: '',
+      startTime: '',
+      endTime: '',
+      venue: '',
+      address: '',
+      state: '',
+      tiers: [],
+      description: '',
+      performers: [],
+      details: { specialNotes: '', isPublic: true },
+      images: [],
+    }
+    if (typeof window === 'undefined') return empty
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved) as CreateEventFormData
+        return parsed
+      }
+    } catch { /* ignore */ }
+    return empty
   })
+
+  // Detect draft on mount (after hydration)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved) as CreateEventFormData
+        const hasContent = parsed.name || parsed.tiers.length > 0 || parsed.description
+        setHasDraft(!!hasContent)
+      }
+    } catch { /* ignore */ }
+  }, [])
+
+  // Persist form data to localStorage on every change
+  useEffect(() => {
+    try {
+      const hasContent = formData.name || formData.tiers.length > 0 || formData.description
+      if (hasContent) {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(formData))
+        setHasDraft(true)
+      }
+    } catch { /* ignore */ }
+  }, [formData])
 
   // Tier management
   const [tierModal, setTierModal] = useState(false)
@@ -117,11 +157,16 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
       api.post(`/events/${session!.user.id}`, body).then(r => r.data),
     onSuccess: (data: { _id: string; status: string }) => {
       queryClient.invalidateQueries({ queryKey: ['events'] })
+      try { localStorage.removeItem(DRAFT_KEY) } catch { /* ignore */ }
+      setHasDraft(false)
       if (data.status === 'draft') {
         router.push('/events')
       } else {
         router.push(`/events/${data._id}`)
       }
+    },
+    onError: () => {
+      setStepErrors('Network error. Please check your connection and try again.')
     },
   })
 
@@ -207,9 +252,11 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
   // ─── Tier Management ────────────────────────────────────────────────────
   function handleAddTier() {
     const price = Number(currentTier.price)
-    const capacity = Number(currentTier.capacity)
-    if (!currentTier.name || price < 0 || capacity <= 0) {
-      setStepErrors('Please enter a valid name, price ≥ 0, and capacity > 0.')
+    const capacityStr = currentTier.capacity.trim()
+    const isUnlimited = capacityStr === ''
+    const capacity = isUnlimited ? null : Number(capacityStr)
+    if (!currentTier.name || price < 0 || (!isUnlimited && (Number.isNaN(capacity) || (capacity as number) <= 0))) {
+      setStepErrors('Please enter a valid name and price ≥ 0. Leave capacity blank for unlimited.')
       return
     }
     if (editingIndex !== null) {
@@ -268,6 +315,19 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
     }
   }
 
+  // ─── Draft Management ───────────────────────────────────────────────────
+  function discardDraft() {
+    try { localStorage.removeItem(DRAFT_KEY) } catch { /* ignore */ }
+    setHasDraft(false)
+    setFormData({
+      name: '', headline: '', category: '', secondaryCategory: '',
+      date: '', startTime: '', endTime: '', venue: '', address: '', state: '',
+      tiers: [], description: '', performers: [],
+      details: { specialNotes: '', isPublic: true }, images: [],
+    })
+    setStep(1)
+  }
+
   // ─── Submit Handler ─────────────────────────────────────────────────────
   function handleSubmit(status: 'draft' | 'published') {
     mutate({
@@ -287,7 +347,7 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
       ticketType: formData.tiers.map(t => ({
         name: t.name,
         price: Number(t.price),
-        capacity: Number(t.capacity),
+        capacity: t.capacity.trim() === '' ? null : Number(t.capacity),
       })),
       performers: formData.performers.length > 0 ? formData.performers : undefined,
       gateRules: formData.details.specialNotes ? [formData.details.specialNotes] : undefined,
@@ -324,5 +384,7 @@ export function useCreateEventWizard(): UseCreateEventWizardReturn {
     performerInput,
     setPerformerInput,
     handleUpload,
+    hasDraft,
+    discardDraft,
   }
 }

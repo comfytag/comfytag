@@ -366,6 +366,7 @@ export const login = async (req,res,next) =>{
 				isVerify: user.isVerify,
 				role: user.role || 'viewer',  // Ensure role is always returned (TASK 2)
 				referralCode: user.referralCode,
+				createdAt: user.createdAt,
 			},
 			token,
 			message: "logged in successfully"
@@ -443,6 +444,7 @@ export const googleSignIn = async (req, res) => {
 				isAdmin: user.isAdmin,
 				isVerify: user.isVerify,
 				referralCode: user.referralCode,
+				createdAt: user.createdAt,
 			},
 			token,
 			message: 'Google sign-in successful',

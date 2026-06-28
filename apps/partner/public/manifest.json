@@ -1,25 +1,25 @@
 {
-  "name": "ComfyTag",
-  "short_name": "ComfyTag",
-  "description": "Your face is your ticket",
-  "start_url": "/",
+  "name": "ComfyTag Partner",
+  "short_name": "CT Partner",
+  "description": "Event organizer dashboard",
+  "start_url": "/overview",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FAFAF9",
-  "theme_color": "#7C3AED",
+  "background_color": "#0F0F0F",
+  "theme_color": "#0F0F0F",
   "icons": [
     {
-      "src": "/logo.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/logo.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ],
-  "categories": ["entertainment", "lifestyle"]
+  "categories": ["entertainment", "business"]
 }

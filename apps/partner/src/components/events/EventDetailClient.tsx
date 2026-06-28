@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
   BarChart2,
@@ -69,13 +69,23 @@ const STATUS_CONFIG: Record<EventStatus, StatusConfig> = {
   },
 }
 
-const DUMMY_ACTIVITY = [
-  { id: 1, type: 'purchase', user: 'Sarah K.',     action: 'purchased VIP',      time: '2m ago'  },
-  { id: 2, type: 'checkin',  user: 'Mike O.',      action: 'checked in',          time: '5m ago'  },
-  { id: 3, type: 'purchase', user: 'Adaeze N.',    action: 'purchased General',  time: '8m ago'  },
-  { id: 4, type: 'checkin',  user: 'Chukwuma B.',  action: 'checked in',          time: '12m ago' },
-  { id: 5, type: 'purchase', user: 'Fatima L.',    action: 'purchased Table',    time: '15m ago' },
-]
+interface ActivityItem {
+  id: string
+  type: 'purchase' | 'checkin'
+  user: string
+  action: string
+  timestamp: string
+}
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60_000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
+}
 
 // Shared premium field styles used inside both Sheet forms
 const sheetLabel =
@@ -95,6 +105,13 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false)
   const [isTiersSheetOpen, setIsTiersSheetOpen]   = useState(false)
+
+  const { data: activityData } = useQuery<{ activity: ActivityItem[] }>({
+    queryKey: ['event-activity', eventId],
+    queryFn: () => api.get(`/events/${eventId}/activity`).then(r => r.data),
+    refetchInterval: 30_000,
+    staleTime: 20_000,
+  })
 
   const statusMutation = useMutation({
     mutationFn: (status: 'published' | 'draft' | 'cancelled') => {
@@ -377,28 +394,32 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
               </span>
             </div>
             <div className="space-y-4">
-              {DUMMY_ACTIVITY.map((item) => (
-                <div key={item.id} className="flex items-center gap-3">
-                  <div
-                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                      item.type === 'purchase' ? 'bg-violet-50' : 'bg-emerald-50'
-                    }`}
-                  >
-                    {item.type === 'purchase' ? (
-                      <User size={14} className="text-violet-600" />
-                    ) : (
-                      <CheckCircle2 size={14} className="text-emerald-600" />
-                    )}
+              {activityData?.activity && activityData.activity.length > 0 ? (
+                activityData.activity.map((item) => (
+                  <div key={item.id} className="flex items-center gap-3">
+                    <div
+                      className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                        item.type === 'purchase' ? 'bg-violet-50' : 'bg-emerald-50'
+                      }`}
+                    >
+                      {item.type === 'purchase' ? (
+                        <User size={14} className="text-violet-600" />
+                      ) : (
+                        <CheckCircle2 size={14} className="text-emerald-600" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-zinc-800 truncate">
+                        <span className="font-semibold">{item.user}</span>{' '}
+                        <span className="text-zinc-500">{item.action}</span>
+                      </p>
+                    </div>
+                    <span className="text-xs text-zinc-400 shrink-0">{timeAgo(item.timestamp)}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-zinc-800 truncate">
-                      <span className="font-semibold">{item.user}</span>{' '}
-                      <span className="text-zinc-500">{item.action}</span>
-                    </p>
-                  </div>
-                  <span className="text-xs text-zinc-400 shrink-0">{item.time}</span>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-zinc-400 text-center py-4">No activity yet</p>
+              )}
             </div>
           </div>
         </div>

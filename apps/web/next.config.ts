@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next'
 import fs from 'fs'
 import path from 'path'
-import withPWAInit from 'next-pwa'
+import withPWAInit from '@ducanh2912/next-pwa'
 
 // When MOBILE_DEV=true (set by scripts/dev-mobile.ps1), load .env.mobile.local
 // overrides. This runs after Next.js's own env loading, so it wins over .env.local,
@@ -25,7 +25,8 @@ if (process.env.MOBILE_DEV === 'true') {
 const withPWA = withPWAInit({
   dest: 'public',
   register: true,
-  skipWaiting: true,
+  workboxOptions: { skipWaiting: true },
+  customWorkerSrc: 'worker/index.ts',
 })
 
 const nextConfig: NextConfig = {
@@ -39,8 +40,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-// Bypass the PWA wrapper entirely in development — even with `disable: true`,
-// next-pwa still wraps the config object and can intercept Next.js internal
-// route resolution, causing /api/* endpoints to return 404 HTML instead of JSON.
-export default process.env.NODE_ENV === 'development' ? nextConfig : withPWA(nextConfig)
-
+export default withPWA(nextConfig)

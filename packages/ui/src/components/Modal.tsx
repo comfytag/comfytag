@@ -8,9 +8,10 @@ export interface ModalProps {
   title: string
   children: React.ReactNode
   footer?: React.ReactNode
+  closeOnBackdropClick?: boolean
 }
 
-export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, footer, closeOnBackdropClick = true }: ModalProps) {
   useEffect(() => {
     if (!isOpen) return
     const prev = document.body.style.overflow
@@ -36,7 +37,7 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
         alignItems: 'center',
         justifyContent: 'center',
       }}
-      onClick={onClose}
+      onClick={closeOnBackdropClick ? onClose : undefined}
     >
       <div
         style={{

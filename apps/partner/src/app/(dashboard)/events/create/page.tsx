@@ -48,6 +48,19 @@ export default function CreateEventPage() {
         </div>
       </div>
 
+      {/* Draft restore banner */}
+      {wizard.hasDraft && wizard.step === 1 && (
+        <div className="flex items-center justify-between gap-4 bg-violet-50 border border-violet-200 rounded-2xl px-4 py-3 mt-4 text-sm">
+          <span className="text-violet-800 font-medium">You have an unsaved draft. Resume where you left off?</span>
+          <button
+            onClick={wizard.discardDraft}
+            className="text-violet-500 hover:text-violet-700 font-semibold shrink-0 transition-colors"
+          >
+            Discard
+          </button>
+        </div>
+      )}
+
       {/* Progress bar — full width */}
       <WizardProgressBar
         currentStep={wizard.step}

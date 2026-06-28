@@ -80,16 +80,18 @@ export const updateEvent = async (req, res, next) => {
         }
 
         // Compute totalCapacity if ticketType is being updated
+        // null capacity = unlimited; if any tier is unlimited, totalCapacity is null
         if (updateData.ticketType) {
-            updateData.totalCapacity = updateData.ticketType.reduce(
-                (sum, t) => sum + (t.capacity || 0), 0
-            );
+            const hasUnlimited = updateData.ticketType.some(t => t.capacity == null)
+            updateData.totalCapacity = hasUnlimited
+                ? null
+                : updateData.ticketType.reduce((sum, t) => sum + (t.capacity || 0), 0)
         }
 
         const updatedEvent = await Event.findByIdAndUpdate(
             req.params.id,
             { $set: updateData },
-            { new: true, runValidators: true }
+            { new: true, runValidators: false }
         )
         const baseUrl = process.env.BASE_URL || 'https://comfytag.com';
         const newStatus = req.body.status;
@@ -314,85 +316,84 @@ export const publishEvent = async (req, res, next) => {
         const updatedEvent = await Event.findByIdAndUpdate(
             eventId,
             { $set: { status: 'published' } },
-            { new: true, runValidators: true }
+            { new: true, runValidators: false }
         )
 
-        // ─── FLOW 3D: NEW EVENT ALERT (Follower Notification) ────────────────
-        const followers = await Follow.find({ organizer_id: updatedEvent.planner_id }).lean()
-
-        // Create real-time in-app notifications for followers
-        const io = req.app.locals.io
-        if (followers.length > 0) {
-            // Use Promise.allSettled to emit all notifications in parallel (non-blocking)
-            await Promise.allSettled(
-                followers.map(f =>
-                    createNotification({
-                        userId: f.follower_id.toString(),
-                        type: 'new_event_from_following',
-                        title: 'New Event',
-                        message: `${updatedEvent.planner} just posted: ${updatedEvent.name}`,
-                        data: {
-                            event_id: updatedEvent._id,
-                            eventName: updatedEvent.name,
-                            organizerName: updatedEvent.planner,
-                        },
-                        io,
-                    }).catch(err => console.error('[Notification] New event alert failed:', err.message))
-                )
-            )
-        }
-
-        // Email followers
-        if (followers.length > 0) {
-            const remainingCapacity = (updatedEvent.ticketType?.reduce((sum, t) => sum + (t.capacity || 0), 0) || 100) - (updatedEvent.ticketType?.reduce((sum, t) => sum + (t.sold || 0), 0) || 0)
-            const totalCapacity = updatedEvent.ticketType?.reduce((sum, t) => sum + (t.capacity || 0), 0) || 100
-            const capacityPercent = (remainingCapacity / totalCapacity) * 100
-            const isUrgent = capacityPercent < 20
-
-            const batchSize = 50
-            for (let i = 0; i < followers.length; i += batchSize) {
-                const batch = followers.slice(i, i + batchSize)
-
-                await Promise.allSettled(
-                    batch.map(async follower => {
-                        // Re-query follower's user to check notification preference
-                        const followerUser = await User.findById(follower.follower_id)
-                        if (followerUser?.notificationPreferences?.email === false) {
-                            return
-                        }
-
-                        const ticketPrice = updatedEvent.ticketType?.length > 0 ? updatedEvent.ticketType[0].price : 0
-                        const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
-
-                        return enqueueEmail({
-                            to: followerUser?.email,
-                            subject: `${updatedEvent.planner} just dropped: ${updatedEvent.name}`,
-                            template: 'newEventAlert.hbs',
-                            data: {
-                                firstName: (followerUser?.name || followerUser?.email).split(' ')[0],
-                                organizerName: updatedEvent.planner,
-                                eventName: updatedEvent.name,
-                                eventDate: moment(updatedEvent.date).format('ddd, MMM D'),
-                                eventTime: updatedEvent.startTime || 'TBA',
-                                eventVenue: updatedEvent.venue || 'TBA',
-                                ticketPrice: `₦${ticketPrice}`,
-                                urgencyBadge: isUrgent,
-                                remainingCapacity,
-                                ticketLink: `${baseUrl}/events/${updatedEvent._id}`,
-                                year: new Date().getFullYear(),
-                                unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
-                                preferencesUrl: `${baseUrl}/preferences`,
-                            },
-                            from: 'events@comfytag.com',
-                        }).catch(err => console.error('[New Event Alert] Queue failed:', err.message))
-                    })
-                )
-            }
-
-            console.log(`[New Event Alert] Queued ${followers.length} emails for followers`)
-        }
-
+        // Respond immediately — follower notifications are fire-and-forget
         res.status(200).json(updatedEvent)
+
+        // ─── FLOW 3D: NEW EVENT ALERT (Follower Notification) ────────────────
+        // Runs after response is sent; errors here must never affect the client
+        ;(async () => {
+            try {
+                const followers = await Follow.find({ organizer_id: updatedEvent.planner_id }).lean()
+                const io = req.app.locals.io
+
+                if (followers.length > 0) {
+                    await Promise.allSettled(
+                        followers.map(f =>
+                            createNotification({
+                                userId: f.follower_id.toString(),
+                                type: 'new_event_from_following',
+                                title: 'New Event',
+                                message: `${updatedEvent.planner} just posted: ${updatedEvent.name}`,
+                                data: {
+                                    event_id: updatedEvent._id,
+                                    eventName: updatedEvent.name,
+                                    organizerName: updatedEvent.planner,
+                                },
+                                io,
+                            }).catch(err => console.error('[Notification] New event alert failed:', err.message))
+                        )
+                    )
+                }
+
+                if (followers.length > 0) {
+                    const remainingCapacity = (updatedEvent.ticketType?.reduce((sum, t) => sum + (t.capacity || 0), 0) || 100) - (updatedEvent.ticketType?.reduce((sum, t) => sum + (t.sold || 0), 0) || 0)
+                    const totalCapacity = updatedEvent.ticketType?.reduce((sum, t) => sum + (t.capacity || 0), 0) || 100
+                    const capacityPercent = (remainingCapacity / totalCapacity) * 100
+                    const isUrgent = capacityPercent < 20
+
+                    const batchSize = 50
+                    for (let i = 0; i < followers.length; i += batchSize) {
+                        const batch = followers.slice(i, i + batchSize)
+                        await Promise.allSettled(
+                            batch.map(async follower => {
+                                const followerUser = await User.findById(follower.follower_id)
+                                if (followerUser?.notificationPreferences?.email === false) return
+
+                                const ticketPrice = updatedEvent.ticketType?.length > 0 ? updatedEvent.ticketType[0].price : 0
+                                const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+
+                                return enqueueEmail({
+                                    to: followerUser?.email,
+                                    subject: `${updatedEvent.planner} just dropped: ${updatedEvent.name}`,
+                                    template: 'newEventAlert.hbs',
+                                    data: {
+                                        firstName: (followerUser?.name || followerUser?.email).split(' ')[0],
+                                        organizerName: updatedEvent.planner,
+                                        eventName: updatedEvent.name,
+                                        eventDate: moment(updatedEvent.date).format('ddd, MMM D'),
+                                        eventTime: updatedEvent.startTime || 'TBA',
+                                        eventVenue: updatedEvent.venue || 'TBA',
+                                        ticketPrice: `₦${ticketPrice}`,
+                                        urgencyBadge: isUrgent,
+                                        remainingCapacity,
+                                        ticketLink: `${baseUrl}/events/${updatedEvent._id}`,
+                                        year: new Date().getFullYear(),
+                                        unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
+                                        preferencesUrl: `${baseUrl}/preferences`,
+                                    },
+                                    from: 'events@comfytag.com',
+                                }).catch(err => console.error('[New Event Alert] Queue failed:', err.message))
+                            })
+                        )
+                    }
+                }
+            } catch (err) {
+                console.error('[publishEvent] Side-effect error (non-blocking):', err.message)
+            }
+        })()
     } catch (err) {
         next(err)
     }
@@ -885,6 +886,55 @@ export const getEventsByState = async (req, res, next) => {
       hasMore: skip + events.length < total,
       state,
     })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// GET /events/:id/activity — recent purchases + check-ins for Live Activity feed
+export const getEventActivity = async (req, res, next) => {
+  try {
+    const eventId = req.params.id
+
+    // Recent purchases (last 8 by createdAt)
+    const purchases = await Audience.find({ event_id: eventId, status: { $in: ['active', 'used', 'ended'] } })
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .select('name type createdAt checkedIn checkedInAt')
+      .lean()
+
+    // Recent check-ins (last 8 by checkedInAt)
+    const checkins = await Audience.find({ event_id: eventId, checkedIn: true })
+      .sort({ checkedInAt: -1 })
+      .limit(8)
+      .select('name type checkedInAt createdAt')
+      .lean()
+
+    // Build activity items
+    const purchaseItems = purchases.map(a => ({
+      id: `buy-${a._id}`,
+      type: 'purchase',
+      user: a.name?.split(' ').map((w, i) => i === 0 ? w : w[0] + '.').join(' ') || 'Someone',
+      action: `purchased ${a.type || 'ticket'}`,
+      timestamp: a.createdAt,
+    }))
+
+    const checkinItems = checkins.map(a => ({
+      id: `in-${a._id}`,
+      type: 'checkin',
+      user: a.name?.split(' ').map((w, i) => i === 0 ? w : w[0] + '.').join(' ') || 'Someone',
+      action: 'checked in',
+      timestamp: a.checkedInAt,
+    }))
+
+    // Merge, deduplicate ids, sort by timestamp desc, take top 10
+    const seen = new Set()
+    const merged = [...purchaseItems, ...checkinItems]
+      .filter(item => { if (seen.has(item.id)) return false; seen.add(item.id); return true })
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, 10)
+
+    res.status(200).json({ success: true, activity: merged })
   } catch (err) {
     next(err)
   }

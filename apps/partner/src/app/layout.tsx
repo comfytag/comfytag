@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Anybody, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import Providers from './providers'
@@ -12,11 +12,16 @@ export const metadata: Metadata = {
   title: 'ComfyTag Partner',
   description: 'Event organizer dashboard',
   icons: {
-    icon: '/logo.png',
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+    icon: '/icon-192.png',
+    shortcut: '/icon-192.png',
+    apple: '/apple-touch-icon.png',
   },
   manifest: '/manifest.json',
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'ComfyTag Partner' },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#0F0F0F',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

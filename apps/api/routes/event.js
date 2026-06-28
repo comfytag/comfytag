@@ -1,5 +1,5 @@
 import express from 'express'
-import { createEvent, deleteEvent, eventsByCategory, eventsByPayment, eventsByState, getAllEvents, getEvent, getPlannerEvents, updateEvent, eventsByPick, eventsBySales, eventsByFilter, eventsBySingleFilter, getEventFeed, getEventsByState, updateTicketTier, deleteTicketTier, getTicketTierStats, getEventCategories, getEventStates, publishEvent, cancelEvent, getCategoryCounts } from '../controllers/event.js';
+import { createEvent, deleteEvent, eventsByCategory, eventsByPayment, eventsByState, getAllEvents, getEvent, getPlannerEvents, updateEvent, eventsByPick, eventsBySales, eventsByFilter, eventsBySingleFilter, getEventFeed, getEventsByState, updateTicketTier, deleteTicketTier, getTicketTierStats, getEventCategories, getEventStates, publishEvent, cancelEvent, getCategoryCounts, getEventActivity } from '../controllers/event.js';
 import { verifyAdmin, verifyUser, verifyToken } from '../utils/verifyToken.js';
 
 const router = express.Router()
@@ -31,6 +31,9 @@ router.get("/user/:userId", getPlannerEvents)
 
 // POST must come after static routes to avoid conflicts
 router.post("/:userId", verifyUser, createEvent)
+
+// Live activity feed
+router.get("/:id/activity", verifyUser, getEventActivity)
 
 // Ticket tier management
 router.get("/:id/tiers/stats", getTicketTierStats)

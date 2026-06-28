@@ -1,7 +1,89 @@
+import webpush from 'web-push'
 import Notification from '../models/Notification.js'
+import WebPushSubscription from '../models/WebPushSubscription.js'
 import User from '../models/User.js'
 import { createError } from '../utils/error.js'
 import { emitNotification, emitUnreadCountUpdate, emitNotificationRead, emitAllNotificationsRead } from '../socket/index.js'
+
+// ─── VAPID setup ─────────────────────────────────────────────────────────────
+// Keys are generated once via: node scripts/generate-vapid-keys.js
+// and stored in .env as VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_EMAIL
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    `mailto:${process.env.VAPID_EMAIL || 'admin@comfytag.com'}`,
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  )
+}
+
+// Map notification type → deep-link URL for push notification click
+const typeToUrl = (type, data = {}) => {
+  switch (type) {
+    case 'ticket_confirmed':
+    case 'transfer_received':
+    case 'transfer_accepted':
+    case 'transfer_declined':
+      return '/tickets'
+    case 'event_reminder':
+    case 'new_event_from_following':
+      return data.eventId ? `/events/${data.eventId}` : '/events'
+    case 'ticket_sold':
+      return '/overview'
+    case 'payout_approved':
+    case 'payout_rejected':
+      return '/withdraw'
+    case 'kyc_approved':
+    case 'kyc_rejected':
+      return '/settings'
+    case 'face_enrolled':
+      return '/'
+    case 'kyc_submitted':
+      return data.userId ? `/kyc/${data.userId}` : '/kyc'
+    case 'payout_requested':
+      return '/payouts'
+    case 'organizer_registered':
+      return data.userId ? `/users/${data.userId}` : '/users'
+    default:
+      return '/notifications'
+  }
+}
+
+// Send a Web Push notification to all active subscriptions for a user.
+// Silently cleans up expired (410) subscriptions.
+// Non-fatal — never throws.
+const sendWebPushToUser = async (userId, { title, message, type, data = {} }) => {
+  if (!process.env.VAPID_PUBLIC_KEY) return
+
+  try {
+    const subscriptions = await WebPushSubscription.find({ user_id: userId })
+    if (!subscriptions.length) return
+
+    const payload = JSON.stringify({
+      title,
+      message,
+      type,
+      data: { ...data, url: typeToUrl(type, data) },
+    })
+
+    await Promise.allSettled(
+      subscriptions.map(async (sub) => {
+        try {
+          await webpush.sendNotification(
+            { endpoint: sub.endpoint, keys: sub.keys },
+            payload
+          )
+        } catch (err) {
+          // 410 = subscription expired/revoked — remove it
+          if (err.statusCode === 410) {
+            await WebPushSubscription.deleteOne({ _id: sub._id })
+          }
+        }
+      })
+    )
+  } catch (err) {
+    console.error('[WebPush] sendWebPushToUser failed:', err.message)
+  }
+}
 
 // GET /notifications
 // Get notifications for logged-in user
@@ -117,7 +199,7 @@ export const createNotification = async ({
       data
     })
 
-    // Emit Socket.io event for real-time notification
+    // Emit Socket.io event for real-time notification (tab is open)
     if (io) {
       emitNotification(io, userId, {
         _id: notification._id,
@@ -136,9 +218,55 @@ export const createNotification = async ({
       })
       emitUnreadCountUpdate(io, userId, unreadCount)
     }
+
+    // Web Push — delivers even when the tab is closed
+    sendWebPushToUser(userId, { title, message, type, data })
   } catch (err) {
     // Non-fatal — log but don't crash the parent operation
     console.error('Failed to create notification:', err.message)
+  }
+}
+
+// ─── Web Push subscription management ────────────────────────────────────────
+
+// POST /notification/web-push/subscribe
+// Store a browser push subscription for the logged-in user
+export const subscribePush = async (req, res, next) => {
+  try {
+    const { endpoint, keys } = req.body
+
+    if (!endpoint || !keys?.p256dh || !keys?.auth) {
+      return next(createError(400, 'endpoint and keys (p256dh, auth) are required'))
+    }
+
+    // Upsert — same endpoint may re-subscribe after a browser restart
+    await WebPushSubscription.updateOne(
+      { user_id: req.user.id, endpoint },
+      { user_id: req.user.id, endpoint, keys },
+      { upsert: true }
+    )
+
+    res.status(200).json({ message: 'Push subscription saved' })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// DELETE /notification/web-push/unsubscribe
+// Remove a browser push subscription (called on logout or permission revoke)
+export const unsubscribePush = async (req, res, next) => {
+  try {
+    const { endpoint } = req.body
+
+    if (!endpoint) {
+      return next(createError(400, 'endpoint is required'))
+    }
+
+    await WebPushSubscription.deleteOne({ user_id: req.user.id, endpoint })
+
+    res.status(200).json({ message: 'Push subscription removed' })
+  } catch (err) {
+    next(err)
   }
 }
 

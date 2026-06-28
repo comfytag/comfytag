@@ -158,6 +158,11 @@ export function TicketListItem({ ticket, isPast, onAction }: TicketListItemProps
               {ticket.eventEndTime && ` – ${ticket.eventEndTime}`}
             </p>
           )}
+          {ticket.ticketNumber != null && (
+            <p className="text-[11px] text-zinc-400 font-mono mt-0.5">
+              #{ticket.ticketNumber}
+            </p>
+          )}
         </div>
       </div>
 

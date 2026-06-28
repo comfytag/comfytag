@@ -109,6 +109,7 @@ export interface Ticket {
   phone: string
   email: string
   name: string
+  ticketNumber?: number
   qrCode?: string
   faceOwner?: string
   faceLinkedAt?: string

@@ -213,6 +213,22 @@ export default function TicketsPage() {
             </div>
           )}
 
+          {/* ── Become a Partner Banner (non-partners only) ── */}
+          {!session.user.isPartner && (
+            <div className="mt-12 rounded-3xl bg-violet-50 border border-violet-200 px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold text-violet-900">Enjoyed attending?</p>
+                <p className="text-sm text-violet-700 mt-0.5">Host your own event and sell tickets on ComfyTag.</p>
+              </div>
+              <Link
+                href="/profile"
+                className="shrink-0 inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
+              >
+                Become a Partner →
+              </Link>
+            </div>
+          )}
+
         </div>
       </div>
     </>
