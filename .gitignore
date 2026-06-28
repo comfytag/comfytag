@@ -16,6 +16,9 @@ dist/
 build/
 out/
 
+# Next.js generated type files
+next-env.d.ts
+
 # TypeScript incremental build artifacts
 *.tsbuildinfo
 
