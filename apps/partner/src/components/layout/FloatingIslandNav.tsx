@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { NotificationContext } from '@/contexts/NotificationContext'
+import { usePartnerProfile } from '@/hooks/usePartner'
 
 const NAV_LINKS = [
   { label: 'Studio',    href: '/overview' },
@@ -47,8 +48,9 @@ export default function FloatingIslandNav() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [dropdownOpen])
 
+  const { data: profile } = usePartnerProfile()
   const userInitial = session?.user?.name?.charAt(0).toUpperCase() ?? '?'
-  const avatarSrc = session?.user?.logo ?? null
+  const avatarSrc = profile?.image ?? session?.user?.logo ?? null
 
   return (
     <nav

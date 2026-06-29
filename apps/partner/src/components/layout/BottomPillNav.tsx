@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
+import { usePartnerProfile } from '@/hooks/usePartner'
 
 interface NavTab {
   label: string
@@ -84,8 +85,9 @@ export default function BottomPillNav() {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
+  const { data: profile } = usePartnerProfile()
   const userInitial = session?.user?.name?.charAt(0).toUpperCase() ?? '?'
-  const avatarSrc = session?.user?.logo ?? null
+  const avatarSrc = profile?.image ?? session?.user?.logo ?? null
 
   useEffect(() => {
     if (!menuOpen) return

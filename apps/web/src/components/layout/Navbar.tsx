@@ -336,7 +336,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
                 aria-expanded={dropdownOpen}
                 style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-full)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}
               >
-                <AvatarInitials name={currentUser.name ?? currentUser.email} size={36} fontSize={13} />
+                <AvatarInitials name={currentUser.name ?? currentUser.email} src={currentUser.image ?? undefined} size={36} fontSize={13} />
               </button>
 
               {dropdownOpen && (
