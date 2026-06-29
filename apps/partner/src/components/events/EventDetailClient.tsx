@@ -115,13 +115,14 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
 
   const statusMutation = useMutation({
     mutationFn: (status: 'published' | 'draft' | 'cancelled') => {
+      const headers = { Authorization: `Bearer ${session?.user?.token}` }
       if (status === 'published') {
-        return api.post(`/events/${eventId}/publish`).then(r => r.data)
+        return api.post(`/events/${eventId}/publish`, undefined, { headers }).then(r => r.data)
       }
       if (status === 'cancelled') {
-        return api.post(`/events/${eventId}/cancel`).then(r => r.data)
+        return api.post(`/events/${eventId}/cancel`, undefined, { headers }).then(r => r.data)
       }
-      return api.patch(`/events/${eventId}`, { status }).then(r => r.data)
+      return api.patch(`/events/${eventId}`, { status }, { headers }).then(r => r.data)
     },
     onSuccess: (_data, status) => {
       setCurrentStatus(status)

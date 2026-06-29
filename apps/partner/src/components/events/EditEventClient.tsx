@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { Button, ErrorMessage, Input, Modal } from '@comfytag/ui'
@@ -124,6 +125,7 @@ interface EditEventClientProps {
 export function EditEventClient({ eventId }: EditEventClientProps) {
   const router     = useRouter()
   const qc         = useQueryClient()
+  const { data: session } = useSession()
   const fileInputRef   = useRef<HTMLInputElement>(null)
   const descPopoverRef     = useRef<HTMLDivElement>(null)
   const headlinePopoverRef = useRef<HTMLDivElement>(null)
@@ -218,7 +220,9 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
   // ── PATCH mutation ───────────────────────────────────────────────────────────
   const mutation = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      api.patch(`/events/${eventId}`, data).then(r => r.data),
+      api.patch(`/events/${eventId}`, data, {
+        headers: { Authorization: `Bearer ${session?.user?.token}` },
+      }).then(r => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: partnerEventKeys.detail(eventId) })
       qc.invalidateQueries({ queryKey: partnerEventKeys.list() })
