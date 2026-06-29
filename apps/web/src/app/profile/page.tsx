@@ -24,6 +24,7 @@ export default function ProfilePage() {
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [isUpgrading, setIsUpgrading] = useState(false)
+  const [upgradeError, setUpgradeError] = useState<string | null>(null)
   const [copiedReferral, setCopiedReferral] = useState(false)
 
   useEffect(() => {
@@ -52,13 +53,18 @@ export default function ProfilePage() {
 
   async function handleBecomePartner() {
     setIsUpgrading(true)
+    setUpgradeError(null)
     try {
-      const res = await api.put(`/auth/register-organizer/${session?.user?.id}`)
+      const res = await api.put(
+        `/auth/register-organizer/${session?.user?.id}`,
+        {},
+        { headers: { Authorization: `Bearer ${session?.user?.token}` } },
+      )
       const { token } = res.data
       const partnerUrl = process.env.NEXT_PUBLIC_PARTNER_URL ?? 'http://localhost:3001'
       window.location.href = `${partnerUrl}/handoff?t=${token}`
     } catch {
-      setSaveError('Failed to upgrade. Please try again.')
+      setUpgradeError('Failed to upgrade. Please try again.')
       setIsUpgrading(false)
     }
   }
@@ -242,19 +248,29 @@ export default function ProfilePage() {
 
             {session.user.isPartner ? (
               <button
-                onClick={() => router.push(`https://partner.comfytag.com/handoff?t=${session.user.token}`)}
+                onClick={() => {
+                  const partnerUrl = process.env.NEXT_PUBLIC_PARTNER_URL ?? 'http://localhost:3001'
+                  window.location.href = `${partnerUrl}/handoff?t=${session.user.token}`
+                }}
                 className="w-full py-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-all shadow-md mb-4"
               >
                 Go to Partner Dashboard
               </button>
             ) : (
-              <button
-                onClick={handleBecomePartner}
-                disabled={isUpgrading}
-                className="w-full py-4 border-2 border-zinc-200 hover:border-violet-600 hover:text-violet-700 text-zinc-900 font-bold rounded-xl transition-all mb-4 disabled:opacity-60"
-              >
-                {isUpgrading ? 'Upgrading…' : 'Become a Partner'}
-              </button>
+              <>
+                <button
+                  onClick={handleBecomePartner}
+                  disabled={isUpgrading}
+                  className="w-full py-4 border-2 border-zinc-200 hover:border-violet-600 hover:text-violet-700 text-zinc-900 font-bold rounded-xl transition-all mb-4 disabled:opacity-60"
+                >
+                  {isUpgrading ? 'Upgrading…' : 'Become a Partner'}
+                </button>
+                {upgradeError && (
+                  <div className="mb-4">
+                    <ErrorMessage message={upgradeError} />
+                  </div>
+                )}
+              </>
             )}
 
             <button

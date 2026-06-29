@@ -1,7 +1,9 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 interface PaymentSuccessViewProps {
   eventId: string
@@ -24,6 +26,8 @@ export function PaymentSuccessView({
   guestEmail,
 }: PaymentSuccessViewProps) {
   const router = useRouter()
+  const { data: session } = useSession()
+  const isPartner = session?.user?.isPartner ?? true
 
   const shareUrl =
     typeof window !== 'undefined'
@@ -91,7 +95,7 @@ export function PaymentSuccessView({
           aria-label={`Share ${eventName}`}
           onClick={handleShare}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleShare() }}
-          className="mt-8 w-full max-w-sm bg-gradient-to-br from-violet-600 to-indigo-600 rounded-[2rem] p-8 shadow-2xl text-white relative overflow-hidden transform hover:scale-[1.02] transition-transform cursor-pointer"
+          className="mt-8 w-full max-w-sm bg-linear-to-br from-violet-600 to-indigo-600 rounded-[2rem] p-8 shadow-2xl text-white relative overflow-hidden transform hover:scale-[1.02] transition-transform cursor-pointer"
         >
           {/* Decorative ticket-texture circles */}
           <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/5 rounded-full" aria-hidden="true" />
@@ -137,6 +141,18 @@ export function PaymentSuccessView({
         >
           View My Tickets
         </button>
+
+        {!isPartner && (
+          <p className="mt-8 text-xs text-zinc-400 text-center">
+            Thinking about hosting your own event?{' '}
+            <Link
+              href="/profile"
+              className="text-violet-400 hover:text-violet-600 font-medium transition-colors"
+            >
+              Become a Partner →
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   )
