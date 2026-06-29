@@ -42,7 +42,7 @@ export function HeroSection({
         The background layer below carries its own overflow-hidden + rounded corners
         so the visual shape is preserved.
       */}
-      <div className="relative w-full mt-6 lg:mt-10 rounded-[2.5rem] bg-zinc-950 min-h-[80svh] flex flex-col items-center justify-center text-center px-4 py-20 shadow-2xl">
+      <div className="relative w-full mt-6 lg:mt-10 rounded-[2.5rem] bg-zinc-950 min-h-[60svh] flex flex-col items-center justify-center text-center px-4 py-20 shadow-2xl">
 
         {/* Background layer — isolated overflow-hidden so bg image clips to rounded corners */}
         <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none">

@@ -50,9 +50,9 @@ const sesClient = new SESClient({
 
 const SES_FROM_DEFAULT = process.env.SES_SENDER_EMAIL || "noreply@comfytag.com";
 
-// ─── Resend fallback transport ────────────────────────────────────────────────
-// Called only when SES throws during dispatch. Uses native fetch (Node 18+) so
-// no extra dependency is required.
+// ─── Resend primary transport ─────────────────────────────────────────────────
+// Primary email provider. Uses native fetch (Node 18+) so no extra dependency
+// is required. SES is used as fallback if this fails.
 const sendViaResend = async ({ to, subject, html, text, from }) => {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -82,7 +82,7 @@ const sendViaResend = async ({ to, subject, html, text, from }) => {
   const result = await response.json();
   return {
     success: true,
-    message: `Email sent via Resend (SES fallback) to ${to}`,
+    message: `Email sent via Resend to ${to}`,
     email: to,
     subject,
     messageId: result.id,
@@ -212,35 +212,35 @@ export const sendViaSES = async ({
     ...(replyTo && { ReplyToAddresses: [replyTo] }),
   };
 
-  // ─── Dispatch via SendEmailCommand (primary) → Resend (fallback) ─────────
+  // ─── Dispatch via Resend (primary) → SES (fallback) ──────────────────────
   try {
-    const result = await sesClient.send(new SendEmailCommand(params));
-    return {
-      success: true,
-      message: `Email sent successfully to ${to}`,
-      email: to,
-      subject,
-      messageId: result.MessageId,
-      provider: "ses",
-      timestamp: new Date().toISOString(),
-    };
-  } catch (sesError) {
+    return await sendViaResend({ to, subject, html, text, from });
+  } catch (resendError) {
     console.warn(
-      `[awsEmailService] AWS SES failed, falling back to Resend...`,
-      sesError.message
+      `[awsEmailService] Resend failed, falling back to AWS SES...`,
+      resendError.message
     );
     try {
-      return await sendViaResend({ to, subject, html, text, from });
-    } catch (resendError) {
+      const result = await sesClient.send(new SendEmailCommand(params));
+      return {
+        success: true,
+        message: `Email sent successfully to ${to}`,
+        email: to,
+        subject,
+        messageId: result.MessageId,
+        provider: "ses",
+        timestamp: new Date().toISOString(),
+      };
+    } catch (sesError) {
       console.error(
-        `[awsEmailService] Resend fallback also failed to ${to}: ${resendError.message}`
+        `[awsEmailService] Both Resend and SES failed to ${to}: ${sesError.message}`
       );
       return {
         success: false,
-        message: `Failed to send email to ${to} via both SES and Resend`,
+        message: `Failed to send email to ${to} via both Resend and SES`,
         email: to,
         subject,
-        error: resendError.message,
+        error: sesError.message,
         timestamp: new Date().toISOString(),
       };
     }

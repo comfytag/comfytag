@@ -121,10 +121,10 @@ export default function ProfilePage() {
 
           {/* Avatar Section */}
           <div className="flex flex-col items-center">
-            {session.user.image ? (
+            {user?.image || session.user.image ? (
               <div className="ring-4 ring-white shadow-md rounded-full mx-auto">
                 <Image
-                  src={session.user.image}
+                  src={user?.image || session.user.image}
                   alt={displayName}
                   width={96}
                   height={96}
@@ -139,7 +139,7 @@ export default function ProfilePage() {
             <h1 className="text-2xl font-black text-zinc-900 mt-4">
               {titleCaseName || session.user.email}
             </h1>
-            <p className="text-sm text-zinc-500 mt-1">{session.user.email}</p>
+            <p className="text-sm text-zinc-500 mt-1">{user?.email ||session.user.email}</p>
           </div>
 
           {/* Edit Profile Card */}
@@ -177,7 +177,7 @@ export default function ProfilePage() {
                 </label>
                 <input
                   type="email"
-                  value={session.user.email}
+                  value={user?.email || session.user.email}
                   onChange={() => undefined}
                   disabled
                   className="w-full bg-zinc-100 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-400 cursor-not-allowed outline-none"
@@ -235,18 +235,18 @@ export default function ProfilePage() {
             <div className="flex justify-between items-center text-sm pb-4 border-b border-zinc-100 mb-4">
               <span className="text-zinc-500">Account type</span>
               <span className="font-medium text-zinc-900">
-                {session.user.isPartner ? 'Organizer' : 'Attendee'}
+                {user?.isPartner || session.user.isPartner ? 'Organizer' : 'Attendee'}
               </span>
             </div>
 
             <div className="flex justify-between items-center text-sm pb-4 border-b border-zinc-100 mb-6">
               <span className="text-zinc-500">Member since</span>
               <span className="font-medium text-zinc-900">
-                {session.user.createdAt ? formatDate(session.user.createdAt) : '—'}
+                {user?.createdAt || session.user.createdAt ? formatDate(user?.createdAt || session.user.createdAt) : '—'}
               </span>
             </div>
 
-            {session.user.isPartner ? (
+            {user?.isPartner || session.user.isPartner ? (
               <button
                 onClick={() => {
                   const partnerUrl = process.env.NEXT_PUBLIC_PARTNER_URL ?? 'http://localhost:3001'

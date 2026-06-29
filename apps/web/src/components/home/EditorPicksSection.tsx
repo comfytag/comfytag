@@ -182,7 +182,7 @@ export function EditorPicksSection({ events }: { events?: Event[] }) {
       </div>
 
       {/* Horizontal scroll rail */}
-      <div className="flex overflow-x-auto gap-4 md:gap-6 px-4 md:px-8 pb-10 snap-x snap-mandatory scrollbar-hide max-w-[100vw]">
+      <div className="flex overflow-x-auto gap-4 md:gap-6 px-4 md:px-8 pb-10 snap-x snap-mandatory scrollbar-hide max-w-7xl mx-auto">
         {picks.map((event, i) => (
           <EditorPickCard key={event.id} event={event} priority={i === 0} />
         ))}
