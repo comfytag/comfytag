@@ -14,53 +14,6 @@ interface PickEvent {
   badge: 'Selling Fast' | 'Tonight' | 'Trending' | null
 }
 
-const MOCK_EVENTS: PickEvent[] = [
-  {
-    id: 'detty-december-lagos',
-    title: 'Detty December All-White Party',
-    venue: 'Eko Hotel & Suites, Lagos',
-    date: 'Sat 28 Jun · 9PM',
-    price: '₦25,000',
-    image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&auto=format&q=80',
-    badge: 'Selling Fast',
-  },
-  {
-    id: 'afrobeats-live-lagos',
-    title: 'Afrobeats Live Lagos 2026',
-    venue: 'Eko Convention Centre, Lagos',
-    date: 'Fri 4 Jul · 8PM',
-    price: '₦15,000',
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&auto=format&q=80',
-    badge: 'Tonight',
-  },
-  {
-    id: 'lagos-fashion-week',
-    title: 'Lagos Fashion Week – SS26',
-    venue: 'Federal Palace Hotel, Lagos',
-    date: 'Sun 6 Jul · 3PM',
-    price: '₦35,000',
-    image: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&auto=format&q=80',
-    badge: null,
-  },
-  {
-    id: 'ilorin-comedy-night',
-    title: 'Ilorin Comedy Night Live',
-    venue: 'Kwara Hotel Banquet Hall, Ilorin',
-    date: 'Sat 12 Jul · 7PM',
-    price: '₦5,000',
-    image: 'https://images.unsplash.com/photo-1501281668745-f7f57925be31?w=800&auto=format&q=80',
-    badge: 'Trending',
-  },
-  {
-    id: 'abuja-music-festival',
-    title: 'Abuja Music Festival',
-    venue: 'Millennium Park Grounds, Abuja',
-    date: 'Sat 19 Jul · 5PM',
-    price: '₦8,000',
-    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&q=80',
-    badge: null,
-  },
-]
 
 const BADGE_CONFIG = {
   'Selling Fast': { icon: Flame,      iconClass: 'text-orange-500' },
@@ -151,7 +104,9 @@ function EditorPickCard({ event, priority }: { event: PickEvent; priority: boole
 }
 
 export function EditorPicksSection({ events }: { events?: Event[] }) {
-  const picks = events && events.length > 0 ? events.map(mapEventToPick) : MOCK_EVENTS
+  if (!events || events.length === 0) return null
+
+  const picks = events.map(mapEventToPick)
 
   return (
     <section
