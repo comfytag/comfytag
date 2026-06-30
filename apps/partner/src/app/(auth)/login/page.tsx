@@ -58,7 +58,6 @@ function LoginInner() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'var(--color-bg)',
         padding: '16px',
       }}
     >
@@ -73,10 +72,10 @@ function LoginInner() {
         }}
       >
         <div style={{ marginBottom: '32px' }}>
-          <h1 style={{ fontWeight: 700, fontSize: '28px', color: 'var(--color-brand)', margin: 0 }}>
+          <h1 style={{ fontFamily: 'var(--font-anybody)', fontWeight: 800, fontSize: '30px', color: 'var(--color-brand)', margin: 0, letterSpacing: '-0.02em' }}>
             ComfyTag
           </h1>
-          <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', marginTop: '4px', marginBottom: 0 }}>
+          <p style={{ fontFamily: 'var(--font-space-grotesk)', fontSize: '14px', color: 'var(--color-text-muted)', marginTop: '4px', marginBottom: 0 }}>
             Partner Dashboard
           </p>
         </div>

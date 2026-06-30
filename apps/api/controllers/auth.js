@@ -174,7 +174,7 @@ export const register = async (req,res,next) =>{
 		if (error)
 			return res.status(400).send({ message: error.details[0].message });
 
-		let user = await User.findOne({ email: req.body.email });
+		let user = await User.findOne({ email: req.body.email.toLowerCase() });
 		if (user)
 			return res
 				.status(409)
@@ -320,7 +320,7 @@ export const login = async (req,res,next) =>{
 	try {
 		const { email, password, otp } = req.body;
 
-		const user = await User.findOne({ email }).select('+totpSecret');
+		const user = await User.findOne({ email: email.toLowerCase() }).select('+totpSecret');
 		if (!user)
 			return res.status(401).json({ error: 'User not found', message: "Invalid username or Password" });
 
@@ -486,7 +486,7 @@ export const sendVerifyEmail = async (req,res,next) =>{
 	try {
 		// Supports both GET /verify/:email (legacy) and POST /resend-verification { email }
 		const emailParam = req.params.email ?? req.body?.email
-		const user = await User.findOne({ email: emailParam });
+		const user = await User.findOne({ email: emailParam?.toLowerCase() });
 		if (!user) return res.status(404).json({ message: 'User not found' })
 		const userid = user._id
 
