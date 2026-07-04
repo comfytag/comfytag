@@ -714,13 +714,25 @@ export const deleteTicketTier = async (req, res, next) => {
         const event = await Event.findById(eventId)
         if (!event) return next(createError(404, 'Event not found'))
 
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (event.planner_id.toString() !== requesterId && !req.user.isAdmin) {
+            return next(createError(403, 'Not authorized to update this event'))
+        }
+
         const tierIndex = event.ticketType.findIndex(t => t._id.toString() === tierId)
         if (tierIndex === -1) return next(createError(404, 'Ticket tier not found'))
 
-        // Don't allow deletion if there are sold tickets in this tier
+        // Don't allow deletion if there are sold tickets in this tier.
+        // Sum actual ticket quantity rather than just checking record existence,
+        // so this matches the "sold" count shown in getTicketTierStats — a
+        // zero-quantity Audience record shouldn't block deletion.
+        // Audience.type is stored lowercase (schema-enforced) while tier
+        // names keep whatever casing the organizer typed, so lowercase the
+        // comparison value here or sold tickets silently fail to match.
         const tierName = event.ticketType[tierIndex].name
-        const soldsTickets = await Audience.findOne({ event_id: eventId, type: tierName, status: { $ne: 'refunded' } })
-        if (soldsTickets) {
+        const soldTickets = await Audience.find({ event_id: eventId, type: tierName.toLowerCase(), status: { $ne: 'refunded' } })
+        const soldCount = soldTickets.reduce((sum, t) => sum + t.numOfTicket, 0)
+        if (soldCount > 0) {
             return next(createError(400, 'Cannot delete tier with sold tickets'))
         }
 
@@ -747,7 +759,10 @@ export const getTicketTierStats = async (req, res, next) => {
         const tickets = await Audience.find({ event_id: eventId })
 
         const tierStats = event.ticketType.map(tier => {
-            const tierTickets = tickets.filter(t => t.type === tier.name && t.status !== 'refunded')
+            // Audience.type is stored lowercase (schema-enforced); compare
+            // case-insensitively or sold counts silently read as zero.
+            const tierNameLower = tier.name.toLowerCase()
+            const tierTickets = tickets.filter(t => t.type === tierNameLower && t.status !== 'refunded')
             const sold = tierTickets.reduce((sum, t) => sum + t.numOfTicket, 0)
             return {
                 _id: tier._id,
@@ -890,6 +905,13 @@ export const getEventsByState = async (req, res, next) => {
 export const getEventActivity = async (req, res, next) => {
   try {
     const eventId = req.params.id
+
+    const event = await Event.findById(eventId).select('planner_id')
+    if (!event) return next(createError(404, 'Event not found'))
+    const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+    if (event.planner_id.toString() !== requesterId && !req.user.isAdmin) {
+        return next(createError(403, 'Not authorized to view this event'))
+    }
 
     // Recent purchases (last 8 by createdAt)
     const purchases = await Audience.find({ event_id: eventId, status: { $in: ['active', 'used', 'ended'] } })

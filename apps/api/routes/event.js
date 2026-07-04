@@ -33,24 +33,29 @@ router.get("/user/:userId", getPlannerEvents)
 router.post("/:userId", verifyUser, createEvent)
 
 // Live activity feed
-router.get("/:id/activity", verifyUser, getEventActivity)
+// NOTE: these routes take an event id in `:id`, not the caller's user id —
+// verifyUser's param-matching check would always fail for legitimate owners
+// (event id never equals user id), so it 403'd every non-admin request
+// regardless of ownership. Each controller below does its own ownership
+// check against event.planner_id, so verifyToken (auth only) is correct here.
+router.get("/:id/activity", verifyToken, getEventActivity)
 
 // Ticket tier management
 router.get("/:id/tiers/stats", getTicketTierStats)
-router.put("/:id/tiers/:tierId", verifyUser, updateTicketTier)
-router.delete("/:id/tiers/:tierId", verifyUser, deleteTicketTier)
+router.put("/:id/tiers/:tierId", verifyToken, updateTicketTier)
+router.delete("/:id/tiers/:tierId", verifyToken, deleteTicketTier)
 
 // Event status transitions (explicit state machine)
-router.post("/:id/publish", verifyUser, publishEvent)
-router.post("/:id/cancel", verifyUser, cancelEvent)
+router.post("/:id/publish", verifyToken, publishEvent)
+router.post("/:id/cancel", verifyToken, cancelEvent)
 
 // Dynamic routes
 // UPDATE
-router.put("/:id", verifyUser, updateEvent)
+router.put("/:id", verifyToken, updateEvent)
 // PATCH (partial update — used by cancel, status changes)
-router.patch("/:id", verifyUser, updateEvent)
+router.patch("/:id", verifyToken, updateEvent)
 // DELETE (allow event creator to delete their own event)
-router.delete("/:id", verifyUser, deleteEvent)
+router.delete("/:id", verifyToken, deleteEvent)
 // GET single event
 router.get("/:id", getEvent)
 // GET ALL

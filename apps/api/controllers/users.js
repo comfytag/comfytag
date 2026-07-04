@@ -318,11 +318,11 @@ export const getUserStats = async (req, res, next) => {
         const Event = (await import('../models/Event.js')).default
 
         // Count followers
-        const followerCount = await Follow.countDocuments({ followingId: userId })
+        const followerCount = await Follow.countDocuments({ organizer_id: userId })
 
         // Count upcoming events
         const upcomingEventCount = await Event.countDocuments({
-            organizer_id: userId,
+            planner_id: userId,
             date: { $gt: new Date() },
             status: 'published'
         })

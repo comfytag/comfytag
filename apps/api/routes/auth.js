@@ -2,7 +2,7 @@ import express from 'express'
 import rateLimit from 'express-rate-limit'
 // import {  adminlogin, login, register } from '../controllers/auth.js'
 import { register, login, googleSignIn, verifyEmail, verifyEmailOTP, verifyID, sendVerifyEmail, registerAsOrganizer, getMe, forgotPassword, verifyOtp, resetPassword, changePassword } from '../controllers/auth.js'
-import { verifyUser, verifyAdmin } from '../utils/verifyToken.js'
+import { verifyUser, verifyAdmin, verifyToken } from '../utils/verifyToken.js'
 // import { login } from '../controllers/users.js'
 
 const router = express.Router()
@@ -23,7 +23,7 @@ router.post("/register-partner", (req, res, next) => {
 })
 router.post("/login", authLimiter, login)
 router.post("/google-signin", googleSignIn)
-router.get("/me", verifyUser, getMe)
+router.get("/me", verifyToken, getMe)
 router.get("/:id/verify/:token/", verifyEmail)
 router.put("/:id/verifykyc/:kyc/", verifyAdmin, verifyID)
 router.post("/resend-verification", authLimiter, sendVerifyEmail)

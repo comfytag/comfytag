@@ -130,6 +130,7 @@ app.use("/auth", authRouter)      // Authentication endpoint
 app.use("/event", eventRouter)   // event endpoint
 app.use('/events', eventSearchRouter)  // search must be before /:id wildcard
 app.use('/events', teamRouter)   // team routes before /:id wildcard in eventRouter
+app.use('/events', likeRouter)   // /events/saved must be before /:id wildcard in eventRouter
 app.use("/events", eventRouter)  // event alias (plural)
 app.use("/categories", categoryRouter)   // category alias
 app.use("/category", categoryRouter)   // category endpoint
@@ -159,8 +160,7 @@ app.use('/push-tokens', pushTokenRouter)
 // General search
 app.use('/search', searchRouter)
 
-// Social layer — likes, comments, follows
-app.use('/events', likeRouter)
+// Social layer — comments, follows (likeRouter is mounted earlier, before eventRouter's /:id wildcard)
 app.use('/events', commentRouter)
 app.use('/comments', commentActionsRouter)
 app.use('/organizers', followRouter)

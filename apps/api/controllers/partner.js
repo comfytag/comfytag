@@ -14,13 +14,16 @@ export const getKycStatus = async (req, res, next) => {
             return next(createError(403, 'You can only view your own KYC status'))
         }
 
-        const user = await User.findById(userId).select('isVerify')
+        const user = await User.findById(userId).select('isVerify verify kycStatus')
 
         if (!user) {
             return next(createError(404, 'User not found'))
         }
 
-        // Return only KYC-relevant fields
+        // Return only KYC-relevant fields.
+        // `verify` doc URLs are included (not just `isVerify` booleans) so the
+        // frontend can distinguish "never submitted" from "submitted, awaiting
+        // admin review" — both look identical if only the boolean is returned.
         res.status(200).json({
             success: true,
             data: {
@@ -30,6 +33,8 @@ export const getKycStatus = async (req, res, next) => {
                     idCard: false,
                     address: false,
                 },
+                verify: user.verify || {},
+                kycStatus: user.kycStatus || 'unverified',
             },
         })
     } catch (err) {

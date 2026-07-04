@@ -65,7 +65,7 @@ export const getSavedEvents = async (req, res, next) => {
     const eventIds = likes.map(l => l.event_id)
     const events = await Event.find({ _id: { $in: eventIds } })
 
-    res.status(200).json(events)
+    res.status(200).json({ success: true, data: events })
   } catch (err) {
     next(err)
   }
@@ -283,6 +283,21 @@ export const getOrganizerStats = async (req, res, next) => {
     const totalTicketsSold = soldResult.length > 0 ? soldResult[0].total : 0
 
     res.status(200).json({ followerCount, eventCount, totalTicketsSold })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// GET /organizers/following (auth)
+// Returns the organizer profiles the authenticated user follows
+export const getMyFollowing = async (req, res, next) => {
+  try {
+    const follows = await Follow.find({ follower_id: req.user.id })
+    const organizerIds = follows.map(f => f.organizer_id)
+    const organizers = await User.find({ _id: { $in: organizerIds } })
+      .select('name image isPartner isVerify')
+
+    res.status(200).json({ success: true, data: organizers })
   } catch (err) {
     next(err)
   }

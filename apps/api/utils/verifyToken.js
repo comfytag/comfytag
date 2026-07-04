@@ -20,6 +20,24 @@ export const verifyToken = (req,res,next) =>{
 }
 
 
+// For public routes that personalize their response when the caller happens
+// to be logged in (e.g. "liked"/"following" flags) — decodes the token if
+// present but never rejects the request when it's missing or invalid.
+export const optionalAuth = (req, res, next) => {
+    const cookie = req.cookies.access_token
+    const bearerRaw = req.headers.authorization?.startsWith('Bearer ')
+        ? req.headers.authorization.slice(7).trim()
+        : null
+    const bearer = bearerRaw && bearerRaw !== 'undefined' && bearerRaw !== 'null' ? bearerRaw : null
+    const token = cookie || bearer
+    if (!token) return next()
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (!err) req.user = user
+        next()
+    })
+}
+
 export const verifyUser = (req,res, next) =>{
     verifyToken(req,res, (err) =>{
         if(err) return next(err);
