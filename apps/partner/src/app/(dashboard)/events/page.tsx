@@ -135,6 +135,22 @@ export default function EventsPage() {
 
       {/* Error */}
       {isError && <ErrorMessage message="Failed to load events." />}
+      {deleteEventMutation.isError && (
+        <ErrorMessage
+          message={
+            (deleteEventMutation.error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+            'Failed to delete event. Please try again.'
+          }
+        />
+      )}
+      {duplicateMutation.isError && (
+        <ErrorMessage
+          message={
+            (duplicateMutation.error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+            'Failed to duplicate event. Please try again.'
+          }
+        />
+      )}
 
       {/* Loading skeletons */}
       {isLoading && (

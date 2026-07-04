@@ -52,6 +52,16 @@ export default function TiersPage() {
             <ErrorMessage message="Failed to load events." />
           </div>
         )}
+        {deleteTierMutation.isError && (
+          <div style={{ marginBottom: '20px' }}>
+            <ErrorMessage
+              message={
+                (deleteTierMutation.error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+                'Failed to delete tier. Please try again.'
+              }
+            />
+          </div>
+        )}
 
         {/* Events with tiers */}
         {eventsLoading || tiersLoading ? (

@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Clock } from 'lucide-react'
 import { Button } from '@comfytag/ui'
 import { api } from '@/lib/api'
+import { kycKeys } from '@/hooks/queryKeys'
 
 type StepDocType = 'photo' | 'idCard' | 'address'
 
@@ -13,6 +14,8 @@ interface KycWizardStepProps {
   label: string
   description: string
   isVerified: boolean
+  /** True when this doc already has a submitted (but not yet reviewed) file — survives reloads. */
+  hasSubmittedDoc: boolean
   userId: string
   token: string
   onUploadStart?: () => void
@@ -23,6 +26,7 @@ export function KycWizardStep({
   label,
   description,
   isVerified,
+  hasSubmittedDoc,
   userId,
   token,
   onUploadStart,
@@ -31,6 +35,7 @@ export function KycWizardStep({
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
   const [uploadComplete, setUploadComplete] = useState(false)
+  const isPendingReview = hasSubmittedDoc || uploadComplete
 
   const { mutate: uploadDoc, isPending: isUploading, isError: uploadError } = useMutation({
     mutationFn: async () => {
@@ -56,7 +61,7 @@ export function KycWizardStep({
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['kycUser', userId] })
+      queryClient.invalidateQueries({ queryKey: kycKeys.status })
       setUploadComplete(true)
       setTimeout(() => {
         setSelectedFile(null)
@@ -140,8 +145,56 @@ export function KycWizardStep({
         </div>
       )}
 
+      {/* Pending Review State — already submitted, awaiting admin review.
+          Shown instead of the upload form so a page reload during the review
+          window can't be mistaken for "nothing was submitted yet" and invite
+          a silent re-upload that overwrites the original submission. */}
+      {!isVerified && isPendingReview && (
+        <div
+          style={{
+            padding: '16px',
+            backgroundColor: '#FEF3C7',
+            borderRadius: 'var(--radius-lg)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px',
+          }}
+        >
+          <Clock
+            size={20}
+            style={{
+              color: '#F59E0B',
+              flexShrink: 0,
+              marginTop: '2px',
+            }}
+          />
+          <div style={{ flex: 1 }}>
+            <p
+              style={{
+                margin: '0 0 4px',
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#D97706',
+              }}
+            >
+              Under Review
+            </p>
+            <p
+              style={{
+                margin: 0,
+                fontSize: '13px',
+                color: '#B45309',
+                lineHeight: 1.5,
+              }}
+            >
+              We are validating your document. This typically takes less than 24 hours.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Upload State */}
-      {!isVerified && (
+      {!isVerified && !isPendingReview && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Upload Area */}
           <div
@@ -159,7 +212,7 @@ export function KycWizardStep({
               input?.click()
             }}
           >
-            {previewUrl && !uploadComplete ? (
+            {previewUrl ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
                 <img
                   src={previewUrl}
@@ -231,7 +284,7 @@ export function KycWizardStep({
           </div>
 
           {/* Upload Button */}
-          {selectedFile && !uploadComplete && (
+          {selectedFile && (
             <Button
               onClick={handleUpload}
               disabled={isUploading || !selectedFile}
@@ -261,51 +314,6 @@ export function KycWizardStep({
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
               Upload failed. Check your connection and try again.
-            </div>
-          )}
-
-          {/* Upload In Progress State */}
-          {uploadComplete && (
-            <div
-              style={{
-                padding: '16px',
-                backgroundColor: '#FEF3C7',
-                borderRadius: 'var(--radius-lg)',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '12px',
-              }}
-            >
-              <Clock
-                size={20}
-                style={{
-                  color: '#F59E0B',
-                  flexShrink: 0,
-                  marginTop: '2px',
-                }}
-              />
-              <div style={{ flex: 1 }}>
-                <p
-                  style={{
-                    margin: '0 0 4px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: '#D97706',
-                  }}
-                >
-                  Under Review
-                </p>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: '13px',
-                    color: '#B45309',
-                    lineHeight: 1.5,
-                  }}
-                >
-                  We are validating your document. This typically takes less than 24 hours.
-                </p>
-              </div>
             </div>
           )}
         </div>

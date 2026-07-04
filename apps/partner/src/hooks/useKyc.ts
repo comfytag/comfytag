@@ -14,6 +14,12 @@ interface KycStatusResponse {
       idCard: boolean
       address: boolean
     }
+    verify: {
+      photo?: string
+      idCard?: { front?: string; back?: string }
+      address?: string
+    }
+    kycStatus: 'unverified' | 'pending' | 'verified' | 'rejected'
   }
 }
 

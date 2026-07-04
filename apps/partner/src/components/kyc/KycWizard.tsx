@@ -20,6 +20,12 @@ interface KycWizardProps {
       idCard?: boolean
       address?: boolean
     }
+    verify?: {
+      photo?: string
+      idCard?: { front?: string; back?: string }
+      address?: string
+    }
+    kycStatus?: 'unverified' | 'pending' | 'verified' | 'rejected'
   }
   userId: string
   token: string
@@ -48,10 +54,17 @@ const STEPS: StepConfig[] = [
 
 export function KycWizard({ kycData, userId, token }: KycWizardProps) {
   const verifyData = kycData.isVerify || {}
+  const docUrls = kycData.verify || {}
   const [activeStepIndex, setActiveStepIndex] = useState(0)
 
   const currentStep = STEPS[activeStepIndex]
   const isStepVerified = verifyData[currentStep.id] ?? false
+  // A doc counts as "already submitted, awaiting review" once it has a stored
+  // URL but isn't verified yet — unless the whole KYC application was
+  // rejected, in which case re-upload should be allowed again.
+  const hasSubmittedDoc =
+    kycData.kycStatus !== 'rejected' &&
+    !!(currentStep.id === 'idCard' ? docUrls.idCard?.front : docUrls[currentStep.id])
   const completedCount = Object.values(verifyData).filter(Boolean).length
   const totalSteps = STEPS.length
 
@@ -140,6 +153,7 @@ export function KycWizard({ kycData, userId, token }: KycWizardProps) {
           label={currentStep.label}
           description={currentStep.description}
           isVerified={isStepVerified}
+          hasSubmittedDoc={hasSubmittedDoc}
           userId={userId}
           token={token}
         />

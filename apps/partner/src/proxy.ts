@@ -2,6 +2,10 @@ import { withAuth } from 'next-auth/middleware'
 import { NextResponse } from 'next/server'
 
 const AUTH_PATHS = ['/login', '/register', '/forgot-password', '/reset-password']
+// /handoff establishes a session from a one-time token (e.g. the web app's
+// "Go to Partner Dashboard" link) — it must be reachable without an existing
+// session, or withAuth redirects it to /login before the page ever runs.
+const PUBLIC_PATHS = [...AUTH_PATHS, '/handoff']
 
 export default withAuth(
   function middleware(req) {
@@ -15,7 +19,7 @@ export default withAuth(
     callbacks: {
       authorized({ token, req }) {
         const { pathname } = req.nextUrl
-        if (AUTH_PATHS.includes(pathname) || pathname === '/') return true
+        if (PUBLIC_PATHS.includes(pathname) || pathname === '/') return true
         return !!token
       },
     },
