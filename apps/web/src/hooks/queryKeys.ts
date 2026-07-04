@@ -4,6 +4,7 @@ export const eventKeys = {
   list: (filters: object) => [...eventKeys.lists(), filters] as const,
   detail: (slug: string) => [...eventKeys.all, 'detail', slug] as const,
   comments: (id: string) => [...eventKeys.all, 'comments', id] as const,
+  likeStatus: (id: string) => [...eventKeys.all, 'likeStatus', id] as const,
 }
 
 export const ticketKeys = {

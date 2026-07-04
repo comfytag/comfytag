@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Share2 } from 'lucide-react'
@@ -12,7 +12,7 @@ import { BottomSheet } from '@/components/ui/BottomSheet'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import { initials } from '@comfytag/utils'
 import type { Event } from '@comfytag/types'
-import { useOrganizerProfile, useFollowOrganizer, useLikeEvent } from '@/hooks/useEvents'
+import { useOrganizerProfile, useFollowOrganizer, useFollowStatus, useLikeEvent } from '@/hooks/useEvents'
 
 type ActiveTab = 'upcoming' | 'past'
 
@@ -93,12 +93,21 @@ export function OrganizerClient({
 
   const { mutate: followMutate } = useFollowOrganizer()
   const { mutate: likeMutate } = useLikeEvent()
+  const { data: followStatus } = useFollowStatus(organizer._id)
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('upcoming')
   const [unfollowSheetOpen, setUnfollowSheetOpen] = useState(false)
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
   const [followHovered, setFollowHovered] = useState(false)
   const [isFollowing, setIsFollowing] = useState(initialProfile?.isFollowing ?? false)
+
+  // The server never fetches a personalized isFollowing flag up front (only
+  // aggregate follower counts), so hydrate the real value once this loads —
+  // without it the button always shows "Follow" even for organizers the
+  // user already follows.
+  useEffect(() => {
+    if (followStatus) setIsFollowing(followStatus.following)
+  }, [followStatus])
 
   const { gateOpen, closeGate, openGate } = useAuthGate()
 
@@ -133,13 +142,25 @@ export function OrganizerClient({
       return
     }
     const eventSlug = events.find((e: Event) => e._id === eventId)?.slug ?? eventId
-    likeMutate({ eventId, slug: eventSlug })
     setLikedIds((prev) => {
       const next = new Set(prev)
       if (next.has(eventId)) next.delete(eventId)
       else next.add(eventId)
       return next
     })
+    likeMutate(
+      { eventId, slug: eventSlug },
+      {
+        onError: () => {
+          setLikedIds((prev) => {
+            const next = new Set(prev)
+            if (next.has(eventId)) next.delete(eventId)
+            else next.add(eventId)
+            return next
+          })
+        },
+      },
+    )
   }
 
   async function handleShare() {

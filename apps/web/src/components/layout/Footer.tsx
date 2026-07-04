@@ -87,7 +87,7 @@ export function Footer() {
         }
         @media (max-width: 767px) {
           .__ct_footer {
-            padding: 16px;
+            padding: 16px 16px calc(16px + 64px + env(safe-area-inset-bottom));
             flex-direction: column;
             gap: 12px;
           }

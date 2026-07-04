@@ -73,13 +73,25 @@ export function EventFeedSection({
       return
     }
     const eventSlug = eventList.find((e) => e._id === eventId)?.slug ?? eventId
-    likeMutate({ eventId, slug: eventSlug })
     setLikedIds((prev) => {
       const next = new Set(prev)
       if (next.has(eventId)) next.delete(eventId)
       else next.add(eventId)
       return next
     })
+    likeMutate(
+      { eventId, slug: eventSlug },
+      {
+        onError: () => {
+          setLikedIds((prev) => {
+            const next = new Set(prev)
+            if (next.has(eventId)) next.delete(eventId)
+            else next.add(eventId)
+            return next
+          })
+        },
+      },
+    )
   }
 
   const sentinelRef = useRef<HTMLDivElement>(null)

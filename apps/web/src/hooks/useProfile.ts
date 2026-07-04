@@ -32,7 +32,7 @@ export function useMyFollowing() {
   const { data: session } = useSession()
   return useQuery({
     queryKey: profileKeys.following,
-    queryFn: () => api.get('/organizer/following').then(r => r.data.data ?? []),
+    queryFn: () => api.get('/organizers/following').then(r => r.data.data ?? []),
     staleTime: 60_000,
     enabled: !!session?.user?.token,
   })

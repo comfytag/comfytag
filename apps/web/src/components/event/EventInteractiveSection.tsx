@@ -12,7 +12,7 @@ import { AuthGateSheet } from '@/components/ui/AuthGateSheet'
 import { BackLink } from '@/components/ui/BackLink'
 import { CommentSection } from '@/components/event/CommentSection'
 import { Divider } from '@/components/events/EventIcons'
-import { useLikeEvent } from '@/hooks/useEvents'
+import { useLikeEvent, useLikeStatus } from '@/hooks/useEvents'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import {
   formatNaira,
@@ -120,17 +120,35 @@ export function EventInteractiveSection({
   }, [session])
 
   const { openModal } = useAuthModal()
+  const { data: likeStatus } = useLikeStatus(event._id)
   const { mutate: likeEvent } = useLikeEvent()
   const [isLiked, setIsLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(event.likes ?? 0)
   const { gateOpen, gateTrigger, openGate, closeGate } = useAuthGate()
 
+  // Hydrate real liked/count from the server once the status request resolves —
+  // without this the button always shows "not liked" on every fresh page load.
+  useEffect(() => {
+    if (!likeStatus) return
+    setIsLiked(likeStatus.liked)
+    setLikeCount(likeStatus.likeCount)
+  }, [likeStatus])
+
   const handleLike = () => {
     if (!session) { openGate('like'); return }
     const wasLiked = isLiked
+    const prevCount = likeCount
     setIsLiked(!wasLiked)
     setLikeCount((c) => (wasLiked ? c - 1 : c + 1))
-    likeEvent({ eventId: event._id, slug: event.slug ?? event._id })
+    likeEvent(
+      { eventId: event._id, slug: event.slug ?? event._id },
+      {
+        onError: () => {
+          setIsLiked(wasLiked)
+          setLikeCount(prevCount)
+        },
+      },
+    )
   }
 
   const handleShare = async () => {

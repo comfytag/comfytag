@@ -76,15 +76,19 @@ export function ForgotPasswordForm({ onSwitchToLogin, onPasswordReset }: ForgotP
     if (ok) { setStep(2); startCooldown() }
   }
 
-  async function handleStep2(e: React.FormEvent) {
-    e.preventDefault()
+  // Takes the code explicitly rather than reading the `otp` state, since the
+  // auto-submit-on-complete callers (handleOtpChange/handleOtpPaste) invoke
+  // this in the same tick as setOtp() — before the state update has flushed —
+  // so reading `otp` there would send the previous, incomplete code and the
+  // backend would correctly report a false "Invalid OTP".
+  async function verifyOtp(code: string) {
     setIsLoading(true)
     setError('')
     try {
       const res = await fetch(`${API_BASE}/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, otp }),
+        body: JSON.stringify({ identifier, otp: code }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -106,6 +110,11 @@ export function ForgotPasswordForm({ onSwitchToLogin, onPasswordReset }: ForgotP
     } finally {
       setIsLoading(false)
     }
+  }
+
+  async function handleStep2(e: React.FormEvent) {
+    e.preventDefault()
+    await verifyOtp(otp)
   }
 
   async function handleStep3(e: React.FormEvent) {
@@ -142,7 +151,7 @@ export function ForgotPasswordForm({ onSwitchToLogin, onPasswordReset }: ForgotP
     setOtp(digits)
     setError('')
     if (digits.length === 6) {
-      handleStep2({ preventDefault: () => {} } as React.FormEvent)
+      void verifyOtp(digits)
     }
   }
 
@@ -152,7 +161,7 @@ export function ForgotPasswordForm({ onSwitchToLogin, onPasswordReset }: ForgotP
     setOtp(digits)
     setError('')
     if (digits.length === 6) {
-      handleStep2({ preventDefault: () => {} } as React.FormEvent)
+      void verifyOtp(digits)
     }
   }
 
