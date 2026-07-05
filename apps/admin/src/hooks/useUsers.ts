@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import type { User } from '@comfytag/types'
+import type { User, UserAdminProfile } from '@comfytag/types'
 import api from '@/lib/api'
 import { adminUserKeys } from './queryKeys'
 
@@ -16,7 +16,7 @@ export function useAllUsers() {
 export function useUserById(id: string) {
   return useQuery({
     queryKey: adminUserKeys.detail(id),
-    queryFn: () => api.get<User>(`/admin/users/${id}`).then((r) => r.data),
+    queryFn: () => api.get<UserAdminProfile>(`/admin/users/${id}`).then((r) => r.data),
     enabled: !!id,
   })
 }

@@ -81,14 +81,6 @@ export default function SettingsPage() {
     )
   }
 
-  const lastLoginFormatted: string = (data as any)?.lastLoginAt
-    ? new Date((data as any).lastLoginAt).toLocaleDateString('en-NG', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      })
-    : 'Never'
-
   if (isLoading) {
     return <LoadingSpinner size="lg" centered />
   }
@@ -160,10 +152,7 @@ export default function SettingsPage() {
         >
           <InfoRow label="Role" value={(data as any)?.role ?? ''} />
           <div style={{ borderTop: '1px solid var(--color-border)' }}>
-            <InfoRow label="Status" value={(data as any)?.isActive ? 'Active' : 'Inactive'} />
-          </div>
-          <div style={{ borderTop: '1px solid var(--color-border)' }}>
-            <InfoRow label="Last login" value={lastLoginFormatted} />
+            <InfoRow label="Status" value={data?.suspended ? 'Suspended' : 'Active'} />
           </div>
         </div>
       </div>

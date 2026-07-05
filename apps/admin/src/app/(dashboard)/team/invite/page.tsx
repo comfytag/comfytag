@@ -7,15 +7,22 @@ import { Button, Input } from '@comfytag/ui'
 import api from '@/lib/api'
 
 // ─── Types / Fetch ─────────────────────────────────────
+const ROLES = ['support', 'moderator', 'finance', 'kyc_reviewer', 'super_admin'] as const
+type Role = (typeof ROLES)[number]
+
 interface InviteForm {
   name: string
   username: string
   email: string
   password: string
+  role: Role
 }
 
 const createAdmin = async (form: InviteForm): Promise<void> => {
-  await api.post('/admin/auth/register', { ...form, isAdmin: true })
+  // The public /auth/register endpoint ignores isAdmin/role in the request
+  // body by design (otherwise anyone could self-register as an admin) — staff
+  // accounts must go through this dedicated, super_admin-only endpoint.
+  await api.post('/api/admin/users/create-admin', form)
 }
 
 export default function TeamInvitePage() {
@@ -24,12 +31,13 @@ export default function TeamInvitePage() {
     username: '',
     email: '',
     password: '',
+    role: 'support',
   })
 
   const inviteMutation = useMutation({
     mutationFn: createAdmin,
     onSuccess: () => {
-      setForm({ name: '', username: '', email: '', password: '' })
+      setForm({ name: '', username: '', email: '', password: '', role: 'support' })
     },
   })
 
@@ -79,11 +87,34 @@ export default function TeamInvitePage() {
             value={form.password}
             onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
           />
+          <div>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 6 }}>
+              Role
+            </label>
+            <select
+              value={form.role}
+              onChange={(e) => setForm((f) => ({ ...f, role: e.target.value as Role }))}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: 8,
+                border: '1px solid var(--color-border)',
+                backgroundColor: 'var(--color-bg)',
+                color: 'var(--color-text)',
+                fontSize: 14,
+              }}
+            >
+              {ROLES.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {inviteMutation.isError && (
           <div style={{ color: 'var(--color-error)', fontSize: 14, marginTop: 16 }}>
-            Failed to send invite. Email may already be in use.
+            {(inviteMutation.error as { response?: { data?: { message?: string } } })?.response?.data?.message
+              ?? 'Failed to create admin account. Please try again.'}
           </div>
         )}
 

@@ -51,7 +51,7 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
   const segment = pathname.startsWith('/dashboard/')
     ? pathname.slice('/dashboard/'.length).split('/')[0]
     : pathname.split('/').filter(Boolean)[0] ?? 'Dashboard'
-  const pageTitle = toTitleCase(segment || 'Dashboard')
+  const pageTitle = segment === 'cms' ? 'Content' : toTitleCase(segment || 'Dashboard')
 
   const { unreadCount } = useContext(NotificationContext)
   const badge = ROLE_BADGE[role] || { bg: 'var(--color-brand)', label: 'Admin' }

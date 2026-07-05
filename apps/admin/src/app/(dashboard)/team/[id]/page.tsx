@@ -15,14 +15,21 @@ import { DangerZone } from '@/components/ui/DangerZone'
 
 // ─── Fetch / Mutate ────────────────────────────────────
 const fetchUser = async (id: string): Promise<User> => {
-  const { data } = await api.get<User>(`/admin/users/${id}`)
-  return data
+  // /admin/users/:id (legacy) strips isAdmin from its response, which breaks
+  // the Role stat card below — /api/admin/users/:id is the granular RBAC
+  // endpoint and returns isAdmin/role untouched.
+  const { data } = await api.get<{ data: User }>(`/api/admin/users/${id}`)
+  return data.data
 }
 
 const removeAdmin = async (id: string, token: string): Promise<void> => {
-  await api.put(
-    `/admin/users/${id}`,
-    { isAdmin: false },
+  // updateUser's field whitelist doesn't include isAdmin (by design — it's a
+  // generic profile-edit endpoint), so PUT /admin/users/:id {isAdmin:false}
+  // silently no-ops. changeUserRole is the endpoint that actually revokes
+  // admin access (isAdmin is derived from role !== 'viewer' server-side).
+  await api.patch(
+    `/api/admin/users/${id}/role`,
+    { role: 'viewer' },
     { headers: { Authorization: `Bearer ${token}` } },
   )
 }

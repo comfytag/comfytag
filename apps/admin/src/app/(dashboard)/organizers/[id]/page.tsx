@@ -22,8 +22,8 @@ const fetchUser = async (id: string): Promise<User> => {
 }
 
 const fetchEvents = async (): Promise<Event[]> => {
-  const { data } = await api.get<Event[]>('/admin/event')
-  return data
+  const { data } = await api.get<{ data: Event[] }>('/admin/event')
+  return data.data ?? []
 }
 
 // ─── Event columns ─────────────────────────────────────

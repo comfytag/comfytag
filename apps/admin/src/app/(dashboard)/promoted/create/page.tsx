@@ -14,8 +14,8 @@ import { PageHeader } from '@comfytag/ui'
 
 // ─── Query fetch functions ─────────────────────────────
 const fetchEvents = async (): Promise<Event[]> => {
-  const { data } = await api.get<Event[]>('/admin/event')
-  return data
+  const { data } = await api.get<{ data: Event[] }>('/admin/event')
+  return data.data ?? []
 }
 
 const featureEvent = async (id: string): Promise<void> => {
@@ -79,6 +79,9 @@ export default function PromotedCreatePage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'events'] })
       setFeaturingId(null)
     },
+    onError: () => {
+      setFeaturingId(null)
+    },
   })
 
   const nonFeatured = (events ?? []).filter((e) => !e.featured && e.status === 'published')
@@ -104,6 +107,7 @@ export default function PromotedCreatePage() {
       />
       {isLoading && <LoadingSpinner size="md" centered />}
       {isError && <ErrorMessage message="Failed to load events" />}
+      {featureMutation.isError && <ErrorMessage message="Failed to feature event. Please try again." />}
       {!isLoading && !isError && (
         <div
           style={{
