@@ -1,9 +1,11 @@
+import bcrypt from 'bcryptjs'
 import User from '../models/User.js'
 import Withdraw from '../models/Withdraw.js'
 import Event from '../models/Event.js'
 import SiteConfig from '../models/SiteConfig.js'
 import { createError } from '../utils/error.js'
 import { createNotification } from './notification.js'
+import { generateReferralCode, generateFallbackCode } from '../utils/referralCode.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // KYC Management  (full implementation)
@@ -290,6 +292,61 @@ export const changeUserRole = async (req, res, next) => {
             message: 'User role updated.',
             data: { userId: user._id, role, isAdmin: user.isAdmin },
         })
+    } catch (err) {
+        next(err)
+    }
+}
+
+// POST /api/admin/users/create-admin (super_admin only)
+// Creates a new staff/admin account with a specific role. The public
+// /auth/register endpoint deliberately ignores isAdmin/role from the request
+// body (it would otherwise let anyone self-register as an admin), so staff
+// accounts must be created through this route instead.
+export const createAdminUser = async (req, res, next) => {
+    try {
+        const VALID_ROLES = ['super_admin', 'finance', 'kyc_reviewer', 'support', 'moderator']
+        const { name, username, email, password, role } = req.body
+
+        if (!name || !username || !email || !password) {
+            return next(createError(400, 'name, username, email, and password are required.'))
+        }
+        if (!role || !VALID_ROLES.includes(role)) {
+            return next(createError(400, `role must be one of: ${VALID_ROLES.join(', ')}`))
+        }
+
+        const existingEmail = await User.findOne({ email: email.toLowerCase() })
+        if (existingEmail) return next(createError(409, 'User with given email already exists.'))
+
+        const existingUsername = await User.findOne({ username })
+        if (existingUsername) return next(createError(409, 'Username already exists.'))
+
+        const salt = await bcrypt.genSalt(Number(process.env.SALT) || 10)
+        const hashedPassword = await bcrypt.hash(password, salt)
+        const referralCode = generateReferralCode(username, name)
+
+        const user = new User({
+            name,
+            username,
+            email: email.toLowerCase(),
+            password: hashedPassword,
+            role,
+            isAdmin: true,
+            // Staff accounts are created directly by an existing admin, not
+            // self-registered — treat email as already verified so the new
+            // admin can sign in immediately.
+            isVerify: { email: true },
+            referralCode,
+        })
+        await user.save()
+
+        const fallbackCode = generateFallbackCode(user._id)
+        if (fallbackCode) {
+            user.referralFallbackCode = fallbackCode
+            await user.save()
+        }
+
+        const { password: _pw, ...userWithoutPassword } = user.toObject()
+        res.status(201).json({ success: true, data: userWithoutPassword })
     } catch (err) {
         next(err)
     }

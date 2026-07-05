@@ -13,6 +13,7 @@ import {
     restoreUser,
     deleteUser,
     changeUserRole,
+    createAdminUser,
     // Payouts
     processPayout,
     rejectPayout,
@@ -49,7 +50,9 @@ router.get('/kyc/queue',      verifyAdminRole(['kyc_reviewer', 'finance', 'suppo
 router.get('/kyc/:userId',    verifyAdminRole(['kyc_reviewer', 'finance', 'support']), getKycDetails)
 
 // ─── User Management ──────────────────────────────────────────────────────────
+// Note: /users/create-admin must come before /users/:id
 router.get('/users',              verifyAdminRole(['support', 'moderator', 'finance']), listUsers)
+router.post('/users/create-admin', verifyAdminRole([]),                                 createAdminUser) // super_admin only
 router.get('/users/:id',          verifyAdminRole(['support', 'moderator', 'finance']), getUser)
 router.patch('/users/:id/suspend', verifyAdminRole(['moderator', 'support']),           suspendUser)
 router.patch('/users/:id/restore', verifyAdminRole(['moderator', 'support']),           restoreUser)
