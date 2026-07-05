@@ -214,8 +214,8 @@ export function useDuplicateEvent() {
 
   return useMutation({
     mutationFn: async (eventId: string) => {
-      const res = await api.get<Event>(`/events/${eventId}`)
-      const original = res.data
+      const res = await api.get<{ success: boolean; data: Event }>(`/events/${eventId}`)
+      const original = res.data.data
       const { _id, createdAt, updatedAt, sold, ...rest } = original as Event & {
         createdAt?: string
         updatedAt?: string

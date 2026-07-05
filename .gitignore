@@ -85,3 +85,6 @@ apps/api/SOCKET_IO_INTEGRATION.md
 
 # Mobile dev-only tooling
 apps/mobile/.maestro/
+
+# Playwright MCP session artifacts
+.playwright-mcp/
