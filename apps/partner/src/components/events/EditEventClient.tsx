@@ -188,8 +188,8 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
     setTiers(
       (event.ticketType ?? []).map(t => ({
         name:     t.name,
-        price:    t.price.toString(),
-        capacity: t.capacity.toString(),
+        price:    (t.price ?? 0).toString(),
+        capacity: (t.capacity ?? 0).toString(),
       }))
     )
     setPerformers(
