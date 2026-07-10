@@ -53,9 +53,12 @@ export async function validateEnvironment() {
       'CLOUDINARY_CLOUD_NAME',
       'CLOUDINARY_API_KEY',
       'CLOUDINARY_API_SECRET',
-      'AWS_ACCESS_KEY_ID',       // AWS SES credentials
-      'AWS_SECRET_ACCESS_KEY',
-      'SES_SENDER_EMAIL',
+      'ZEPTOMAIL_SMTP_HOST',     // ZeptoMail primary email provider
+      'ZEPTOMAIL_SMTP_PORT',
+      'ZEPTOMAIL_SMTP_USER',
+      'ZEPTOMAIL_SMTP_TOKEN',
+      'EMAIL_SENDER_DEFAULT',
+      'RESEND_API_KEY',          // Resend fallback email provider
     ]
 
     for (const key of prodRequired) {
