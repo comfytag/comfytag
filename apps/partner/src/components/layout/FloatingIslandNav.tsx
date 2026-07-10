@@ -172,7 +172,7 @@ export default function FloatingIslandNav() {
 
             {/* Attendee view crosslink */}
             <a
-              href={`/handoff?t=${session?.user?.token ?? ''}`}
+              href={`${process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000'}/handoff?t=${session?.user?.token ?? ''}`}
               role="menuitem"
               onClick={() => setDropdownOpen(false)}
               className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors duration-150"

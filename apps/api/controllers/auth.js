@@ -13,6 +13,7 @@ import speakeasy from 'speakeasy';
 import { enqueueEmail } from '../jobs/emailQueue.js';
 import { createNotification, notifyAdmins } from './notification.js';
 import { generateReferralCode, generateFallbackCode } from '../utils/referralCode.js';
+import { issueVerifyOtp } from '../utils/otp.js';
 
 
 const router = express.Router()
@@ -227,23 +228,9 @@ export const register = async (req,res,next) =>{
 			}).catch(err => console.error('[Referral] Lookup error:', err.message));
 		}
 
-		const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-		await new Token({
-			userId: user._id,
-			token: otpCode,
-		}).save();
-
 		// Send OTP verification email
 		try {
-			const emailResult = await enqueueEmail({
-				to: user.email,
-				subject: 'Your ComfyTag Verification Code',
-				template: 'otp.hbs',
-				data: {
-					otp: otpCode,
-					year: new Date().getFullYear(),
-				},
-			});
+			const emailResult = await issueVerifyOtp(user);
 			if (!emailResult.success) {
 				console.error(`[Auth] ERROR: Verification email failed for ${user.email}: ${emailResult.error}`);
 				return res.status(500).json({ message: "Failed to send verification email. Please try again." });
@@ -299,6 +286,7 @@ export const register = async (req,res,next) =>{
 
 		const token = await Token.findOne({
 			userId: user._id,
+			type: 'verify',
 			token: req.params.token,
 		});
 		if (!token) return res.status(400).send({ message: "Invalid link or token expired" });
@@ -454,6 +442,11 @@ export const googleSignIn = async (req, res) => {
 	}
 };
 
+// Verifies a 6-digit code and, on success, marks the account's email
+// verified AND issues a real login session — this single endpoint now
+// serves both "verify email after a failed unverified-account login" and
+// "cold-start passwordless login" (request-otp -> this), since both flows
+// want the identical outcome: prove inbox ownership, get signed in.
 export const verifyEmailOTP = async (req, res) => {
 	try {
 		const { email, otp } = req.body;
@@ -461,23 +454,99 @@ export const verifyEmailOTP = async (req, res) => {
 			return res.status(400).json({ message: 'Email and verification code are required.' });
 		}
 
-		const user = await User.findOne({ email: email.toLowerCase().trim() });
+		const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+totpSecret');
+		// Same generic message for "no such user" and "wrong code" — this is
+		// reachable from the cold-start login-OTP flow now, so it must not
+		// distinguish account existence via message content.
 		if (!user) {
-			return res.status(400).json({ message: 'User not found.' });
-		}
-
-		const tokenDoc = await Token.findOne({ userId: user._id, token: otp.toString().trim() });
-		if (!tokenDoc) {
 			return res.status(400).json({ message: 'Invalid or expired verification code.' });
 		}
 
-		await User.findByIdAndUpdate(user._id, { $set: { 'isVerify.email': true } });
+		const tokenDoc = await Token.findOne({ userId: user._id, type: 'verify', token: otp.toString().trim() });
+		if (!tokenDoc) {
+			return res.status(400).json({ message: 'Invalid or expired verification code.' });
+		}
 		await tokenDoc.deleteOne();
 
-		return res.status(200).json({ success: true, message: 'Email verified successfully!' });
+		if (!user.isVerify?.email) {
+			// isVerify has no document-level default, so it can be undefined on
+			// the in-memory doc for freshly-created users — mutating a
+			// property on it directly would throw. Rebuild the object instead.
+			user.isVerify = { photo: false, idCard: false, address: false, ...(user.isVerify ?? {}), email: true };
+			user.markModified('isVerify');
+			await user.save();
+		}
+
+		// Proving inbox ownership isn't the same as satisfying an explicitly
+		// configured second factor — 2FA accounts still need their password
+		// (+ TOTP code) to actually get a session, so email verification
+		// happens here but no token is issued.
+		if (user.totpSecret) {
+			return res.status(200).json({
+				success: true,
+				emailVerified: true,
+				requiresPassword: true,
+				message: 'Email verified. Please sign in with your password.',
+			});
+		}
+
+		const token = user.generateAuthToken();
+		const data = {
+			status: true,
+			success: true,
+			emailVerified: true,
+			user: {
+				_id: user._id,
+				email: user.email,
+				name: user.name,
+				username: user.username,
+				image: user.image,
+				isPartner: user.isPartner,
+				isAdmin: user.isAdmin,
+				isVerify: user.isVerify,
+				role: user.role || 'viewer',
+				referralCode: user.referralCode,
+				createdAt: user.createdAt,
+			},
+			token,
+			message: 'Signed in successfully!',
+		};
+		res.cookie('access_token', token, { httpOnly: true }).status(200).json(data);
 	} catch (error) {
 		console.error(`[Auth] ERROR: verifyEmailOTP - ${error.message}`);
 		return res.status(500).json({ message: 'Internal Server Error' });
+	}
+};
+
+// Request a passwordless login code from just an email address. Unlike
+// sendVerifyEmail/resend-verification (which 404s on an unknown email,
+// fine for an already-known-registered-account flow), this is reachable by
+// anyone typing any email with zero prior context — it must never reveal
+// whether the account exists.
+export const requestLoginOtp = async (req, res) => {
+	const GENERIC = { success: true, message: 'If an account exists for this email, a code has been sent.' };
+	try {
+		const email = req.body?.email?.toLowerCase().trim();
+		if (!email) return res.status(400).json({ message: 'Email is required.' });
+
+		const user = await User.findOne({ email }).select('+totpSecret');
+		if (!user) return res.status(200).json(GENERIC);
+
+		// 2FA accounts must not get email-OTP as a substitute second factor —
+		// route them to password+2FA instead of sending a code that would
+		// otherwise silently grant a session.
+		if (user.totpSecret) {
+			return res.status(200).json({ success: true, requiresPassword: true, message: 'Please sign in with your password.' });
+		}
+
+		const emailResult = await issueVerifyOtp(user);
+		if (!emailResult.success) {
+			console.error(`[Auth] ERROR: requestLoginOtp email failed for ${user.email}: ${emailResult.error}`);
+		}
+		return res.status(200).json(GENERIC);
+	} catch (error) {
+		console.error(`[Auth] ERROR: requestLoginOtp - ${error.message}`);
+		return res.status(200).json(GENERIC);
 	}
 };
 
@@ -488,31 +557,10 @@ export const sendVerifyEmail = async (req,res,next) =>{
 		const emailParam = req.params.email ?? req.body?.email
 		const user = await User.findOne({ email: emailParam?.toLowerCase() });
 		if (!user) return res.status(404).json({ message: 'User not found' })
-		const userid = user._id
-
-		// check if token exist and remove
-		const checkToken = await Token.findOne({ userId: userid });
-		if(checkToken){
-			await checkToken.deleteOne();
-		}
-		// Always create a new verification token (6-digit OTP)
-		const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-		await new Token({
-			userId: userid,
-			token: otpCode,
-		}).save();
 
 		// Send OTP verification email
 		try {
-			const emailResult = await enqueueEmail({
-				to: user.email,
-				subject: 'Your ComfyTag Verification Code',
-				template: 'otp.hbs',
-				data: {
-					otp: otpCode,
-					year: new Date().getFullYear(),
-				},
-			});
+			const emailResult = await issueVerifyOtp(user);
 			if (!emailResult.success) {
 				console.error(`[Auth] ERROR: Resend verify email failed for ${user.email}: ${emailResult.error}`);
 				return res.status(500).json({ message: "Failed to send verification email. Please try again." });
@@ -521,9 +569,10 @@ export const sendVerifyEmail = async (req,res,next) =>{
 			console.error(`[Auth] ERROR: Exception sending resend verify email - ${err.message}`);
 			return res.status(500).json({ message: "Failed to send verification email. Please try again." });
 		}
+		const { password: _pw, ...safeUser } = user.toObject();
 		res
 			.status(201)
-			.send({ message: "An Email sent to " + user.email + " please verify", data: user });
+			.send({ message: "An Email sent to " + user.email + " please verify", data: safeUser });
 
 	} catch (error) {
 			console.error(`[Auth] ERROR: Resend verify email endpoint - ${error.message}`);
@@ -822,8 +871,11 @@ export const forgotPassword = async (req, res, next) => {
     const salt = await bcrypt.genSalt(Number(process.env.SALT) || 10)
     const hashedOtp = await bcrypt.hash(otp, salt)
 
-    // Delete existing OTP token for this user if it exists
-    await Token.deleteOne({ userId: user._id })
+    // Delete existing reset-purpose OTP token for this user if it exists —
+    // scoped by type so this doesn't clobber a pending email-verification
+    // or login-OTP token for the same user (they share the Token collection
+    // but are independent per (userId, type)).
+    await Token.deleteOne({ userId: user._id, type: 'reset' })
 
     // Create new reset token with OTP
     await new Token({

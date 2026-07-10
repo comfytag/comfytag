@@ -61,6 +61,7 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        otp: { label: 'OTP', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
@@ -79,20 +80,31 @@ export const authOptions: NextAuthOptions = {
             isVerify?: { email?: boolean; photo?: boolean; idCard?: boolean; address?: boolean }
           }
           token: string
+          error?: string
         }
 
         try {
+          const body: { email: string; password: string; otp?: string } = {
+            email: credentials.email,
+            password: credentials.password,
+          }
+          if (credentials.otp) body.otp = credentials.otp
+
           const res = await fetch(`${API_BASE}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
+            body: JSON.stringify(body),
           })
-          if (!res.ok) return null
           data = await res.json()
-        } catch {
+
+          if (!res.ok) {
+            if (data.error === 'TWO_FACTOR_REQUIRED') {
+              throw new Error('TWO_FACTOR_REQUIRED')
+            }
+            return null
+          }
+        } catch (error: any) {
+          if (error.message === 'TWO_FACTOR_REQUIRED') throw error
           return null
         }
 

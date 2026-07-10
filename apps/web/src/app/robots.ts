@@ -15,7 +15,6 @@ export default function robots(): MetadataRoute.Robots {
           '/my-following',
           '/claim-ticket',
           '/hype-link',
-          '/verify-email',
           '/reset-password',
           '/forgot-password',
           '/login',

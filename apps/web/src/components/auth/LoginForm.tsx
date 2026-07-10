@@ -10,10 +10,12 @@ import type { AuthModalSuccessBanner } from '@/hooks/useAuthModal'
 export interface LoginFormProps {
   onSwitchToRegister: () => void
   onSwitchToForgotPassword: () => void
-  onSwitchToVerifyEmail?: (email: string, password: string) => void
+  onSwitchToVerifyEmail?: (email: string) => void
   /** Called after successful sign-in. If omitted, falls back to router.push(callbackUrl). */
   onSuccess?: () => void
   initialEmail?: string
+  /** Force the initial mode — used when routing back here after a 2FA account hit the OTP flow. */
+  initialMode?: 'otp' | 'credentials'
   successBanner?: AuthModalSuccessBanner
   callbackUrl?: string
 }
@@ -24,22 +26,23 @@ export function LoginForm({
   onSwitchToVerifyEmail,
   onSuccess,
   initialEmail = '',
+  initialMode = 'otp',
   successBanner,
   callbackUrl = '/',
 }: LoginFormProps) {
   const router = useRouter()
-  const [mode, setMode] = useState<'credentials' | 'magic-link'>('credentials')
+  const [mode, setMode] = useState<'otp' | 'credentials'>(initialMode)
   const [email, setEmail] = useState(initialEmail)
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [magicSent, setMagicSent] = useState(false)
+  const [otpNote, setOtpNote] = useState('')
   const isVerificationError = !!error && error.toLowerCase().includes('not verified')
 
   useEffect(() => {
     if (!isVerificationError) return
     if (onSwitchToVerifyEmail) {
-      onSwitchToVerifyEmail(email, password)
+      onSwitchToVerifyEmail(email)
     } else {
       router.push(`/verify-email?email=${encodeURIComponent(email)}`)
     }
@@ -71,22 +74,28 @@ export function LoginForm({
     }
   }
 
-  async function handleMagicLink(e: React.FormEvent) {
+  async function handleRequestOtp(e: React.FormEvent) {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+    setOtpNote('')
     try {
-      const res = await fetch('/api/auth/magic-link', {
+      const res = await fetch('/api/auth/request-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       })
+      const data = await res.json().catch(() => ({})) as { message?: string; requiresPassword?: boolean }
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError((data as { message?: string }).message ?? 'Something went wrong. Please try again.')
-      } else {
-        setMagicSent(true)
+        setError(data.message ?? 'Something went wrong. Please try again.')
+        return
       }
+      if (data.requiresPassword) {
+        setOtpNote('This account requires your password to sign in.')
+        setMode('credentials')
+        return
+      }
+      onSwitchToVerifyEmail?.(email)
     } catch {
       setError('Network error. Please check your connection.')
     } finally {
@@ -94,12 +103,11 @@ export function LoginForm({
     }
   }
 
-  function switchMode(m: 'credentials' | 'magic-link') {
+  function switchMode(m: 'otp' | 'credentials') {
     setMode(m)
     setError('')
-    setMagicSent(false)
+    setOtpNote('')
   }
-
 
   return (
     <>
@@ -115,49 +123,54 @@ export function LoginForm({
       )}
 
       <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-text)', marginBottom: '4px', letterSpacing: '-0.02em' }}>
-        {mode === 'credentials' ? 'Welcome back' : 'Sign in with email'}
+        Welcome back
       </h2>
       <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', marginBottom: '24px' }}>
-        {mode === 'credentials' ? 'Good to see you again.' : "We'll send you a one-click link — no password needed."}
+        {mode === 'otp' ? "We'll email you a one-time code — no password needed." : 'Good to see you again.'}
       </p>
 
-      {!magicSent && (
-        <>
-          <SSOButton
-            onClick={() => signIn('google', { callbackUrl })}
-            icon={<GoogleIcon />}
-            label="Continue with Google"
-            style={{ marginBottom: '20px' }}
-          />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
-            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>
-              {mode === 'credentials' ? 'or sign in with email' : 'or use a magic link'}
-            </span>
-            <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
-          </div>
-        </>
-      )}
+      <SSOButton
+        onClick={() => signIn('google', { callbackUrl })}
+        icon={<GoogleIcon />}
+        label="Continue with Google"
+        style={{ marginBottom: '20px' }}
+      />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+        <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
+        <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>
+          {mode === 'otp' ? 'or sign in with a code' : 'or sign in with email'}
+        </span>
+        <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
+      </div>
 
-      {magicSent ? (
-        <div style={{ textAlign: 'center', padding: '16px 0 8px' }}>
-          <div style={{ fontSize: '44px', marginBottom: '14px' }} aria-hidden="true">📬</div>
-          <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)', marginBottom: '10px' }}>
-            Check your inbox
-          </h3>
-          <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '20px' }}>
-            We sent a magic link to <strong style={{ color: 'var(--color-text)' }}>{email}</strong>. Click it to sign in instantly.
-          </p>
+      {mode === 'otp' ? (
+        <form onSubmit={handleRequestOtp}>
+          <div style={{ marginBottom: '20px' }}>
+            <Input id="lf-email-otp" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+          </div>
+          <Button type="submit" variant="primary" loading={isLoading} fullWidth>
+            Send code
+          </Button>
+          {error && (
+            <div style={{ marginTop: '10px' }}>
+              <ErrorMessage message={error} />
+            </div>
+          )}
           <button
             type="button"
-            onClick={() => { setMagicSent(false); setError('') }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'var(--color-brand)', textDecoration: 'underline', padding: 0 }}
+            onClick={() => switchMode('credentials')}
+            style={{ width: '100%', marginTop: '14px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)', padding: '6px', textAlign: 'center' }}
           >
-            Use a different email
+            Prefer a password? →
           </button>
-        </div>
-      ) : mode === 'credentials' ? (
+        </form>
+      ) : (
         <form onSubmit={handleCredentials}>
+          {otpNote && (
+            <div style={{ marginBottom: '16px', fontSize: '13px', color: 'var(--color-text-muted)' }}>
+              {otpNote}
+            </div>
+          )}
           <div style={{ marginBottom: '16px' }}>
             <Input id="lf-email" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
           </div>
@@ -183,27 +196,10 @@ export function LoginForm({
           )}
           <button
             type="button"
-            onClick={() => switchMode('magic-link')}
+            onClick={() => switchMode('otp')}
             style={{ width: '100%', marginTop: '14px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)', padding: '6px', textAlign: 'center' }}
           >
-            Prefer a magic link? →
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={handleMagicLink}>
-          <div style={{ marginBottom: '20px' }}>
-            <Input id="lf-email-magic" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
-          </div>
-          <Button type="submit" variant="primary" loading={isLoading} fullWidth>
-            Send magic link
-          </Button>
-          {error && <div style={{ marginTop: '10px' }}><ErrorMessage message={error} /></div>}
-          <button
-            type="button"
-            onClick={() => switchMode('credentials')}
-            style={{ width: '100%', marginTop: '14px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-muted)', padding: '6px', textAlign: 'center' }}
-          >
-            ← Use password instead
+            Prefer a code? →
           </button>
         </form>
       )}

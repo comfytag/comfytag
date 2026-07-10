@@ -1,7 +1,7 @@
 import express from 'express'
 import rateLimit from 'express-rate-limit'
 // import {  adminlogin, login, register } from '../controllers/auth.js'
-import { register, login, googleSignIn, verifyEmail, verifyEmailOTP, verifyID, sendVerifyEmail, registerAsOrganizer, getMe, forgotPassword, verifyOtp, resetPassword, changePassword } from '../controllers/auth.js'
+import { register, login, googleSignIn, verifyEmail, verifyEmailOTP, requestLoginOtp, verifyID, sendVerifyEmail, registerAsOrganizer, getMe, forgotPassword, verifyOtp, resetPassword, changePassword } from '../controllers/auth.js'
 import { verifyUser, verifyAdmin, verifyToken } from '../utils/verifyToken.js'
 // import { login } from '../controllers/users.js'
 
@@ -30,8 +30,10 @@ router.post("/resend-verification", authLimiter, sendVerifyEmail)
 router.get("/verify/:email/", verifyUser, sendVerifyEmail)
 router.put('/register-organizer/:userId', verifyUser, registerAsOrganizer)
 
-// Email verification OTP
+// Email verification OTP — also serves as passwordless login (see
+// verifyEmailOTP: issues a real session on success, not just a verified flag)
 router.post("/verify-email-otp", authLimiter, verifyEmailOTP)
+router.post("/request-otp", authLimiter, requestLoginOtp)
 
 // Password Reset Routes
 router.post("/forgot-password", authLimiter, forgotPassword)
