@@ -38,6 +38,15 @@ declare module 'next-auth/jwt' {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
 
+// web, partner, and admin all run on `localhost` in dev (different ports only).
+// Browser cookies aren't port-scoped, so NextAuth's default cookie names would
+// collide across apps — logging into one silently overwrites the others'
+// session cookie, which then fails to decode (different NEXTAUTH_SECRET per
+// app) and force-redirects to that app's login. Namespacing the cookie names
+// keeps each app's session isolated regardless of host/port.
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith('https://') ?? false
+const cookiePrefix = useSecureCookies ? '__Secure-' : ''
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -177,6 +186,32 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 7 * 24 * 60 * 60,   // 7 days — matches backend JWT expiry
     updateAge: 24 * 60 * 60,    // refresh cookie daily (sliding window)
+  },
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}next-auth.session-token.web`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+    },
+    callbackUrl: {
+      name: `${cookiePrefix}next-auth.callback-url.web`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+    },
+    csrfToken: {
+      name: `${useSecureCookies ? '__Host-' : ''}next-auth.csrf-token.web`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+    },
+    state: {
+      name: `${cookiePrefix}next-auth.state.web`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies, maxAge: 60 * 15 },
+    },
+    pkceCodeVerifier: {
+      name: `${cookiePrefix}next-auth.pkce.code_verifier.web`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies, maxAge: 60 * 15 },
+    },
+    nonce: {
+      name: `${cookiePrefix}next-auth.nonce.web`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
 }
