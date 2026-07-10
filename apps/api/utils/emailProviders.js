@@ -1,4 +1,4 @@
-import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
+import nodemailer from "nodemailer";
 import Handlebars from "handlebars";
 import fs from "fs";
 import path from "path";
@@ -39,20 +39,43 @@ const loadTemplate = (templateName) => {
   }
 };
 
-// ─── Initialize AWS SES client ───────────────────────────────────────────────
-const sesClient = new SESClient({
-  region: process.env.AWS_REGION || "us-east-1",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+// ─── ZeptoMail primary transport (Nodemailer SMTP) ────────────────────────────
+const zeptoMailTransport = nodemailer.createTransport({
+  host: process.env.ZEPTOMAIL_SMTP_HOST || "smtp.zeptomail.com",
+  port: parseInt(process.env.ZEPTOMAIL_SMTP_PORT || "587", 10),
+  auth: {
+    user: process.env.ZEPTOMAIL_SMTP_USER,
+    pass: process.env.ZEPTOMAIL_SMTP_TOKEN,
   },
 });
 
-const SES_FROM_DEFAULT = process.env.SES_SENDER_EMAIL || "noreply@comfytag.com";
+const sendViaZeptoMail = async ({ to, subject, html, text, from }) => {
+  if (!process.env.ZEPTOMAIL_SMTP_USER || !process.env.ZEPTOMAIL_SMTP_TOKEN) {
+    throw new Error("ZEPTOMAIL_SMTP_USER/ZEPTOMAIL_SMTP_TOKEN is not configured — ZeptoMail unavailable");
+  }
 
-// ─── Resend primary transport ─────────────────────────────────────────────────
-// Primary email provider. Uses native fetch (Node 18+) so no extra dependency
-// is required. SES is used as fallback if this fails.
+  const info = await zeptoMailTransport.sendMail({
+    from,
+    to,
+    subject,
+    ...(html && { html }),
+    ...(text && { text }),
+  });
+
+  return {
+    success: true,
+    message: `Email sent via ZeptoMail to ${to}`,
+    email: to,
+    subject,
+    messageId: info.messageId,
+    provider: "zeptomail",
+    timestamp: new Date().toISOString(),
+  };
+};
+
+// ─── Resend fallback transport ─────────────────────────────────────────────────
+// Uses native fetch (Node 18+) so no extra dependency is required. Used as
+// fallback if ZeptoMail fails.
 const sendViaResend = async ({ to, subject, html, text, from }) => {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -100,7 +123,7 @@ const checkEmailSuppressed = async (email) => {
   } catch (error) {
     // Fail-safe: treat DB errors as suppressed so we don't send to unknown status
     console.error(
-      `[awsEmailService] ERROR checking suppression for ${email}: ${error.message}`
+      `[emailProviders] ERROR checking suppression for ${email}: ${error.message}`
     );
     return true;
   }
@@ -108,7 +131,6 @@ const checkEmailSuppressed = async (email) => {
 
 /**
  * Compile a Handlebars template and wrap it in the transactional layout when needed.
- * Mirrors the exact rendering logic used in the legacy Resend service.
  *
  * @param {string} templateName - Filename relative to emailTemplates/ (e.g. "otp.hbs")
  * @param {Object} data         - Template context data
@@ -134,8 +156,10 @@ const renderTemplate = (templateName, data, subject) => {
   });
 };
 
+const EMAIL_FROM_DEFAULT = process.env.EMAIL_SENDER_DEFAULT || "noreply@comfytag.com";
+
 /**
- * Send an email via AWS SES.
+ * Send an email via ZeptoMail (primary), falling back to Resend on failure.
  *
  * This is the low-level transport function. Callers (sendEmail.js) are responsible
  * for checking user notification preferences BEFORE calling here. This function
@@ -146,17 +170,17 @@ const renderTemplate = (templateName, data, subject) => {
  * @param {string}  options.subject  - Email subject line
  * @param {string}  [options.template] - .hbs filename relative to emailTemplates/
  * @param {Object}  [options.data={}]  - Handlebars context data
- * @param {string}  [options.from]   - Sender address (defaults to SES_SENDER_EMAIL)
+ * @param {string}  [options.from]   - Sender address (defaults to EMAIL_SENDER_DEFAULT)
  * @param {string}  [options.replyTo] - Optional Reply-To address
  * @param {string}  [options.text]   - Optional plain-text fallback
  * @returns {Promise<Object>} Result with { success, messageId, ... } or { success: false, ... }
  */
-export const sendViaSES = async ({
+export const sendViaEmailProvider = async ({
   to,
   subject,
   template,
   data = {},
-  from = SES_FROM_DEFAULT,
+  from = EMAIL_FROM_DEFAULT,
   replyTo = null,
   text = null,
 }) => {
@@ -188,11 +212,6 @@ export const sendViaSES = async ({
     }
   }
 
-  // ─── Build SES message body ───────────────────────────────────────────────
-  const messageBody = {};
-  if (html) messageBody.Html = { Charset: "UTF-8", Data: html };
-  if (text) messageBody.Text = { Charset: "UTF-8", Data: text };
-
   if (!html && !text) {
     return {
       success: false,
@@ -202,45 +221,26 @@ export const sendViaSES = async ({
     };
   }
 
-  const params = {
-    Destination: { ToAddresses: [to] },
-    Message: {
-      Body: messageBody,
-      Subject: { Charset: "UTF-8", Data: subject },
-    },
-    Source: from,
-    ...(replyTo && { ReplyToAddresses: [replyTo] }),
-  };
-
-  // ─── Dispatch via Resend (primary) → SES (fallback) ──────────────────────
+  // ─── Dispatch via ZeptoMail (primary) → Resend (fallback) ────────────────
   try {
-    return await sendViaResend({ to, subject, html, text, from });
-  } catch (resendError) {
+    return await sendViaZeptoMail({ to, subject, html, text, from });
+  } catch (zeptoError) {
     console.warn(
-      `[awsEmailService] Resend failed, falling back to AWS SES...`,
-      resendError.message
+      `[emailProviders] ZeptoMail failed, falling back to Resend...`,
+      zeptoError.message
     );
     try {
-      const result = await sesClient.send(new SendEmailCommand(params));
-      return {
-        success: true,
-        message: `Email sent successfully to ${to}`,
-        email: to,
-        subject,
-        messageId: result.MessageId,
-        provider: "ses",
-        timestamp: new Date().toISOString(),
-      };
-    } catch (sesError) {
+      return await sendViaResend({ to, subject, html, text, from });
+    } catch (resendError) {
       console.error(
-        `[awsEmailService] Both Resend and SES failed to ${to}: ${sesError.message}`
+        `[emailProviders] Both ZeptoMail and Resend failed to ${to}: ${resendError.message}`
       );
       return {
         success: false,
-        message: `Failed to send email to ${to} via both Resend and SES`,
+        message: `Failed to send email to ${to} via both ZeptoMail and Resend`,
         email: to,
         subject,
-        error: sesError.message,
+        error: resendError.message,
         timestamp: new Date().toISOString(),
       };
     }
