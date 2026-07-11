@@ -51,7 +51,7 @@ project-session.md
 system_overview.md
 discussion/
 test-results/
-tests/
+tests/results.json
 docs/
 dev-mobile.ps1
 
