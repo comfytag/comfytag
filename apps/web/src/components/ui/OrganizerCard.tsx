@@ -181,8 +181,7 @@ export function OrganizerCard({
         display: 'flex',
         flexDirection: 'column',
         gap: '12px',
-        transition: 'border-color var(--duration-default) var(--ease-standard), box-shadow var(--duration-default) var(--ease-standard)',
-        boxShadow: hovered && (onProfileClick || href) ? 'var(--shadow-md)' : 'none',
+        transition: 'border-color var(--duration-micro) var(--ease-standard)',
       }}
     >
       {/* Avatar + Name + Verified */}

@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import type { StackNavigationProp } from '@react-navigation/stack'
 import { isValidNigerianPhone, isValidEmail, maskIdentifier } from '@comfytag/utils'
 import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
+import { AnimatedPressable } from '../../components/ui/AnimatedPressable'
 import { post } from '../../lib/api'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -292,18 +293,18 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
         <Text style={styles.inlineError}>{errorMessage}</Text>
       )}
 
-      <TouchableOpacity
+      <AnimatedPressable
         style={[
           styles.primaryButton,
           (identifier.length === 0 || !identifierValid || isLoading) &&
             styles.primaryButtonDisabled,
         ]}
-        activeOpacity={0.85}
+        hapticStyle="medium"
         onPress={handleSendCode}
         disabled={identifier.length === 0 || !identifierValid || isLoading}
       >
         <Text style={styles.primaryButtonText}>Send Code</Text>
-      </TouchableOpacity>
+      </AnimatedPressable>
     </View>
   )
 
@@ -351,17 +352,17 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
           <Text style={[styles.inlineError, styles.otpError]}>{errorMessage}</Text>
         )}
 
-        <TouchableOpacity
+        <AnimatedPressable
           style={[
             styles.primaryButton,
             (!otpFilled || isLoading) && styles.primaryButtonDisabled,
           ]}
-          activeOpacity={0.85}
+          hapticStyle="medium"
           onPress={handleVerifyOtp}
           disabled={!otpFilled || isLoading}
         >
           <Text style={styles.primaryButtonText}>Verify Code</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
 
         {/* Resend row */}
         <View style={styles.resendRow}>
@@ -463,17 +464,17 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
         <Text style={styles.inlineError}>{errorMessage}</Text>
       )}
 
-      <TouchableOpacity
+      <AnimatedPressable
         style={[
           styles.primaryButton,
           resetButtonDisabled && styles.primaryButtonDisabled,
         ]}
-        activeOpacity={0.85}
+        hapticStyle="medium"
         onPress={handleResetPassword}
         disabled={resetButtonDisabled}
       >
         <Text style={styles.primaryButtonText}>Reset Password</Text>
-      </TouchableOpacity>
+      </AnimatedPressable>
     </View>
   )
 

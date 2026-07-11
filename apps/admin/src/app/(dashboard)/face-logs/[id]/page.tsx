@@ -111,7 +111,7 @@ export default function FaceEnrollmentDetailPage() {
             disabled={removeMutation.isPending}
             style={{
               padding: '10px 24px',
-              borderRadius: 8,
+              borderRadius: 'var(--radius-lg)',
               border: '1px solid var(--color-error)',
               cursor: 'pointer',
               fontWeight: 600,

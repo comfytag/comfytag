@@ -18,7 +18,7 @@ export function BackLink({ href, children, marginBottom = 20 }: BackLinkProps) {
         marginBottom: `${marginBottom}px`,
       }}
     >
-      <span className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-zinc-200/80 shadow-sm transition-all hover:bg-zinc-50 active:scale-95 text-zinc-900">
+      <span className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-zinc-200/80 transition-all hover:bg-zinc-50 active:scale-95 text-zinc-900">
         <svg
           width="18"
           height="18"

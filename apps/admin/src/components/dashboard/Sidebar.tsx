@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Image from 'next/image'
@@ -217,7 +217,7 @@ function CmsNavGroup({
           gap: '10px',
           width: '100%',
           padding: '9px 12px',
-          borderRadius: '8px',
+          borderRadius: 'var(--radius-lg)',
           border: 'none',
           backgroundColor: hasActive
             ? 'color-mix(in srgb, var(--color-brand) 10%, transparent)'
@@ -298,7 +298,7 @@ function NavLink({
         alignItems: 'center',
         gap: '10px',
         padding: '9px 12px',
-        borderRadius: '8px',
+        borderRadius: 'var(--radius-lg)',
         marginBottom: '2px',
         textDecoration: 'none',
         fontSize: '14px',
@@ -339,7 +339,7 @@ function SignOutButton() {
         gap: '10px',
         width: '100%',
         padding: '9px 12px',
-        borderRadius: '8px',
+        borderRadius: 'var(--radius-lg)',
         border: 'none',
         backgroundColor: 'transparent',
         color: 'var(--color-text-muted)',

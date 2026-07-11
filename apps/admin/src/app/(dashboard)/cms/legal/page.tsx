@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { Button, ErrorMessage, Input, LoadingSpinner, PageHeader } from '@comfytag/ui'
@@ -10,14 +10,14 @@ import { useLegalDocument, useUpsertLegalDocument } from '@/hooks'
 const cardStyle: React.CSSProperties = {
   backgroundColor: 'var(--color-surface)',
   border: '1px solid var(--color-border)',
-  borderRadius: '12px',
+  borderRadius: 'var(--radius-lg)',
   padding: '24px',
   marginBottom: '24px',
 }
 
 const sectionBorderStyle: React.CSSProperties = {
   border: '1px solid var(--color-border)',
-  borderRadius: '8px',
+  borderRadius: 'var(--radius-lg)',
   padding: '16px',
   marginBottom: '12px',
   backgroundColor: 'color-mix(in srgb, var(--color-surface-2) 60%, transparent)',
@@ -70,7 +70,7 @@ function SectionsEditor({
                 justifyContent: 'center',
                 width: 26,
                 height: 26,
-                borderRadius: 6,
+                borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--color-border)',
                 backgroundColor: 'transparent',
                 color: 'var(--color-error)',
@@ -110,7 +110,7 @@ function SectionsEditor({
                 style={{
                   width: '100%',
                   padding: '10px 12px',
-                  borderRadius: '8px',
+                  borderRadius: 'var(--radius-lg)',
                   border: '1px solid var(--color-border)',
                   backgroundColor: 'var(--color-surface)',
                   color: 'var(--color-text)',
@@ -134,7 +134,7 @@ function SectionsEditor({
           alignItems: 'center',
           gap: '6px',
           padding: '8px 14px',
-          borderRadius: '8px',
+          borderRadius: 'var(--radius-lg)',
           border: '1px dashed var(--color-border)',
           backgroundColor: 'transparent',
           color: 'var(--color-text-muted)',

@@ -60,7 +60,7 @@ function TrendingSection({ events }: { events: Event[] }) {
               <EventCard event={event} href={`/events/${event.slug}`} isTrending />
               {/* Violet urgency badge with amber dot — top-right overlay on image */}
               <div
-                className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-violet-600 text-white text-[11px] font-bold shadow-md pointer-events-none"
+                className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-violet-600 text-white text-[11px] font-bold pointer-events-none"
                 aria-hidden="true"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
@@ -90,7 +90,7 @@ function NewReleasesSection({ events }: { events: Event[] }) {
             <EventCard event={event} href={`/events/${event.slug}`} />
             {/* "Just Dropped" overlay — positioned above the card image area */}
             <div
-              className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-violet-600 text-white text-[11px] font-bold uppercase tracking-wide shadow-md pointer-events-none"
+              className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-violet-600 text-white text-[11px] font-bold uppercase tracking-wide pointer-events-none"
               aria-hidden="true"
             >
               Just Dropped
@@ -177,7 +177,7 @@ export function HomeFeedClient({ events, categories }: HomeFeedClientProps) {
               onClick={() => setActiveCategory('All')}
               className={
                 activeCategory === 'All'
-                  ? 'px-6 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 transition-colors bg-zinc-900 text-white shadow-md'
+                  ? 'px-6 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 transition-colors bg-zinc-900 text-white'
                   : 'px-6 py-2.5 rounded-full text-sm font-medium whitespace-nowrap shrink-0 transition-colors bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
               }
             >
@@ -194,7 +194,7 @@ export function HomeFeedClient({ events, categories }: HomeFeedClientProps) {
                   onClick={() => setActiveCategory(key)}
                   className={
                     isActive
-                      ? 'px-6 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 transition-colors bg-zinc-900 text-white shadow-md'
+                      ? 'px-6 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 transition-colors bg-zinc-900 text-white'
                       : 'px-6 py-2.5 rounded-full text-sm font-medium whitespace-nowrap shrink-0 transition-colors bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                   }
                 >
@@ -247,7 +247,7 @@ export function HomeFeedClient({ events, categories }: HomeFeedClientProps) {
       <div className="flex justify-center pt-2">
         <Link
           href="/events"
-          className="inline-flex items-center justify-center bg-zinc-950 text-white font-bold text-sm px-8 py-4 rounded-xl hover:bg-zinc-800 transition-all shadow-md group gap-2"
+          className="inline-flex items-center justify-center bg-zinc-950 text-white font-bold text-sm px-8 py-4 rounded-xl hover:bg-zinc-800 transition-all group gap-2"
         >
           Explore All Events
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />

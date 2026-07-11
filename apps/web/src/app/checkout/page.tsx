@@ -281,7 +281,7 @@ function CheckoutInner() {
   // ── Ready state ─────────────────────────────────────────
   return (
     <div className="min-h-screen bg-zinc-50/50 flex justify-center py-20 px-4">
-      <div className="w-full max-w-lg bg-white p-8 rounded-[2rem] shadow-xl border border-zinc-100">
+      <div className="w-full max-w-lg bg-white p-8 rounded-2xl border border-(--color-border)">
         {/* Back link */}
         <Link
           href={`/events/${checkout.event.slug ?? checkout.event._id}`}

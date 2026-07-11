@@ -46,7 +46,7 @@ export function SettingsPanel({ user, banks }: Props) {
               className={[
                 'flex items-center w-full px-4 py-3 rounded-xl transition-all duration-200 text-sm gap-3 border',
                 isActive
-                  ? 'bg-white border-zinc-200/80 shadow-sm text-zinc-900 font-bold'
+                  ? 'bg-white border-zinc-200/80 text-zinc-900 font-bold'
                   : 'font-medium text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100/80 border-transparent',
               ].join(' ')}
             >
@@ -58,7 +58,7 @@ export function SettingsPanel({ user, banks }: Props) {
       </nav>
 
       {/* Content card */}
-      <div className="flex-1 bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] p-6 sm:p-10">
+      <div className="flex-1 bg-white border border-zinc-200/80 rounded-xl p-6 sm:p-10">
         {activeSection === 'profile'       && <ProfileSection user={user} />}
         {activeSection === 'bank'          && <BankSection banks={banks} />}
         {activeSection === 'notifications' && <NotificationsSection prefs={user?.notificationPreferences} />}

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { Badge, Button, LoadingSpinner, ErrorMessage, Modal } from '@comfytag/ui'
@@ -55,7 +55,7 @@ const buildColumns = (
         style={{
           width: 32,
           height: 16,
-          borderRadius: 4,
+          borderRadius: 'var(--radius-sm)',
           background: cat.gradient ?? 'linear-gradient(135deg, #7C3AED, #8B5CF6)',
         }}
       />
@@ -123,7 +123,7 @@ function ActionButton({
         justifyContent: 'center',
         width: 28,
         height: 28,
-        borderRadius: 6,
+        borderRadius: 'var(--radius-md)',
         border: '1px solid var(--color-border)',
         backgroundColor: 'transparent',
         color: 'var(--color-text-muted)',
@@ -212,7 +212,7 @@ export default function CategoriesPage() {
           style={{
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
           }}
         >

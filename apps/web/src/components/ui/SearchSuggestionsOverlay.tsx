@@ -64,7 +64,7 @@ export function SearchSuggestionsOverlay({ query, isOpen, onClose }: SearchSugge
       onMouseDown={(e) => e.preventDefault()}
       role="listbox"
       aria-label="Search suggestions"
-      className="absolute top-full mt-2 w-full z-100 bg-white border border-zinc-100 rounded-2xl shadow-xl overflow-hidden flex flex-col"
+      className="absolute top-full mt-2 w-full z-100 bg-white border border-zinc-200 rounded-2xl overflow-hidden flex flex-col"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-4 pb-2">

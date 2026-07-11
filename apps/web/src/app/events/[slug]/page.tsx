@@ -236,35 +236,20 @@ export default async function EventDetailPage({
                   followerCount={organizerStats?.followers ?? 0}
                   upcomingEventCount={organizerStats?.upcomingEvents ?? 0}
                 />
-                <div style={{ marginTop: '16px' }}>
+                <div className="mt-4">
                   <a
                     href={`/organizer/${organizer.username && !organizer.username.includes('@') ? organizer.username : organizer._id}`}
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      padding: '12px 16px',
-                      backgroundColor: 'var(--color-brand)',
-                      color: 'var(--color-text-on-brand)',
-                      border: 'none',
-                      borderRadius: 'var(--radius-md)',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      textDecoration: 'none',
-                      transition: 'background-color var(--duration-fast)',
-                    }}
-                    className="organizer-profile-button"
+                    className="block w-full rounded-md bg-brand px-4 py-3 text-center text-sm font-semibold text-(--color-text-on-brand) no-underline transition-colors duration-(--duration-fast) ease-(--ease-standard) hover:bg-brand-dark"
                   >
                     View Profile
                   </a>
                 </div>
               </>
             ) : (
-              <div style={{ padding: '16px', background: 'var(--color-surface)', borderRadius: '8px', textAlign: 'center' }}>
-                <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>Organizer profile</p>
+              <div className="rounded-lg border border-(--color-border) bg-(--color-surface) p-4 text-center transition-colors duration-(--duration-micro) ease-(--ease-standard) hover:border-brand">
+                <p className="m-0 text-(--color-text-muted)">Organizer profile</p>
                 {organizerStats && (
-                  <p style={{ color: 'var(--color-text)', margin: '8px 0 0', fontWeight: 600 }}>
+                  <p className="mt-2 font-semibold text-(--color-text)">
                     {organizerStats.followers} followers • {organizerStats.upcomingEvents} upcoming events
                   </p>
                 )}
@@ -276,12 +261,6 @@ export default async function EventDetailPage({
 
       <EventRelatedSection events={relatedEvents} />
     </EventInteractiveSection>
-
-    <style>{`
-      .organizer-profile-button:hover {
-        background-color: var(--color-brand-dark);
-      }
-    `}</style>
     </>
   )
 }

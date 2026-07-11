@@ -42,7 +42,7 @@ export function EventSelectorBar({ events, selectedEventId, onSelectEvent }: Eve
       </button>
 
       {dropdownOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-zinc-200/80 rounded-xl shadow-lg z-10 max-h-72 overflow-y-auto">
+        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-zinc-200/80 rounded-xl z-10 max-h-72 overflow-y-auto">
           {events.map(event => (
             <button
               key={event._id}

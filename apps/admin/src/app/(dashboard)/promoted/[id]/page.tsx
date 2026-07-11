@@ -98,7 +98,7 @@ export default function PromotedDetailPage() {
               disabled={featureMutation.isPending}
               style={{
                 padding: '8px 16px',
-                borderRadius: 8,
+                borderRadius: 'var(--radius-lg)',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: 14,
@@ -119,7 +119,7 @@ export default function PromotedDetailPage() {
         style={{
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           padding: 24,
           marginBottom: 24,
         }}
@@ -182,7 +182,7 @@ export default function PromotedDetailPage() {
             style={{
               backgroundColor: 'var(--color-surface)',
               border: '1px solid var(--color-border)',
-              borderRadius: 12,
+              borderRadius: 'var(--radius-lg)',
               overflow: 'hidden',
             }}
           >

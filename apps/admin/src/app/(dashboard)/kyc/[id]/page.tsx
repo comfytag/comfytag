@@ -86,7 +86,7 @@ export default function KycDetailPage() {
           gap: 12,
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           padding: 20,
           marginBottom: 28,
         }}

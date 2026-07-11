@@ -44,16 +44,6 @@ const EMPTY_ADD_FORM: AddPromoForm = {
   maxUses: '',
 }
 
-const cardShadow = Platform.select({
-  ios: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  },
-  android: { elevation: 4 },
-})
-
 // ─── SkeletonRow ──────────────────────────────────────────────────────────────
 
 function SkeletonCard() {
@@ -108,7 +98,7 @@ function PromoCard({ promo, onDelete }: PromoCardProps) {
       : `${promo.usedCount} uses`
 
   return (
-    <View style={[styles.promoCard, cardShadow]}>
+    <View style={styles.promoCard}>
       <View style={styles.promoCardRow}>
         <View style={styles.promoCardLeft}>
           <Text style={styles.promoCode}>{promo.code}</Text>
@@ -171,7 +161,7 @@ function AddPromoFormPanel({
   saving,
 }: AddPromoFormProps) {
   return (
-    <View style={[styles.addFormCard, cardShadow]}>
+    <View style={styles.addFormCard}>
       <Text style={styles.addFormTitle}>New Promo Code</Text>
 
       <TextInput
@@ -453,6 +443,8 @@ const styles = StyleSheet.create({
   promoCard: {
     backgroundColor: colors.mobile.surface,
     borderRadius: rd.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.mobile.border,
     padding: sp[4],
     gap: sp[2],
   },

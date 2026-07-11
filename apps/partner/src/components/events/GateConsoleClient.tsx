@@ -107,18 +107,18 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
       {/* Toast HUD — fixed outside the console frame */}
       {toast && (
         toast.type === 'success' ? (
-          <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-zinc-950 border-2 border-emerald-300 rounded-2xl px-8 py-4 shadow-2xl z-50 text-center font-bold animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-zinc-950 border-2 border-emerald-300 rounded-lg px-8 py-4 z-50 text-center font-bold animate-in fade-in slide-in-from-top-4 duration-200">
             ✓ {toast.message}
           </div>
         ) : (
-          <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-red-500 text-white border-2 border-red-400 rounded-2xl px-8 py-4 shadow-2xl z-50 text-center font-bold animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-red-500 text-white border-2 border-red-400 rounded-lg px-8 py-4 z-50 text-center font-bold animate-in fade-in slide-in-from-top-4 duration-200">
             ✗ {toast.message}
           </div>
         )
       )}
 
       {/* ── Light Document Console Frame ── */}
-      <div className="max-w-5xl mx-auto bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl p-6 sm:p-8 space-y-8 mt-6">
+      <div className="max-w-5xl mx-auto bg-white border border-zinc-200/80 rounded-xl p-6 sm:p-8 space-y-8 mt-6">
 
         {/* Page header */}
         <div>
@@ -135,15 +135,15 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
 
           {/* Live Attendance Strip */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-zinc-50/60 border border-zinc-100 rounded-3xl p-5 text-center flex flex-col justify-center items-center transition-all hover:border-zinc-200">
+            <div className="bg-zinc-50/60 border border-zinc-100 rounded-xl p-5 text-center flex flex-col justify-center items-center transition-colors hover:border-zinc-200">
               <p className="text-4xl font-bold tracking-tight text-emerald-500 tabular-nums">{checkedInCount}</p>
               <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold mt-2">Checked In</p>
             </div>
-            <div className="bg-zinc-50/60 border border-zinc-100 rounded-3xl p-5 text-center flex flex-col justify-center items-center transition-all hover:border-zinc-200">
+            <div className="bg-zinc-50/60 border border-zinc-100 rounded-xl p-5 text-center flex flex-col justify-center items-center transition-colors hover:border-zinc-200">
               <p className="text-4xl font-bold tracking-tight text-zinc-900 tabular-nums">{totalSold}</p>
               <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold mt-2">Total Sold</p>
             </div>
-            <div className="bg-zinc-50/60 border border-zinc-100 rounded-3xl p-5 text-center flex flex-col justify-center items-center transition-all hover:border-zinc-200">
+            <div className="bg-zinc-50/60 border border-zinc-100 rounded-xl p-5 text-center flex flex-col justify-center items-center transition-colors hover:border-zinc-200">
               <p className="text-4xl font-bold tracking-tight text-zinc-900 tabular-nums">{occupancy}%</p>
               <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold mt-2">Occupancy</p>
             </div>
@@ -211,7 +211,7 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
 
         {/* ── QR Scan mode — camera housing ── */}
         {activeMode === 'qr' && (
-          <div className="w-full max-w-xl mx-auto overflow-hidden rounded-4xl border-[6px] border-zinc-100 shadow-inner bg-zinc-950 relative aspect-3/4 sm:aspect-square">
+          <div className="w-full max-w-xl mx-auto overflow-hidden rounded-xl border-[6px] border-zinc-100 bg-zinc-950 relative aspect-3/4 sm:aspect-square">
             <CameraScanner
               onScan={handleQrScan}
               isProcessing={checkin.isPending}
@@ -248,7 +248,7 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
                 filtered.map((attendee) => (
                   <div
                     key={attendee._id}
-                    className="bg-white border border-zinc-100 rounded-3xl p-5 flex items-center justify-between shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:border-zinc-200 hover:bg-zinc-50/40 group"
+                    className="bg-white border border-zinc-100 rounded-xl p-5 flex items-center justify-between transition-colors hover:border-zinc-200 hover:bg-zinc-50/40 group"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-zinc-900 font-bold tracking-tight text-sm truncate">{attendee.name}</p>
@@ -274,7 +274,7 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
                         <button
                           onClick={() => handleCheckin(attendee._id)}
                           disabled={pendingCheckinId === attendee._id}
-                          className="bg-emerald-500 text-white font-bold py-2 px-6 rounded-full shadow-sm active:scale-95 transition-all text-xs disabled:opacity-50 disabled:active:scale-100"
+                          className="bg-emerald-500 text-white font-bold py-2 px-6 rounded-full active:scale-95 transition-all text-xs disabled:opacity-50 disabled:active:scale-100"
                         >
                           {pendingCheckinId === attendee._id ? '…' : 'Check In'}
                         </button>
@@ -289,7 +289,7 @@ export function GateConsoleClient({ eventId }: GateConsoleClientProps) {
 
         {/* ── Face ID mode — coming soon teaser ── */}
         {activeMode === 'face' && (
-          <div className="w-full border border-violet-200/60 bg-linear-to-br from-violet-50/40 to-white rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-3 shadow-sm">
+          <div className="w-full border border-violet-200/60 bg-linear-to-br from-violet-50/40 to-white rounded-xl p-8 flex flex-col items-center justify-center text-center space-y-3">
             <p className="text-5xl">✨</p>
             <p className="text-zinc-900 font-bold text-xl tracking-tight">
               Your face is your ticket.™

@@ -25,6 +25,7 @@ export function Badge({ status, className }: BadgeProps) {
         whiteSpace: 'nowrap',
         backgroundColor: bg,
         color: text,
+        transition: 'background-color var(--duration-micro) var(--ease-standard), color var(--duration-micro) var(--ease-standard)',
       }}
     >
       {label}

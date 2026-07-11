@@ -77,7 +77,7 @@ export default function AttendeesPage() {
         <button
           onClick={handleExport}
           disabled={!selectedEventId || exportMutation.isPending}
-          className="bg-white border border-zinc-200 text-zinc-900 font-semibold py-2.5 px-5 rounded-xl shadow-sm hover:bg-zinc-50 hover:border-zinc-300 transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          className="bg-white border border-zinc-200 text-zinc-900 font-semibold py-2.5 px-5 rounded-xl hover:bg-zinc-50 hover:border-zinc-300 transition-colors flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
         >
           <Download size={16} aria-hidden="true" />
           {exportMutation.isPending ? 'Exporting…' : 'Export CSV'}
@@ -112,7 +112,7 @@ export default function AttendeesPage() {
 
       {/* Directory */}
       {!selectedEventId ? (
-        <div className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-zinc-200 rounded-[2rem] bg-zinc-50/50">
+        <div className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50/50">
           <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
             <Users size={28} className="text-zinc-400" aria-hidden="true" />
           </div>
@@ -122,7 +122,7 @@ export default function AttendeesPage() {
           </p>
         </div>
       ) : attendeesLoading ? (
-        <div className="bg-white border border-zinc-200/80 shadow-sm rounded-[2rem] overflow-hidden">
+        <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden">
           <div className="divide-y divide-zinc-100">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="px-6 py-4">
@@ -132,7 +132,7 @@ export default function AttendeesPage() {
           </div>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-zinc-200 rounded-[2rem] bg-zinc-50/50">
+        <div className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50/50">
           <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
             <Users size={28} className="text-zinc-400" aria-hidden="true" />
           </div>
@@ -146,7 +146,7 @@ export default function AttendeesPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-white border border-zinc-200/80 shadow-sm rounded-[2rem] overflow-hidden">
+        <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden">
           <div className="max-h-[800px] overflow-y-auto">
             {filtered.map((attendee) => (
               <AttendeeRow

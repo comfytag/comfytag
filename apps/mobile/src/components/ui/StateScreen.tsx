@@ -2,12 +2,12 @@ import React from 'react'
 import {
   View,
   Text,
-  TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
+import { AnimatedPressable } from './AnimatedPressable'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -122,13 +122,13 @@ export default function StateScreen({
 
       {/* Action button */}
       {action !== undefined && (
-        <TouchableOpacity
+        <AnimatedPressable
           style={styles.actionButton}
-          activeOpacity={0.85}
+          hapticStyle="medium"
           onPress={action.onPress}
         >
           <Text style={styles.actionButtonText}>{action.label}</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
       )}
     </SafeAreaView>
   )

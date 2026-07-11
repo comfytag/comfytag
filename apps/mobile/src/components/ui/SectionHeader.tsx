@@ -1,6 +1,7 @@
 import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native'
+import { View, Text, StyleSheet, ViewStyle } from 'react-native'
 import { colors, sp, fs } from '@comfytag/ui/tokens'
+import { AnimatedPressable } from './AnimatedPressable'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -31,12 +32,13 @@ export function SectionHeader({
       </View>
 
       {onSeeAll !== undefined && (
-        <TouchableOpacity
+        <AnimatedPressable
           onPress={onSeeAll}
+          hapticStyle="light"
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Text style={styles.seeAll}>{seeAllLabel}</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
       )}
     </View>
   )

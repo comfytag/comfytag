@@ -64,7 +64,7 @@ function Toast({ message, onDismiss }: ToastProps) {
   return (
     <div
       role="alert"
-      className="fixed bottom-6 right-6 z-100 flex items-center gap-3 bg-zinc-900 text-white text-sm font-medium px-4 py-3 rounded-2xl shadow-2xl border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 max-w-xs"
+      className="fixed bottom-6 right-6 z-100 flex items-center gap-3 bg-zinc-900 text-white text-sm font-medium px-4 py-3 rounded-lg border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 max-w-xs"
     >
       <span className="text-red-400 shrink-0" aria-hidden="true">⚠</span>
       {message}
@@ -160,7 +160,7 @@ export function Step4Details({
 
   return (
     <>
-      <div className="max-w-3xl mx-auto bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl sm:rounded-[2.5rem] p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
+      <div className="max-w-3xl mx-auto bg-white border border-zinc-200/80 rounded-xl p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
         <div>
           <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 4 of 5</span>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Event Details</h2>
@@ -181,7 +181,7 @@ export function Step4Details({
               <div
                 role="dialog"
                 aria-label="Choose a vibe for AI enhancement"
-                className="absolute bottom-full right-0 mb-2.5 w-64 bg-white border border-zinc-200 rounded-2xl shadow-2xl shadow-zinc-900/10 p-4 z-50"
+                className="absolute bottom-full right-0 mb-2.5 w-64 bg-white border border-zinc-200 rounded-lg p-4 z-50"
               >
                 {/* Popover header */}
                 <div className="flex items-start justify-between mb-1">
@@ -249,12 +249,12 @@ export function Step4Details({
               className={[
                 'absolute bottom-3 right-3 flex items-center gap-1.5',
                 'bg-zinc-900 text-white rounded-full text-xs font-bold px-3 py-1.5',
-                'shadow-lg ring-1 ring-violet-500/30',
-                'transition-all duration-200',
-                'hover:shadow-violet-500/20 hover:ring-violet-500/60 hover:bg-zinc-800',
+                'border border-zinc-700',
+                'transition-colors duration-200',
+                'hover:bg-zinc-800 hover:border-violet-500/60',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1',
                 'disabled:opacity-40 disabled:cursor-not-allowed',
-                isVibeOpen ? 'ring-violet-500/60 shadow-violet-500/20' : '',
+                isVibeOpen ? 'border-violet-500/60' : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
@@ -356,7 +356,7 @@ export function Step4Details({
                 id="is-public"
               />
               <div className="w-10 h-6 bg-zinc-200 peer-checked:bg-violet-600 rounded-full transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-violet-500 peer-focus-visible:ring-offset-2" />
-              <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-4" />
+              <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4" />
             </div>
             <div>
               <p className="text-sm font-semibold text-zinc-900">
@@ -382,7 +382,7 @@ export function Step4Details({
 
       {/* Sticky nav bar */}
       <div
-        className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50 shadow-[0_-4px_20px_rgb(0,0,0,0.05)]"
+        className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50"
         style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
       >
         <div className="max-w-3xl mx-auto flex justify-between items-center">
@@ -396,7 +396,7 @@ export function Step4Details({
           <button
             type="button"
             onClick={onNext}
-            className="bg-zinc-900 text-white font-bold py-3 px-8 rounded-full shadow-sm active:scale-95 transition-all text-sm"
+            className="bg-zinc-900 text-white font-bold py-3 px-8 rounded-full active:scale-95 transition-all text-sm"
           >
             Review & Launch →
           </button>

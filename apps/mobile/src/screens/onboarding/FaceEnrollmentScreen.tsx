@@ -3,16 +3,15 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Animated,
   Dimensions,
   Alert,
   ActivityIndicator,
-  Platform,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { enrollFace, checkLiveness } from '../../lib/faceSDK'
-import { colors } from '@comfytag/ui/tokens'
+import { colors, rd } from '@comfytag/ui/tokens'
+import { AnimatedPressable } from '../../components/ui/AnimatedPressable'
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
   Dimensions.get('window')
@@ -256,15 +255,15 @@ export default function FaceEnrollmentScreen({
     switch (enrollmentState) {
       case 'idle':
         return (
-          <TouchableOpacity
+          <AnimatedPressable
             style={styles.primaryButton}
             onPress={startEnrollment}
-            activeOpacity={0.85}
+            hapticStyle="medium"
           >
             <Text style={styles.primaryButtonText}>
               Start Face Enrollment
             </Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         )
       case 'scanning':
       case 'processing':
@@ -288,15 +287,15 @@ export default function FaceEnrollmentScreen({
         )
       case 'error':
         return (
-          <TouchableOpacity
+          <AnimatedPressable
             style={styles.primaryButton}
             onPress={retry}
-            activeOpacity={0.85}
+            hapticStyle="medium"
           >
             <Text style={styles.primaryButtonText}>
               Try Again
             </Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         )
     }
   }
@@ -332,15 +331,15 @@ export default function FaceEnrollmentScreen({
 
         {/* Skip — only in onboarding mode */}
         {enrollmentState === 'idle' && !isTransferMode && (
-          <TouchableOpacity
+          <AnimatedPressable
             style={styles.skipButton}
             onPress={handleSkip}
-            activeOpacity={0.7}
+            hapticStyle="light"
           >
             <Text style={styles.skipText}>
               Skip for now
             </Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         )}
       </View>
 
@@ -469,7 +468,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 52,
     backgroundColor: colors.brand.DEFAULT,
-    borderRadius: 12,
+    borderRadius: rd.md,
     alignItems: 'center',
     justifyContent: 'center',
   },

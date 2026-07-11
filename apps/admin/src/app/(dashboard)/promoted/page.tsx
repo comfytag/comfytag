@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { Badge, LoadingSpinner, ErrorMessage } from '@comfytag/ui'
@@ -50,7 +50,7 @@ export default function PromotedPage() {
               padding: '8px 16px',
               backgroundColor: 'var(--color-brand)',
               color: '#fff',
-              borderRadius: 8,
+              borderRadius: 'var(--radius-lg)',
               textDecoration: 'none',
               fontSize: 14,
               fontWeight: 600,
@@ -68,7 +68,7 @@ export default function PromotedPage() {
           style={{
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
           }}
         >

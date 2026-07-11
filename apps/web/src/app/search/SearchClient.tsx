@@ -349,7 +349,7 @@ export function SearchClient({
                 background: 'var(--color-brand)',
                 color: '#fff',
                 border: 'none',
-                borderRadius: '12px',
+                borderRadius: 'var(--radius-xl)',
                 fontSize: '14px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -370,8 +370,7 @@ export function SearchClient({
                 right: 0,
                 background: 'var(--color-surface)',
                 border: '1px solid var(--color-border)',
-                borderRadius: '12px',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
+                borderRadius: 'var(--radius-xl)',
                 zIndex: 50,
                 overflow: 'hidden',
               }}

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Input } from '@comfytag/ui'
 
@@ -42,7 +42,7 @@ export function CategoryForm({ form, onChange }: CategoryFormProps) {
           style={{
             background: form.gradient || 'var(--color-surface-2)',
             height: 32,
-            borderRadius: 8,
+            borderRadius: 'var(--radius-lg)',
             marginTop: 4,
           }}
         />
@@ -66,7 +66,7 @@ export function CategoryForm({ form, onChange }: CategoryFormProps) {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '10px 14px',
-          borderRadius: 8,
+          borderRadius: 'var(--radius-lg)',
           border: '1px solid var(--color-border)',
           backgroundColor: 'var(--color-surface-2)',
         }}
@@ -78,7 +78,7 @@ export function CategoryForm({ form, onChange }: CategoryFormProps) {
           style={{
             width: 44,
             height: 24,
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             border: 'none',
             cursor: 'pointer',
             backgroundColor: form.isActive ? 'var(--color-brand)' : 'var(--color-border)',

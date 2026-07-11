@@ -118,9 +118,9 @@ export function AuthModal() {
               zIndex: 201,
               width: 'min(425px, calc(100vw - 32px))',
               background: 'var(--color-surface)',
-              borderRadius: '24px',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-xl)',
               overflow: 'hidden',
-              boxShadow: '0 32px 80px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(0, 0, 0, 0.10)',
               maxHeight: '92dvh',
               overflowY: 'auto',
               scrollbarWidth: 'none',
@@ -147,7 +147,7 @@ export function AuthModal() {
             <div
               style={{
                 height: '4px',
-                background: 'linear-gradient(90deg, #7C3AED 0%, #5B21B6 100%)',
+                background: 'linear-gradient(90deg, var(--color-brand) 0%, var(--color-brand-dark) 100%)',
                 flexShrink: 0,
               }}
               aria-hidden="true"

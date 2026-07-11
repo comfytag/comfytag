@@ -103,7 +103,7 @@ export default function BottomPillNav() {
   return (
     <nav
       aria-label="Partner mobile navigation"
-      className="md:hidden fixed left-4 right-4 z-50 backdrop-blur-xl bg-white/80 border border-zinc-200/60 p-2 rounded-full shadow-lg flex justify-around items-center"
+      className="md:hidden fixed left-4 right-4 z-50 backdrop-blur-xl bg-white/80 border border-zinc-200/60 p-2 rounded-full flex justify-around items-center"
       style={{ bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
     >
       {/* Standard link tabs */}
@@ -180,7 +180,7 @@ export default function BottomPillNav() {
 
         {/* Upward dropdown */}
         {menuOpen && (
-          <div className="absolute bottom-full right-0 mb-3 w-48 bg-white border border-zinc-200 rounded-2xl shadow-xl overflow-hidden z-[60]">
+          <div className="absolute bottom-full right-0 mb-3 w-48 bg-white border border-zinc-200 rounded-lg overflow-hidden z-[60]">
             {MENU_ITEMS.map(({ label, href }, i) => (
               <Link
                 key={href}

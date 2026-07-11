@@ -42,10 +42,10 @@ export function HeroSection({
         The background layer below carries its own overflow-hidden + rounded corners
         so the visual shape is preserved.
       */}
-      <div className="relative w-full mt-6 lg:mt-10 rounded-[2.5rem] bg-zinc-950 min-h-[60svh] flex flex-col items-center justify-center text-center px-4 py-20 shadow-2xl">
+      <div className="relative w-full mt-6 lg:mt-10 rounded-2xl border border-white/10 bg-zinc-950 min-h-[60svh] flex flex-col items-center justify-center text-center px-4 py-20">
 
         {/* Background layer — isolated overflow-hidden so bg image clips to rounded corners */}
-        <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
           <img
             src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=2500&auto=format&fit=crop"
             alt="Concert Crowd"
@@ -102,7 +102,7 @@ export function HeroSection({
           <div className="relative z-[120] w-full max-w-3xl mx-auto">
             <form
               onSubmit={handleSearch}
-              className="flex items-center bg-white rounded-full p-1.5 md:p-2 shadow-lg focus-within:ring-4 focus-within:ring-violet-500/30 transition-all"
+              className="flex items-center bg-white rounded-full p-1.5 md:p-2 border border-transparent focus-within:border-brand focus-within:ring-4 focus-within:ring-violet-500/30 transition-colors duration-(--duration-micro) ease-(--ease-standard)"
             >
               <div className="flex items-center flex-1 min-w-0 pl-3 md:pl-4 pr-2">
                 <Search className="h-5 w-5 text-zinc-400 shrink-0" />
@@ -119,7 +119,7 @@ export function HeroSection({
               </div>
               <button
                 type="submit"
-                className="bg-violet-600 hover:bg-violet-700 text-white rounded-full px-4 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold transition-colors shrink-0"
+                className="bg-brand hover:bg-brand-dark text-white rounded-full px-4 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold transition-colors duration-(--duration-micro) ease-(--ease-standard) shrink-0"
               >
                 Find Events
               </button>

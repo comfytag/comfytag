@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -60,7 +60,7 @@ export default function TeamInvitePage() {
           maxWidth: 480,
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           padding: 32,
         }}
       >
@@ -97,7 +97,7 @@ export default function TeamInvitePage() {
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                borderRadius: 8,
+                borderRadius: 'var(--radius-lg)',
                 border: '1px solid var(--color-border)',
                 backgroundColor: 'var(--color-bg)',
                 color: 'var(--color-text)',

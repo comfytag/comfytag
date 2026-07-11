@@ -9,16 +9,20 @@ export interface EmptyStateProps {
 
 export function EmptyState({ title, subtitle, action, className }: EmptyStateProps) {
   return (
-    <div
-      className={className}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '48px 24px',
-        textAlign: 'center',
-      }}
-    >
+    <>
+      <style>{`@keyframes __ct_empty_fade_in{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+      @media (prefers-reduced-motion: reduce){.__ct_empty_fade_in{animation:none!important}}`}</style>
+      <div
+        className={`__ct_empty_fade_in${className ? ` ${className}` : ''}`}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '48px 24px',
+          textAlign: 'center',
+          animation: '__ct_empty_fade_in var(--duration-entrance) var(--ease-entrance)',
+        }}
+      >
       <svg
         width="24"
         height="24"
@@ -49,17 +53,19 @@ export function EmptyState({ title, subtitle, action, className }: EmptyStatePro
             marginTop: '20px',
             display: 'inline-block',
             padding: '8px 16px',
-            borderRadius: '8px',
+            borderRadius: 'var(--radius-md)',
             backgroundColor: 'var(--color-brand)',
-            color: '#ffffff',
+            color: 'var(--color-text-on-brand)',
             textDecoration: 'none',
             fontSize: '14px',
             fontWeight: 500,
+            transition: 'background-color var(--duration-micro) var(--ease-standard)',
           }}
         >
           {action.label}
         </a>
       )}
-    </div>
+      </div>
+    </>
   )
 }

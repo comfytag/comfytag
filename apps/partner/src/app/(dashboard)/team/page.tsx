@@ -125,7 +125,7 @@ export default function TeamPage() {
                 value={selectedEventId ?? ''}
                 onChange={(e) => setSelectedEventId(e.target.value || null)}
                 aria-label="Select event"
-                className="appearance-none bg-white border border-zinc-200 shadow-sm rounded-full pl-4 pr-10 py-2.5 text-sm font-medium text-zinc-700 focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-shadow hover:shadow-md max-w-60 truncate"
+                className="appearance-none bg-white border border-zinc-200 rounded-full pl-4 pr-10 py-2.5 text-sm font-medium text-zinc-700 focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors hover:border-zinc-300 max-w-60 truncate"
               >
                 <option value="">Select event…</option>
                 {events.map((e) => (

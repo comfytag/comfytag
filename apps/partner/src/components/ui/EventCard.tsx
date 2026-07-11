@@ -138,9 +138,8 @@ export function EventCard({
           overflow: 'hidden',
           display: 'block',
           height: `${height}px`,
-          transform: hovered ? 'scale(1.02)' : 'scale(1)',
-          transition: `transform var(--duration-fast) ease, box-shadow var(--duration-fast) ease`,
-          boxShadow: hovered ? '0 0 12px rgba(124, 58, 237, 0.3)' : 'none',
+          border: hovered ? '1px solid var(--color-brand)' : '1px solid transparent',
+          transition: `border-color var(--duration-fast) ease`,
           cursor: 'default',
         }}
         onMouseEnter={() => setHovered(true)}
@@ -176,7 +175,6 @@ export function EventCard({
               fontWeight: 700,
               padding: '4px 10px',
               borderRadius: 'var(--radius-full)',
-              backdropFilter: 'blur(4px)',
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               ...getStatusBadgeStyle(status),
@@ -199,7 +197,6 @@ export function EventCard({
               fontWeight: 700,
               padding: '4px 10px',
               borderRadius: 'var(--radius-full)',
-              backdropFilter: 'blur(4px)',
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
             }}
@@ -231,7 +228,6 @@ export function EventCard({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backdropFilter: 'blur(4px)',
                 color: 'var(--color-text-on-brand)',
               }}
             >
@@ -263,7 +259,6 @@ export function EventCard({
                   minWidth: '160px',
                   zIndex: 10,
                   padding: '4px 0',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
                 }}
               >
                 {onEdit != null && (

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { Button, ErrorMessage, Input, LoadingSpinner, PageHeader } from '@comfytag/ui'
@@ -33,7 +33,7 @@ function ToggleSwitch({
           display: 'inline-block',
           width: 36,
           height: 20,
-          borderRadius: 10,
+          borderRadius: 'var(--radius-xl)',
           backgroundColor: checked ? 'var(--color-brand)' : 'var(--color-border)',
           transition: 'background-color 0.2s',
           flexShrink: 0,
@@ -68,7 +68,7 @@ function ToggleSwitch({
 const cardStyle: React.CSSProperties = {
   backgroundColor: 'var(--color-surface)',
   border: '1px solid var(--color-border)',
-  borderRadius: '12px',
+  borderRadius: 'var(--radius-lg)',
   padding: '24px',
   marginBottom: '24px',
 }
@@ -133,7 +133,7 @@ export default function CmsCuratedPage() {
           style={{
             backgroundColor: 'color-mix(in srgb, var(--color-error) 10%, transparent)',
             border: '1px solid color-mix(in srgb, var(--color-error) 30%, transparent)',
-            borderRadius: 8,
+            borderRadius: 'var(--radius-lg)',
             padding: '12px 16px',
             marginBottom: 24,
             fontSize: '13px',

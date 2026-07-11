@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import {
   Animated,
-  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -34,16 +33,6 @@ const STATUS_BADGE: Record<string, { bg: string; text: string }> = {
   cancelled: { bg: '#450A0A', text: '#FCA5A5' },
   completed: { bg: '#1C1917', text: '#78716C' },
 }
-
-const cardShadow = Platform.select({
-  ios: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  },
-  android: { elevation: 4 },
-})
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -115,7 +104,7 @@ interface StatCardProps {
 
 function StatCard({ label, value, valueColor }: StatCardProps) {
   return (
-    <View style={[styles.statCard, cardShadow]}>
+    <View style={styles.statCard}>
       <Text style={[styles.statValue, { color: valueColor ?? colors.mobile.textPrimary }]}>
         {value}
       </Text>
@@ -155,7 +144,7 @@ interface QuickActionRowProps {
 
 function QuickActionRow({ icon, label, onPress }: QuickActionRowProps) {
   return (
-    <AnimatedPressable onPress={onPress} hapticStyle="light" style={[styles.quickActionRow, cardShadow]}>
+    <AnimatedPressable onPress={onPress} hapticStyle="light" style={styles.quickActionRow}>
       <View style={styles.quickActionLeft}>
         <View style={styles.quickActionIconWrap}>{icon}</View>
         <Text style={styles.quickActionLabel}>{label}</Text>
@@ -250,7 +239,7 @@ export default function DashboardScreen() {
         {!isLoading && !isError && revenue !== undefined && (
           <>
             {/* Revenue Card */}
-            <View style={[styles.revenueCard, cardShadow]}>
+            <View style={styles.revenueCard}>
               <Text style={styles.revenueTotalLabel}>TOTAL REVENUE</Text>
               <Text style={styles.revenueTotalValue}>
                 {formatNaira(revenue.totalRevenue)}
@@ -297,7 +286,7 @@ export default function DashboardScreen() {
                 </AnimatedPressable>
               </View>
 
-              <View style={[styles.sectionCard, cardShadow]}>
+              <View style={styles.sectionCard}>
                 {upcomingEvents.length === 0 ? (
                   <View style={styles.emptyState}>
                     <Text style={styles.emptyStateText}>No upcoming events.</Text>

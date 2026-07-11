@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -84,7 +84,7 @@ const columns: ColumnDef<Event>[] = [
         style={{
           display: 'inline-block',
           padding: '5px 14px',
-          borderRadius: 6,
+          borderRadius: 'var(--radius-md)',
           fontSize: 13,
           fontWeight: 600,
           color: 'var(--color-brand)',
@@ -136,7 +136,7 @@ export default function EventsPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
           style={{
             padding: '8px 14px',
-            borderRadius: 8,
+            borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface)',
             color: 'var(--color-text)',
@@ -159,7 +159,7 @@ export default function EventsPage() {
         style={{
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           overflow: 'hidden',
         }}
       >

@@ -112,7 +112,7 @@ export function TicketListItem({ ticket, isPast, onAction }: TicketListItemProps
       href={`/tickets/${ticket._id}`}
       className={[
         'w-full bg-white border border-zinc-200 rounded-2xl p-4 sm:p-5',
-        'hover:border-zinc-300 hover:shadow-sm transition-all',
+        'hover:border-zinc-300 transition-all',
         'flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 relative',
         'no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2',
         isExpired ? 'opacity-60' : '',

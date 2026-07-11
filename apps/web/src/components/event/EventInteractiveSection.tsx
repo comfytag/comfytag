@@ -381,7 +381,7 @@ export function EventInteractiveSection({
 
               {/* Hero image carousel */}
               <div
-                className="w-full rounded-[2rem] overflow-hidden shadow-sm border border-zinc-200/50 mb-8"
+                className="w-full rounded-2xl overflow-hidden border border-zinc-200/50 mb-8"
                 data-testid="event-hero"
               >
                 <EventHeroCarousel
@@ -429,7 +429,7 @@ export function EventInteractiveSection({
               <div className="sticky top-24 space-y-6">
 
                 {/* Gate Access Card — boarding pass style */}
-                <div className="bg-white rounded-[2rem] border border-zinc-200/80 p-4 sm:p-5 shadow-sm">
+                <div className="bg-white rounded-2xl border border-zinc-200/80 p-4 sm:p-5">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="p-2 bg-orange-50 text-orange-600 rounded-full shrink-0">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -461,7 +461,7 @@ export function EventInteractiveSection({
                 </div>
 
                 {/* Ticket Selection Card */}
-                <div className="bg-white rounded-[2rem] border border-zinc-200/80 p-4 sm:p-5 shadow-sm">
+                <div className="bg-white rounded-2xl border border-zinc-200/80 p-4 sm:p-5">
                   {event.ticketType.length === 0 ? (
                     <p className="text-sm text-zinc-400 text-center py-4">No tickets available</p>
                   ) : (
@@ -571,7 +571,7 @@ export function EventInteractiveSection({
                         type="button"
                         disabled={allSoldOut || isPast}
                         onClick={() => setTicketSheetOpen(true)}
-                        className="w-full bg-zinc-900 text-white font-bold py-4 rounded-full shadow-md active:scale-95 transition-all disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed"
+                        className="w-full bg-zinc-900 text-white font-bold py-4 rounded-full active:scale-95 transition-all disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed"
                       >
                         {isPast ? 'Ended' : allSoldOut ? 'Sold Out' : 'Get Tickets'}
                       </button>

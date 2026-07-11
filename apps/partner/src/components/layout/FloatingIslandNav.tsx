@@ -55,7 +55,7 @@ export default function FloatingIslandNav() {
   return (
     <nav
       aria-label="Partner navigation"
-      className="hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 z-50 items-center gap-1 bg-zinc-900/85 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl p-1.5 w-max"
+      className="hidden md:flex fixed top-4 left-1/2 -translate-x-1/2 z-50 items-center gap-1 bg-zinc-900/85 backdrop-blur-xl border border-white/10 rounded-full p-1.5 w-max"
     >
       {/* Logo */}
       <Link href="/overview" className="flex items-center shrink-0" aria-label="ComfyTag Studio home">
@@ -145,7 +145,7 @@ export default function FloatingIslandNav() {
         {dropdownOpen && (
           <div
             role="menu"
-            className="absolute top-[calc(100%+8px)] right-0 min-w-[220px] bg-zinc-900 border border-white/10 rounded-2xl py-2 shadow-2xl z-[100] overflow-hidden"
+            className="absolute top-[calc(100%+8px)] right-0 min-w-[220px] bg-zinc-900 border border-white/10 rounded-lg py-2 z-[100] overflow-hidden"
           >
             {/* User info header */}
             <div className="px-4 py-3 border-b border-white/10">

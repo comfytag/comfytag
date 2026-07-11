@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -74,7 +74,7 @@ const columns: ColumnDef<WithdrawRequest>[] = [
         style={{
           display: 'inline-block',
           padding: '5px 14px',
-          borderRadius: 6,
+          borderRadius: 'var(--radius-md)',
           fontSize: 13,
           fontWeight: 600,
           color: 'var(--color-brand)',
@@ -105,7 +105,7 @@ function TabButton({
       onClick={onClick}
       style={{
         padding: '7px 20px',
-        borderRadius: 8,
+        borderRadius: 'var(--radius-lg)',
         border: '1px solid',
         borderColor: active ? 'var(--color-brand)' : 'var(--color-border)',
         backgroundColor: active ? 'rgba(124, 58, 237, 0.12)' : 'transparent',
@@ -178,7 +178,7 @@ export default function PayoutsPage() {
         style={{
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           overflow: 'hidden',
         }}
       >

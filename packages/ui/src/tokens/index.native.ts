@@ -17,13 +17,13 @@ export const sp = {
   12: 48,
 } as const
 
-// ─── Border radius (numeric) ─────────────────────────────
+// ─── Border radius (numeric, v2.0 — drastically tightened, matches ./base) ──
 export const rd = {
-  sm:   6,
-  md:   12,
-  lg:   16,
-  xl:   20,
-  '2xl': 24,
+  sm:   4,
+  md:   6,
+  lg:   8,
+  xl:   10,
+  '2xl': 10, // merged with xl in v2.0 — see design.md changelog
   full: 9999,
 } as const
 

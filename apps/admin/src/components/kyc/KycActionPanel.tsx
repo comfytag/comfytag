@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { Modal, Badge, Button } from '@comfytag/ui'
@@ -35,7 +35,7 @@ function DocCard({ label, kycType, urls, verified, onApprove, disabled, loading 
       style={{
         backgroundColor: 'var(--color-surface)',
         border: `1px solid ${verified ? 'color-mix(in srgb, var(--color-success) 40%, var(--color-border))' : 'var(--color-border)'}`,
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
         padding: 20,
         display: 'flex',
         flexDirection: 'column',
@@ -59,7 +59,7 @@ function DocCard({ label, kycType, urls, verified, onApprove, disabled, loading 
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ display: 'block', borderRadius: 8, overflow: 'hidden' }}
+              style={{ display: 'block', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}
               title="Open full size"
             >
               <img
@@ -71,7 +71,7 @@ function DocCard({ label, kycType, urls, verified, onApprove, disabled, loading 
                   objectFit: 'cover',
                   display: 'block',
                   border: '1px solid var(--color-border)',
-                  borderRadius: 8,
+                  borderRadius: 'var(--radius-lg)',
                 }}
               />
             </a>
@@ -87,7 +87,7 @@ function DocCard({ label, kycType, urls, verified, onApprove, disabled, loading 
             fontSize: 13,
             color: 'var(--color-text-muted)',
             border: '1px dashed var(--color-border)',
-            borderRadius: 8,
+            borderRadius: 'var(--radius-lg)',
           }}
         >
           No document uploaded
@@ -328,7 +328,7 @@ export function KycActionPanel({ userId, user }: KycActionPanelProps) {
           style={{
             width: '100%',
             padding: '10px 14px',
-            borderRadius: 8,
+            borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface-2)',
             color: 'var(--color-text)',

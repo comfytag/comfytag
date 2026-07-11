@@ -42,7 +42,7 @@ export function VaultLiveCard({
 
   return (
     <div className="max-w-3xl w-full">
-      <div className="bg-white border border-red-200 rounded-2xl overflow-hidden shadow-[0_0_0_1px_rgba(239,68,68,0.1),0_4px_24px_rgba(239,68,68,0.12)] transition-shadow duration-300 hover:shadow-[0_0_0_1px_rgba(239,68,68,0.2),0_8px_32px_rgba(239,68,68,0.2)]">
+      <div className="bg-white border border-red-200 rounded-xl overflow-hidden transition-colors duration-300 hover:border-red-300">
         <div className="flex h-40 sm:h-48">
           {/* Cover image */}
           <div className="relative w-36 sm:w-52 shrink-0">
@@ -95,7 +95,7 @@ export function VaultLiveCard({
                 {menuOpen && (
                   <div
                     role="menu"
-                    className="absolute right-0 top-8 bg-white border border-zinc-200 rounded-xl shadow-lg z-20 min-w-[148px] overflow-hidden py-1"
+                    className="absolute right-0 top-8 bg-white border border-zinc-200 rounded-lg z-20 min-w-[148px] overflow-hidden py-1"
                   >
                     <button
                       role="menuitem"

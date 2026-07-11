@@ -39,7 +39,7 @@ interface MetricCardProps {
 
 function MetricCard({ label, value, caption }: MetricCardProps) {
   return (
-    <div className="bg-white border border-zinc-200/80 rounded-4xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white border border-zinc-200/80 rounded-xl p-6 hover:border-zinc-300 transition-colors duration-200">
       <span className="text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider mb-2 block">
         {label}
       </span>
@@ -121,7 +121,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Revenue Over Time — Master Chart Canvas */}
-      <div className="w-full bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] p-6 sm:p-8 overflow-hidden">
+      <div className="w-full bg-white border border-zinc-200/80 rounded-xl p-6 sm:p-8 overflow-hidden">
         <h2 className="text-lg font-bold text-zinc-900 mb-6">Revenue Over Time</h2>
         {monthlyRevenue.length === 0 ? (
           <div className="flex items-center justify-center h-48 text-sm text-zinc-400">
@@ -155,11 +155,11 @@ export default function AnalyticsPage() {
       <div>
         <h2 className="text-lg font-bold text-zinc-900 mb-4">Ticket Breakdown</h2>
         {ticketTypes.length === 0 ? (
-          <div className="bg-white border border-zinc-200/80 rounded-4xl p-8 text-center text-sm text-zinc-400 shadow-sm">
+          <div className="bg-white border border-zinc-200/80 rounded-xl p-8 text-center text-sm text-zinc-400">
             No ticket type data available
           </div>
         ) : (
-          <div className="bg-white border border-zinc-200/80 rounded-4xl overflow-hidden shadow-sm">
+          <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden">
             {ticketTypes.map((ticketType: TicketTypeBreakdown) => {
               const percentageSold =
                 ticketType.capacity > 0

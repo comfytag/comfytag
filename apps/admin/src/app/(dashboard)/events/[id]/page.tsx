@@ -86,7 +86,7 @@ function SuspensionBanner({ eventName }: { eventName: string }) {
         alignItems: 'flex-start',
         gap: 14,
         padding: '16px 20px',
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
         border: '1px solid rgba(239, 68, 68, 0.4)',
         backgroundColor: 'rgba(239, 68, 68, 0.08)',
         marginBottom: 24,
@@ -165,7 +165,7 @@ export default function EventDetailPage() {
       {coverImage && (
         <div
           style={{
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
             marginBottom: 24,
             border: '1px solid var(--color-border)',
@@ -185,7 +185,7 @@ export default function EventDetailPage() {
         style={{
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           padding: 24,
           marginBottom: 24,
         }}
@@ -272,7 +272,7 @@ export default function EventDetailPage() {
             style={{
               backgroundColor: 'var(--color-surface)',
               border: '1px solid var(--color-border)',
-              borderRadius: 12,
+              borderRadius: 'var(--radius-lg)',
               overflow: 'hidden',
               marginBottom: 28,
             }}

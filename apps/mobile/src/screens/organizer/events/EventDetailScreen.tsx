@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -31,16 +30,6 @@ const STATUS_BADGE: Record<string, { bg: string; text: string }> = {
   completed: { bg: '#1C1917', text: '#78716C' },
 }
 
-const cardShadow = Platform.select({
-  ios: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  },
-  android: { elevation: 4 },
-})
-
 // ─── StatCard ─────────────────────────────────────────────────────────────────
 
 interface StatCardProps {
@@ -51,7 +40,7 @@ interface StatCardProps {
 
 function StatCard({ value, label, valueColor }: StatCardProps) {
   return (
-    <View style={[styles.statCard, cardShadow]}>
+    <View style={styles.statCard}>
       <Text style={[styles.statValue, { color: valueColor }]} numberOfLines={1}>
         {value}
       </Text>
@@ -197,7 +186,7 @@ export default function EventDetailScreen({ navigation, route }: Props) {
           </View>
 
           {/* Event info card */}
-          <View style={[styles.card, cardShadow]}>
+          <View style={styles.card}>
             <Text style={styles.sectionTitle}>Event Info</Text>
             <InfoRow label="Date" value={formatDate(event.date)} />
             <InfoRow label="Time" value={formatTime(event.date)} />
@@ -225,7 +214,7 @@ export default function EventDetailScreen({ navigation, route }: Props) {
 
           {/* Ticket tiers card */}
           {event.ticketType && event.ticketType.length > 0 ? (
-            <View style={[styles.card, cardShadow]}>
+            <View style={styles.card}>
               <Text style={styles.sectionTitle}>Ticket Tiers</Text>
               {event.ticketType.map((tier, index) => (
                 <TierRow
@@ -238,7 +227,7 @@ export default function EventDetailScreen({ navigation, route }: Props) {
           ) : null}
 
           {/* Manage actions card */}
-          <View style={[styles.card, cardShadow]}>
+          <View style={styles.card}>
             <Text style={styles.sectionTitle}>Manage</Text>
             <ActionRow
               label="Manage Tiers"
@@ -308,6 +297,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.mobile.surface,
     borderRadius: rd.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.mobile.border,
     paddingVertical: sp[4],
     paddingHorizontal: sp[2],
     alignItems: 'center',
@@ -325,6 +316,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.mobile.surface,
     borderRadius: rd.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.mobile.border,
     padding: sp[4],
   },
   sectionTitle: {

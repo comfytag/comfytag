@@ -56,10 +56,10 @@ export function LiveTicketPreview({ formData }: LiveTicketPreviewProps) {
       </div>
 
       {/* Ticket card — outer div without overflow-hidden so notch circles can protrude */}
-      <div className="bg-white rounded-3xl border border-zinc-200 shadow-2xl relative">
+      <div className="bg-white rounded-xl border border-zinc-200 relative">
 
-        {/* Cover image — own overflow-hidden + rounded-t-3xl */}
-        <div className="relative h-44 rounded-t-3xl overflow-hidden">
+        {/* Cover image — own overflow-hidden + rounded-t-xl */}
+        <div className="relative h-44 rounded-t-xl overflow-hidden">
           {formData.images[0] ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -90,7 +90,7 @@ export function LiveTicketPreview({ formData }: LiveTicketPreviewProps) {
           {/* Category badge */}
           {formData.category && (
             <div className="absolute top-3 left-3">
-              <span className="bg-white/90 backdrop-blur-sm text-zinc-800 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+              <span className="bg-white/90 text-zinc-800 text-[10px] font-bold px-2.5 py-1 rounded-full">
                 {formData.category}
               </span>
             </div>

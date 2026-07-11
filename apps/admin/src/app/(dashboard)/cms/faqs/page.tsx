@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import {
@@ -39,7 +39,7 @@ function ActiveBadge({ isActive }: { isActive: boolean }) {
       style={{
         display: 'inline-block',
         padding: '2px 8px',
-        borderRadius: '999px',
+        borderRadius: 'var(--radius-full)',
         fontSize: '12px',
         fontWeight: 500,
         backgroundColor: isActive
@@ -73,7 +73,7 @@ function ActionButtons({
           justifyContent: 'center',
           width: 28,
           height: 28,
-          borderRadius: 6,
+          borderRadius: 'var(--radius-md)',
           border: '1px solid var(--color-border)',
           backgroundColor: 'transparent',
           color: 'var(--color-text)',
@@ -92,7 +92,7 @@ function ActionButtons({
           justifyContent: 'center',
           width: 28,
           height: 28,
-          borderRadius: 6,
+          borderRadius: 'var(--radius-md)',
           border: '1px solid var(--color-border)',
           backgroundColor: 'transparent',
           color: 'var(--color-error)',
@@ -253,7 +253,7 @@ export default function CmsFaqsPage() {
           style={{
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
           }}
         >
@@ -308,7 +308,7 @@ export default function CmsFaqsPage() {
               style={{
                 width: '100%',
                 padding: '10px 12px',
-                borderRadius: '8px',
+                borderRadius: 'var(--radius-lg)',
                 border: '1px solid var(--color-border)',
                 backgroundColor: 'var(--color-surface)',
                 color: 'var(--color-text)',

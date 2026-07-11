@@ -77,19 +77,20 @@
   --color-energy:           #f59e0b;
   --color-info:             #3b82f6;
 
-  /* ── Radius scale ──────────────────────────────────────────────────── */
-  --radius-sm:    6px;
-  --radius-md:    12px;
-  --radius-lg:    16px;
-  --radius-xl:    20px;
-  --radius-2xl:   24px;
+  /* ── Radius scale (v2.0 — drastically tightened, see design.md) ─────── */
+  --radius-sm:    4px;
+  --radius-md:    6px;
+  --radius-lg:    8px;
+  --radius-xl:    10px;
+  --radius-2xl:   10px;
   --radius-full:  9999px;
 
-  /* ── Shadows ───────────────────────────────────────────────────────── */
-  --shadow-sm:    0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md:    0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg:    0 8px 24px rgba(0, 0, 0, 0.6);
-  --shadow-brand: 0 0 20px rgba(124, 58, 237, 0.25);
+  /* ── Shadows/glow removed in v2.0 — depth via border + surface contrast
+     only. Vars kept as `none` so lingering usage degrades safely. ───── */
+  --shadow-sm:    none;
+  --shadow-md:    none;
+  --shadow-lg:    none;
+  --shadow-brand: none;
 
   /* ── Motion ────────────────────────────────────────────────────────── */
   --duration-micro:    100ms;
@@ -140,4 +141,31 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Calm card entrance — fade + small translateY, no glow/shadow involved.
+   Apply `.card-enter` and stagger via inline `animationDelay`.
+───────────────────────────────────────────────────────────────────────── */
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-enter {
+  animation: cardEnter var(--duration-entrance) var(--ease-entrance) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-enter {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }

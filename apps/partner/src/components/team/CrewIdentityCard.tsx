@@ -52,7 +52,7 @@ export function CrewIdentityCard({
   const emailVerified = !!isVerify?.email
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm flex items-center gap-5">
+    <div className="bg-white border border-zinc-200 rounded-xl p-6 flex items-center gap-5">
       {/* Avatar */}
       <div className="w-16 h-16 rounded-full bg-violet-600 flex items-center justify-center text-white text-2xl font-black shrink-0 overflow-hidden ring-4 ring-violet-100">
         {avatar ? (

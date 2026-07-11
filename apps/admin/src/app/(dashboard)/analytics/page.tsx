@@ -132,10 +132,10 @@ function exportCSV(events: Event[]): void {
 // ─── Shared chart styles ──────────────────────────────────────────────────────
 
 const tooltipContentStyle = {
-  backgroundColor: '#1A1A1A',
-  border: '1px solid rgba(255,255,255,0.08)',
-  borderRadius: '8px',
-  color: '#F5F5F4',
+  backgroundColor: 'var(--color-surface)',
+  border: '1px solid var(--color-border-light)',
+  borderRadius: 'var(--radius-lg)',
+  color: 'var(--color-text)',
   fontSize: '12px',
 }
 
@@ -144,7 +144,7 @@ const tickStyle = { fill: MUTED, fontSize: 12 }
 const cardStyle: React.CSSProperties = {
   backgroundColor: 'var(--color-surface)',
   border: '1px solid var(--color-border)',
-  borderRadius: '12px',
+  borderRadius: 'var(--radius-lg)',
   padding: '24px',
 }
 
@@ -452,7 +452,7 @@ export default function AnalyticsPage() {
               style={{
                 padding: '14px 16px',
                 backgroundColor: 'var(--color-surface-2)',
-                borderRadius: 8,
+                borderRadius: 'var(--radius-lg)',
                 borderLeft: `3px solid ${color}`,
               }}
             >

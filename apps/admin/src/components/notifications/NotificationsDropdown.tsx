@@ -185,7 +185,7 @@ function NotifRow({
 
       {/* Icon */}
       <div style={{
-        width: 34, height: 34, borderRadius: 8,
+        width: 34, height: 34, borderRadius: 'var(--radius-lg)',
         backgroundColor: iconBg, flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         marginTop: 1,
@@ -299,10 +299,9 @@ export function NotificationsDropdown({ onClose }: NotificationsDropdownProps) {
           top: calc(100% + 10px);
           right: 0;
           width: 380px;
-          background: #1a1a1a;
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 14px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+          background: var(--color-surface);
+          border: 1px solid var(--color-border-light);
+          border-radius: var(--radius-xl);
           z-index: 100;
           overflow: hidden;
           display: flex;
@@ -316,20 +315,20 @@ export function NotificationsDropdown({ onClose }: NotificationsDropdownProps) {
             left: 0;
             right: 0;
             width: 100%;
-            border-radius: 0 0 14px 14px;
+            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
             max-height: 70vh;
           }
         }
         .admin-notif-mark-all {
           padding: 5px 14px;
-          border-radius: 7px;
+          border-radius: var(--radius-md);
           font-size: 12px;
           font-weight: 600;
-          border: 1px solid rgba(255,255,255,0.12);
+          border: 1px solid var(--color-border-light);
           background: transparent;
           color: var(--color-text-muted);
           cursor: pointer;
-          transition: all 150ms;
+          transition: all var(--duration-fast);
           white-space: nowrap;
         }
         .admin-notif-mark-all:hover:not(:disabled) {
@@ -356,7 +355,7 @@ export function NotificationsDropdown({ onClose }: NotificationsDropdownProps) {
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '14px 16px 12px',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: '1px solid var(--color-border)',
           flexShrink: 0,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -367,7 +366,7 @@ export function NotificationsDropdown({ onClose }: NotificationsDropdownProps) {
               <span style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 minWidth: 20, height: 20, padding: '0 5px',
-                borderRadius: 9999, backgroundColor: 'var(--color-brand)',
+                borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-brand)',
                 color: '#fff', fontSize: 11, fontWeight: 700,
               }}>
                 {unreadCount > 99 ? '99+' : unreadCount}
@@ -412,9 +411,9 @@ export function NotificationsDropdown({ onClose }: NotificationsDropdownProps) {
               padding: '48px 16px', gap: 12,
             }}>
               <div style={{
-                width: 48, height: 48, borderRadius: 12,
-                backgroundColor: '#252525',
-                border: '1px solid rgba(255,255,255,0.08)',
+                width: 48, height: 48, borderRadius: 'var(--radius-lg)',
+                backgroundColor: 'var(--color-surface-2)',
+                border: '1px solid var(--color-border)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <Bell size={22} color="var(--color-text-muted)" />

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 interface ErrorProps {
   error: Error & { digest?: string }
@@ -38,7 +38,7 @@ export default function Error({ error, reset }: ErrorProps) {
           backgroundColor: 'var(--color-brand)',
           color: '#ffffff',
           border: 'none',
-          borderRadius: '8px',
+          borderRadius: 'var(--radius-lg)',
           padding: '10px 20px',
           fontSize: '14px',
           fontWeight: 500,

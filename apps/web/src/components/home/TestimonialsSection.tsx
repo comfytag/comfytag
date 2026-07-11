@@ -29,7 +29,7 @@ export function TestimonialsSection({ testimonials }: TestimonialsSectionProps) 
           {testimonials.map((testimonial) => (
             <div
               key={testimonial._id}
-              className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-zinc-100 flex flex-col justify-between h-full hover:shadow-md transition-shadow shrink-0 w-[85vw] sm:w-85 snap-center md:w-auto md:shrink"
+              className="bg-white p-6 md:p-8 rounded-2xl border border-zinc-100 flex flex-col justify-between h-full hover:border-zinc-300 transition-colors shrink-0 w-[85vw] sm:w-85 snap-center md:w-auto md:shrink"
             >
               <div>
                 <div className="flex gap-1 mb-6 text-amber-400" aria-label="5 out of 5 stars">

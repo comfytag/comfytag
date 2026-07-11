@@ -96,7 +96,7 @@ function TableRow<T extends object>({ row, columns }: { row: T; columns: ColumnD
     <tr
       style={{
         backgroundColor: hovered ? 'var(--color-surface-2)' : undefined,
-        transition: 'background-color 150ms',
+        transition: 'background-color var(--duration-micro) var(--ease-standard)',
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

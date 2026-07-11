@@ -4,7 +4,6 @@ export {
   spacing,
   containers,
   radius,
-  shadows,
   motion,
   typography,
   layout,

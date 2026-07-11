@@ -106,7 +106,7 @@ export function Step1BasicInfo({
 
   return (
     <>
-    <div className="max-w-3xl mx-auto bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl sm:rounded-[2.5rem] p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
+    <div className="max-w-3xl mx-auto bg-white border border-zinc-200/80 rounded-xl p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
       <div>
         <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 1 of 5</span>
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Basic Info</h2>
@@ -150,7 +150,7 @@ export function Step1BasicInfo({
               <div
                 role="dialog"
                 aria-label="Choose a vibe for AI headline"
-                className="absolute top-full right-0 mt-2 w-64 bg-white border border-zinc-200 rounded-2xl shadow-2xl shadow-zinc-900/10 p-4 z-50"
+                className="absolute top-full right-0 mt-2 w-64 bg-white border border-zinc-200 rounded-lg p-4 z-50"
               >
                 <div className="flex items-start justify-between mb-1">
                   <p className="text-xs font-black text-zinc-900">Choose a vibe</p>
@@ -366,7 +366,7 @@ export function Step1BasicInfo({
 
     {/* Sticky nav bar */}
     <div
-      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50 shadow-[0_-4px_20px_rgb(0,0,0,0.05)]"
+      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50"
       style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
     >
       <div className="max-w-3xl mx-auto flex justify-between items-center">
@@ -381,7 +381,7 @@ export function Step1BasicInfo({
         <button
           type="button"
           onClick={onNext}
-          className="bg-zinc-900 text-white font-bold py-3 px-8 rounded-full shadow-sm active:scale-95 transition-all text-sm"
+          className="bg-zinc-900 text-white font-bold py-3 px-8 rounded-full active:scale-95 transition-all text-sm"
         >
           Next: Cover Image →
         </button>
@@ -390,7 +390,7 @@ export function Step1BasicInfo({
 
     {/* Toast */}
     {toastMsg && (
-      <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-100 bg-zinc-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
+      <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-100 bg-zinc-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 duration-200">
         {toastMsg}
       </div>
     )}

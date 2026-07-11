@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import {
   ActivityIndicator,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -215,11 +214,6 @@ export default function FaceEnrollmentStatusScreen({ navigation }: Props): React
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const cardShadow = Platform.select({
-  ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12 },
-  android: { elevation: 4 },
-})
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -271,7 +265,6 @@ const styles = StyleSheet.create({
     padding: sp[5],
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.mobile.border,
-    ...cardShadow,
   },
   statusCard: {
     marginBottom: sp[6],

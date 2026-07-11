@@ -84,7 +84,7 @@ export function CrewInviteSection({
   }
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-6">
+    <div className="bg-white border border-zinc-200 rounded-xl p-6 space-y-6">
       <div>
         <h3 className="text-base font-black text-zinc-900">Invite to Crew</h3>
         <p className="text-sm text-zinc-500 mt-0.5">

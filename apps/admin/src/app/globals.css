@@ -6,13 +6,42 @@
   --color-bg: #0F0F0F;
   --color-surface: #1A1A1A;
   --color-surface-2: #242424;
+  --color-surface-hover: #2E2E2E;
   --color-text: #F5F5F4;
   --color-text-muted: #A8A29E;
+  --color-text-on-brand: #FFFFFF;
   --color-border: #2A2A2A;
+  --color-border-light: #3D3D3D;
+  --color-border-focus: #7C3AED;
+  --color-overlay: rgba(0, 0, 0, 0.60);
   --color-success: #10B981;
   --color-error: #EF4444;
   --color-warning: #F59E0B;
   --color-gold: #D97706;
+  --color-info: #3B82F6;
+
+  /* ── Radius scale (v2.0 — drastically tightened, see design.md) ─ */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   10px;
+  --radius-2xl:  10px;
+  --radius-full: 9999px;
+
+  /* ── Shadows removed in v2.0 — depth via border + surface contrast only ── */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+
+  /* ── Motion tokens ────────────────────────────────────────────── */
+  --duration-micro:    100ms;
+  --duration-fast:     200ms;
+  --duration-default:  250ms;
+  --duration-entrance: 300ms;
+  --ease-entrance: cubic-bezier(0.0, 0.0, 0.2, 1.0);
+  --ease-exit:     cubic-bezier(0.4, 0.0, 1.0, 1.0);
+  --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1.0);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -20,6 +49,6 @@
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter Variable', Inter, sans-serif;
   margin: 0;
 }

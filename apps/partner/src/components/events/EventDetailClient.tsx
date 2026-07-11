@@ -175,7 +175,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
 
         {/* ── Digital Ticket Object (left · 7 cols) ────────────────── */}
         <div className="lg:col-span-7">
-          <div className="bg-white border border-zinc-200 shadow-xl rounded-3xl overflow-hidden">
+          <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden">
 
             {/* TOP HALF — Event Details (click to edit) */}
             <div
@@ -342,7 +342,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
 
           {/* Status Controls */}
           {currentStatus !== 'cancelled' && currentStatus !== 'ended' && (
-            <div className="bg-white border border-zinc-200/60 rounded-2xl sm:rounded-4xl p-5 sm:p-6 shadow-sm">
+            <div className="bg-white border border-zinc-200/60 rounded-xl p-5 sm:p-6">
               <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-400 mb-4 block">
                 STATUS CONTROLS
               </span>
@@ -384,7 +384,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
           )}
 
           {/* Live Activity Feed */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
+          <div className="bg-white border border-zinc-200 rounded-xl p-6">
             <div className="flex items-center justify-between mb-5">
               <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
                 Live Activity
@@ -495,10 +495,10 @@ interface QuickActionProps {
 function QuickAction({ icon, label, href, disabled = false }: QuickActionProps) {
   const inner = (
     <div
-      className={`flex flex-row items-center justify-start gap-3 bg-white border border-zinc-200/60 rounded-2xl sm:rounded-4xl p-4 sm:p-5 shadow-sm transition-all
+      className={`flex flex-row items-center justify-start gap-3 bg-white border border-zinc-200/60 rounded-xl p-4 sm:p-5 transition-all
         ${disabled
           ? 'opacity-40 grayscale pointer-events-none'
-          : 'hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] active:scale-95 cursor-pointer'
+          : 'hover:border-zinc-300 active:scale-95 cursor-pointer'
         }`}
     >
       {icon}

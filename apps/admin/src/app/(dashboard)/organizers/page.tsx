@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { LoadingSpinner, ErrorMessage, Badge } from '@comfytag/ui'
@@ -67,7 +67,7 @@ export default function OrganizersPage() {
         style={{
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           overflow: 'hidden',
         }}
       >

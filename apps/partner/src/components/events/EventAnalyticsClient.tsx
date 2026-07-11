@@ -64,7 +64,7 @@ export function EventAnalyticsClient({ analytics, eventId }: EventAnalyticsClien
 
       {/* Daily Sales Chart — Master Chart Canvas */}
       {analytics.dailySales && analytics.dailySales.length > 0 && (
-        <div className="w-full bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2.5rem] p-6 sm:p-8 overflow-hidden mb-8">
+        <div className="w-full bg-white border border-zinc-200/80 rounded-xl p-6 sm:p-8 overflow-hidden mb-8">
           <h2 className="text-lg font-bold text-zinc-900 mb-6">Daily Sales</h2>
           <div
             className="flex items-end justify-center border-b border-zinc-100 mb-3"
@@ -90,7 +90,7 @@ export function EventAnalyticsClient({ analytics, eventId }: EventAnalyticsClien
 
       {/* Tier Performance — Ledger Table */}
       {analytics.tierStats && analytics.tierStats.length > 0 && (
-        <div className="bg-white border border-zinc-200/80 rounded-4xl overflow-hidden shadow-sm mb-8">
+        <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden mb-8">
           <div className="px-5 py-4 border-b border-zinc-100">
             <h2 className="text-lg font-bold text-zinc-900">Ticket Tier Performance</h2>
           </div>

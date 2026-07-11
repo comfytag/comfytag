@@ -20,7 +20,7 @@ export interface ChartCardProps {
 export function ChartCard({ title, subtitle, children, className = '' }: ChartCardProps) {
   return (
     <div
-      className={`bg-white border border-zinc-200/80 rounded-4xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col ${className}`}
+      className={`bg-white border border-zinc-200/80 rounded-xl overflow-hidden flex flex-col ${className}`}
     >
       <div className="px-5 pt-5 pb-4 border-b border-zinc-100">
         <h3 className="text-sm font-bold text-zinc-900 leading-snug">{title}</h3>

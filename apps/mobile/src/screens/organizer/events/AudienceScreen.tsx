@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Animated,
   FlatList,
-  Platform,
   RefreshControl,
   StyleSheet,
   Text,
@@ -30,16 +29,6 @@ interface DisplayAttendee {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const cardShadow = Platform.select({
-  ios: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  },
-  android: { elevation: 4 },
-})
 
 // ─── SkeletonRow ──────────────────────────────────────────────────────────────
 
@@ -70,7 +59,7 @@ interface StatMiniProps {
 
 function StatMini({ label, value, valueColor }: StatMiniProps) {
   return (
-    <View style={[styles.statMini, cardShadow]}>
+    <View style={styles.statMini}>
       <Text style={[styles.statMiniValue, valueColor ? { color: valueColor } : null]}>
         {value}
       </Text>
@@ -283,6 +272,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.mobile.surface,
     borderRadius: rd.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.mobile.border,
     paddingVertical: sp[3],
     paddingHorizontal: sp[2],
     alignItems: 'center',

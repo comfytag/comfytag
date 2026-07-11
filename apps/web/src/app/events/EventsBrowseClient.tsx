@@ -120,7 +120,7 @@ function FeaturedCarousel({ events }: { events: Event[] }) {
         {events.map((event) => (
           <div
             key={event._id}
-            className="shrink-0 w-[260px] snap-start rounded-2xl ring-1 ring-violet-400/50 shadow-sm shadow-violet-100/40 overflow-hidden"
+            className="shrink-0 w-[260px] snap-start rounded-2xl ring-1 ring-violet-400/50 overflow-hidden"
           >
             <EventCard event={event} href={`/events/${event.slug ?? event._id}`} />
           </div>
@@ -176,7 +176,7 @@ function MobileEventRow({ event, href, showLowTickets }: MobileEventRowProps) {
       href={href}
       className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
     >
-      <div className="flex bg-white rounded-2xl overflow-hidden border border-zinc-200 p-3 gap-3 items-center hover:shadow-md transition-shadow active:scale-[0.99]">
+      <div className="flex bg-white rounded-2xl overflow-hidden border border-zinc-200 hover:border-zinc-300 p-3 gap-3 items-center transition-colors active:scale-[0.99]">
         <div className="relative w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-zinc-100">
           <Image
             src={imageSrc}
@@ -266,7 +266,6 @@ function SortDropdown({ value, onChange }: SortDropdownProps) {
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-md)',
-            boxShadow: 'var(--shadow-lg)',
             zIndex: 50,
             overflow: 'hidden',
           }}
@@ -374,7 +373,6 @@ function StateFilterDropdown({ value, states, onChange }: StateFilterDropdownPro
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-md)',
-            boxShadow: 'var(--shadow-lg)',
             zIndex: 50,
           }}
           role="listbox"
@@ -551,7 +549,6 @@ function PriceDropdown({ minPrice, maxPrice, hasFreeEvents, hasPaidEvents, onCha
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-md)',
-            boxShadow: 'var(--shadow-lg)',
             zIndex: 50,
             overflow: 'hidden',
           }}
@@ -899,7 +896,7 @@ export function EventsBrowseClient({
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start mt-8">
 
           {/* ── Block A: Left Sticky Filter Rail (desktop only) ── */}
-          <aside className="hidden lg:block sticky top-28 bg-white border border-zinc-200 rounded-3xl p-6 shadow-sm">
+          <aside className="hidden lg:block sticky top-28 bg-white border border-zinc-200 rounded-2xl p-6">
 
             <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">
               Categories
@@ -957,7 +954,6 @@ export function EventsBrowseClient({
                       background: 'var(--color-surface)',
                       border: '1px solid var(--color-border)',
                       borderRadius: 'var(--radius-md)',
-                      boxShadow: 'var(--shadow-lg)',
                       zIndex: 50,
                       overflow: 'hidden',
                     }}
@@ -1044,7 +1040,7 @@ export function EventsBrowseClient({
                 onClick={toggleAll}
                 className={
                   filters.types.length === 0
-                    ? 'shrink-0 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors bg-zinc-900 text-white shadow-sm'
+                    ? 'shrink-0 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors bg-zinc-900 text-white'
                     : 'shrink-0 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                 }
               >
@@ -1057,7 +1053,7 @@ export function EventsBrowseClient({
                   onClick={() => toggleType(type)}
                   className={
                     filters.types.includes(type)
-                      ? 'shrink-0 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors bg-zinc-900 text-white shadow-sm'
+                      ? 'shrink-0 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors bg-zinc-900 text-white'
                       : 'shrink-0 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                   }
                 >
@@ -1175,7 +1171,7 @@ export function EventsBrowseClient({
 
             ) : filteredEvents.length === 0 ? (
               timeFrame === 'upcoming' ? (
-                <div className="py-16 border border-dashed border-zinc-200 rounded-3xl bg-zinc-50/50 flex flex-col items-center justify-center p-6 text-center">
+                <div className="py-16 border border-dashed border-zinc-200 rounded-2xl bg-zinc-50/50 flex flex-col items-center justify-center p-6 text-center">
                   <div className="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-5">
                     <SearchX className="h-7 w-7 text-zinc-400" />
                   </div>
@@ -1257,7 +1253,7 @@ export function EventsBrowseClient({
                       type="button"
                       onClick={handleLoadMore}
                       disabled={isLoadingMore}
-                      className="mx-auto mt-0 px-8 py-3 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm rounded-xl transition-all shadow-sm flex items-center gap-2 disabled:opacity-60 disabled:cursor-wait"
+                      className="mx-auto mt-0 px-8 py-3 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm rounded-xl transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-wait"
                     >
                       {isLoadingMore ? (
                         <>

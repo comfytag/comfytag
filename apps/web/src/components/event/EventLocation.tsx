@@ -27,7 +27,7 @@ export function EventLocation({ event }: EventLocationProps) {
   const destination = event.address ?? event.venue
 
   return (
-    <div className="bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-5">
+    <div className="bg-white border border-zinc-200/80 rounded-2xl p-5">
       <div className="flex items-center gap-3 mb-4">
         <div className="p-2 bg-orange-50 text-orange-600 rounded-full shrink-0">
           <svg

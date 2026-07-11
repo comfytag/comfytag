@@ -39,49 +39,37 @@ const config: Config = {
         label: ['Space Grotesk', 'Space Mono', 'sans-serif'],   // NEW: Labels
         mono: ['JetBrains Mono', 'monospace'],
       },
+      // v2.0: radius drastically tightened, all boxShadow/glow utilities removed.
+      // Depth comes from border + surface-colour contrast only — see design.md v2.0.
       borderRadius: {
-        sm: '6px',
-        md: '12px',
-        lg: '16px',
-        xl: '20px',
-        '2xl': '24px',
+        sm: '4px',
+        md: '6px',
+        lg: '8px',
+        xl: '10px',
+        '2xl': '10px',
       },
       boxShadow: {
-        sm: '0 1px 3px rgba(0,0,0,0.08)',
-        md: '0 4px 12px rgba(0,0,0,0.10)',
-        lg: '0 8px 24px rgba(0,0,0,0.12)',
-        xl: '0 16px 48px rgba(0,0,0,0.16)',
-        // NEW: Glow effects
-        glow: '0 0 20px rgba(124, 58, 237, 0.3)',
-        'glow-lg': '0 0 40px rgba(124, 58, 237, 0.5)',
-        'glow-fire': '0 0 30px rgba(255, 81, 106, 0.5)',
-        'glow-fire-lg': '0 0 50px rgba(255, 81, 106, 0.7)',
+        none: 'none',
       },
       animation: {
         'pulse-slow': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'checkin-success': 'checkin 200ms ease-out forwards',
-        // NEW: Glow animations
-        'glow-pulse': 'glowPulse 2s ease-in-out infinite',
-        'fire-glow-pulse': 'fireGlowPulse 2.5s ease-in-out infinite',
-        'box-glow-pulse': 'boxGlowPulse 2s ease-in-out infinite',
-        'float': 'float 3s ease-in-out infinite',
+        'shimmer': 'shimmer 2s linear infinite',
+        'fade-in': 'fadeIn 300ms cubic-bezier(0.0, 0.0, 0.2, 1.0)',
+        'fade-out': 'fadeOut 200ms cubic-bezier(0.4, 0.0, 1.0, 1.0)',
       },
       keyframes: {
-        glowPulse: {
-          '0%, 100%': { textShadow: '0 0 10px rgba(124, 58, 237, 0.3)' },
-          '50%': { textShadow: '0 0 25px rgba(124, 58, 237, 0.6)' },
+        shimmer: {
+          '0%': { backgroundPosition: '-1000px 0' },
+          '100%': { backgroundPosition: '1000px 0' },
         },
-        fireGlowPulse: {
-          '0%, 100%': { textShadow: '0 0 15px rgba(255, 81, 106, 0.4)' },
-          '50%': { textShadow: '0 0 35px rgba(255, 81, 106, 0.8)' },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(8px) scale(0.98)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
-        boxGlowPulse: {
-          '0%, 100%': { boxShadow: '0 0 20px rgba(124, 58, 237, 0.2)' },
-          '50%': { boxShadow: '0 0 40px rgba(124, 58, 237, 0.5)' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-8px)' },
+        fadeOut: {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
         },
       },
     },

@@ -56,7 +56,7 @@ export function VaultTicketCard({
   const href = event.status === 'draft' ? `/events/${event._id}/edit` : `/events/${event._id}`
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-sm relative overflow-hidden transition-all duration-200 hover:shadow-md hover:border-violet-300 group cursor-pointer">
+    <div className="bg-white border border-zinc-200 rounded-xl p-4 relative overflow-hidden transition-colors duration-200 hover:border-violet-300 group cursor-pointer">
       <div className="flex gap-4 items-start">
         {/* Poster thumbnail */}
         <Link href={href} className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded-lg">
@@ -105,7 +105,7 @@ export function VaultTicketCard({
               {menuOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-8 bg-white border border-zinc-200 rounded-xl shadow-lg z-20 min-w-[148px] overflow-hidden py-1"
+                  className="absolute right-0 top-8 bg-white border border-zinc-200 rounded-lg z-20 min-w-[148px] overflow-hidden py-1"
                 >
                   <button
                     role="menuitem"

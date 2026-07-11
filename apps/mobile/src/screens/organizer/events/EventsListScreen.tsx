@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useRef, useEffect, useState } from 'react'
 import {
   Animated,
   FlatList,
-  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -43,16 +42,6 @@ const STATUS_STRIP: Record<string, string> = {
   completed: '#78716C',
 }
 
-const cardShadow = Platform.select({
-  ios: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  },
-  android: { elevation: 4 },
-})
-
 // ─── SkeletonCard ─────────────────────────────────────────────────────────────
 
 function SkeletonCard() {
@@ -87,7 +76,7 @@ function EventCard({ event, onPress }: EventCardProps) {
 
   return (
     <AnimatedPressable hapticStyle="light" onPress={onPress}>
-      <View style={[styles.card, cardShadow]}>
+      <View style={styles.card}>
         <View style={[styles.statusStrip, { backgroundColor: stripColor }]} />
         <View style={styles.cardContent}>
           <Text style={styles.eventName} numberOfLines={2}>{event.name}</Text>
@@ -307,6 +296,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: colors.mobile.surface,
     borderRadius: rd.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.mobile.border,
     overflow: 'hidden',
   },
   statusStrip: {

@@ -57,7 +57,7 @@ export function CategoryGridSection({ categories }: { categories?: CategoryGridI
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {activeCategories.map((cat) => (
             <Link key={cat.slug} href={`/events?category=${cat.slug}`}>
-              <div className="relative group overflow-hidden rounded-3xl aspect-square md:aspect-4/3 cursor-pointer">
+              <div className="relative group overflow-hidden rounded-2xl aspect-square md:aspect-4/3 cursor-pointer">
                 <Image
                   src={cat.image}
                   alt={cat.label}

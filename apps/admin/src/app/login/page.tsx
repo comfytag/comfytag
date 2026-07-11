@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
           maxWidth: '400px',
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
-          borderRadius: '16px',
+          borderRadius: 'var(--radius-xl)',
           padding: '40px 36px',
         }}
       >
@@ -69,7 +69,7 @@ export default function AdminLoginPage() {
               justifyContent: 'center',
               width: 48,
               height: 48,
-              borderRadius: '12px',
+              borderRadius: 'var(--radius-lg)',
               backgroundColor: 'var(--color-brand)',
               marginBottom: '16px',
             }}
@@ -135,7 +135,7 @@ export default function AdminLoginPage() {
                   backgroundColor: 'var(--color-surface-2)',
                   border: '1px solid var(--color-border)',
                   color: 'var(--color-text)',
-                  borderRadius: '8px',
+                  borderRadius: 'var(--radius-lg)',
                   padding: '12px 14px',
                   fontSize: '24px',
                   letterSpacing: '0.3em',

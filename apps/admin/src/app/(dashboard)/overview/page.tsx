@@ -116,7 +116,7 @@ function ProgressRow({ label, count, total, color }: ProgressRowProps) {
         style={{
           height: 6,
           backgroundColor: 'var(--color-border)',
-          borderRadius: 3,
+          borderRadius: 'var(--radius-sm)',
           overflow: 'hidden',
         }}
       >
@@ -125,8 +125,8 @@ function ProgressRow({ label, count, total, color }: ProgressRowProps) {
             height: '100%',
             width: `${pct}%`,
             backgroundColor: color,
-            borderRadius: 3,
-            transition: 'width 0.5s ease',
+            borderRadius: 'var(--radius-sm)',
+            transition: 'width var(--duration-default) var(--ease-standard)',
           }}
         />
       </div>
@@ -135,12 +135,19 @@ function ProgressRow({ label, count, total, color }: ProgressRowProps) {
 }
 
 // ─── Card shell ───────────────────────────────────────────────────────────────
+// Flat, border+contrast based depth (no shadow/glow) — matches @comfytag/ui's
+// StatCard so the KPI ribbon and the platform-health cards read as one system.
+// These panels are static info displays (no click-through), same as StatCard,
+// so — mirroring StatCard — the border/bg transition is primed but there's no
+// synthesized hover state on inert content.
 
 const cardStyle: CSSProperties = {
   backgroundColor: 'var(--color-surface)',
   border: '1px solid var(--color-border)',
-  borderRadius: 12,
+  borderRadius: 'var(--radius-lg)',
   padding: 24,
+  transition: 'border-color var(--duration-micro) var(--ease-standard), background-color var(--duration-micro) var(--ease-standard)',
+  animation: 'ov-card-in var(--duration-entrance) var(--ease-entrance) both',
 }
 
 // Routes --color-text → gold for StatCard's value element
@@ -197,6 +204,15 @@ export default function OverviewPage() {
         @media (min-width: 640px)  { .ov-kpi  { grid-template-columns: repeat(2, 1fr) !important; } }
         @media (min-width: 1024px) { .ov-kpi  { grid-template-columns: repeat(4, 1fr) !important; } }
         @media (min-width: 768px)  { .ov-health { grid-template-columns: 1fr 1fr !important; } }
+
+        @keyframes ov-card-in {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .ov-kpi > * { animation: ov-card-in var(--duration-entrance) var(--ease-entrance) both; }
+        @media (prefers-reduced-motion: reduce) {
+          .ov-kpi > *, [data-ov-card] { animation: none !important; }
+        }
       `}</style>
 
       {/* ── KPI Ribbon ─────────────────────────────────────────────────────── */}
@@ -247,9 +263,9 @@ export default function OverviewPage() {
         style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, marginBottom: 24 }}
       >
         {/* User Verification Status */}
-        <div style={cardStyle}>
+        <div style={cardStyle} data-ov-card>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <FileCheck size={16} color="#10B981" />
+            <FileCheck size={16} color="var(--color-success)" />
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
               User Verification Status
             </span>
@@ -269,13 +285,13 @@ export default function OverviewPage() {
             label="Verified Partners"
             count={verifiedPartners}
             total={partnerBase}
-            color="#10B981"
+            color="var(--color-success)"
           />
           <ProgressRow
             label="Pending KYC Review"
             count={pendingKyc}
             total={partnerBase}
-            color="#F59E0B"
+            color="var(--color-warning)"
           />
 
           <div
@@ -283,7 +299,7 @@ export default function OverviewPage() {
               marginTop: 16,
               padding: '10px 14px',
               backgroundColor: 'var(--color-surface-2)',
-              borderRadius: 8,
+              borderRadius: 'var(--radius-lg)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -299,9 +315,9 @@ export default function OverviewPage() {
         </div>
 
         {/* Event Lifecycle Ratio */}
-        <div style={cardStyle}>
+        <div style={cardStyle} data-ov-card>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <BarChart3 size={16} color="#7C3AED" />
+            <BarChart3 size={16} color="var(--color-brand)" />
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
               Event Lifecycle Ratio
             </span>
@@ -321,31 +337,31 @@ export default function OverviewPage() {
             label="Published (Active)"
             count={statusCounts.published}
             total={sampleTotal}
-            color="#7C3AED"
+            color="var(--color-brand)"
           />
           <ProgressRow
             label="Ended"
             count={statusCounts.ended}
             total={sampleTotal}
-            color="#10B981"
+            color="var(--color-success)"
           />
           <ProgressRow
             label="Cancelled / Flagged"
             count={statusCounts.cancelled}
             total={sampleTotal}
-            color="#EF4444"
+            color="var(--color-error)"
           />
           <ProgressRow
             label="Draft"
             count={statusCounts.draft}
             total={sampleTotal}
-            color="#A8A29E"
+            color="var(--color-text-muted)"
           />
         </div>
       </div>
 
       {/* ── Recent Events ───────────────────────────────────────────────────── */}
-      <div style={cardStyle}>
+      <div style={cardStyle} data-ov-card>
         <div
           style={{
             fontSize: 14,

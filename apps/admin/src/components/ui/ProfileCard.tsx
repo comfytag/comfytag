@@ -26,7 +26,7 @@ export function ProfileCard({
       style={{
         backgroundColor: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
         padding: 24,
         display: 'flex',
         gap: 20,

@@ -47,12 +47,12 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
           width: '480px',
           maxWidth: '92vw',
           backgroundColor: '#ffffff',
+          borderLeft: '1px solid #e4e4e7',
           zIndex: 50,
           transform: open ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 320ms cubic-bezier(0.4,0,0.2,1)',
+          transition: 'transform var(--duration-entrance) var(--ease-entrance)',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '-8px 0 32px rgba(0,0,0,0.12)',
         }}
       >
         <div

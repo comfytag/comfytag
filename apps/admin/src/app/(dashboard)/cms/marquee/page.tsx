@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import {
@@ -76,7 +76,7 @@ function DeleteButton({
         justifyContent: 'center',
         width: 28,
         height: 28,
-        borderRadius: 6,
+        borderRadius: 'var(--radius-md)',
         border: '1px solid var(--color-border)',
         backgroundColor: 'transparent',
         color: 'var(--color-error)',
@@ -240,7 +240,7 @@ export default function CmsMarqueePage() {
           style={{
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
           }}
         >

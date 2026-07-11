@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import {
@@ -49,7 +49,7 @@ const textareaStyle: React.CSSProperties = {
   width: '100%',
   minHeight: '80px',
   padding: '10px 12px',
-  borderRadius: '8px',
+  borderRadius: 'var(--radius-lg)',
   border: '1px solid var(--color-border)',
   backgroundColor: 'var(--color-surface)',
   color: 'var(--color-text)',
@@ -90,7 +90,7 @@ function ActionButton({
         justifyContent: 'center',
         width: 28,
         height: 28,
-        borderRadius: 6,
+        borderRadius: 'var(--radius-md)',
         border: '1px solid var(--color-border)',
         backgroundColor: 'transparent',
         color: 'var(--color-text-muted)',
@@ -121,7 +121,7 @@ function buildColumns(
             backgroundColor: 'color-mix(in srgb, var(--color-brand) 12%, transparent)',
             color: 'var(--color-brand)',
             padding: '2px 6px',
-            borderRadius: 4,
+            borderRadius: 'var(--radius-sm)',
           }}
         >
           {b.bannerKey}
@@ -268,7 +268,7 @@ export default function CmsBannersPage() {
           style={{
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
           }}
         >

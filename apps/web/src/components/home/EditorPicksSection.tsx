@@ -59,7 +59,7 @@ function EditorPickCard({ event, priority }: { event: PickEvent; priority: boole
   return (
     <Link
       href={`/events/${event.id}`}
-      className="relative shrink-0 w-[85vw] md:w-100 aspect-4/5 rounded-[2rem] overflow-hidden snap-center group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+      className="relative shrink-0 w-[85vw] md:w-100 aspect-4/5 rounded-2xl overflow-hidden snap-center group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
       aria-label={`${event.title} — ${event.date} — from ${event.price}`}
     >
       {/* Cover image */}

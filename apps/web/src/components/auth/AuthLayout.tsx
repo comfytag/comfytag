@@ -28,9 +28,9 @@ export function AuthLayout({ children, title }: AuthLayoutProps) {
           width: '100%',
           maxWidth: '480px',
           background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-lg)',
           overflow: 'hidden',
-          boxShadow: 'var(--shadow-lg)',
         }}
       >
         {/* Brand gradient strip at top */}
@@ -38,7 +38,7 @@ export function AuthLayout({ children, title }: AuthLayoutProps) {
           suppressHydrationWarning
           style={{
             height: '4px',
-            background: 'linear-gradient(90deg, #7C3AED 0%, #5B21B6 100%)',
+            background: 'linear-gradient(90deg, var(--color-brand) 0%, var(--color-brand-dark) 100%)',
           }}
           aria-hidden="true"
         />
@@ -60,7 +60,7 @@ export function AuthLayout({ children, title }: AuthLayoutProps) {
               style={{
                 width: '32px',
                 height: '32px',
-                background: 'linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)',
+                background: 'linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark) 100%)',
                 borderRadius: 'var(--radius-md)',
                 display: 'flex',
                 alignItems: 'center',

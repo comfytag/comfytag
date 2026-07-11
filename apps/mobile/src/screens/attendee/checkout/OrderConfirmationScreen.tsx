@@ -132,7 +132,9 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     backgroundColor: colors.mobile.surface,
-    borderRadius: 20,
+    borderRadius: rd.xl,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.mobile.border,
     padding: sp[6],
     marginBottom: sp[8],
   },

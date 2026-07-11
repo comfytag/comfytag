@@ -100,7 +100,7 @@ function Toast({ message, onDismiss }: ToastProps) {
   return (
     <div
       role="alert"
-      className="fixed bottom-6 right-6 z-[100] flex items-center gap-3 bg-zinc-900 text-white text-sm font-medium px-4 py-3 rounded-2xl shadow-2xl border border-zinc-700 max-w-xs"
+      className="fixed bottom-6 right-6 z-[100] flex items-center gap-3 bg-zinc-900 text-white text-sm font-medium px-4 py-3 rounded-lg border border-zinc-700 max-w-xs"
     >
       <span className="text-red-400 shrink-0" aria-hidden="true">⚠</span>
       {message}
@@ -445,7 +445,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
           <div className="lg:col-span-7 space-y-4">
 
             {/* ── 1 · Basic Info ────────────────────────────────────── */}
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-5">
+            <div className="bg-white border border-zinc-200 rounded-xl p-6 space-y-5">
               <div>
                 <h2 className="text-xl font-black text-zinc-900">Basic Info</h2>
                 <p className="text-sm text-zinc-500 mt-0.5">Name, category, date, and location</p>
@@ -489,7 +489,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                       <div
                         role="dialog"
                         aria-label="Choose a vibe for AI headline"
-                        className="absolute top-full right-0 mt-2 w-64 bg-white border border-zinc-200 rounded-2xl shadow-2xl shadow-zinc-900/10 p-4 z-50"
+                        className="absolute top-full right-0 mt-2 w-64 bg-white border border-zinc-200 rounded-lg p-4 z-50"
                       >
                         <div className="flex items-start justify-between mb-1">
                           <p className="text-xs font-black text-zinc-900">Choose a vibe</p>
@@ -678,7 +678,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
             </div>
 
             {/* ── 2 · Images ────────────────────────────────────────── */}
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-4">
+            <div className="bg-white border border-zinc-200 rounded-xl p-6 space-y-4">
               <div>
                 <h2 className="text-xl font-black text-zinc-900">Event Images</h2>
                 <p className="text-sm text-zinc-500 mt-0.5">
@@ -754,7 +754,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
             </div>
 
             {/* ── 3 · Ticket Tiers ──────────────────────────────────── */}
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-5">
+            <div className="bg-white border border-zinc-200 rounded-xl p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-black text-zinc-900">Ticket Tiers</h2>
@@ -809,7 +809,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
             </div>
 
             {/* ── 4 · Description & Details ─────────────────────────── */}
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-5">
+            <div className="bg-white border border-zinc-200 rounded-xl p-6 space-y-5">
               <div>
                 <h2 className="text-xl font-black text-zinc-900">Details</h2>
                 <p className="text-sm text-zinc-500 mt-0.5">Description, lineup, and visibility</p>
@@ -827,7 +827,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                     <div
                       role="dialog"
                       aria-label="Choose a vibe for AI enhancement"
-                      className="absolute bottom-full right-0 mb-2.5 w-64 bg-white border border-zinc-200 rounded-2xl shadow-2xl shadow-zinc-900/10 p-4 z-50"
+                      className="absolute bottom-full right-0 mb-2.5 w-64 bg-white border border-zinc-200 rounded-lg p-4 z-50"
                     >
                       <div className="flex items-start justify-between mb-1">
                         <p className="text-xs font-black text-zinc-900">Choose a vibe</p>
@@ -887,11 +887,11 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                     className={[
                       'absolute bottom-3 right-3 flex items-center gap-1.5',
                       'bg-zinc-900 text-white rounded-full text-xs font-bold px-3 py-1.5',
-                      'shadow-lg ring-1 ring-violet-500/30 transition-all duration-200',
-                      'hover:shadow-violet-500/20 hover:ring-violet-500/60 hover:bg-zinc-800',
+                      'border border-zinc-700 transition-colors duration-200',
+                      'hover:bg-zinc-800 hover:border-violet-500/60',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1',
                       'disabled:opacity-40 disabled:cursor-not-allowed',
-                      isVibeOpen ? 'ring-violet-500/60' : '',
+                      isVibeOpen ? 'border-violet-500/60' : '',
                     ].filter(Boolean).join(' ')}
                   >
                     {isGenerating ? (
@@ -986,7 +986,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                       id="edit-is-public"
                     />
                     <div className="w-10 h-6 bg-zinc-200 peer-checked:bg-violet-600 rounded-full transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-violet-500 peer-focus-visible:ring-offset-2" />
-                    <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-4" />
+                    <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-zinc-900">

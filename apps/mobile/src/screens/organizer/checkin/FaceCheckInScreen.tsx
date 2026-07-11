@@ -3,8 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
+  Animated,
+  AccessibilityInfo,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { CameraView, useCameraPermissions } from 'expo-camera'
@@ -14,6 +15,7 @@ import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
 import { checkLiveness, enrollFace } from '../../../lib/faceSDK'
 import { post } from '../../../lib/api'
 import StateScreen from '../../../components/ui/StateScreen'
+import { AnimatedPressable } from '../../../components/ui/AnimatedPressable'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -40,14 +42,138 @@ interface MatchedAttendee {
 }
 
 interface VerifyResponseBody {
-  matched: boolean
-  attendee?: {
-    name: string
-    ticketType: string
-  }
+  success: boolean
+  message: string
+  attendeeName?: string
+  ticketType?: string
 }
 
 type Props = StackScreenProps<OrganizerCheckInStackParamList, 'FaceCheckIn'>
+
+// ─── Result flash overlay (matched / noMatch) ──────────────────────────────────
+// Cross-fades + scale-pops the full-screen result colour over a neutral base
+// instead of hard-swapping backgroundColor instantly. Mirrors AnimatedPressable's
+// useNativeDriver pattern for consistency. See design.md "check-in flash" spec:
+// scale 0.8 -> 1.05 -> 1.0 + opacity fade, ~200ms total, readable at arm's length
+// in a dark venue.
+
+interface ResultFlashProps {
+  kind: 'matched' | 'noMatch'
+  icon: string
+  heading: string
+  subtext?: string
+  attendeeName?: string
+  primaryLabel: string
+  onPrimary: () => void
+  onSecondary: () => void
+}
+
+function ResultFlash({
+  kind,
+  icon,
+  heading,
+  subtext,
+  attendeeName,
+  primaryLabel,
+  onPrimary,
+  onSecondary,
+}: ResultFlashProps) {
+  const opacity = useRef(new Animated.Value(0)).current
+  const scale = useRef(new Animated.Value(0.8)).current
+
+  useEffect(() => {
+    let cancelled = false
+
+    const runAnimation = async (): Promise<void> => {
+      const reduceMotionEnabled = await AccessibilityInfo.isReduceMotionEnabled()
+      if (cancelled) return
+
+      if (reduceMotionEnabled) {
+        // Respect OS-level Reduce Motion: show the result instantly, no motion.
+        opacity.setValue(1)
+        scale.setValue(1)
+        return
+      }
+
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.sequence([
+          Animated.timing(scale, {
+            toValue: 1.05,
+            duration: 130,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scale, {
+            toValue: 1,
+            duration: 70,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]).start()
+    }
+
+    void runAnimation()
+
+    return () => {
+      cancelled = true
+    }
+    // Empty-ish deps are fine here: this component is freshly mounted every
+    // time the parent screen enters the matched/noMatch state (early-return
+    // conditional rendering), so this effect naturally re-plays each time.
+  }, [opacity, scale])
+
+  const overlayColorStyle =
+    kind === 'matched' ? styles.matchedOverlay : styles.noMatchOverlay
+  const iconTextStyle =
+    kind === 'matched' ? styles.matchedIconText : styles.noMatchIconText
+  const primaryButtonStyle =
+    kind === 'matched' ? styles.nextAttendeeButton : styles.tryAgainButton
+  const primaryTextStyle =
+    kind === 'matched' ? styles.nextAttendeeButtonText : styles.tryAgainButtonText
+
+  return (
+    <View style={styles.resultScreen}>
+      <Animated.View
+        style={[
+          styles.resultOverlay,
+          overlayColorStyle,
+          { opacity, transform: [{ scale }] },
+        ]}
+        pointerEvents="none"
+      />
+      <SafeAreaView style={styles.resultInner}>
+        <View style={styles.resultIconCircle}>
+          <Text style={iconTextStyle}>{icon}</Text>
+        </View>
+        <Text style={styles.resultHeading}>{heading}</Text>
+        {attendeeName !== undefined && (
+          <Text style={styles.resultAttendeeName}>{attendeeName}</Text>
+        )}
+        {subtext !== undefined && (
+          <Text style={styles.resultSubtext}>{subtext}</Text>
+        )}
+        <AnimatedPressable
+          style={primaryButtonStyle}
+          hapticStyle="medium"
+          onPress={onPrimary}
+        >
+          <Text style={primaryTextStyle}>{primaryLabel}</Text>
+        </AnimatedPressable>
+        <AnimatedPressable
+          style={styles.ghostButton}
+          hapticStyle="light"
+          onPress={onSecondary}
+        >
+          <Text style={styles.ghostButtonText}>Manual check-in</Text>
+        </AnimatedPressable>
+      </SafeAreaView>
+    </View>
+  )
+}
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -97,34 +223,29 @@ export default function FaceCheckInScreen({ navigation, route }: Props) {
 
       // Step 2: Capture face template
       setScreenState('capturing')
-      const enrollResult = await enrollFace()
+      const captureResult = await enrollFace()
 
-      if (!enrollResult.faceTemplate || enrollResult.faceTemplate.length === 0) {
+      if (!captureResult.faceTemplate || captureResult.faceTemplate.length === 0) {
         setErrorMessage('Could not capture face template. Please try again.')
         setScreenState('error')
         return
       }
 
-      const capturedTemplate = enrollResult.faceTemplate
-
-      // Step 3: Verify with server
+      // Step 3: Identify against enrolled attendees — the server searches
+      // every face-linked ticket for this event and does the comparison;
+      // the client never decides the match itself.
       setScreenState('verifying')
 
-      const matchResult = capturedTemplate.length > 0
-      const matchScore = matchResult ? 0.97 : 0.0
-
       const { data } = await post<VerifyResponseBody>('/face/verify', {
-        faceTemplate: capturedTemplate,
+        faceTemplate: captureResult.faceTemplate,
         eventId,
-        matchResult,
-        matchScore,
       })
 
-      if (data.matched) {
-        if (data.attendee) {
+      if (data.success) {
+        if (data.attendeeName) {
           setMatchedAttendee({
-            name: data.attendee.name,
-            ticketType: data.attendee.ticketType,
+            name: data.attendeeName,
+            ticketType: data.ticketType ?? '',
           })
         }
         setScreenState('matched')
@@ -174,87 +295,55 @@ export default function FaceCheckInScreen({ navigation, route }: Props) {
         <Text style={styles.permissionSubtext}>
           The camera is required to scan attendee faces for check-in.
         </Text>
-        <TouchableOpacity
+        <AnimatedPressable
           style={styles.brandButton}
-          activeOpacity={0.85}
+          hapticStyle="medium"
           onPress={requestPermission}
         >
           <Text style={styles.brandButtonText}>Grant Permission</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </AnimatedPressable>
+        <AnimatedPressable
           style={styles.ghostButton}
-          activeOpacity={0.7}
+          hapticStyle="light"
           onPress={goToManualCheckIn}
         >
           <Text style={styles.ghostButtonText}>Use Manual Check-in</Text>
-        </TouchableOpacity>
+        </AnimatedPressable>
       </SafeAreaView>
     )
   }
 
   // ─── Full-screen result: matched ─────────────────────────────────────────
+  // Cross-fades in via ResultFlash instead of an instant backgroundColor swap.
 
   if (screenState === 'matched') {
     return (
-      <View style={styles.matchedScreen}>
-        <SafeAreaView style={styles.resultInner}>
-          <View style={styles.resultIconCircle}>
-            <Text style={styles.matchedIconText}>✓</Text>
-          </View>
-          <Text style={styles.resultHeading}>Check-in approved</Text>
-          {matchedAttendee !== null && (
-            <Text style={styles.resultAttendeeName}>
-              {matchedAttendee.name}
-            </Text>
-          )}
-          <TouchableOpacity
-            style={styles.nextAttendeeButton}
-            activeOpacity={0.85}
-            onPress={resetToIdle}
-          >
-            <Text style={styles.nextAttendeeButtonText}>Next Attendee</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.ghostButton}
-            activeOpacity={0.7}
-            onPress={goToManualCheckIn}
-          >
-            <Text style={styles.ghostButtonText}>Manual check-in</Text>
-          </TouchableOpacity>
-        </SafeAreaView>
-      </View>
+      <ResultFlash
+        kind="matched"
+        icon="✓"
+        heading="Check-in approved"
+        attendeeName={matchedAttendee !== null ? matchedAttendee.name : undefined}
+        primaryLabel="Next Attendee"
+        onPrimary={resetToIdle}
+        onSecondary={goToManualCheckIn}
+      />
     )
   }
 
   // ─── Full-screen result: noMatch ─────────────────────────────────────────
+  // Cross-fades in via ResultFlash instead of an instant backgroundColor swap.
 
   if (screenState === 'noMatch') {
     return (
-      <View style={styles.noMatchScreen}>
-        <SafeAreaView style={styles.resultInner}>
-          <View style={styles.resultIconCircle}>
-            <Text style={styles.noMatchIconText}>✗</Text>
-          </View>
-          <Text style={styles.resultHeading}>Face not recognised</Text>
-          <Text style={styles.resultSubtext}>
-            Please use QR code or search by name
-          </Text>
-          <TouchableOpacity
-            style={styles.tryAgainButton}
-            activeOpacity={0.85}
-            onPress={resetToIdle}
-          >
-            <Text style={styles.tryAgainButtonText}>Try Again</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.ghostButton}
-            activeOpacity={0.7}
-            onPress={goToManualCheckIn}
-          >
-            <Text style={styles.ghostButtonText}>Manual check-in</Text>
-          </TouchableOpacity>
-        </SafeAreaView>
-      </View>
+      <ResultFlash
+        kind="noMatch"
+        icon="✗"
+        heading="Face not recognised"
+        subtext="Please use QR code or search by name"
+        primaryLabel="Try Again"
+        onPrimary={resetToIdle}
+        onSecondary={goToManualCheckIn}
+      />
     )
   }
 
@@ -315,20 +404,20 @@ export default function FaceCheckInScreen({ navigation, route }: Props) {
       {/* Bottom action area */}
       {!isProcessing && (
         <SafeAreaView style={styles.bottomBar} edges={['bottom']}>
-          <TouchableOpacity
+          <AnimatedPressable
             style={styles.scanButton}
-            activeOpacity={0.85}
+            hapticStyle="medium"
             onPress={startScan}
           >
             <Text style={styles.scanButtonText}>Scan Face</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </AnimatedPressable>
+          <AnimatedPressable
             style={styles.ghostButton}
-            activeOpacity={0.7}
+            hapticStyle="light"
             onPress={goToManualCheckIn}
           >
             <Text style={styles.ghostButtonText}>Manual check-in</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </SafeAreaView>
       )}
     </View>
@@ -441,13 +530,20 @@ const styles = StyleSheet.create({
   },
 
   // ── Full-screen result screens ─────────────────────────────────────────────
-  matchedScreen: {
+  // Neutral base + an absolutely-positioned, animated colour overlay
+  // (see ResultFlash) that fades/scales in rather than an instant swap.
+  resultScreen: {
     flex: 1,
-    backgroundColor: '#10B981',
+    backgroundColor: colors.mobile.bg,
   },
-  noMatchScreen: {
-    flex: 1,
-    backgroundColor: '#EF4444',
+  resultOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  matchedOverlay: {
+    backgroundColor: colors.mobile.success,
+  },
+  noMatchOverlay: {
+    backgroundColor: colors.mobile.error,
   },
   resultInner: {
     flex: 1,
@@ -460,6 +556,8 @@ const styles = StyleSheet.create({
     height: 96,
     borderRadius: 48,
     backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },

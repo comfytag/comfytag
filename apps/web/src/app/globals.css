@@ -152,19 +152,21 @@
   --color-overlay:          rgba(24, 24, 27, 0.60);  /* zinc-900 overlay */
   --color-text-on-brand:    #FFFFFF;
 
-  /* ── Radius scale ────────────────────────────────────────────── */
-  --radius-sm:    6px;
-  --radius-md:    12px;
-  --radius-lg:    16px;
-  --radius-xl:    20px;
-  --radius-2xl:   24px;
+  /* ── Radius scale (v2.0 — drastically tightened, see design.md) ─ */
+  --radius-sm:    4px;
+  --radius-md:    6px;
+  --radius-lg:    8px;
+  --radius-xl:    10px;
+  --radius-2xl:   10px;
   --radius-full:  9999px;
 
-  /* ── Shadows (zinc-tinted, cool tone) ────────────────────────── */
-  --shadow-sm: 0 1px 3px  rgba(24, 24, 27, 0.07);
-  --shadow-md: 0 4px 12px rgba(24, 24, 27, 0.09);
-  --shadow-lg: 0 8px 24px rgba(24, 24, 27, 0.11);
-  --shadow-xl: 0 16px 48px rgba(24, 24, 27, 0.15);
+  /* ── Shadows removed in v2.0 — depth via border + surface contrast only.
+     Vars kept as `none` so any lingering `box-shadow: var(--shadow-*)`
+     usage degrades safely instead of breaking; do not reintroduce values. */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
 
   /* ── Motion tokens ───────────────────────────────────────────── */
   --duration-micro:     100ms;

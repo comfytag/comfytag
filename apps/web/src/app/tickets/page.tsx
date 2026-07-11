@@ -150,7 +150,7 @@ export default function TicketsPage() {
 
           ) : tickets.length === 0 ? (
             /* ── Empty wallet placeholder ── */
-            <div className="border-2 border-dashed border-zinc-200 rounded-3xl bg-white p-16 text-center flex flex-col items-center justify-center mt-8">
+            <div className="border-2 border-dashed border-zinc-200 rounded-2xl bg-white p-16 text-center flex flex-col items-center justify-center mt-8">
               <div className="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-5">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -215,7 +215,7 @@ export default function TicketsPage() {
 
           {/* ── Become a Partner Banner (non-partners only) ── */}
           {!session.user.isPartner && (
-            <div className="mt-12 rounded-3xl bg-violet-50 border border-violet-200 px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="mt-12 rounded-2xl bg-violet-50 border border-violet-200 px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-bold text-violet-900">Enjoyed attending?</p>
                 <p className="text-sm text-violet-700 mt-0.5">Host your own event and sell tickets on ComfyTag.</p>

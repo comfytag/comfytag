@@ -54,7 +54,7 @@ export function CityHeaderSection({ selectedCity, onCityChange }: CityHeaderSect
         .__ct_city_pill:hover { background: var(--color-surface); }
         .__ct_city_pill:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
         .__ct_chevron { font-size: 12px; }
-        .__ct_city_dropdown { position: absolute; top: calc(100% + 8px); left: 0; width: 280px; max-height: 360px; overflow-y: auto; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); z-index: 50; opacity: var(--opacity-dropdown, 0); transform: var(--transform-dropdown, translateY(-4px)); transition: opacity 150ms ease, transform 150ms ease; pointer-events: var(--pointer-events-dropdown, none); }
+        .__ct_city_dropdown { position: absolute; top: calc(100% + 8px); left: 0; width: 280px; max-height: 360px; overflow-y: auto; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); z-index: 50; opacity: var(--opacity-dropdown, 0); transform: var(--transform-dropdown, translateY(-4px)); transition: opacity 150ms ease, transform 150ms ease; pointer-events: var(--pointer-events-dropdown, none); }
         .__ct_city_dropdown_search { width: 100%; padding: 12px 12px; border: none; border-bottom: 1px solid var(--color-border); background: var(--color-surface); border-radius: 0; font-size: 14px; color: var(--color-text); box-sizing: border-box; }
         .__ct_city_dropdown_search:focus { outline: 2px solid var(--color-brand); outline-offset: 0; }
         .__ct_city_dropdown_search::placeholder { color: var(--color-text-muted); }

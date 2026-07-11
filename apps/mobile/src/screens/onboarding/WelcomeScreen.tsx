@@ -8,7 +8,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
 import type { StackNavigationProp } from '@react-navigation/stack'
-import { colors, spacing, typography } from '@comfytag/ui/tokens'
+import { colors, spacing, typography, rd } from '@comfytag/ui/tokens'
 import { ScanFace, Zap, Shield } from 'lucide-react-native'
 import { AnimatedPressable } from '../../components/ui/AnimatedPressable'
 import type { GuestStackParamList } from '../../navigation/types'
@@ -105,7 +105,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.brand.DEFAULT,
-    borderRadius: 20,
+    borderRadius: rd.xl,
+    borderWidth: 1,
+    borderColor: colors.mobile.border,
     paddingVertical: parseInt(spacing[12]),
     marginTop: parseInt(spacing[6]),
     marginBottom: parseInt(spacing[8]),

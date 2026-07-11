@@ -67,7 +67,7 @@ export default function NotificationsPage() {
               <LoadingSpinner centered size="lg" />
             </div>
           ) : notifs.length === 0 ? (
-            <div className="mt-12 p-12 bg-white border-2 border-dashed border-zinc-200 rounded-3xl text-center flex flex-col items-center">
+            <div className="mt-12 p-12 bg-white border-2 border-dashed border-zinc-200 rounded-2xl text-center flex flex-col items-center">
               <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4 text-3xl select-none">
                 🔔
               </div>
@@ -75,7 +75,7 @@ export default function NotificationsPage() {
               <p className="text-sm text-zinc-500">No notifications yet.</p>
             </div>
           ) : (
-            <div className="bg-white border border-zinc-200 rounded-3xl overflow-hidden mt-8 flex flex-col">
+            <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden mt-8 flex flex-col">
               {notifs.map((n) => (
                 <NotifRow
                   key={n._id}

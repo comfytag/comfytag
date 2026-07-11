@@ -80,7 +80,7 @@ export function AttendeeRow({ attendee, onCheckInToggle, isCheckingIn = false }:
             className={
               attendee.checkedIn
                 ? 'shrink-0 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs py-2 px-6 rounded-full transition-all disabled:opacity-60 cursor-pointer'
-                : 'shrink-0 bg-zinc-900 text-white font-bold text-xs py-2 px-6 rounded-full shadow-sm active:scale-95 transition-all hover:bg-zinc-800 disabled:opacity-60 cursor-pointer'
+                : 'shrink-0 bg-zinc-900 text-white font-bold text-xs py-2 px-6 rounded-full active:scale-95 transition-all hover:bg-zinc-800 disabled:opacity-60 cursor-pointer'
             }
           >
             {isCheckingIn ? 'Checking in…' : attendee.checkedIn ? '✓ Checked in' : 'Check in'}

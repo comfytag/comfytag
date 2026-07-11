@@ -77,10 +77,10 @@ export function EventTimelineStrip({ events }: EventTimelineStripProps) {
           <div
             key={event._id}
             className={[
-              'group flex items-center gap-4 rounded-2xl border transition-all duration-200',
+              'group flex items-center gap-4 rounded-xl border transition-colors duration-200',
               live
-                ? 'bg-white border-red-200 p-3 shadow-sm shadow-red-50'
-                : 'bg-white border-zinc-200 p-3 hover:border-zinc-300 shadow-sm',
+                ? 'bg-white border-red-200 p-3'
+                : 'bg-white border-zinc-200 p-3 hover:border-zinc-300',
             ].join(' ')}
           >
             {/* Live beacon */}

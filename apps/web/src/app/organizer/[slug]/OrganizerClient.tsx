@@ -264,7 +264,7 @@ export function OrganizerClient({
           {/* Avatar + Identity */}
           <div className="flex flex-col md:flex-row items-center md:items-end gap-5">
             {/* Avatar frame */}
-            <div className="relative w-28 h-28 shrink-0 rounded-full overflow-hidden border-2 border-zinc-700 ring-4 ring-violet-500/20 shadow-xl">
+            <div className="relative w-28 h-28 shrink-0 rounded-full overflow-hidden border-2 border-zinc-700 ring-4 ring-violet-500/20">
               {avatarSrc ? (
                 <Image
                   src={avatarSrc}
@@ -326,7 +326,7 @@ export function OrganizerClient({
       <div className="max-w-350 mx-auto grid grid-cols-1 items-start gap-8 px-4 pb-20 md:px-8 mt-12 lg:grid-cols-4">
 
         {/* ── Left Aside Column (25%) ─────────────────────────────────────── */}
-        <aside className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-sm sticky top-28 space-y-6 lg:col-span-1">
+        <aside className="bg-white border border-zinc-200 rounded-2xl p-6 sticky top-28 space-y-6 lg:col-span-1">
           {/* Bio block */}
           <div>
             <p className="mb-2 text-xs font-bold uppercase tracking-widest text-zinc-400">
@@ -410,7 +410,7 @@ export function OrganizerClient({
                   'flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold transition-all duration-200',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-1',
                   activeTab === tab.value
-                    ? 'bg-white text-zinc-900 shadow-sm'
+                    ? 'bg-white text-zinc-900'
                     : 'text-zinc-500 hover:text-zinc-700',
                 ].join(' ')}
               >
@@ -470,7 +470,7 @@ export function OrganizerClient({
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed border-zinc-200 bg-zinc-50/50 px-8 py-16 text-center">
+            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-zinc-200 bg-zinc-50/50 px-8 py-16 text-center">
               <p className="text-sm text-zinc-400">
                 {activeTab === 'upcoming'
                   ? 'No upcoming events scheduled yet.'

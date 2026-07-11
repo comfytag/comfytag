@@ -53,6 +53,8 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
           right: 0,
           zIndex: 101,
           background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+          borderBottom: 'none',
           borderRadius: `var(--radius-lg) var(--radius-lg) 0 0`,
           maxHeight: '90vh',
           overflowY: 'auto',
@@ -69,7 +71,7 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
             width: '36px',
             height: '4px',
             background: 'var(--color-border)',
-            borderRadius: '2px',
+            borderRadius: 'var(--radius-full)',
             margin: '12px auto 8px',
           }}
           aria-hidden="true"

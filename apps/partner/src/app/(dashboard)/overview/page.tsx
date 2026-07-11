@@ -63,8 +63,8 @@ function OverviewSkeleton() {
       </div>
       {/* Hero grid skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 h-64 rounded-[2.5rem] bg-zinc-900 border border-zinc-800" />
-        <div className="h-64 rounded-[2.5rem] bg-zinc-100 border border-zinc-200" />
+        <div className="lg:col-span-2 h-64 rounded-xl bg-zinc-900 border border-zinc-800" />
+        <div className="h-64 rounded-xl bg-zinc-100 border border-zinc-200" />
       </div>
       {/* Chip row skeleton */}
       <div className="grid grid-cols-3 gap-4">
@@ -190,26 +190,9 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Revenue Hero Card — spans 2 cols */}
-        <div className="lg:col-span-2 relative overflow-hidden rounded-[2rem] border border-zinc-800 bg-zinc-900 p-8 shadow-xl text-white">
-          {/* Gold ambient glow — top-left bleed */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                'radial-gradient(ellipse 60% 50% at 10% 0%, rgba(217,119,6,0.18) 0%, transparent 70%)',
-            }}
-          />
-          {/* Violet secondary glow — bottom right */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                'radial-gradient(ellipse 50% 40% at 90% 110%, rgba(124,58,237,0.12) 0%, transparent 70%)',
-            }}
-          />
-
+        <div
+          className="card-enter lg:col-span-2 relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 p-8 text-white"
+        >
           {/* Content */}
           <div className="relative z-10 flex flex-col h-full gap-6">
             {/* Label */}
@@ -275,7 +258,10 @@ export default function OverviewPage() {
         </div>
 
         {/* Ticket Pulse Ring — spans 1 col */}
-        <div className="bg-white border border-zinc-200/80 rounded-[2rem] p-8 shadow-sm flex flex-col items-center justify-center text-center relative">
+        <div
+          className="card-enter bg-white border border-zinc-200/80 rounded-xl p-8 flex flex-col items-center justify-center text-center relative"
+          style={{ animationDelay: '60ms' }}
+        >
           <TicketPulseRing count={ticketsSoldToday} label="Tickets Today" />
         </div>
       </div>
@@ -283,7 +269,10 @@ export default function OverviewPage() {
       {/* ── 3. Metric Milestone Chips ──────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Total Events */}
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 flex items-center gap-3 shadow-sm hover:border-zinc-300 transition-colors">
+        <div
+          className="card-enter bg-white border border-zinc-200/80 rounded-xl p-5 flex items-center gap-3 hover:border-zinc-300 transition-colors"
+          style={{ animationDelay: '100ms' }}
+        >
           <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-violet-600" aria-hidden="true">
               <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -301,7 +290,10 @@ export default function OverviewPage() {
         </div>
 
         {/* Followers */}
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 flex items-center gap-3 shadow-sm hover:border-zinc-300 transition-colors">
+        <div
+          className="card-enter bg-white border border-zinc-200/80 rounded-xl p-5 flex items-center gap-3 hover:border-zinc-300 transition-colors"
+          style={{ animationDelay: '140ms' }}
+        >
           <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500" aria-hidden="true">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -319,7 +311,10 @@ export default function OverviewPage() {
         </div>
 
         {/* Tickets Sold */}
-        <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 flex items-center gap-3 shadow-sm hover:border-zinc-300 transition-colors">
+        <div
+          className="card-enter bg-white border border-zinc-200/80 rounded-xl p-5 flex items-center gap-3 hover:border-zinc-300 transition-colors"
+          style={{ animationDelay: '180ms' }}
+        >
           <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600" aria-hidden="true">
               <path d="M22 12.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5c1.1 0 2 .9 2 2s-.9 2-2 2v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.5" />
@@ -336,7 +331,10 @@ export default function OverviewPage() {
       </div>
 
       {/* ── 4. Milestone Progress Rail ─────────────────────────────────────── */}
-      <div className="bg-white border border-zinc-200/80 rounded-2xl p-5 shadow-sm">
+      <div
+        className="card-enter bg-white border border-zinc-200/80 rounded-xl p-5"
+        style={{ animationDelay: '220ms' }}
+      >
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-sm font-bold text-zinc-900 tracking-tight">

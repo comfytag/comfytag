@@ -156,7 +156,14 @@ c:\Users\HOMEPC\Desktop\Web_Projects\Personal\comfytag/
 
 ---
 
-## 🎨 DESIGN SYSTEM (v1.1 — LOCKED)
+## 🎨 DESIGN SYSTEM (v2.0 — LOCKED)
+
+**v2 direction (July 2026):** calm and professional, not energetic. Border radius drastically tightened, shadows removed platform-wide, glass morphism/glow/fire-gradient effects removed. Depth comes from borders + surface-colour contrast only. See `files/design.md` v2.0 for full detail — it remains the single source of truth; this section is a summary.
+
+### Typefaces
+- **Body:** Inter Variable | **Monospace:** JetBrains Mono (ticket IDs, OTPs)
+- **Display (headings, hero):** Anybody Variable, weights 700–900
+- **Labels (form labels, table headers, stat captions):** Space Grotesk, weights 500–700
 
 ### Brand Colour
 - **Primary:** `#7C3AED` (deep violet-purple) — actions, CTAs, primary elements
@@ -185,6 +192,7 @@ c:\Users\HOMEPC\Desktop\Web_Projects\Personal\comfytag/
 - ✅ Never hardcode hex values or pixel spacing in components
 - ✅ No `!important` (indicates CSS bug)
 - ✅ Focus rings always visible (WCAG AA requirement)
+- ✅ No `box-shadow`, `backdrop-filter`/glass, or glow effects anywhere (v2.0 — depth comes from borders + surface-colour contrast only; `packages/ui/src/tokens/effects.ts` is deprecated, do not use it for new work)
 
 ---
 

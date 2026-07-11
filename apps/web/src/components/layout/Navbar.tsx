@@ -298,7 +298,6 @@ export function Navbar({ user, onSearch }: NavbarProps) {
                   background: 'var(--color-surface)',
                   border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-lg)',
-                  boxShadow: 'var(--shadow-lg)',
                   zIndex: 200,
                   overflow: 'hidden',
                   opacity: notifOpen ? 1 : 0,
@@ -340,7 +339,7 @@ export function Navbar({ user, onSearch }: NavbarProps) {
               </button>
 
               {dropdownOpen && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)', minWidth: '210px', zIndex: 50, overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', minWidth: '210px', zIndex: 50, overflow: 'hidden' }}>
                   <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-border)' }}>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text)' }}>{currentUser.name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentUser.email}</div>
@@ -370,21 +369,21 @@ export function Navbar({ user, onSearch }: NavbarProps) {
           </div>
         ) : (
           <div className="__ct_nav_auth_wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              type="button"
-              onClick={() => openModal('login')}
+            <Link
+              href="/login"
+              onClick={(e) => { e.preventDefault(); openModal('login') }}
               className="__ct_nav_login_link"
-              style={{ fontSize: '14px', fontWeight: 500, padding: '6px 10px', background: 'none', border: 'none', cursor: 'pointer' }}
+              style={{ fontSize: '14px', fontWeight: 500, padding: '6px 10px', textDecoration: 'none', display: 'inline-block' }}
             >
               Log In
-            </button>
-            <button
-              type="button"
-              onClick={() => openModal('register')}
-              style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-on-brand)', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', padding: '8px 16px', border: 'none', cursor: 'pointer' }}
+            </Link>
+            <Link
+              href="/register"
+              onClick={(e) => { e.preventDefault(); openModal('register') }}
+              style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-on-brand)', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', padding: '8px 16px', textDecoration: 'none', display: 'inline-block' }}
             >
               Sign Up
-            </button>
+            </Link>
           </div>
         )}
       </nav>

@@ -36,16 +36,6 @@ interface EditForm {
 
 const MAX_TIERS = 5
 
-const cardShadow = Platform.select({
-  ios: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  },
-  android: { elevation: 4 },
-})
-
 // ─── SkeletonCard ─────────────────────────────────────────────────────────────
 
 function SkeletonCard() {
@@ -164,7 +154,7 @@ function TierCard({
   const canDelete = tier.sold === 0
 
   return (
-    <View style={[styles.tierCard, cardShadow]}>
+    <View style={styles.tierCard}>
       <View style={styles.tierHeader}>
         <Text style={styles.tierName}>{tier.name}</Text>
         <Text style={styles.tierPrice}>{formatNaira(tier.price)}</Text>
@@ -217,7 +207,7 @@ interface AddTierFormProps {
 
 function AddTierForm({ form, onChange, onAdd, onCancel, saving }: AddTierFormProps) {
   return (
-    <View style={[styles.tierCard, cardShadow, styles.addFormCard]}>
+    <View style={[styles.tierCard, styles.addFormCard]}>
       <Text style={styles.addFormTitle}>New Tier</Text>
       <TierEditForm
         form={form}
@@ -470,6 +460,8 @@ const styles = StyleSheet.create({
   tierCard: {
     backgroundColor: colors.mobile.surface,
     borderRadius: rd.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.mobile.border,
     padding: sp[4],
     gap: sp[3],
   },

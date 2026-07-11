@@ -104,7 +104,7 @@ export function Footer() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <nav aria-label="Footer links" style={{ display: 'flex', gap: '16px' }}>
+          <nav aria-label="Footer navigation" style={{ display: 'flex', gap: '16px' }}>
             {[
               { label: 'About', href: '/about' },
               { label: 'Terms', href: '/terms' },

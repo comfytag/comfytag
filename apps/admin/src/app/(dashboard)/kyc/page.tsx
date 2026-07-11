@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { LoadingSpinner, ErrorMessage, Badge, DataTable, PageHeader } from '@comfytag/ui'
@@ -70,7 +70,7 @@ const columns: ColumnDef<UserAdminProfile>[] = [
         style={{
           display: 'inline-block',
           padding: '5px 14px',
-          borderRadius: 6,
+          borderRadius: 'var(--radius-md)',
           fontSize: 13,
           fontWeight: 600,
           color: 'var(--color-brand)',
@@ -119,7 +119,7 @@ export default function KycPage() {
         style={{
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           overflow: 'hidden',
         }}
       >

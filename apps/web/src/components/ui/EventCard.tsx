@@ -54,7 +54,7 @@ export function EventCard({
 
   const content = (
     <article
-      className="group relative block w-full aspect-[4/5] sm:aspect-[3/4] rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 hover:-translate-y-1 bg-zinc-900"
+      className="group relative block w-full aspect-[4/5] sm:aspect-[3/4] rounded-2xl overflow-hidden border border-transparent hover:border-brand transition-colors duration-(--duration-micro) ease-(--ease-standard) bg-zinc-900"
       onClick={onSelect}
       role={onSelect ? 'button' : undefined}
       tabIndex={onSelect ? 0 : undefined}
@@ -83,7 +83,7 @@ export function EventCard({
 
       {/* Top-left status badge */}
       {topBadgeLabel && (
-        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-zinc-900 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm">
+        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-zinc-900 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
           {topBadgeLabel}
         </div>
       )}
@@ -149,7 +149,7 @@ export function EventCard({
     return (
       <Link
         href={href}
-        className="block h-full rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
+        className="block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
       >
         {content}
       </Link>

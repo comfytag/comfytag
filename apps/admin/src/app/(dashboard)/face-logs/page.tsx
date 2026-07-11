@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { LoadingSpinner, ErrorMessage } from '@comfytag/ui'
@@ -36,7 +36,7 @@ const columns: ColumnDef<User>[] = [
         style={{
           fontSize: 12,
           padding: '2px 8px',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           fontWeight: 500,
           ...(u.faceEnrolled
             ? { background: 'color-mix(in srgb, var(--color-success) 15%, transparent)', color: 'var(--color-success)' }
@@ -60,7 +60,7 @@ const columns: ColumnDef<User>[] = [
         style={{
           fontSize: 12,
           padding: '2px 8px',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           fontWeight: 500,
           ...(u.isPartner
             ? { background: 'rgba(124,58,237,0.15)', color: '#7C3AED' }
@@ -103,7 +103,7 @@ export default function FaceLogsPage() {
         style={{
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           padding: 24,
         }}
       >

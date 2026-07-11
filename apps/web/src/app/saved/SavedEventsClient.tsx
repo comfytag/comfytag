@@ -59,7 +59,7 @@ export default function SavedEventsClient() {
         <p className="text-sm text-zinc-500 mt-1">Events you've bookmarked for later</p>
 
         {events.length === 0 ? (
-          <div className="mt-12 p-12 bg-white border-2 border-dashed border-zinc-200 rounded-3xl text-center flex flex-col items-center">
+          <div className="mt-12 p-12 bg-white border-2 border-dashed border-zinc-200 rounded-2xl text-center flex flex-col items-center">
             <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4 text-3xl select-none">
               🎟️
             </div>

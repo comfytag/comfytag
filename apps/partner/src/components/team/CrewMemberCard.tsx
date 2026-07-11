@@ -50,7 +50,7 @@ export function CrewMemberCard({
   const canRemove = !!member.user_id
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-sm flex flex-col gap-4 transition-all duration-200 hover:shadow-md hover:border-zinc-300">
+    <div className="bg-white border border-zinc-200 rounded-xl p-5 flex flex-col gap-4 transition-colors duration-200 hover:border-zinc-300">
       {/* Avatar + name row */}
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white text-sm font-black shrink-0 overflow-hidden">

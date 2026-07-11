@@ -167,7 +167,7 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
           aspectRatio: '1',
           maxWidth: '360px',
           margin: '0 auto 20px',
-          borderRadius: '24px',
+          borderRadius: 'var(--radius-lg)',
           overflow: 'hidden',
           background: '#000',
           display: isScanning ? 'block' : 'none',
@@ -211,7 +211,7 @@ export function CameraScanner({ onScan, isProcessing }: CameraScannerProps) {
           autoPlay
           playsInline
           muted
-          className="w-full h-full object-cover rounded-3xl"
+          className="w-full h-full object-cover"
         />
 
         <div className="ct-scan-corner ct-tl" />

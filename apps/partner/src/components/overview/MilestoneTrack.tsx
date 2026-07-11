@@ -53,7 +53,7 @@ export function MilestoneTrack({ ticketsSold, totalCapacity }: MilestoneTrackPro
                     className={[
                       'w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-500',
                       completed
-                        ? 'bg-amber-400 border-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.4)]'
+                        ? 'bg-amber-400 border-amber-400'
                         : isNext
                         ? 'bg-white border-violet-500'
                         : 'bg-zinc-200 border-zinc-300',

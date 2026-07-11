@@ -60,7 +60,7 @@ export function Step5Summary({
     <>
     <div className="max-w-3xl mx-auto space-y-5 mt-8 animate-in fade-in duration-300">
       {/* Celebratory launch header */}
-      <div className="bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl sm:rounded-[2.5rem] p-8 text-center">
+      <div className="bg-white border border-zinc-200/80 rounded-xl p-8 text-center">
         <div className="text-5xl mb-4" aria-hidden="true">🚀</div>
         <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 5 of 5</span>
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Ready for launch?</h2>
@@ -70,7 +70,7 @@ export function Step5Summary({
       </div>
 
       {/* Summary sections */}
-      <div className="bg-white border border-zinc-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-4xl sm:rounded-[2.5rem] p-6 space-y-3">
+      <div className="bg-white border border-zinc-200/80 rounded-xl p-6 space-y-3">
         <SummaryCard title="Event Info" onEdit={() => onGoToStep(1)}>
           <p className="text-sm font-bold text-zinc-900 leading-tight">{formData.name || '—'}</p>
           <p className="text-xs text-zinc-500 mt-1">{dateLabel}</p>
@@ -162,7 +162,7 @@ export function Step5Summary({
 
     {/* Sticky launch bar */}
     <div
-      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50 shadow-[0_-4px_20px_rgb(0,0,0,0.05)]"
+      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50"
       style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
     >
       <div className="max-w-3xl mx-auto flex flex-col gap-2">
@@ -170,7 +170,7 @@ export function Step5Summary({
           type="button"
           onClick={() => onSubmit('published')}
           disabled={isPending}
-          className="w-full bg-zinc-900 text-white font-bold py-3 px-8 rounded-full shadow-sm active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+          className="w-full bg-zinc-900 text-white font-bold py-3 px-8 rounded-full active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
         >
           {isPending ? 'Launching…' : '🚀 Publish Event'}
         </button>

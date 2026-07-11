@@ -50,8 +50,8 @@ export function PaymentSuccessView({
 
         {/* Apple-style animated success header */}
         <div className="animate-in fade-in zoom-in duration-500 flex flex-col items-center">
-          {/* Glowing emerald checkmark */}
-          <div className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center shadow-lg shadow-emerald-200/80 ring-8 ring-emerald-100">
+          {/* Emerald checkmark badge */}
+          <div className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center ring-8 ring-emerald-100">
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle cx="12" cy="12" r="12" fill="#10B981" />
               <path
@@ -88,14 +88,14 @@ export function PaymentSuccessView({
           </div>
         )}
 
-        {/* Instagram-ready glossy share card */}
+        {/* Instagram-ready share card */}
         <div
           role="button"
           tabIndex={0}
           aria-label={`Share ${eventName}`}
           onClick={handleShare}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleShare() }}
-          className="mt-8 w-full max-w-sm bg-linear-to-br from-violet-600 to-indigo-600 rounded-[2rem] p-8 shadow-2xl text-white relative overflow-hidden transform hover:scale-[1.02] transition-transform cursor-pointer"
+          className="mt-8 w-full max-w-sm bg-linear-to-br from-violet-600 to-indigo-600 rounded-2xl p-8 text-white relative overflow-hidden border border-transparent hover:border-white/30 transition-colors duration-(--duration-micro) ease-(--ease-standard) cursor-pointer"
         >
           {/* Decorative ticket-texture circles */}
           <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/5 rounded-full" aria-hidden="true" />

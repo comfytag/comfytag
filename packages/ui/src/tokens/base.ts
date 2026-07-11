@@ -64,8 +64,7 @@ export const colors = {
   gradients: {
     hero: 'linear-gradient(135deg, #7C3AED, #C026D3)',
     cardOverlay: 'linear-gradient(to top, rgba(28,25,23,0.85) 0%, transparent 60%)',
-    // NEW: Fire gradient for buttons and featured cards
-    fire: 'linear-gradient(135deg, #a078ff 0%, #ff516a 100%)',
+    // fire gradient removed in v2.0 — see design.md v2.0 changelog
   },
 
   // Chart data series
@@ -132,23 +131,20 @@ export const containers = {
   full: '100%',
 } as const
 
-// ─── Border radius ────────────────────────────────────
+// ─── Border radius (v2.0 — drastically tightened) ─────
 export const radius = {
-  sm: '6px',
-  md: '12px',
-  lg: '16px',
-  xl: '20px',
-  '2xl': '24px',
+  sm: '4px',
+  md: '6px',
+  lg: '8px',
+  xl: '10px',
+  '2xl': '10px', // merged with xl in v2.0 — see design.md changelog
   full: '9999px',
 } as const
 
-// ─── Shadows (public system only) ────────────────────
-export const shadows = {
-  sm: '0 1px 3px rgba(0,0,0,0.08)',
-  md: '0 4px 12px rgba(0,0,0,0.10)',
-  lg: '0 8px 24px rgba(0,0,0,0.12)',
-  xl: '0 16px 48px rgba(0,0,0,0.16)',
-} as const
+// Shadows removed in v2.0. Depth is now communicated via border + surface-colour
+// contrast only — see "Elevation via Border + Contrast" in design.md v2.0.
+// Do not reintroduce a `shadows` export; use `colors.public`/`colors.dashboard`
+// surface/border tokens instead.
 
 // ─── Motion ───────────────────────────────────────────
 export const motion = {

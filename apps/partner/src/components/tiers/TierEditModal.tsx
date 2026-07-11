@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import { Modal, Button } from '@comfytag/ui'
+import { Button } from '@comfytag/ui'
 import type { TierStats } from '@comfytag/types'
 
 interface TierEditModalProps {
@@ -44,11 +44,11 @@ export function TierEditModal({ tier, isLoading = false, onSave, onCancel }: Tie
       <div
         style={{
           backgroundColor: 'var(--color-surface)',
-          borderRadius: '12px',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-xl)',
           padding: '24px',
           maxWidth: '400px',
           width: '90%',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
         }}
         onClick={(e) => e.stopPropagation()}
       >

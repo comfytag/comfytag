@@ -99,7 +99,7 @@ export function HowItWorksSection({ steps }: { steps?: CmsStep[] }) {
             return (
               <div
                 key={step.step}
-                className="relative overflow-hidden bg-zinc-900 rounded-3xl p-6 md:p-8 border border-zinc-800 flex flex-col hover:border-violet-500/50 transition-colors group shrink-0 w-[85vw] sm:w-85 snap-center md:w-auto md:shrink"
+                className="relative overflow-hidden bg-zinc-900 rounded-2xl p-6 md:p-8 border border-zinc-800 flex flex-col hover:border-violet-500/50 transition-colors group shrink-0 w-[85vw] sm:w-85 snap-center md:w-auto md:shrink"
               >
                 {/* Giant background step number */}
                 <span className="absolute -bottom-8 -right-4 text-[12rem] font-black text-zinc-800/40 leading-none select-none group-hover:text-zinc-800/60 transition-colors">

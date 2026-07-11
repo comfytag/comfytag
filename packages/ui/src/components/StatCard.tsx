@@ -12,17 +12,15 @@ export function StatCard({ icon: Icon, value, label, isLoading }: StatCardProps)
   return (
     <div
       style={{
-        // NEW: Glass morphism dark variant
-        backgroundColor: 'rgba(26, 26, 26, 0.6)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        borderRadius: '12px',
+        // v2.0: flat surface + border, no glass/glow — see design.md "Elevation via Border + Contrast"
+        backgroundColor: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
         padding: '20px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        transition: 'all var(--duration-fast) ease',
-        boxShadow: '0 0 20px rgba(124, 58, 237, 0.1)',
+        transition: 'border-color var(--duration-micro) ease, background-color var(--duration-micro) ease',
       }}
     >
       <div>

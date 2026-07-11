@@ -40,7 +40,7 @@ export function WizardProgressBar({ currentStep, onStepClick }: WizardProgressBa
                 className={[
                   'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
                   active
-                    ? 'bg-violet-600 text-white shadow-lg shadow-violet-200 ring-4 ring-violet-100 scale-110'
+                    ? 'bg-violet-600 text-white ring-4 ring-violet-100 scale-110'
                     : completed
                       ? 'bg-violet-600 text-white cursor-pointer hover:bg-violet-700'
                       : 'bg-zinc-100 text-zinc-400 cursor-default',

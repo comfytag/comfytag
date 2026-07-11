@@ -60,7 +60,7 @@ export function Input({
     outline: 'none',
     boxShadow: 'none',
     boxSizing: 'border-box',
-    transition: 'border-color 150ms ease',
+    transition: 'border-color var(--duration-micro) var(--ease-standard)',
   }
 
   return (

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { Modal, Button, Badge } from '@comfytag/ui'
@@ -24,7 +24,7 @@ function Section({ title, subtitle, children }: {
       style={{
         backgroundColor: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
         padding: 20,
       }}
     >
@@ -50,7 +50,7 @@ function EndedBanner() {
       style={{
         backgroundColor: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
         padding: 20,
         display: 'flex',
         alignItems: 'center',
@@ -237,7 +237,7 @@ export function EventActionPanel({ eventId, event }: EventActionPanelProps) {
           style={{
             width: '100%',
             padding: '10px 14px',
-            borderRadius: 8,
+            borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface-2)',
             color: 'var(--color-text)',

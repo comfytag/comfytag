@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import {
@@ -47,7 +47,7 @@ const textareaStyle: React.CSSProperties = {
   width: '100%',
   minHeight: '72px',
   padding: '10px 12px',
-  borderRadius: '8px',
+  borderRadius: 'var(--radius-lg)',
   border: '1px solid var(--color-border)',
   backgroundColor: 'var(--color-surface)',
   color: 'var(--color-text)',
@@ -95,7 +95,7 @@ function ToggleSwitch({
           display: 'inline-block',
           width: 36,
           height: 20,
-          borderRadius: 10,
+          borderRadius: 'var(--radius-xl)',
           backgroundColor: checked
             ? 'var(--color-brand)'
             : 'var(--color-border)',
@@ -152,7 +152,7 @@ function ActionButton({
         justifyContent: 'center',
         width: 28,
         height: 28,
-        borderRadius: 6,
+        borderRadius: 'var(--radius-md)',
         border: '1px solid var(--color-border)',
         backgroundColor: 'transparent',
         color: 'var(--color-text-muted)',
@@ -215,7 +215,7 @@ function buildColumns(
             backgroundColor: 'var(--color-surface-2, color-mix(in srgb, var(--color-border) 40%, transparent))',
             color: 'var(--color-text-muted)',
             padding: '2px 6px',
-            borderRadius: 4,
+            borderRadius: 'var(--radius-sm)',
           }}
         >
           {s.iconType}
@@ -356,7 +356,7 @@ export default function CmsHowItWorksPage() {
           style={{
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
-            borderRadius: 12,
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
           }}
         >

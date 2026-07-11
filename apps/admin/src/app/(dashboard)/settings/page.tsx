@@ -33,7 +33,7 @@ function InfoRow({ label, value }: InfoRowProps) {
 const cardStyle: React.CSSProperties = {
   backgroundColor: 'var(--color-surface)',
   border: '1px solid var(--color-border)',
-  borderRadius: '12px',
+  borderRadius: 'var(--radius-lg)',
   padding: '24px',
   marginBottom: '24px',
 }

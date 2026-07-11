@@ -32,7 +32,7 @@ export function FaceEnrollmentBanner({ user, onDismiss, title, body }: FaceEnrol
   if (!isVisible) return null
 
   return (
-    <div className="p-6 bg-linear-to-br from-violet-600 to-indigo-600 text-white rounded-3xl shadow-md relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 mb-2">
+    <div className="p-6 bg-linear-to-br from-violet-600 to-indigo-600 text-white rounded-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 mb-2">
       {/* Decorative ambient glows */}
       <div
         aria-hidden="true"

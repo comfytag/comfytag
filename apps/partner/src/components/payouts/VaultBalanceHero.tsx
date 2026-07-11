@@ -10,34 +10,7 @@ interface VaultBalanceHeroProps {
 
 export function VaultBalanceHero({ balance, available, pending }: VaultBalanceHeroProps) {
   return (
-    <div className="bg-zinc-950 border border-zinc-800 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
-      {/* Gold glow — top-right */}
-      <div
-        aria-hidden="true"
-        className="absolute pointer-events-none"
-        style={{
-          top: '-40%',
-          right: '-10%',
-          width: '55%',
-          height: '200%',
-          background:
-            'radial-gradient(ellipse at center, rgba(217,119,6,0.18) 0%, transparent 65%)',
-        }}
-      />
-      {/* Violet glow — bottom-left */}
-      <div
-        aria-hidden="true"
-        className="absolute pointer-events-none"
-        style={{
-          bottom: '-30%',
-          left: '-5%',
-          width: '40%',
-          height: '130%',
-          background:
-            'radial-gradient(ellipse at center, rgba(124,58,237,0.10) 0%, transparent 65%)',
-        }}
-      />
-
+    <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-8 relative overflow-hidden">
       <div className="relative z-10">
         <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-3">
           Total Balance

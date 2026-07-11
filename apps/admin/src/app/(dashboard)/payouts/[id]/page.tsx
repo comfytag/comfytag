@@ -49,7 +49,7 @@ export default function PayoutDetailPage() {
         style={{
           backgroundColor: 'var(--color-surface)',
           border: '1px solid rgba(124, 58, 237, 0.3)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           padding: 24,
           marginBottom: 24,
         }}
@@ -192,7 +192,7 @@ export default function PayoutDetailPage() {
           gap: 12,
           backgroundColor: 'var(--color-surface)',
           border: '1px solid var(--color-border)',
-          borderRadius: 12,
+          borderRadius: 'var(--radius-lg)',
           padding: 20,
           marginBottom: 28,
         }}

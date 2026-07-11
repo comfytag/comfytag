@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { CheckCircle, XCircle } from 'lucide-react'
@@ -21,7 +21,7 @@ function Section({ children }: { children: React.ReactNode }) {
       style={{
         backgroundColor: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
         padding: 20,
       }}
     >
@@ -213,7 +213,7 @@ export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelPro
           style={{
             width: '100%',
             padding: '9px 12px',
-            borderRadius: 8,
+            borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface-2)',
             color: 'var(--color-text)',
@@ -288,7 +288,7 @@ export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelPro
           style={{
             width: '100%',
             padding: '10px 14px',
-            borderRadius: 8,
+            borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface-2)',
             color: 'var(--color-text)',

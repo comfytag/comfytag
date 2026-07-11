@@ -189,18 +189,6 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const cardShadow = Platform.select({
-  ios: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-  },
-  android: {
-    elevation: 4,
-  },
-})
-
 const styles = StyleSheet.create({
   // ── Root ─────────────────────────────────────────────────────────────────
   container: {
@@ -298,7 +286,6 @@ const styles = StyleSheet.create({
     marginBottom: sp[4],
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.mobile.border,
-    ...cardShadow,
   },
   fieldGroup: {
     paddingTop: sp[4],

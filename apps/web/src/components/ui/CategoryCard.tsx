@@ -56,11 +56,8 @@ export function CategoryCard({ name, icon, gradient, onClick, category, href }: 
           width: '100%',
           background,
           display: 'block',
-          transform: hovered ? 'scale(1.02)' : 'scale(1)',
-          transition: `transform var(--duration-fast) ease, box-shadow var(--duration-fast) ease`,
-          boxShadow: hovered
-            ? `0 0 12px color-mix(in srgb, var(--color-brand) 30%, transparent)`
-            : 'none',
+          border: hovered ? '1px solid var(--color-brand)' : '1px solid transparent',
+          transition: `border-color var(--duration-micro) var(--ease-standard)`,
           cursor: onClick || href ? 'pointer' : 'default',
         }}
         onMouseEnter={() => setHovered(true)}

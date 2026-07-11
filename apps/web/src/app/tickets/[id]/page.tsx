@@ -124,7 +124,7 @@ export default function TicketDetailPage() {
         ) : (
           <>
             {/* ── Ticket Card ─────────────────────────────────────── */}
-            <div className="w-full max-w-md bg-white rounded-[2rem] shadow-xl border border-zinc-100 overflow-hidden flex flex-col">
+            <div className="w-full max-w-md bg-white rounded-2xl border border-zinc-100 overflow-hidden flex flex-col">
 
               {/* Violet gradient accent bar */}
               <div className="h-3 w-full bg-linear-to-r from-violet-600 to-indigo-600" />
@@ -169,7 +169,7 @@ export default function TicketDetailPage() {
                   </div>
 
                   {/* Right: event cover thumbnail */}
-                  <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl overflow-hidden border border-zinc-100 shadow-xs bg-violet-500">
+                  <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-xl overflow-hidden border border-zinc-100 bg-violet-500">
                     {coverImg ? (
                       <Image
                         src={coverImg}
@@ -207,7 +207,7 @@ export default function TicketDetailPage() {
               {/* Bottom half: QR code */}
               <div className="p-8 flex flex-col items-center bg-white">
                 {qrSrc ? (
-                  <div className="p-4 border-2 border-zinc-100 rounded-2xl bg-white shadow-sm mb-6">
+                  <div className="p-4 border-2 border-zinc-100 rounded-2xl bg-white mb-6">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={qrSrc}
@@ -251,7 +251,7 @@ export default function TicketDetailPage() {
             <div className="w-full max-w-md mt-8 space-y-4">
 
               {event?.gateRules && event.gateRules.length > 0 && (
-                <div className="bg-white border border-zinc-100 rounded-2xl p-5 shadow-sm">
+                <div className="bg-white border border-zinc-100 rounded-2xl p-5">
                   <h2 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-3">
                     Gate Rules
                   </h2>
@@ -285,7 +285,7 @@ export default function TicketDetailPage() {
                         )
                       }
                     }}
-                    className="w-full py-4 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl transition-all shadow-md"
+                    className="w-full py-4 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl transition-all"
                   >
                     Send to Friend
                   </button>

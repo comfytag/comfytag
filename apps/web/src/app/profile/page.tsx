@@ -122,7 +122,7 @@ export default function ProfilePage() {
           {/* Avatar Section */}
           <div className="flex flex-col items-center">
             {user?.image || session.user.image ? (
-              <div className="ring-4 ring-white shadow-md rounded-full mx-auto">
+              <div className="ring-4 ring-white rounded-full mx-auto">
                 <Image
                   src={user?.image || session.user.image}
                   alt={displayName}
@@ -132,7 +132,7 @@ export default function ProfilePage() {
                 />
               </div>
             ) : (
-              <div className="w-24 h-24 rounded-full bg-violet-600 text-white flex items-center justify-center text-3xl font-black ring-4 ring-white shadow-md mx-auto">
+              <div className="w-24 h-24 rounded-full bg-violet-600 text-white flex items-center justify-center text-3xl font-black ring-4 ring-white mx-auto">
                 {(displayName || '?').charAt(0).toUpperCase()}
               </div>
             )}
@@ -143,7 +143,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Edit Profile Card */}
-          <div className="w-full bg-white border border-zinc-200 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col">
+          <div className="w-full bg-white border border-zinc-200 rounded-2xl p-6 sm:p-8 flex flex-col">
             <h2 className="text-lg font-bold text-zinc-900 mb-6">Edit Profile</h2>
 
             <div className="flex flex-col gap-4">
@@ -197,7 +197,7 @@ export default function ProfilePage() {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="w-full py-4 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white font-bold rounded-xl transition-all shadow-md mt-4"
+              className="w-full py-4 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white font-bold rounded-xl transition-all mt-4"
             >
               {isSaving ? 'Saving…' : 'Save Changes'}
             </button>
@@ -211,7 +211,7 @@ export default function ProfilePage() {
 
           {/* Referral Link Card */}
           {referralLink && (
-            <div className="w-full bg-white border border-zinc-200 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col">
+            <div className="w-full bg-white border border-zinc-200 rounded-2xl p-6 sm:p-8 flex flex-col">
               <h2 className="text-lg font-bold text-zinc-900 mb-6">Your Referral Link</h2>
               <p className="text-sm text-zinc-500 mb-2">Share this link to earn rewards</p>
               <div className="w-full bg-violet-50 border border-violet-100 rounded-xl p-2 pl-4 flex items-center justify-between mt-2">
@@ -229,7 +229,7 @@ export default function ProfilePage() {
           )}
 
           {/* Account Card */}
-          <div className="w-full bg-white border border-zinc-200 rounded-[2rem] p-6 sm:p-8 shadow-sm flex flex-col">
+          <div className="w-full bg-white border border-zinc-200 rounded-2xl p-6 sm:p-8 flex flex-col">
             <h2 className="text-lg font-bold text-zinc-900 mb-6">Account</h2>
 
             <div className="flex justify-between items-center text-sm pb-4 border-b border-zinc-100 mb-4">
@@ -252,7 +252,7 @@ export default function ProfilePage() {
                   const partnerUrl = process.env.NEXT_PUBLIC_PARTNER_URL ?? 'http://localhost:3001'
                   window.location.href = `${partnerUrl}/handoff?t=${session.user.token}`
                 }}
-                className="w-full py-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-all shadow-md mb-4"
+                className="w-full py-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-all mb-4"
               >
                 Go to Partner Dashboard
               </button>

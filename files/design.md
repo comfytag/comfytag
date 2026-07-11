@@ -1,12 +1,14 @@
 # ComfyTag Design System
 > "Your face is your ticket."
-> Version 1.0 — May 2026
+> Version 2.0 — July 2026
 
 ---
 
 ## Philosophy
 
 ComfyTag is the Kuda of event ticketing. Not loud. Not corporate. Clean, premium, and distinctly Nigerian — with one bold brand colour that owns the space.
+
+**v2 direction (July 2026):** premium reads as *calm*, not energetic. Depth and emphasis come from typography weight, spacing, and colour contrast — never from shadow, blur, or glow. This applies platform-wide, to both the Public and Dashboard systems. See "Elevation via Border + Contrast" and "State Motion Matrix" below.
 
 Two systems. One brand DNA.
 
@@ -159,6 +161,17 @@ On the public site, amber means energy and FOMO — not caution.
 - Usage: Ticket IDs, QR code references, transaction IDs, OTP codes, verification codes
 - Why: Creates instant "official document" feel. Distinguishes data from interface text.
 
+**Display: Anybody Variable** *(formalized in v2 — shipped in code since June 2026, previously undocumented)*
+- Source: Google Fonts (free)
+- Weights in use: 700–900
+- Usage: Page titles, section headings, primary hero copy — restricted to large display moments, not general UI text
+- Note: under the v2 calm direction, weight should communicate hierarchy on its own — pair with the border/contrast elevation model, not with glow or gradient treatment (both removed in v2)
+
+**Labels: Space Grotesk** *(formalized in v2 — shipped in code since June 2026, previously undocumented)*
+- Source: Google Fonts (free)
+- Weights in use: 500–700
+- Usage: Form labels, table headers, stat card captions, secondary/uppercase letter-spaced labels
+
 ### Type Scale (4pt grid)
 
 | Token | Size | Line Height | Weight | Usage |
@@ -213,27 +226,33 @@ All spacing values are multiples of 4px.
 
 ---
 
-## Border Radius
+## Border Radius (v2 — drastically tightened)
+
+Reduced from the v1 scale to read as calm and professional rather than soft/bubbly. No shadow compensates for corners anymore, so radius alone carries the "how rounded is this surface" decision.
 
 | Token | Value | Usage |
 |---|---|---|
-| `--radius-sm` | 6px | Badges, tags, chips, small buttons |
-| `--radius-md` | 12px | Buttons, input fields, dropdowns |
-| `--radius-lg` | 16px | Cards (event cards, ticket cards, form panels) |
-| `--radius-xl` | 20px | Large feature cards, modal containers |
-| `--radius-2xl` | 24px | Bottom sheets, dialog modals |
-| `--radius-full` | 9999px | Pill buttons, avatar circles, toggle switches |
+| `--radius-sm` | 4px | Badges, tags, chips, small buttons |
+| `--radius-md` | 6px | Buttons, input fields, dropdowns |
+| `--radius-lg` | 8px | Cards (event cards, ticket cards, form panels) |
+| `--radius-xl` | 10px | Large feature cards, modal containers |
+| `--radius-2xl` | 10px | Bottom sheets, dialog modals (merged with `--radius-xl`; v1 had a separate 24px tier — no longer needed at this scale) |
+| `--radius-full` | 9999px | Pill buttons, avatar circles, toggle switches (unchanged) |
 
 ---
 
-## Shadows (Public system only — dashboards use borders)
+## Elevation via Border + Contrast (v2 — replaces Shadows)
 
-| Token | Value | Usage |
-|---|---|---|
-| `--shadow-sm` | `0 1px 3px rgba(0,0,0,0.08)` | Cards at rest, subtle lift |
-| `--shadow-md` | `0 4px 12px rgba(0,0,0,0.10)` | Card hover state |
-| `--shadow-lg` | `0 8px 24px rgba(0,0,0,0.12)` | Modals, drawers, floating panels |
-| `--shadow-xl` | `0 16px 48px rgba(0,0,0,0.16)` | Tooltips, popovers, dropdowns |
+**v1.1 used a box-shadow ladder on the public system and borders on dashboards. v2 removes shadows, glow, and glass/blur entirely, platform-wide.** Depth and hierarchy are now communicated only through border + background-colour contrast between adjacent surface levels. This is deliberately the *only* elevation mechanism — no `box-shadow`, no `backdrop-filter`, no glow, on any surface, in either system.
+
+| Surface level | Public system | Dashboard system | Usage |
+|---|---|---|---|
+| Base | `--bg-base` (`#FAFAF9`) | `--bg-base` (`#0F0F0F`) | Page background |
+| Surface (resting) | `--bg-surface` (`#FFFFFF`) + `--border-default` | `--bg-surface` (`#1A1A1A`) + `--border-default` | Cards, panels at rest |
+| Surface (hover/active) | `--bg-surface-alt` (`#F5F3FF`) + `--border-focus` or darkened border | `--bg-surface-hover` (`#2E2E2E`) + `--border-light` | Hover/active state — colour shift only, no lift |
+| Overlay (modals, dropdowns, popovers) | `--bg-surface` + `--border-default`, separated from the page by the dimmed `--bg-overlay` backdrop | `--bg-surface-alt` (`#242424`) + `--border-default`, same backdrop-dim separation | The backdrop dim, not a shadow, is what visually lifts a modal off the page |
+
+**Rule:** if two adjacent elements need to read as visually distinct, the fix is a border and/or a one-step surface-colour shift — never a shadow. If contrast between adjacent tokens isn't distinct enough to read as separate surfaces on its own, that's a signal to add a border, not to reach for a shadow.
 
 ---
 
@@ -246,8 +265,8 @@ All spacing values are multiples of 4px.
 - Price: bold, bottom-right corner of image
 - Title + date: white text over gradient overlay
 - Organizer: small avatar + name below the image
-- Border radius: 16px
-- Shadow: `--shadow-sm`, elevates to `--shadow-md` on hover
+- Border radius: `--radius-lg` (8px)
+- Elevation: `--border-default` at rest; on hover, border shifts to `--border-focus` and background shifts to `--bg-surface-alt` — no shadow, no lift
 
 ### Ticket Card (wallet)
 - Background: white (public) / `#1A1A1A` (dashboard)
@@ -308,6 +327,22 @@ All spacing values are multiples of 4px.
 | Entrance | `cubic-bezier(0.0, 0.0, 0.2, 1.0)` | Elements entering the screen |
 | Exit | `cubic-bezier(0.4, 0.0, 1.0, 1.0)` | Elements leaving the screen |
 | Standard | `cubic-bezier(0.4, 0.0, 0.2, 1.0)` | State changes within the screen |
+
+### State Motion Matrix (v2 — general components)
+
+The Signature Animations below cover five specific high-stakes moments. Everything else — ordinary buttons, cards, inputs, badges — follows this matrix instead. All values reference the Duration Scale and Easing tokens above. No state in this matrix uses glow, blur, or shadow.
+
+| State | Treatment | Duration/Easing |
+|---|---|---|
+| Hover (cards) | Border colour shift + one-step background shift (see Elevation via Border + Contrast) | Micro / Standard |
+| Hover (buttons, chips, links) | Background/border/text colour shift only | Micro / Standard |
+| Press (web) | Scale to 0.98 | Micro / Standard |
+| Press (mobile) | Scale to 0.96 + haptic feedback (see `AnimatedPressable`) | Micro / Standard |
+| Focus | Solid 2px `--border-focus` ring, 2px offset — no glow | Micro |
+| Entrance (modals, toasts, cards mounting) | Fade + translateY(4–8px) | Entrance |
+| Exit | Fade only, no translate | Fast |
+
+All transitions and animations respect `prefers-reduced-motion` (web) / Reduce Motion (OS-level, mobile): entrances and exits collapse to instant or opacity-only; hover/press/focus colour shifts remain (they're not motion, just colour) but any transform is dropped.
 
 ### Signature Animations
 
@@ -386,11 +421,12 @@ Only used on currently-live events.
 packages/ui/
 ├── tokens/
 │   ├── colors.ts         CSS variables + TypeScript tokens
-│   ├── typography.ts     Font scale + weight constants
+│   ├── typography.ts     Font scale + weight constants (incl. Anybody, Space Grotesk)
 │   ├── spacing.ts        Spacing scale constants
-│   ├── radius.ts         Border radius constants
-│   ├── shadows.ts        Shadow scale constants
+│   ├── radius.ts         Border radius constants (v2: tightened scale)
 │   └── motion.ts         Duration + easing constants
+│   # shadows.ts removed in v2 — see "Elevation via Border + Contrast"
+│   # effects.ts (glassMorphism/glow/fire-gradient) deprecated in v2 — do not use for new work
 ├── components/
 │   ├── Button/
 │   ├── Input/
@@ -471,8 +507,11 @@ module.exports = {
 |---|---|---|
 | 1.0 | May 2026 | Initial design system — all four apps |
 | 1.1 | May 2026 | Amber split: --color-energy (#F59E0B) for FOMO triggers, --color-financial (#D97706) for revenue displays. Added badge usage rules. |
+| 2.0 | July 2026 | **Calm/professional pivot.** Border radius drastically tightened (see Border Radius). Shadows removed platform-wide; replaced by "Elevation via Border + Contrast" as the sole depth mechanism for both systems. Glass morphism, glow effects, and the fire gradient (`#a078ff→#ff516a`) — introduced undocumented by the "Afterdark Kinetic" effort (May–Jun 2026) — are deprecated and removed from active use; `packages/ui/src/tokens/effects.ts` should not be used for new work. Added a general "State Motion Matrix" for hover/press/focus/entrance/exit on ordinary components (previously only 5 signature animations existed). Formalized Anybody Variable (display) and Space Grotesk (labels) typefaces, which were already shipped in code but never documented. Reconciles the inconsistency between the ~10 components Afterdark Kinetic touched and everything else that was left behind. |
 
 ---
+
+**Note on `AFTERDARK_KINETIC_SUMMARY.md`:** that document claims its redesign is "PRODUCTION READY... locked in code, no further design changes needed." As of v2.0, that is superseded — the glass/glow/fire-gradient effects it introduced are being removed platform-wide per the calm/professional direction above. This file (`design.md`) is the source of truth; `AFTERDARK_KINETIC_SUMMARY.md` should be treated as historical record only.
 
 *This file is the source of truth for all design decisions on ComfyTag.
 Any deviation from these tokens requires a documented reason and council approval.*

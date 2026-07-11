@@ -18,7 +18,7 @@ export function DangerZone({
       style={{
         backgroundColor: 'var(--color-surface)',
         border: '1px solid color-mix(in srgb, var(--color-error) 30%, transparent)',
-        borderRadius: 12,
+        borderRadius: 'var(--radius-lg)',
         padding: 24,
       }}
     >
@@ -46,7 +46,7 @@ export function DangerZone({
         disabled={loading}
         style={{
           padding: '10px 20px',
-          borderRadius: 8,
+          borderRadius: 'var(--radius-lg)',
           border: '1px solid var(--color-error)',
           cursor: loading ? 'not-allowed' : 'pointer',
           fontSize: 14,
@@ -54,6 +54,7 @@ export function DangerZone({
           backgroundColor: 'transparent',
           color: 'var(--color-error)',
           opacity: loading ? 0.6 : 1,
+          transition: 'opacity var(--duration-micro) var(--ease-standard)',
         }}
       >
         {loading ? 'Processing...' : actionLabel}

@@ -30,7 +30,7 @@ export function AttendeeSearchFilter({
   return (
     <div className="space-y-3">
       {/* Search hub */}
-      <div className="bg-white p-2 border border-zinc-200/80 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center gap-3">
+      <div className="bg-white p-2 border border-zinc-200/80 rounded-xl flex items-center gap-3">
         <Search
           size={16}
           strokeWidth={1.5}

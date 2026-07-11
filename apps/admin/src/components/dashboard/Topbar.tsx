@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef, useEffect, useContext } from 'react'
 import { usePathname } from 'next/navigation'
@@ -22,7 +22,7 @@ interface RoleBadgeStyle {
 const ROLE_BADGE: Record<AdminRole, RoleBadgeStyle> = {
   super_admin:  { bg: 'var(--color-brand)',   label: 'Super Admin'  },
   finance:      { bg: 'var(--color-gold)',    label: 'Finance'      },
-  kyc_reviewer: { bg: '#7C3AED',             label: 'KYC Reviewer' },
+  kyc_reviewer: { bg: 'var(--color-brand)',   label: 'KYC Reviewer' },
   support:      { bg: '#0EA5E9',             label: 'Support'      },
   moderator:    { bg: 'var(--color-success)', label: 'Moderator'   },
 }
@@ -110,7 +110,7 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
           backgroundColor: 'transparent',
           color: 'var(--color-text)',
           cursor: 'pointer',
-          borderRadius: '6px',
+          borderRadius: 'var(--radius-md)',
           flexShrink: 0,
         }}
       >
@@ -130,7 +130,7 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
             display: 'inline-flex',
             alignItems: 'center',
             padding: '3px 10px',
-            borderRadius: '9999px',
+            borderRadius: 'var(--radius-full)',
             fontSize: '12px',
             fontWeight: 500,
             backgroundColor: badge.bg,
@@ -155,7 +155,7 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
               backgroundColor: notifOpen ? 'rgba(124,58,237,0.15)' : 'transparent',
               color: notifOpen ? 'var(--color-brand)' : 'var(--color-text-muted)',
               cursor: 'pointer',
-              borderRadius: '8px',
+              borderRadius: 'var(--radius-lg)',
               transition: 'background-color 150ms, color 150ms',
             }}
           >
@@ -173,7 +173,7 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
                 minWidth: '16px',
                 height: '16px',
                 padding: '0 4px',
-                borderRadius: '9999px',
+                borderRadius: 'var(--radius-full)',
                 backgroundColor: 'var(--color-error)',
                 color: '#fff',
                 fontSize: '10px',
@@ -226,10 +226,9 @@ export function Topbar({ onMenuClick, role, userName }: TopbarProps) {
                 top: 'calc(100% + 8px)',
                 width: '160px',
                 backgroundColor: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: '8px',
+                border: '1px solid var(--color-border-light)',
+                borderRadius: 'var(--radius-lg)',
                 overflow: 'hidden',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
                 zIndex: 50,
               }}
             >

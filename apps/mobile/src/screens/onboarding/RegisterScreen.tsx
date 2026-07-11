@@ -13,7 +13,7 @@ import { useNavigation } from '@react-navigation/native'
 import type { StackNavigationProp } from '@react-navigation/stack'
 import * as Haptics from 'expo-haptics'
 import { Mail } from 'lucide-react-native'
-import { colors, spacing } from '@comfytag/ui/tokens'
+import { colors, spacing, rd } from '@comfytag/ui/tokens'
 import { post } from '../../lib/api'
 import { AnimatedPressable } from '../../components/ui/AnimatedPressable'
 import { isValidEmail } from '@comfytag/utils'
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.mobile.surface,
     borderWidth: 1,
     borderColor: colors.mobile.border,
-    borderRadius: 12,
+    borderRadius: rd.md,
     paddingHorizontal: parseInt(spacing[4]),
     paddingVertical: parseInt(spacing[3]),
     color: colors.mobile.textPrimary,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.mobile.btnPrimaryBg,
     paddingVertical: parseInt(spacing[3]),
-    borderRadius: 12,
+    borderRadius: rd.md,
     alignItems: 'center',
     marginTop: parseInt(spacing[6]),
   },

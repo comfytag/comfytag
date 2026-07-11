@@ -362,7 +362,7 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
         {/* Tactical fullscreen HUD — replaces the small inline result card */}
         {lastResult && lastResult.status === 'success' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-            <div className="bg-emerald-500/90 text-zinc-950 border-2 border-emerald-300 rounded-3xl px-12 py-10 text-center shadow-2xl font-black animate-in fade-in zoom-in-95 duration-200 max-w-sm mx-4">
+            <div className="bg-emerald-500/90 text-zinc-950 border-2 border-emerald-300 rounded-xl px-12 py-10 text-center font-black animate-in fade-in zoom-in-95 duration-200 max-w-sm mx-4">
               <p className="text-7xl mb-3">✓</p>
               <p className="text-3xl font-black tracking-tight mb-1">TICKET VALID</p>
               <p className="text-xl font-bold mb-4 opacity-90">ACCESS GRANTED</p>
@@ -382,7 +382,7 @@ export function GateScannerPanel({ eventId }: GateScannerPanelProps) {
 
         {lastResult && (lastResult.status === 'error' || lastResult.status === 'already') && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-            <div className="bg-red-500 text-white border-2 border-red-400 rounded-3xl px-12 py-10 text-center shadow-2xl font-bold animate-in fade-in zoom-in-95 duration-200 max-w-sm mx-4">
+            <div className="bg-red-500 text-white border-2 border-red-400 rounded-xl px-12 py-10 text-center font-bold animate-in fade-in zoom-in-95 duration-200 max-w-sm mx-4">
               <p className="text-7xl mb-3">✗</p>
               <p className="text-3xl font-black tracking-tight mb-1">TICKET INVALID</p>
               <p className="text-xl font-bold mb-4 opacity-90">DECLINED</p>

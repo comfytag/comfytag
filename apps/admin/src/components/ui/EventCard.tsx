@@ -24,10 +24,10 @@ export function EventCard({ event, href }: EventCardProps) {
         display: 'block',
         backgroundColor: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
-        borderRadius: '12px',
+        borderRadius: 'var(--radius-lg)',
         overflow: 'hidden',
         textDecoration: 'none',
-        transition: 'border-color 0.15s ease',
+        transition: 'border-color var(--duration-micro) var(--ease-standard)',
       }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--color-brand-light)'

@@ -110,7 +110,7 @@ export default function HypeLinkPage() {
           </div>
 
           {/* Hype link card — horizontal creator-dashboard style */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-sm transition-all mt-6">
+          <div className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-zinc-300 transition-all mt-6">
             <div className="flex flex-col gap-1 min-w-0 flex-1">
               <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
                 Personal Hype Link
@@ -179,7 +179,7 @@ export default function HypeLinkPage() {
                 {wallet.transactions.map((tx) => (
                   <div
                     key={tx._id}
-                    className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-sm transition-all mt-4"
+                    className="bg-white border border-zinc-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-zinc-300 transition-all mt-4"
                   >
                     <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                       <p className="text-sm font-bold text-zinc-900 truncate">{tx.description}</p>
