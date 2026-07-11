@@ -20,7 +20,7 @@ export function AuthModal() {
     _setPrefilledEmail,
   } = useAuthModal()
 
-  const [pendingPassword, setPendingPassword] = useState('')
+  const [pendingMode, setPendingMode] = useState<'otp' | 'credentials'>('otp')
 
   const handleRegisterSuccess = useCallback(
     (email: string) => {
@@ -36,10 +36,15 @@ export function AuthModal() {
     switchView('login')
   }, [_setSuccessBanner, switchView])
 
-  const handleSwitchToVerify = useCallback((email: string, password: string) => {
+  const handleSwitchToVerify = useCallback((email: string) => {
     _setPrefilledEmail(email)
-    setPendingPassword(password)
     switchView('verify_email')
+  }, [_setPrefilledEmail, switchView])
+
+  const handleRequiresPassword = useCallback((email: string) => {
+    _setPrefilledEmail(email)
+    setPendingMode('credentials')
+    switchView('login')
   }, [_setPrefilledEmail, switchView])
 
   const viewTitles: Record<typeof view, string> = {
@@ -201,6 +206,7 @@ export function AuthModal() {
                   onSwitchToForgotPassword={() => switchView('forgot_password')}
                   onSwitchToVerifyEmail={handleSwitchToVerify}
                   initialEmail={prefilledEmail}
+                  initialMode={pendingMode}
                   successBanner={successBanner}
                   onSuccess={closeModal}
                 />
@@ -220,9 +226,9 @@ export function AuthModal() {
               {view === 'verify_email' && (
                 <VerifyEmailForm
                   email={prefilledEmail}
-                  password={pendingPassword}
                   onSuccess={closeModal}
                   onBack={() => switchView('login')}
+                  onRequiresPassword={handleRequiresPassword}
                 />
               )}
             </div>

@@ -1,5 +1,11 @@
 import { withAuth } from 'next-auth/middleware'
 
+// Must match the sessionToken cookie name in lib/auth.ts — withAuth() does its
+// own getToken() call and does not read authOptions, so the name has to be
+// duplicated here. See lib/auth.ts for why this is namespaced per app.
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith('https://') ?? false
+const sessionCookieName = `${useSecureCookies ? '__Secure-' : ''}next-auth.session-token.web`
+
 const PROTECTED_PATHS = [
   '/checkout',
   '/tickets',
@@ -11,6 +17,9 @@ const PROTECTED_PATHS = [
 ]
 
 export default withAuth({
+  cookies: {
+    sessionToken: { name: sessionCookieName },
+  },
   callbacks: {
     authorized({ token, req }) {
       const { pathname } = req.nextUrl

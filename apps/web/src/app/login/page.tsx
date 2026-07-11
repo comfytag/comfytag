@@ -1,9 +1,10 @@
 'use client'
 
-import React, { Suspense } from 'react'
+import React, { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AuthLayout } from '@/components/auth/AuthLayout'
 import { LoginForm } from '@/components/auth/LoginForm'
+import { VerifyEmailForm } from '@/components/auth/VerifyEmailForm'
 
 function LoginInner() {
   const router = useRouter()
@@ -13,13 +14,41 @@ function LoginInner() {
   const didRegister = searchParams.get('registered') === 'true'
   const registeredEmail = searchParams.get('email') ?? ''
 
+  // Unverified-login lands here instead of navigating away, mirroring
+  // AuthModal's view switch — this page used to redirect to /verify-email
+  // with an ?email= param, but that route only understands ?token=
+  // (the magic-link flow) and would show a dead-end error.
+  const [verifyEmail, setVerifyEmail] = useState<string | null>(null)
+  const [pendingMode, setPendingMode] = useState<'otp' | 'credentials'>('otp')
+  const [pendingEmail, setPendingEmail] = useState('')
+
+  if (verifyEmail) {
+    return (
+      <AuthLayout>
+        <VerifyEmailForm
+          email={verifyEmail}
+          callbackUrl={callbackUrl}
+          onSuccess={() => { router.push(callbackUrl); router.refresh() }}
+          onBack={() => setVerifyEmail(null)}
+          onRequiresPassword={(email) => {
+            setVerifyEmail(null)
+            setPendingEmail(email)
+            setPendingMode('credentials')
+          }}
+        />
+      </AuthLayout>
+    )
+  }
+
   return (
     <AuthLayout>
       <LoginForm
         onSwitchToRegister={() => router.push('/register')}
         onSwitchToForgotPassword={() => router.push('/forgot-password')}
+        onSwitchToVerifyEmail={(email) => setVerifyEmail(email)}
         callbackUrl={callbackUrl}
-        initialEmail={registeredEmail}
+        initialEmail={pendingEmail || registeredEmail}
+        initialMode={pendingMode}
         successBanner={didRegister ? 'registered' : didReset ? 'password-reset' : null}
       />
     </AuthLayout>

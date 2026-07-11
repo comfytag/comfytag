@@ -41,6 +41,15 @@ declare module 'next-auth/jwt' {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
 
+// web, partner, and admin all run on `localhost` in dev (different ports only).
+// Browser cookies aren't port-scoped, so NextAuth's default cookie names would
+// collide across apps — logging into one silently overwrites the others'
+// session cookie, which then fails to decode (different NEXTAUTH_SECRET per
+// app) and force-redirects to that app's login. Namespacing the cookie names
+// keeps each app's session isolated regardless of host/port.
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith('https://') ?? false
+const cookiePrefix = useSecureCookies ? '__Secure-' : ''
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -52,6 +61,7 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        otp: { label: 'OTP', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
@@ -70,20 +80,31 @@ export const authOptions: NextAuthOptions = {
             isVerify?: { email?: boolean; photo?: boolean; idCard?: boolean; address?: boolean }
           }
           token: string
+          error?: string
         }
 
         try {
+          const body: { email: string; password: string; otp?: string } = {
+            email: credentials.email,
+            password: credentials.password,
+          }
+          if (credentials.otp) body.otp = credentials.otp
+
           const res = await fetch(`${API_BASE}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
+            body: JSON.stringify(body),
           })
-          if (!res.ok) return null
           data = await res.json()
-        } catch {
+
+          if (!res.ok) {
+            if (data.error === 'TWO_FACTOR_REQUIRED') {
+              throw new Error('TWO_FACTOR_REQUIRED')
+            }
+            return null
+          }
+        } catch (error: any) {
+          if (error.message === 'TWO_FACTOR_REQUIRED') throw error
           return null
         }
 
@@ -212,6 +233,32 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 7 * 24 * 60 * 60,   // 7 days
     updateAge: 24 * 60 * 60,    // refresh cookie daily (sliding window)
+  },
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}next-auth.session-token.partner`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+    },
+    callbackUrl: {
+      name: `${cookiePrefix}next-auth.callback-url.partner`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+    },
+    csrfToken: {
+      name: `${useSecureCookies ? '__Host-' : ''}next-auth.csrf-token.partner`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+    },
+    state: {
+      name: `${cookiePrefix}next-auth.state.partner`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies, maxAge: 60 * 15 },
+    },
+    pkceCodeVerifier: {
+      name: `${cookiePrefix}next-auth.pkce.code_verifier.partner`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies, maxAge: 60 * 15 },
+    },
+    nonce: {
+      name: `${cookiePrefix}next-auth.nonce.partner`,
+      options: { httpOnly: true, sameSite: 'lax', path: '/', secure: useSecureCookies },
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
 }

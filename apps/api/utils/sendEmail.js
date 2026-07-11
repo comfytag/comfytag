@@ -1,14 +1,14 @@
-import { sendViaSES } from "./awsEmailService.js";
+import { sendViaEmailProvider } from "./emailProviders.js";
 import User from "../models/User.js";
 
-// ─── Sender addresses — one env var per address, all fall back to SES_SENDER_EMAIL ───
-export const FROM_DEFAULT  = process.env.SES_SENDER_EMAIL   || "noreply@comfytag.com";
-export const FROM_TICKETS  = process.env.SES_TICKETS_EMAIL  || FROM_DEFAULT;
-export const FROM_EVENTS   = process.env.SES_EVENTS_EMAIL   || FROM_DEFAULT;
-export const FROM_PAYOUTS  = process.env.SES_PAYOUTS_EMAIL  || FROM_DEFAULT;
-export const FROM_SUPPORT  = process.env.SES_SUPPORT_EMAIL  || FROM_DEFAULT;
-export const FROM_HELLO    = process.env.SES_HELLO_EMAIL    || FROM_DEFAULT;
-export const FROM_PARTNER  = process.env.SES_PARTNER_EMAIL  || FROM_DEFAULT;
+// ─── Sender addresses — one env var per address, all fall back to EMAIL_SENDER_DEFAULT ───
+export const FROM_DEFAULT  = process.env.EMAIL_SENDER_DEFAULT   || "noreply@comfytag.com";
+export const FROM_TICKETS  = process.env.EMAIL_SENDER_TICKETS   || FROM_DEFAULT;
+export const FROM_EVENTS   = process.env.EMAIL_SENDER_EVENTS    || FROM_DEFAULT;
+export const FROM_PAYOUTS  = process.env.EMAIL_SENDER_PAYOUTS   || FROM_DEFAULT;
+export const FROM_SUPPORT  = process.env.EMAIL_SENDER_SUPPORT   || FROM_DEFAULT;
+export const FROM_HELLO    = process.env.EMAIL_SENDER_HELLO     || FROM_DEFAULT;
+export const FROM_PARTNER  = process.env.EMAIL_SENDER_PARTNER   || FROM_DEFAULT;
 
 // ─── User notification preference gate ───────────────────────────────────────
 const checkNotificationPreference = async (email) => {
@@ -32,7 +32,8 @@ const checkNotificationPreference = async (email) => {
  * Main email sender.
  *
  * Checks user notification preferences, then delegates template rendering,
- * bounce/complaint suppression, and actual dispatch to awsEmailService (SES).
+ * bounce/complaint suppression, and actual dispatch to emailProviders
+ * (ZeptoMail primary, Resend fallback).
  *
  * @param {Object}  options
  * @param {string}  options.to        - Recipient email address
@@ -70,8 +71,8 @@ export const sendEmail = async ({
       };
     }
 
-    // ─── Delegate: template render + bounce/complaint check + SES dispatch ───
-    return await sendViaSES({ to, subject, template, data, from, replyTo, text });
+    // ─── Delegate: template render + bounce/complaint check + provider dispatch ───
+    return await sendViaEmailProvider({ to, subject, template, data, from, replyTo, text });
   } catch (error) {
     console.error(`[SendEmail] ERROR sending to ${to}: ${error.message}`);
     return {

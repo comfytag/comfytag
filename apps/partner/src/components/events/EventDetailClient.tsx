@@ -111,6 +111,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
     queryFn: () => api.get(`/events/${eventId}/activity`).then(r => r.data),
     refetchInterval: 30_000,
     staleTime: 20_000,
+    enabled: !!session?.user?.token,
   })
 
   const statusMutation = useMutation({
@@ -932,8 +933,8 @@ function EditTiersForm({ event, eventId }: EditTiersFormProps) {
     (event.ticketType ?? []).map(t => ({
       _id: t._id,
       name: t.name,
-      price: t.price.toString(),
-      capacity: t.capacity.toString(),
+      price: (t.price ?? 0).toString(),
+      capacity: (t.capacity ?? 0).toString(),
       dirty: false,
     }))
   )

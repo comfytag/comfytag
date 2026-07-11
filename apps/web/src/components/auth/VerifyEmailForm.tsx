@@ -6,17 +6,18 @@ import { Button } from '@comfytag/ui'
 
 interface VerifyEmailFormProps {
   email: string
-  password: string
   onSuccess: () => void
   onBack: () => void
+  /** Account has 2FA enabled — email got verified but no session was issued; caller should route back to the password+2FA form. */
+  onRequiresPassword?: (email: string) => void
   callbackUrl?: string
 }
 
 export function VerifyEmailForm({
   email,
-  password,
   onSuccess,
   onBack,
+  onRequiresPassword,
   callbackUrl = '/',
 }: VerifyEmailFormProps) {
   const [otp, setOtp] = useState('')
@@ -31,6 +32,22 @@ export function VerifyEmailForm({
     inputRef.current?.focus()
   }, [])
 
+  // This screen claims "we sent a code" the moment it renders, but reaching
+  // it (e.g. after an unverified login attempt) doesn't itself send anything
+  // — only the "Resend code" button did. Fire that same request silently on
+  // mount so the claim is true, without touching resendStatus/isResending
+  // (those stay reserved for the user-visible manual resend below).
+  const didAutoSend = useRef(false)
+  useEffect(() => {
+    if (didAutoSend.current || !email) return
+    didAutoSend.current = true
+    fetch('/api/auth/resend-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    }).catch(() => {})
+  }, [email])
+
   const handleVerify = async (code: string) => {
     if (code.length < 6 || isVerifying) return
     setIsVerifying(true)
@@ -44,14 +61,25 @@ export function VerifyEmailForm({
           body: JSON.stringify({ email, otp: code }),
         }
       )
-      const data = await res.json().catch(() => ({})) as { message?: string }
+      const data = await res.json().catch(() => ({})) as { message?: string; token?: string; requiresPassword?: boolean }
       if (!res.ok) {
         setError(data.message || 'Invalid verification code. Please try again.')
         setIsVerifying(false)
         return
       }
-      // Verified — sign in automatically
-      const result = await signIn('credentials', { redirect: false, email, password, callbackUrl })
+      if (data.requiresPassword) {
+        // 2FA account — email is now verified, but this endpoint deliberately
+        // didn't mint a session (an OTP shouldn't substitute a configured
+        // second factor). Hand back to the password+2FA form.
+        onRequiresPassword?.(email)
+        return
+      }
+      if (!data.token) {
+        setError('Something went wrong. Please try again.')
+        setIsVerifying(false)
+        return
+      }
+      const result = await signIn('token', { redirect: false, backendToken: data.token, callbackUrl })
       if (result?.error) {
         setError('Verified! Please sign in manually.')
         setIsVerifying(false)
