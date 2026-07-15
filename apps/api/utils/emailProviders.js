@@ -40,9 +40,15 @@ const loadTemplate = (templateName) => {
 };
 
 // ─── ZeptoMail primary transport (Nodemailer SMTP) ────────────────────────────
+const zeptoMailSmtpPort = parseInt(process.env.ZEPTOMAIL_SMTP_PORT || "587", 10);
 const zeptoMailTransport = nodemailer.createTransport({
   host: process.env.ZEPTOMAIL_SMTP_HOST || "smtp.zeptomail.com",
-  port: parseInt(process.env.ZEPTOMAIL_SMTP_PORT || "587", 10),
+  port: zeptoMailSmtpPort,
+  // Nodemailer does not infer TLS mode from the port — it defaults `secure`
+  // to false regardless. Port 465 expects implicit TLS from the first byte;
+  // without this, the handshake mismatches and the connection hangs until
+  // timeout before falling back to Resend, adding minutes of OTP delivery lag.
+  secure: zeptoMailSmtpPort === 465,
   auth: {
     user: process.env.ZEPTOMAIL_SMTP_USER,
     pass: process.env.ZEPTOMAIL_SMTP_TOKEN,

@@ -11,6 +11,8 @@ interface VerifyEmailFormProps {
   /** Account has 2FA enabled — email got verified but no session was issued; caller should route back to the password+2FA form. */
   onRequiresPassword?: (email: string) => void
   callbackUrl?: string
+  /** Caller already triggered a code send (e.g. OTP-mode login just requested one) — skip the auto-send-on-mount below so we don't mint a second code that invalidates the first. */
+  codeAlreadySent?: boolean
 }
 
 export function VerifyEmailForm({
@@ -19,6 +21,7 @@ export function VerifyEmailForm({
   onBack,
   onRequiresPassword,
   callbackUrl = '/',
+  codeAlreadySent = false,
 }: VerifyEmailFormProps) {
   const [otp, setOtp] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
@@ -32,21 +35,25 @@ export function VerifyEmailForm({
     inputRef.current?.focus()
   }, [])
 
-  // This screen claims "we sent a code" the moment it renders, but reaching
-  // it (e.g. after an unverified login attempt) doesn't itself send anything
-  // — only the "Resend code" button did. Fire that same request silently on
-  // mount so the claim is true, without touching resendStatus/isResending
-  // (those stay reserved for the user-visible manual resend below).
+  // This screen claims "we sent a code" the moment it renders. Some callers
+  // (e.g. an unverified credentials-login attempt) reach this screen without
+  // having sent anything yet, so fire that request silently on mount. But
+  // callers that already requested a code (OTP-mode login) pass
+  // codeAlreadySent=true — firing again here would mint a second token that
+  // invalidates the first (issueVerifyOtp upserts one token per user), so
+  // whichever email the user reads first would fail with "invalid code"
+  // until they hit resend. Skip in that case. Doesn't touch
+  // resendStatus/isResending (those stay reserved for the manual resend below).
   const didAutoSend = useRef(false)
   useEffect(() => {
-    if (didAutoSend.current || !email) return
+    if (didAutoSend.current || !email || codeAlreadySent) return
     didAutoSend.current = true
     fetch('/api/auth/resend-verification', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     }).catch(() => {})
-  }, [email])
+  }, [email, codeAlreadySent])
 
   const handleVerify = async (code: string) => {
     if (code.length < 6 || isVerifying) return

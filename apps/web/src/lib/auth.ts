@@ -155,6 +155,38 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
+    // Google's OAuth profile only ever gives us { id: <google sub>, name, email, image } —
+    // there's no backend JWT or Mongo _id in it. Exchange it for the real user/token here,
+    // before jwt() runs, same as apps/partner/src/lib/auth.ts. Without this, session.user.id
+    // stays the Google sub (not a Mongo ObjectId) and session.user.token stays undefined,
+    // so every authenticated backend call 401s.
+    async signIn({ user, account }) {
+      if (account?.provider === 'google') {
+        try {
+          const res = await fetch(`${API_BASE}/auth/google-signin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: user.email, isPartner: false }),
+          })
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return `/login?error=${encodeURIComponent(err.message ?? 'GoogleSignInFailed')}`
+          }
+          const data = await res.json()
+          user.id = data.user._id
+          user.token = data.token
+          user.isPartner = data.user.isPartner
+          user.isAdmin = data.user.isAdmin
+          user.image = data.user.image ?? user.image
+          user.username = data.user.username
+          user.createdAt = data.user.createdAt
+          return true
+        } catch {
+          return '/login?error=GoogleSignInFailed'
+        }
+      }
+      return true
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id

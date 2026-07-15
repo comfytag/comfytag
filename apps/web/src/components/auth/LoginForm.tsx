@@ -10,7 +10,8 @@ import type { AuthModalSuccessBanner } from '@/hooks/useAuthModal'
 export interface LoginFormProps {
   onSwitchToRegister: () => void
   onSwitchToForgotPassword: () => void
-  onSwitchToVerifyEmail?: (email: string) => void
+  /** Second arg is true when a code was already sent for this switch (OTP-mode request), so the verify screen shouldn't send another. */
+  onSwitchToVerifyEmail?: (email: string, codeAlreadySent?: boolean) => void
   /** Called after successful sign-in. If omitted, falls back to router.push(callbackUrl). */
   onSuccess?: () => void
   initialEmail?: string
@@ -95,7 +96,7 @@ export function LoginForm({
         setMode('credentials')
         return
       }
-      onSwitchToVerifyEmail?.(email)
+      onSwitchToVerifyEmail?.(email, true)
     } catch {
       setError('Network error. Please check your connection.')
     } finally {

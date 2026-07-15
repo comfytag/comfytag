@@ -19,6 +19,7 @@ function LoginInner() {
   // with an ?email= param, but that route only understands ?token=
   // (the magic-link flow) and would show a dead-end error.
   const [verifyEmail, setVerifyEmail] = useState<string | null>(null)
+  const [verifyCodeAlreadySent, setVerifyCodeAlreadySent] = useState(false)
   const [pendingMode, setPendingMode] = useState<'otp' | 'credentials'>('otp')
   const [pendingEmail, setPendingEmail] = useState('')
 
@@ -35,6 +36,7 @@ function LoginInner() {
             setPendingEmail(email)
             setPendingMode('credentials')
           }}
+          codeAlreadySent={verifyCodeAlreadySent}
         />
       </AuthLayout>
     )
@@ -45,7 +47,7 @@ function LoginInner() {
       <LoginForm
         onSwitchToRegister={() => router.push('/register')}
         onSwitchToForgotPassword={() => router.push('/forgot-password')}
-        onSwitchToVerifyEmail={(email) => setVerifyEmail(email)}
+        onSwitchToVerifyEmail={(email, codeAlreadySent) => { setVerifyEmail(email); setVerifyCodeAlreadySent(!!codeAlreadySent) }}
         callbackUrl={callbackUrl}
         initialEmail={pendingEmail || registeredEmail}
         initialMode={pendingMode}
