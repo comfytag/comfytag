@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Button, Input, ErrorMessage } from '@comfytag/ui'
 import { SSOButton, GoogleIcon } from './SSOButton'
+import type { RegisterDraft } from '@/hooks/useAuthModal'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
 
@@ -14,17 +15,27 @@ export interface RegisterFormProps {
   /** Called with the registered email on success. If omitted, redirects to /login?registered=true. */
   onSuccess?: (email: string) => void
   callbackUrl?: string
+  /** Seeds field values on mount — used by AuthModal to restore what was typed
+   * before an accidental outside-click closed the dialog and unmounted this form. */
+  initialDraft?: RegisterDraft
+  /** Called with the full field state on every keystroke so a caller (AuthModal)
+   * can persist it somewhere that survives this component unmounting. */
+  onDraftChange?: (draft: RegisterDraft) => void
 }
 
-export function RegisterForm({ onSwitchToLogin, onSuccess, callbackUrl = '/' }: RegisterFormProps) {
+export function RegisterForm({ onSwitchToLogin, onSuccess, callbackUrl = '/', initialDraft, onDraftChange }: RegisterFormProps) {
   const router = useRouter()
-  const [name, setName] = useState('')
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
+  const [name, setName] = useState(initialDraft?.name ?? '')
+  const [username, setUsername] = useState(initialDraft?.username ?? '')
+  const [email, setEmail] = useState(initialDraft?.email ?? '')
+  const [password, setPassword] = useState(initialDraft?.password ?? '')
+  const [confirmPassword, setConfirmPassword] = useState(initialDraft?.confirmPassword ?? '')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+
+  function updateDraft(patch: Partial<RegisterDraft>) {
+    onDraftChange?.({ name, username, email, password, confirmPassword, ...patch })
+  }
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
@@ -39,12 +50,8 @@ export function RegisterForm({ onSwitchToLogin, onSuccess, callbackUrl = '/' }: 
         body: JSON.stringify({ name, username, email, password, confirm_password: confirmPassword }),
       })
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        if (res.status === 409) {
-          setError('An account with this email already exists. Please sign in instead.')
-        } else {
-          setError((data as { message?: string }).message ?? 'Could not create account. Please try again.')
-        }
+        const data = await res.json().catch(() => ({})) as { message?: string }
+        setError(data.message ?? 'Could not create account. Please try again.')
         return
       }
       if (onSuccess) {
@@ -84,19 +91,19 @@ export function RegisterForm({ onSwitchToLogin, onSuccess, callbackUrl = '/' }: 
 
       <form onSubmit={handleRegister}>
         <div style={{ marginBottom: '14px' }}>
-          <Input id="rf-name" label="Full name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" required />
+          <Input id="rf-name" label="Full name" type="text" value={name} onChange={(e) => { setName(e.target.value); updateDraft({ name: e.target.value }) }} placeholder="Your name" required />
         </div>
         <div style={{ marginBottom: '14px' }}>
-          <Input id="rf-username" label="Username" type="text" value={username} onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))} placeholder="e.g. johndoe" required />
+          <Input id="rf-username" label="Username" type="text" value={username} onChange={(e) => { const v = e.target.value.toLowerCase().replace(/\s+/g, ''); setUsername(v); updateDraft({ username: v }) }} placeholder="e.g. johndoe" required />
         </div>
         <div style={{ marginBottom: '14px' }}>
-          <Input id="rf-email" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+          <Input id="rf-email" label="Email" type="email" value={email} onChange={(e) => { setEmail(e.target.value); updateDraft({ email: e.target.value }) }} placeholder="you@example.com" required />
         </div>
         <div style={{ marginBottom: '14px' }}>
-          <Input id="rf-password" label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min. 8 characters" required />
+          <Input id="rf-password" label="Password" type="password" value={password} onChange={(e) => { setPassword(e.target.value); updateDraft({ password: e.target.value }) }} placeholder="Min. 8 characters" required />
         </div>
         <div style={{ marginBottom: '20px' }}>
-          <Input id="rf-confirm-password" label="Confirm password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter your password" required />
+          <Input id="rf-confirm-password" label="Confirm password" type="password" value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); updateDraft({ confirmPassword: e.target.value }) }} placeholder="Re-enter your password" required />
         </div>
         <Button type="submit" variant="primary" loading={isLoading} fullWidth>
           Create account
