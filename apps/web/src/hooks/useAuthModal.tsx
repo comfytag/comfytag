@@ -5,11 +5,24 @@ import React, { createContext, useContext, useState, useCallback } from 'react'
 export type AuthModalView = 'login' | 'register' | 'forgot_password' | 'verify_email'
 export type AuthModalSuccessBanner = 'registered' | 'password-reset' | null
 
+export interface RegisterDraft {
+  name: string
+  username: string
+  email: string
+  password: string
+  confirmPassword: string
+}
+
+export const EMPTY_REGISTER_DRAFT: RegisterDraft = { name: '', username: '', email: '', password: '', confirmPassword: '' }
+
 interface AuthModalState {
   isOpen: boolean
   view: AuthModalView
   successBanner: AuthModalSuccessBanner
   prefilledEmail: string
+  /** Survives closing/reopening the modal (e.g. an accidental outside-click) — the dialog
+   * unmounts RegisterForm on close, so its own local state can't persist on its own. */
+  registerDraft: RegisterDraft
 }
 
 interface AuthModalActions {
@@ -18,6 +31,7 @@ interface AuthModalActions {
   switchView: (view: AuthModalView) => void
   _setSuccessBanner: (banner: AuthModalSuccessBanner) => void
   _setPrefilledEmail: (email: string) => void
+  _setRegisterDraft: (draft: RegisterDraft) => void
 }
 
 type AuthModalContextValue = AuthModalState & AuthModalActions
@@ -29,6 +43,7 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
   const [view, setView] = useState<AuthModalView>('login')
   const [successBanner, setSuccessBanner] = useState<AuthModalSuccessBanner>(null)
   const [prefilledEmail, setPrefilledEmail] = useState('')
+  const [registerDraft, setRegisterDraft] = useState<RegisterDraft>(EMPTY_REGISTER_DRAFT)
 
   const openModal = useCallback((v: AuthModalView = 'login', opts?: { email?: string }) => {
     setView(v)
@@ -52,11 +67,13 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
         view,
         successBanner,
         prefilledEmail,
+        registerDraft,
         openModal,
         closeModal,
         switchView,
         _setSuccessBanner: setSuccessBanner,
         _setPrefilledEmail: setPrefilledEmail,
+        _setRegisterDraft: setRegisterDraft,
       }}
     >
       {children}

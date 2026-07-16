@@ -12,7 +12,11 @@ export function generateFallbackCode(userId) {
 }
 
 /**
- * Generate a unique 8-character alphanumeric referral code
+ * Generate an 8-character alphanumeric referral code, seeded from the user's
+ * username/name but never fully deterministic — two users sharing the same
+ * first few characters (e.g. "johnsmith1" / "johnsmith2") must not collide on
+ * referralCode's unique index. Always reserves at least 3 trailing characters
+ * for randomness, regardless of base length.
  * @param {string} username - User's username
  * @param {string} fullname - User's full name (fallback if username is empty)
  * @returns {string} 8-character alphanumeric code in uppercase
@@ -24,17 +28,16 @@ export function generateReferralCode(username, fullname) {
   // Remove spaces and special characters, convert to uppercase
   base = base.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
 
-  // If 8 chars or longer, slice to 8
-  if (base.length >= 8) {
-    return base.slice(0, 8);
-  }
+  const RANDOM_LENGTH = 3;
+  const baseLength = 8 - RANDOM_LENGTH;
+  base = base.slice(0, baseLength);
 
-  // If shorter than 8, pad with random digits
   const remainingLength = 8 - base.length;
-  let digits = '';
+  const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let suffix = '';
   for (let i = 0; i < remainingLength; i++) {
-    digits += Math.floor(Math.random() * 10).toString();
+    suffix += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
   }
 
-  return base + digits;
+  return base + suffix;
 }
