@@ -38,13 +38,11 @@ const columns: ColumnDef<UserAdminProfile>[] = [
   },
   {
     key: 'docs',
-    header: 'Documents',
+    header: 'Document Type',
     render: (u) => (
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        <Badge status={u.isVerify?.photo   ? 'photo'   : 'no photo'}   />
-        <Badge status={u.isVerify?.idCard  ? 'id card' : 'no id'}      />
-        <Badge status={u.isVerify?.address ? 'address' : 'no address'} />
-      </div>
+      <span style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+        {u.verify?.idType ?? '—'}
+      </span>
     ),
   },
   {

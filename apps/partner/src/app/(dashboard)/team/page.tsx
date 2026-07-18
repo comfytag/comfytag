@@ -15,9 +15,6 @@ import type { TeamPermission } from '@/hooks/useTeam'
 
 interface IsVerify {
   email?: boolean
-  photo?: boolean
-  idCard?: boolean
-  address?: boolean
 }
 
 interface OnboardingData {
@@ -26,6 +23,7 @@ interface OnboardingData {
   event_per_year?: string
   event_turnout?: string
   interest?: string[]
+  completed?: boolean
 }
 
 interface UserProfile {
@@ -34,6 +32,7 @@ interface UserProfile {
   username: string
   avatar?: string | null
   isVerify?: IsVerify
+  kycStatus?: string
   onboarding?: OnboardingData
 }
 
@@ -160,6 +159,7 @@ export default function TeamPage() {
         username={user.username}
         avatar={user.avatar}
         isVerify={user.isVerify}
+        kycStatus={user.kycStatus}
         hasBankAccount={hasBankAccount}
       />
 

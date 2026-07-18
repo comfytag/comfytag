@@ -96,16 +96,8 @@ export default function KycDetailPage() {
           value={<Badge status={user.isVerify?.email ? 'verified' : 'pending'} />}
         />
         <InfoField
-          label="Photo"
-          value={<Badge status={user.isVerify?.photo ? 'verified' : 'pending'} />}
-        />
-        <InfoField
-          label="ID Card"
-          value={<Badge status={user.isVerify?.idCard ? 'verified' : 'pending'} />}
-        />
-        <InfoField
-          label="Address"
-          value={<Badge status={user.isVerify?.address ? 'verified' : 'pending'} />}
+          label="Document type"
+          value={user.verify?.idType ?? '—'}
         />
         {user.businessName && (
           <InfoField label="Business" value={user.businessName} />

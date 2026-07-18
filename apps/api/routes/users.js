@@ -20,8 +20,8 @@ router.put("/verify/:id", verifyUser, userVerification) // verifyUser,
 
 router.put("/isverify/:id", verifyAdmin, isUserVerified)
 
-// KYC upload
-router.put("/:id/kyc", verifyUser, upload.single('file'), uploadKYC)
+// KYC upload — selfie + ID document submitted together
+router.put("/:id/kyc", verifyUser, upload.fields([{ name: 'selfie', maxCount: 1 }, { name: 'idDocument', maxCount: 1 }]), uploadKYC)
 
 // GET stats (must come before /:id route)
 router.get("/:id/stats", getUserStats)

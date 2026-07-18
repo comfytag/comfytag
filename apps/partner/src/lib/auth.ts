@@ -36,6 +36,7 @@ declare module 'next-auth/jwt' {
     logo?: string | null
     isPartner: boolean
     isAdmin: boolean
+    onboarding?: { completed: boolean }
   }
 }
 
@@ -200,6 +201,7 @@ export const authOptions: NextAuthOptions = {
           user.isPartner = data.user.isPartner
           user.isAdmin = data.user.isAdmin
           user.logo = data.user.image ?? null
+          user.onboarding = data.user.onboarding ?? { completed: false }
           return true
         } catch {
           return '/login?error=GoogleSignInFailed'
@@ -207,13 +209,19 @@ export const authOptions: NextAuthOptions = {
       }
       return true
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id
         token.token = user.token
         token.logo = user.logo
         token.isPartner = user.isPartner
         token.isAdmin = user.isAdmin
+        token.onboarding = user.onboarding
+      }
+      // Lets the client force a fresh onboarding flag into the JWT right after
+      // completing the wizard, instead of waiting for the next `updateAge` refresh.
+      if (trigger === 'update' && session?.onboarding) {
+        token.onboarding = session.onboarding
       }
       return token
     },
@@ -223,6 +231,7 @@ export const authOptions: NextAuthOptions = {
       if (token.logo) session.user.logo = token.logo
       session.user.isPartner = token.isPartner
       session.user.isAdmin = token.isAdmin
+      session.user.onboarding = token.onboarding ?? { completed: false }
       return session
     },
   },
