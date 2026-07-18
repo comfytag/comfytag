@@ -2,9 +2,6 @@
 
 interface IsVerify {
   email?: boolean
-  photo?: boolean
-  idCard?: boolean
-  address?: boolean
 }
 
 interface CrewIdentityCardProps {
@@ -12,6 +9,7 @@ interface CrewIdentityCardProps {
   username: string
   avatar?: string | null
   isVerify?: IsVerify
+  kycStatus?: string
   hasBankAccount: boolean
 }
 
@@ -45,10 +43,11 @@ export function CrewIdentityCard({
   username,
   avatar,
   isVerify,
+  kycStatus,
   hasBankAccount,
 }: CrewIdentityCardProps) {
   const initial = name.charAt(0).toUpperCase()
-  const kycVerified = !!(isVerify?.photo || isVerify?.idCard)
+  const kycVerified = kycStatus === 'verified'
   const emailVerified = !!isVerify?.email
 
   return (

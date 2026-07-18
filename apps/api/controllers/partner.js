@@ -14,7 +14,7 @@ export const getKycStatus = async (req, res, next) => {
             return next(createError(403, 'You can only view your own KYC status'))
         }
 
-        const user = await User.findById(userId).select('isVerify verify kycStatus')
+        const user = await User.findById(userId).select('isVerify verify kycStatus kycRejectionReason')
 
         if (!user) {
             return next(createError(404, 'User not found'))
@@ -27,14 +27,10 @@ export const getKycStatus = async (req, res, next) => {
         res.status(200).json({
             success: true,
             data: {
-                isVerify: user.isVerify || {
-                    email: false,
-                    photo: false,
-                    idCard: false,
-                    address: false,
-                },
+                isVerify: user.isVerify || { email: false },
                 verify: user.verify || {},
                 kycStatus: user.kycStatus || 'unverified',
+                kycRejectionReason: user.kycRejectionReason || undefined,
             },
         })
     } catch (err) {

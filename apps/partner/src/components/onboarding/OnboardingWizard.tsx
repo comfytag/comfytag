@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
+import { Check } from 'lucide-react'
 import { Button, ErrorMessage, LoadingSpinner } from '@comfytag/ui'
 import { OnboardingStep } from './OnboardingStep'
 import { InterestPicker } from './InterestPicker'
@@ -21,15 +22,65 @@ interface OnboardingWizardProps {
   initialData?: OnboardingData
 }
 
-const STEPS = ['Experience', 'Team Size & Events', 'Expected Turnout', 'Interests']
+const STEPS = ['Experience', 'Team', 'Turnout', 'Interests']
 
 const EXPERIENCE_OPTIONS = ['Beginner', 'Intermediate', 'Professional']
 const TURNOUT_OPTIONS = ['< 100', '100-500', '500-1000', '1000+']
-const INTERESTS_OPTIONS = ['Music', 'Comedy', 'Sports', 'Fashion', 'Food', 'Tech', 'Arts', 'Other']
+
+function Stepper({ currentStep }: { currentStep: number }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px' }}>
+      {STEPS.map((label, i) => (
+        <Fragment key={label}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+            <div
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: 'var(--radius-full)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                fontWeight: 700,
+                background: i <= currentStep ? 'var(--color-brand)' : 'var(--color-surface-2)',
+                color: i <= currentStep ? 'var(--color-text-on-brand)' : 'var(--color-text-muted)',
+                transition: `background var(--duration-fast) ease, color var(--duration-fast) ease`,
+              }}
+            >
+              {i < currentStep ? <Check size={14} /> : i + 1}
+            </div>
+            <span
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: i === currentStep ? 'var(--color-text)' : 'var(--color-text-muted)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {label}
+            </span>
+          </div>
+          {i < STEPS.length - 1 && (
+            <div
+              style={{
+                flex: 1,
+                height: '2px',
+                background: i < currentStep ? 'var(--color-brand)' : 'var(--color-border)',
+                margin: '0 8px 18px',
+                transition: `background var(--duration-fast) ease`,
+              }}
+            />
+          )}
+        </Fragment>
+      ))}
+    </div>
+  )
+}
 
 export function OnboardingWizard({ initialData = {} }: OnboardingWizardProps) {
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, update: updateSession } = useSession()
   const [currentStep, setCurrentStep] = useState(0)
   const [data, setData] = useState<OnboardingData>({
     experience: initialData.experience || '',
@@ -46,8 +97,11 @@ export function OnboardingWizard({ initialData = {} }: OnboardingWizardProps) {
         `/users/onboard/${session!.user.id}`,
         onboardingData
       ).then(r => r.data),
-    onSuccess: () => {
+    onSuccess: async () => {
       setError('')
+      // Refresh the JWT immediately so the middleware's onboarding gate
+      // doesn't bounce us right back based on the stale pre-completion token.
+      await updateSession({ onboarding: { completed: true } })
       router.push('/overview')
     },
     onError: (err: any) => {
@@ -93,38 +147,10 @@ export function OnboardingWizard({ initialData = {} }: OnboardingWizardProps) {
     submitOnboarding(data)
   }
 
-  const progressPercent = ((currentStep + 1) / STEPS.length) * 100
-
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '32px 24px' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-text)', margin: 0, marginBottom: '12px', letterSpacing: '-0.02em' }}>
-          Let's Get You Started
-        </h1>
-        <p style={{ fontSize: '14px', color: 'var(--color-text-muted)', margin: 0 }}>
-          Help us understand your event expertise and interests.
-        </p>
-      </div>
+    <div>
+      <Stepper currentStep={currentStep} />
 
-      {/* Progress bar */}
-      <div style={{ marginBottom: '32px', height: '4px', background: 'var(--color-border)', borderRadius: '2px', overflow: 'hidden' }}>
-        <div
-          style={{
-            height: '100%',
-            background: 'var(--color-brand)',
-            width: `${progressPercent}%`,
-            transition: 'width 0.3s ease',
-          }}
-        />
-      </div>
-
-      {/* Step indicator */}
-      <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-muted)', margin: '0 0 24px 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        Step {currentStep + 1} of {STEPS.length}: {STEPS[currentStep]}
-      </p>
-
-      {/* Error message */}
       {error && <div style={{ marginBottom: '24px' }}><ErrorMessage message={error} /></div>}
 
       {/* Step: Experience */}
@@ -141,7 +167,7 @@ export function OnboardingWizard({ initialData = {} }: OnboardingWizardProps) {
       {/* Step: Team Size & Events/Year */}
       {currentStep === 1 && (
         <div style={{ marginBottom: '40px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-text)', margin: '0 0 24px 0' }}>
+          <h2 style={{ fontFamily: 'var(--font-anybody)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 24px 0' }}>
             Team size & event volume
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -162,7 +188,7 @@ export function OnboardingWizard({ initialData = {} }: OnboardingWizardProps) {
                   fontSize: '14px',
                   border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-md)',
-                  background: 'var(--color-surface)',
+                  background: 'var(--color-surface-2)',
                   color: 'var(--color-text)',
                   boxSizing: 'border-box',
                 }}
@@ -185,7 +211,7 @@ export function OnboardingWizard({ initialData = {} }: OnboardingWizardProps) {
                   fontSize: '14px',
                   border: '1px solid var(--color-border)',
                   borderRadius: 'var(--radius-md)',
-                  background: 'var(--color-surface)',
+                  background: 'var(--color-surface-2)',
                   color: 'var(--color-text)',
                   boxSizing: 'border-box',
                 }}
@@ -215,7 +241,7 @@ export function OnboardingWizard({ initialData = {} }: OnboardingWizardProps) {
       )}
 
       {/* Navigation buttons */}
-      <div style={{ display: 'flex', gap: '12px', marginTop: '40px' }}>
+      <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
         {currentStep > 0 && (
           <div style={{ flex: 1 }}>
             <Button

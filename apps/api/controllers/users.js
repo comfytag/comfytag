@@ -31,7 +31,7 @@ export const onboardUser = async (req, res, next) => {
         const onboardingData = req.body.onboarding ?? req.body
         const onboardedUser = await Users.findByIdAndUpdate(
             req.params.id,
-            { $set: { onboarding: onboardingData } },
+            { $set: { onboarding: { ...onboardingData, completed: true } } },
             { new: true }
         )
         res.status(200).json(onboardedUser)
@@ -347,50 +347,33 @@ export const getAllUsers = async (req,res,next) =>{
     }
 }
 
+const KYC_ID_TYPES = ['nin', 'passport', 'voters_card']
+
 // PUT /users/:id/kyc
-// Organizer uploads KYC documents
+// Organizer submits their KYC application: an ID document (NIN, passport,
+// or voter's card) and a selfie, uploaded together as a single submission.
 export const uploadKYC = async (req, res, next) => {
     try {
-        if (!req.body) {
+        const { idType } = req.body ?? {}
+        const selfieFile = req.files?.selfie?.[0]
+        const idDocumentFile = req.files?.idDocument?.[0]
+
+        if (!selfieFile || !idDocumentFile) {
             return res.status(400).json({
                 success: false,
-                message: 'Missing request body or multi-part fields form data.'
+                message: 'Both a selfie and an ID document are required.'
             })
         }
 
-        const { docType } = req.body
-        const file = req.file
-
-        if (!file) {
+        if (!KYC_ID_TYPES.includes(idType)) {
             return res.status(400).json({
                 success: false,
-                message: 'No file uploaded'
+                message: `idType must be one of: ${KYC_ID_TYPES.join(', ')}`
             })
         }
 
-        if (!docType) {
-            return res.status(400).json({
-                success: false,
-                message: 'Document type (docType) is required'
-            })
-        }
-
-        const docMap = {
-            photo:   'verify.photo',
-            idCard:  'verify.idCard.front',
-            address: 'verify.address',
-        }
-
-        const updateField = docMap[docType]
-        if (!updateField) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid document type. Must be photo, idCard, or address.'
-            })
-        }
-
-        // Upload buffer to Cloudinary (memoryStorage gives us file.buffer)
-        const cloudResult = await new Promise((resolve, reject) => {
+        // Upload both buffers to Cloudinary (memoryStorage gives us file.buffer)
+        const uploadToCloudinary = (file) => new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
                 { folder: 'comfytag/kyc', resource_type: 'image' },
                 (err, result) => { if (err) reject(err); else resolve(result) }
@@ -398,11 +381,18 @@ export const uploadKYC = async (req, res, next) => {
             stream.end(file.buffer)
         })
 
+        const [selfieResult, idDocumentResult] = await Promise.all([
+            uploadToCloudinary(selfieFile),
+            uploadToCloudinary(idDocumentFile),
+        ])
+
         const updatedUser = await Users.findByIdAndUpdate(
             req.params.id,
             {
                 $set: {
-                    [updateField]: cloudResult.secure_url,
+                    'verify.photo': selfieResult.secure_url,
+                    'verify.idType': idType,
+                    'verify.idDocument': idDocumentResult.secure_url,
                     kycStatus: 'pending',
                 },
             },
@@ -414,15 +404,15 @@ export const uploadKYC = async (req, res, next) => {
         notifyAdmins({
             roles: ['kyc_reviewer'],
             type: 'kyc_submitted',
-            title: 'KYC document submitted',
-            message: `${updatedUser.name || 'An organizer'} submitted a ${docType} document for review`,
-            data: { userId: req.params.id, docType },
+            title: 'KYC submission received',
+            message: `${updatedUser.name || 'An organizer'} submitted a ${idType} and selfie for review`,
+            data: { userId: req.params.id, idType },
             io,
         }).catch(() => {})
 
         res.status(200).json({
             success: true,
-            message: 'KYC document uploaded successfully',
+            message: 'KYC submitted successfully',
             user: {
                 _id: updatedUser._id,
                 name: updatedUser.name,

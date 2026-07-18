@@ -1,23 +1,15 @@
 'use client'
 
-interface IsVerify {
-  photo?: boolean
-  idCard?: boolean
-  address?: boolean
-}
-
 interface OrganizerProfileCardProps {
   name: string
   username: string
   avatar?: string | null
-  isVerify?: IsVerify
+  kycStatus?: string
 }
 
-export function OrganizerProfileCard({ name, username, avatar, isVerify }: OrganizerProfileCardProps) {
+export function OrganizerProfileCard({ name, username, avatar, kycStatus }: OrganizerProfileCardProps) {
   const verificationBadges = []
-  if (isVerify?.photo) verificationBadges.push('Photo')
-  if (isVerify?.idCard) verificationBadges.push('ID Card')
-  if (isVerify?.address) verificationBadges.push('Address')
+  if (kycStatus === 'verified') verificationBadges.push('Identity Verified')
 
   return (
     <div style={{

@@ -20,6 +20,7 @@ export interface OrganizerCardProps {
     image?: string
     isPartner: boolean
     isVerify: User['isVerify']
+    kycStatus?: string
   }
   followerCount?: number
   upcomingEventCount?: number
@@ -32,7 +33,7 @@ export interface OrganizerCardProps {
 }
 
 function isVerified(organizer: OrganizerCardProps['organizer']): boolean {
-  return !!(organizer.isPartner && organizer.isVerify?.email && organizer.isVerify?.photo)
+  return !!(organizer.isPartner && organizer.isVerify?.email && organizer.kycStatus === 'verified')
 }
 
 function Avatar({

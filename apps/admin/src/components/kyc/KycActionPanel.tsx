@@ -1,8 +1,8 @@
 ﻿'use client'
 
 import { useState } from 'react'
-import { Modal, Badge, Button } from '@comfytag/ui'
-import type { UserAdminProfile, KycApprovalPayload } from '@comfytag/types'
+import { Modal, Button } from '@comfytag/ui'
+import type { UserAdminProfile } from '@comfytag/types'
 import { useApproveKyc, useRejectKyc } from '@/hooks'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -12,75 +12,48 @@ interface KycActionPanelProps {
   user: UserAdminProfile
 }
 
-interface DocCardProps {
-  label: string
-  kycType: KycApprovalPayload['kycType']
-  urls: (string | undefined | null)[]
-  verified: boolean | undefined
-  onApprove: (kycType: KycApprovalPayload['kycType']) => void
-  disabled: boolean
-  loading: boolean
+const ID_TYPE_LABELS: Record<string, string> = {
+  nin: 'National ID (NIN)',
+  passport: 'International Passport',
+  voters_card: "Voter's Card",
 }
 
-// ─── DocCard ───────────────────────────────────────────────────────────────────
-// Shows a document image (or placeholder), its verification status, and an
-// inline Approve button that fires only for this specific kycType.
+interface DocPreviewProps {
+  label: string
+  url: string | undefined | null
+}
 
-function DocCard({ label, kycType, urls, verified, onApprove, disabled, loading }: DocCardProps) {
-  const populated = urls.filter((u): u is string => !!u)
-  const hasDoc = populated.length > 0
+// Shows a single document image, or a placeholder when nothing was uploaded.
 
+function DocPreview({ label, url }: DocPreviewProps) {
   return (
-    <div
-      style={{
-        backgroundColor: 'var(--color-surface)',
-        border: `1px solid ${verified ? 'color-mix(in srgb, var(--color-success) 40%, var(--color-border))' : 'var(--color-border)'}`,
-        borderRadius: 'var(--radius-lg)',
-        padding: 20,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
-      }}
-    >
-      {/* Card header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>
-          {label}
-        </span>
-        <Badge status={verified ? 'verified' : hasDoc ? 'pending' : 'missing'} />
-      </div>
-
-      {/* Document images */}
-      {hasDoc ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {populated.map((url, i) => (
-            <a
-              key={i}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'block', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}
-              title="Open full size"
-            >
-              <img
-                src={url}
-                alt={`${label}${populated.length > 1 ? (i === 0 ? ' — front' : ' — back') : ''}`}
-                style={{
-                  width: '100%',
-                  maxHeight: 180,
-                  objectFit: 'cover',
-                  display: 'block',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 'var(--radius-lg)',
-                }}
-              />
-            </a>
-          ))}
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-muted)' }}>{label}</span>
+      {url ? (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: 'block', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}
+          title="Open full size"
+        >
+          <img
+            src={url}
+            alt={label}
+            style={{
+              width: '100%',
+              maxHeight: 220,
+              objectFit: 'cover',
+              display: 'block',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-lg)',
+            }}
+          />
+        </a>
       ) : (
         <div
           style={{
-            height: 80,
+            height: 100,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -93,37 +66,13 @@ function DocCard({ label, kycType, urls, verified, onApprove, disabled, loading 
           No document uploaded
         </div>
       )}
-
-      {/* Approve button — only if document is uploaded and not yet verified */}
-      {!verified && hasDoc && (
-        <Button
-          size="sm"
-          onClick={() => onApprove(kycType)}
-          disabled={disabled}
-          loading={loading}
-          fullWidth
-        >
-          {loading ? 'Approving…' : `Approve ${label}`}
-        </Button>
-      )}
-
-      {verified && (
-        <div
-          style={{
-            fontSize: 13,
-            color: 'var(--color-success)',
-            textAlign: 'center',
-            fontWeight: 500,
-          }}
-        >
-          ✓ Verified
-        </div>
-      )}
     </div>
   )
 }
 
 // ─── KycActionPanel ────────────────────────────────────────────────────────────
+// Reviews one combined submission (ID document + selfie) and applies a single
+// approve/reject decision — there's no per-document state anymore.
 
 export function KycActionPanel({ userId, user }: KycActionPanelProps) {
   const [rejectOpen, setRejectOpen] = useState(false)
@@ -133,9 +82,11 @@ export function KycActionPanel({ userId, user }: KycActionPanelProps) {
   const rejectKyc = useRejectKyc()
 
   const isBusy = approveKyc.isPending || rejectKyc.isPending
+  const isVerified = user.kycStatus === 'verified'
+  const idTypeLabel = user.verify?.idType ? ID_TYPE_LABELS[user.verify.idType] ?? user.verify.idType : null
 
-  const handleApprove = (kycType: KycApprovalPayload['kycType']) => {
-    approveKyc.mutate({ userId, kycType })
+  const handleApprove = () => {
+    approveKyc.mutate({ userId })
   }
 
   const handleRejectSubmit = () => {
@@ -158,35 +109,6 @@ export function KycActionPanel({ userId, user }: KycActionPanelProps) {
     setRejectionReason('')
   }
 
-  const allVerified =
-    !!user.isVerify?.photo && !!user.isVerify?.idCard && !!user.isVerify?.address
-
-  const docs: Array<{
-    label: string
-    kycType: KycApprovalPayload['kycType']
-    urls: (string | undefined | null)[]
-    verified: boolean | undefined
-  }> = [
-    {
-      label: 'Profile Photo',
-      kycType: 'photo',
-      urls: [user.verify?.photo],
-      verified: user.isVerify?.photo,
-    },
-    {
-      label: 'ID Card',
-      kycType: 'idcard',
-      urls: [user.verify?.idCard?.front, user.verify?.idCard?.back],
-      verified: user.isVerify?.idCard,
-    },
-    {
-      label: 'Proof of Address',
-      kycType: 'address',
-      urls: [user.verify?.address],
-      verified: user.isVerify?.address,
-    },
-  ]
-
   return (
     <div>
       {/* ─── Section header ──────────────────────────────────── */}
@@ -198,42 +120,41 @@ export function KycActionPanel({ userId, user }: KycActionPanelProps) {
           marginBottom: 16,
         }}
       >
-        <h2
-          style={{
-            fontSize: 16,
-            fontWeight: 600,
-            color: 'var(--color-text)',
-            margin: 0,
-          }}
-        >
-          Submitted Documents
-        </h2>
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text)', margin: 0 }}>
+            KYC Submission
+          </h2>
+          {idTypeLabel && (
+            <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: '4px 0 0' }}>
+              Document type: {idTypeLabel}
+            </p>
+          )}
+        </div>
 
-        {!allVerified && (
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => setRejectOpen(true)}
-            disabled={isBusy}
-          >
-            Reject KYC
-          </Button>
+        {!isVerified && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button variant="danger" size="sm" onClick={() => setRejectOpen(true)} disabled={isBusy}>
+              Reject
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleApprove}
+              disabled={isBusy}
+              loading={approveKyc.isPending}
+            >
+              {approveKyc.isPending ? 'Approving…' : 'Approve'}
+            </Button>
+          </div>
         )}
 
-        {allVerified && (
-          <span
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: 'var(--color-success)',
-            }}
-          >
-            ✓ Fully Verified
+        {isVerified && (
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-success)' }}>
+            ✓ Verified
           </span>
         )}
       </div>
 
-      {/* ─── Document grid ───────────────────────────────────── */}
+      {/* ─── Document preview ───────────────────────────────── */}
       <div
         style={{
           display: 'grid',
@@ -242,26 +163,14 @@ export function KycActionPanel({ userId, user }: KycActionPanelProps) {
           marginBottom: 24,
         }}
       >
-        {docs.map((doc) => (
-          <DocCard
-            key={doc.kycType}
-            label={doc.label}
-            kycType={doc.kycType}
-            urls={doc.urls}
-            verified={doc.verified}
-            onApprove={handleApprove}
-            disabled={isBusy}
-            loading={
-              approveKyc.isPending && approveKyc.variables?.kycType === doc.kycType
-            }
-          />
-        ))}
+        <DocPreview label="ID Document" url={user.verify?.idDocument} />
+        <DocPreview label="Selfie" url={user.verify?.photo} />
       </div>
 
       {/* ─── Mutation feedback ───────────────────────────────── */}
       {approveKyc.isSuccess && (
         <div style={{ color: 'var(--color-success)', fontSize: 14, marginBottom: 12 }}>
-          Document approved — organizer has been notified.
+          KYC approved — organizer has been notified.
         </div>
       )}
       {approveKyc.isError && (

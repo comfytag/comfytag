@@ -31,21 +31,14 @@ const UserSchema = new Schema({
         address: { type: String, lowercase: true },
         verify: {
             type: {
-                photo: { type: String, },
-                // idCard: { type: String, },
-                idCard: {
-                front: { type: String },
-                back: { type: String } 
-                },
-                address: { type: String, }
+                photo: { type: String, }, // selfie
+                idType: { type: String, enum: ['nin', 'passport', 'voters_card'] },
+                idDocument: { type: String, },
             }
         },
         isVerify: {
             type: {
                 email: { type: Boolean, default: false },
-                photo: { type: Boolean, default: false },
-                idCard: { type: Boolean, default: false },
-                address: { type: Boolean, default: false }
             }
         },
         onboarding: {
@@ -54,7 +47,8 @@ const UserSchema = new Schema({
                 team: {type : String, lowercase: true, },
                 event_per_year: { type: String },
                 event_turnout: { type: String},
-                interest: {type : [String]}
+                interest: {type : [String]},
+                completed: { type: Boolean, default: false },
             }
         },
         premium: { type: Boolean, default: false },

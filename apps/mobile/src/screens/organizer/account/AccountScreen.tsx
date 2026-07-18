@@ -68,7 +68,7 @@ export default function AccountScreen({ navigation }: Props) {
   const logout   = useAuthStore((s) => s.logout)
   const setMode  = useModeStore((s) => s.setMode)
 
-  const kycVerified = user?.isVerify?.idCard === true
+  const kycVerified = user?.kycStatus === 'verified'
 
   const handleLogout = useCallback(() => {
     Alert.alert(

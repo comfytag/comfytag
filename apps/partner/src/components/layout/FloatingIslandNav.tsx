@@ -20,7 +20,6 @@ const DROPDOWN_ITEMS = [
   { label: 'KYC Verification', href: '/kyc' },
   { label: 'Ticket Tiers', href: '/tiers' },
   { label: 'Team', href: '/team' },
-  { label: 'Onboarding', href: '/onboarding' },
   { label: 'Settings', href: '/settings' },
   { label: 'View Public Profile', href: '/profile' },
 ]
@@ -170,11 +169,13 @@ export default function FloatingIslandNav() {
               </Link>
             ))}
 
-            {/* Attendee view crosslink */}
+            {/* Attendee view crosslink — no onClick here: this navigates away
+                entirely, and closing the dropdown via setState first
+                unmounts this <a> before the browser follows its href,
+                silently cancelling the click's default navigation. */}
             <a
               href={`${process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000'}/handoff?t=${session?.user?.token ?? ''}`}
               role="menuitem"
-              onClick={() => setDropdownOpen(false)}
               className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-white/5 hover:text-white transition-colors duration-150"
             >
               Attendee View →

@@ -55,7 +55,7 @@ export default function KycScreen({ navigation }: Props) {
     if (localPending) return 'pending'
     if (kycData?.overallStatus === 'verified') return 'verified'
     if (kycData?.overallStatus === 'partial')  return 'pending'
-    if (user?.isVerify?.idCard)                return 'verified'
+    if (user?.kycStatus === 'verified')        return 'verified'
     return 'not_submitted'
   })()
 
