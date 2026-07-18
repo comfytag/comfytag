@@ -55,7 +55,7 @@ export function useKycDetails(userId: string) {
 // ─── Mutation: Approve KYC ────────────────────────────────────────────────────
 
 /**
- * Approves a specific KYC document type for a user.
+ * Approves a user's whole KYC submission (ID document + selfie).
  * Corresponds to POST /api/admin/kyc/approve.
  *
  * On success, invalidates the KYC queue list, the specific user's KYC detail

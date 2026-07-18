@@ -362,31 +362,6 @@ export default function PartnerNav() {
                 Team
               </Link>
 
-              {/* Onboarding link */}
-              <Link
-                href="/onboarding"
-                role="menuitem"
-                onClick={() => setDropdownOpen(false)}
-                style={{
-                  display: 'block',
-                  padding: '10px 16px',
-                  fontSize: 14,
-                  color: 'var(--color-text)',
-                  textDecoration: 'none',
-                  transition: `background var(--duration-fast) ease`,
-                }}
-                onMouseEnter={(e) => {
-                  ;(e.currentTarget as HTMLAnchorElement).style.background =
-                    'var(--color-border)'
-                }}
-                onMouseLeave={(e) => {
-                  ;(e.currentTarget as HTMLAnchorElement).style.background =
-                    'transparent'
-                }}
-              >
-                Onboarding
-              </Link>
-
               {/* Settings link */}
               <Link
                 href="/settings"
@@ -437,11 +412,13 @@ export default function PartnerNav() {
                 View Public Profile
               </Link>
 
-              {/* Attendee View link */}
+              {/* Attendee View link — no onClick here: this navigates away
+                  entirely, and closing the dropdown via setState first
+                  unmounts this <a> before the browser follows its href,
+                  silently cancelling the click's default navigation. */}
               <a
                 href={`${process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000'}/handoff?t=${session?.user?.token}`}
                 role="menuitem"
-                onClick={() => setDropdownOpen(false)}
                 style={{
                   display: 'block',
                   padding: '10px 16px',

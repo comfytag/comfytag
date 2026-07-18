@@ -190,21 +190,32 @@ export const register = async (req,res,next) =>{
 		const salt = await bcrypt.genSalt(Number(process.env.SALT));
 		const hashPassword = await bcrypt.hash(req.body.password, salt);
 
-		// Generate referral code
-		const referralCode = generateReferralCode(req.body.username, req.body.name);
-
 		// Defensive: strip kycStatus if the payload explicitly passes null so the
 		// schema default ('unverified') is applied cleanly and no ValidationError fires.
 		const { kycStatus: _ks, ...safeBody } = req.body;
 
-		user = await new User({
-			name:      safeBody.name,
-			username:  safeBody.username,
-			email:     safeBody.email,
-			password:  hashPassword,
-			isPartner: safeBody.isPartner === true,
-			referralCode,
-		}).save();
+		// generateReferralCode is seeded from the username but includes random
+		// characters specifically so it won't collide — but a random collision is
+		// still possible (birthday paradox), so retry with a freshly generated
+		// code rather than let a rare collision surface as a raw 500.
+		for (let attempt = 1; ; attempt++) {
+			try {
+				user = await new User({
+					name:      safeBody.name,
+					username:  safeBody.username,
+					email:     safeBody.email,
+					password:  hashPassword,
+					isPartner: safeBody.isPartner === true,
+					referralCode: generateReferralCode(req.body.username, req.body.name),
+				}).save();
+				break;
+			} catch (saveError) {
+				if (saveError.code === 11000 && saveError.keyPattern?.referralCode && attempt < 5) {
+					continue;
+				}
+				throw saveError;
+			}
+		}
 
 		// Generate and persist the deterministic fallback code now that _id is known.
 		// Only assign + save if the code is a non-empty string — writing null here
@@ -355,6 +366,7 @@ export const login = async (req,res,next) =>{
 				role: user.role || 'viewer',  // Ensure role is always returned (TASK 2)
 				referralCode: user.referralCode,
 				createdAt: user.createdAt,
+				onboarding: user.onboarding,
 			},
 			token,
 			message: "logged in successfully"
@@ -376,28 +388,43 @@ export const googleSignIn = async (req, res) => {
 		let user = await User.findOne({ email: email.toLowerCase() })
 
 		if (!user) {
-			if (!partnerIntent) {
-				return res.status(404).json({ message: 'No account found for this Google email. Please register first.' })
-			}
-			// Create a new partner account from Google data
+			// Create a new account from Google data — partner if the partner app
+			// asked for it (isPartner intent), attendee otherwise. Google's OAuth
+			// flow already proves email ownership, so this skips the OTP
+			// verification step the credentials flow requires.
 			const salt = await bcrypt.genSalt(parseInt(process.env.SALT ?? '12', 10))
 			const tempPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), salt)
-			user = await new User({
-				name: name ?? email.split('@')[0],
-				username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Date.now(),
-				email: email.toLowerCase(),
-				password: tempPassword,
-				isPartner: true,
-				image: image ?? null,
-			}).save()
-			enqueueWelcomeSeries(user._id.toString(), 'organizer', user.toObject()).catch(err =>
-				console.error('[Auth] Google partner welcome series error:', err)
-			)
-		} else if (!user.isPartner && !user.isAdmin) {
-			if (!partnerIntent) {
-				return res.status(403).json({ message: 'This account does not have partner access.' })
+			const baseUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Date.now()
+
+			// generateReferralCode includes random characters but a collision is
+			// still possible (birthday paradox) — retry with a fresh code rather
+			// than let it surface as a raw 500, same as register().
+			for (let attempt = 1; ; attempt++) {
+				try {
+					user = await new User({
+						name: name ?? email.split('@')[0],
+						username: baseUsername,
+						email: email.toLowerCase(),
+						password: tempPassword,
+						isPartner: partnerIntent === true,
+						image: image ?? null,
+						referralCode: generateReferralCode(baseUsername, name),
+					}).save()
+					break;
+				} catch (saveError) {
+					if (saveError.code === 11000 && saveError.keyPattern?.referralCode && attempt < 5) {
+						continue;
+					}
+					throw saveError;
+				}
 			}
-			// Upgrade existing attendee to partner
+			enqueueWelcomeSeries(user._id.toString(), partnerIntent ? 'organizer' : 'attendee', user.toObject()).catch(err =>
+				console.error('[Auth] Google signup welcome series error:', err)
+			)
+		} else if (partnerIntent && !user.isPartner && !user.isAdmin) {
+			// Upgrade existing attendee to partner — only when the caller explicitly
+			// asked for it (partner app). A plain attendee signing into the web app
+			// must never be blocked just for not being a partner.
 			user = await User.findByIdAndUpdate(
 				user._id,
 				{ isPartner: true, 'onboarding.organizerRegisteredAt': new Date() },
@@ -433,6 +460,7 @@ export const googleSignIn = async (req, res) => {
 				isVerify: user.isVerify,
 				referralCode: user.referralCode,
 				createdAt: user.createdAt,
+				onboarding: user.onboarding,
 			},
 			token,
 			message: 'Google sign-in successful',
@@ -556,7 +584,14 @@ export const sendVerifyEmail = async (req,res,next) =>{
 		// Supports both GET /verify/:email (legacy) and POST /resend-verification { email }
 		const emailParam = req.params.email ?? req.body?.email
 		const user = await User.findOne({ email: emailParam?.toLowerCase() });
-		if (!user) return res.status(404).json({ message: 'User not found' })
+		// The public POST path (VerifyEmailForm's "Resend code") is reachable for
+		// emails that may not have an account — requestLoginOtp already treats
+		// this as an anti-enumeration surface and never reveals existence, but
+		// this endpoint used to 404 with "User not found", undermining that on
+		// the same screen. Stay generic here too.
+		if (!user) {
+			return res.status(200).json({ message: 'If an account exists for this email, a code has been sent.' })
+		}
 
 		// Send OTP verification email
 		try {

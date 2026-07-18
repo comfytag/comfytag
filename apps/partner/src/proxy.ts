@@ -16,9 +16,28 @@ const PUBLIC_PATHS = [...AUTH_PATHS, '/handoff']
 export default withAuth(
   function middleware(req) {
     const { pathname } = req.nextUrl
-    if (req.nextauth.token && AUTH_PATHS.includes(pathname)) {
+    const token = req.nextauth.token
+
+    if (token && AUTH_PATHS.includes(pathname)) {
       return NextResponse.redirect(new URL('/overview', req.url))
     }
+
+    // One-time onboarding gate: new organizers (fresh registration or the
+    // web app's attendee→partner handoff) land on /onboarding before they
+    // can reach the rest of the dashboard; once complete, they can't
+    // revisit it. Admin-only accounts skip this — onboarding is organizer-specific.
+    if (token?.isPartner && !PUBLIC_PATHS.includes(pathname)) {
+      const onboardingComplete = token.onboarding?.completed === true
+      const isOnboardingPage = pathname === '/onboarding'
+
+      if (!onboardingComplete && !isOnboardingPage) {
+        return NextResponse.redirect(new URL('/onboarding', req.url))
+      }
+      if (onboardingComplete && isOnboardingPage) {
+        return NextResponse.redirect(new URL('/overview', req.url))
+      }
+    }
+
     return NextResponse.next()
   },
   {

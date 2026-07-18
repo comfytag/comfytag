@@ -231,7 +231,8 @@ export default async function EventDetailPage({
                     name: organizer.name,
                     image: organizer.avatar,
                     isPartner: organizer.isPartner || false,
-                    isVerify: organizer.isVerify || { email: false, photo: false, idCard: false, address: false },
+                    isVerify: organizer.isVerify || { email: false },
+                    kycStatus: organizer.kycStatus,
                   }}
                   followerCount={organizerStats?.followers ?? 0}
                   upcomingEventCount={organizerStats?.upcomingEvents ?? 0}

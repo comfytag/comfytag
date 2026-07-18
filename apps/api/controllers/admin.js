@@ -11,34 +11,24 @@ import { generateReferralCode, generateFallbackCode } from '../utils/referralCod
 // KYC Management  (full implementation)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const KYC_FIELD_MAP = {
-    photo:   { 'isVerify.photo':  true },
-    idcard:  { 'isVerify.idCard': true },
-    address: { 'isVerify.address': true },
-}
-
 // POST /api/admin/kyc/approve
-// Body: { userId: string, kycType: 'photo' | 'idcard' | 'address' }
+// Body: { userId: string }
+// Approves the organizer's whole KYC submission (ID document + selfie) as a
+// single decision — there's only ever one pending submission per user.
 export const approveKyc = async (req, res, next) => {
     try {
-        const { userId, kycType } = req.body
+        const { userId } = req.body
 
-        if (!userId || !kycType) {
-            return next(createError(400, 'userId and kycType are required.'))
-        }
-
-        if (!KYC_FIELD_MAP[kycType]) {
-            return next(createError(400, `kycType must be one of: ${Object.keys(KYC_FIELD_MAP).join(', ')}`))
+        if (!userId) {
+            return next(createError(400, 'userId is required.'))
         }
 
         const user = await User.findById(userId)
         if (!user) return next(createError(404, 'User not found.'))
 
-        // Atomic $set — only the targeted isVerify sub-field is touched;
-        // sibling fields (photo, idCard, address) are preserved as-is.
         await User.findByIdAndUpdate(
             userId,
-            { $set: { ...KYC_FIELD_MAP[kycType], kycStatus: 'verified' } },
+            { $set: { kycStatus: 'verified' } },
             { new: true, runValidators: true }
         )
 
@@ -51,7 +41,6 @@ export const approveKyc = async (req, res, next) => {
             title: 'Identity verified ✓',
             message: 'You are now verified and can receive payouts',
             data: {
-                verifyType: kycType,
                 bankSetupLink: `${baseUrl}/partner/settings/bank`,
             },
             io,
@@ -59,8 +48,8 @@ export const approveKyc = async (req, res, next) => {
 
         return res.status(200).json({
             success: true,
-            message: `KYC '${kycType}' approved for user ${userId}.`,
-            data: { userId, kycType, kycStatus: 'verified' },
+            message: `KYC approved for user ${userId}.`,
+            data: { userId, kycStatus: 'verified' },
         })
     } catch (err) {
         next(err)

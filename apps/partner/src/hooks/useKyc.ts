@@ -10,16 +10,14 @@ interface KycStatusResponse {
   data: {
     isVerify: {
       email: boolean
-      photo: boolean
-      idCard: boolean
-      address: boolean
     }
     verify: {
       photo?: string
-      idCard?: { front?: string; back?: string }
-      address?: string
+      idType?: 'nin' | 'passport' | 'voters_card'
+      idDocument?: string
     }
     kycStatus: 'unverified' | 'pending' | 'verified' | 'rejected'
+    kycRejectionReason?: string
   }
 }
 

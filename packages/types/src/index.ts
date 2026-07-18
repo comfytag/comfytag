@@ -12,10 +12,13 @@ export interface User {
   isAdmin: boolean
   isVerify: {
     email?: boolean
-    photo?: boolean
-    idCard?: boolean
-    address?: boolean
   }
+  verify?: {
+    photo?: string
+    idType?: 'nin' | 'passport' | 'voters_card'
+    idDocument?: string
+  }
+  kycStatus?: 'unverified' | 'pending' | 'verified' | 'rejected'
   onboarding: {
     completed: boolean
   }
@@ -256,14 +259,11 @@ export interface UserAdminProfile {
   kycRejectedAt?: string | null
   isVerify: {
     email?: boolean
-    photo?: boolean
-    idCard?: boolean
-    address?: boolean
   }
   verify?: {
     photo?: string
-    idCard?: { front?: string; back?: string }
-    address?: string
+    idType?: 'nin' | 'passport' | 'voters_card'
+    idDocument?: string
   }
   faceEnrolled?: boolean
   faceEnrolledAt?: string | null
@@ -274,7 +274,6 @@ export interface UserAdminProfile {
 // POST /api/admin/kyc/approve
 export interface KycApprovalPayload {
   userId: string
-  kycType: 'photo' | 'idcard' | 'address'
 }
 
 // POST /api/admin/kyc/reject

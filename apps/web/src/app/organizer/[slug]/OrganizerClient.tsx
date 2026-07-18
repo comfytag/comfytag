@@ -25,10 +25,8 @@ interface OrganizerProfile {
   isPartner?: boolean
   isVerify?: {
     email?: boolean
-    photo?: boolean
-    idCard?: boolean
-    address?: boolean
   }
+  kycStatus?: string
   followerCount?: number
   followers?: unknown[]
   eventCount?: number
@@ -52,7 +50,7 @@ function capitalizeWords(str: string): string {
 }
 
 function isVerified(org: OrganizerProfile): boolean {
-  return !!(org.isPartner && org.isVerify?.email && org.isVerify?.photo)
+  return !!(org.isPartner && org.isVerify?.email && org.kycStatus === 'verified')
 }
 
 function VerifiedBadge() {
