@@ -101,8 +101,16 @@ export function OnboardingWizard({ initialData = {} }: OnboardingWizardProps) {
       setError('')
       // Refresh the JWT immediately so the middleware's onboarding gate
       // doesn't bounce us right back based on the stale pre-completion token.
-      await updateSession({ onboarding: { completed: true } })
+      // The onboarding data is already saved server-side at this point, so a
+      // failure here must never block navigation — worst case the middleware
+      // re-derives the flag from a plain reload instead of this fast path.
+      try {
+        await updateSession({ onboarding: { completed: true } })
+      } catch (err) {
+        console.error('[Onboarding] Session refresh failed, navigating anyway:', err)
+      }
       router.push('/overview')
+      router.refresh()
     },
     onError: (err: any) => {
       setError(err.response?.data?.message || 'Failed to save onboarding. Please try again.')
