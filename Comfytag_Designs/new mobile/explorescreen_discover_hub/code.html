@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Explore Events - ComfyTag</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "on-secondary-fixed": "#1e1b19",
+                        "secondary": "#625d5b",
+                        "surface-bright": "#f9f9f8",
+                        "outline": "#7b7487",
+                        "on-secondary-container": "#686361",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-primary-fixed": "#25005a",
+                        "tertiary": "#4d4f4e",
+                        "inverse-primary": "#d2bbff",
+                        "surface-dim": "#dadad9",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#e9e1dd",
+                        "on-primary-container": "#ede0ff",
+                        "tertiary-fixed-dim": "#c6c7c6",
+                        "outline-variant": "#ccc3d8",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d2bbff",
+                        "inverse-on-surface": "#f1f1f0",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#4a4455",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#630ed4",
+                        "tertiary-container": "#656766",
+                        "primary-fixed": "#eaddff",
+                        "background": "#f9f9f8",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eeeeed",
+                        "on-background": "#1a1c1c",
+                        "primary-container": "#7c3aed",
+                        "surface-tint": "#732ee4",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-low": "#f3f4f3",
+                        "inverse-surface": "#2f3130",
+                        "secondary-fixed-dim": "#ccc5c2",
+                        "surface": "#f9f9f8",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-container": "#e9e1dd",
+                        "surface-variant": "#e2e2e2",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-container-high": "#e8e8e7",
+                        "on-secondary-fixed-variant": "#4a4643",
+                        "on-tertiary-container": "#e6e6e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "stack-gap": "16px",
+                        "section-gap": "32px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-rg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-rg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(231, 229, 228, 0.5); }
+        .fade-mask { mask-image: linear-gradient(to right, black 85%, transparent 100%); }
+    </style>
+</head>
+<body class="bg-background text-on-background pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-gutter h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer">arrow_back</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">ComfyTag</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer" data-weight="fill">account_circle</span>
+</div>
+</header>
+<main class="mt-20 px-container-padding max-w-[1200px] mx-auto">
+<!-- Header & Search -->
+<section class="mb-section-gap">
+<h2 class="font-headline-lg text-headline-lg mb-6 text-on-surface">Explore events</h2>
+<div class="relative group">
+<div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">search</span>
+</div>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl py-4 pl-12 pr-12 focus:ring-2 focus:ring-primary-container focus:border-primary outline-none transition-all duration-300" placeholder="Search concerts, workshops, and more..." type="text"/>
+<div class="absolute inset-y-0 right-4 flex items-center">
+<button class="flex items-center justify-center w-10 h-10 rounded-lg bg-surface-container-high hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">tune</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Highlights (Horizontal Scrolling) -->
+<section class="mb-section-gap overflow-hidden">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-title-md text-title-md">Highlights</h3>
+<button class="text-primary font-label-caps hover:underline">View All</button>
+</div>
+<div class="flex gap-stack-gap overflow-x-auto no-scrollbar pb-4 fade-mask">
+<!-- Card 1 -->
+<div class="flex-none w-48 h-72 rounded-xl relative overflow-hidden shadow-sm group">
+<img class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="A professional vertical portrait photograph of a vibrant neon-lit jazz club interior with a performer playing saxophone. The atmosphere is smoky and intimate with deep violets and warm orange lighting. Modern minimalist UI aesthetic with clean lines and premium textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMDyZBCLINaWEKC8SnMo7fdwLZKHt3VKQuavNdhlEtgwA2mWAHILmV3M3S8brv1TdmwxR8kGIid9BxqZeVr5tKXE2a8LDl-xok7dPacIBBpQXIO0KO3wXdWOv_oliJeQSN7y-_KzavHMPGtNLp0YPfRC1V08iyGtaxoIaHugHe4yjSwnTGYv6bt-gAcBLTNt-KB1CKpThu4IRx74EuS0pSKLPgVkClSCzrklrtZPitKW4e1YRj5caj3Q"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4">
+<span class="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Music</span>
+<p class="text-white font-title-md mt-1 leading-tight">Midnight Jazz Collective</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="flex-none w-48 h-72 rounded-xl relative overflow-hidden shadow-sm group">
+<img class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="A high-end architectural shot of a modern art gallery opening with people dressed in sophisticated minimalist fashion. The lighting is soft and diffused, creating a bright and airy light-mode feel. Stone textures and violet accents are subtly visible in the decor. Premium high-key photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuANozaFwW_-bImAzpizdIgEWA7M2Gb7kb3HsOW26b7IaOW-XAbKMPUbALqpAak40vds3ffITC_2dzS0T0BeJuhhiwLP__IlOH51PcRkzxtMBkO0l-D5WgpWsO9SyXi0BS95PwDw1GIzNxsMjRSA7SmqIGUZPcBcV7s9LILBAd7SNIquzLTFywhNMwRH0XrUaVk5qnp-L0Ra4Z-b-E2ptcluvjIUR4-JGGa6xrR6BEXJT0qFYede95pCrA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4">
+<span class="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Arts</span>
+<p class="text-white font-title-md mt-1 leading-tight">Abstract Reality Expo</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="flex-none w-48 h-72 rounded-xl relative overflow-hidden shadow-sm group">
+<img class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="A cinematic photo of a high-tech kitchen workshop with stainless steel surfaces and vibrant organic vegetables. Soft overhead lighting highlights the textures of the food and the sleek professional environment. The color palette is clean, neutral, and features a soft violet glow from a digital display." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3mo4gG600v8c79y6b5CwH3A7M9D1deltLqVyEaeP9_eidHJhpDMinRo2u7T4-FmSo5t5Mz8Z4vitY4hV5NqBzJVfDqo4VoEQtZQUbkl4VxlDwqdP_4n4SyNjIBH7Vy-oWPUDao1ug4Q1eTkFm7FlpU3fHgJPiC8VSLhvxDey2dEsYENSNX2TPTRp62bEv1jDSoc7NhdkeexTkMlsagigTc6Wobr4SsqzKy-6BRulA5DwYErFOE614Dg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4">
+<span class="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Food</span>
+<p class="text-white font-title-md mt-1 leading-tight">Mastering Umami</p>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="flex-none w-48 h-72 rounded-xl relative overflow-hidden shadow-sm group">
+<img class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="A stunning outdoor landscape shot of a group of people doing mountain-top yoga at sunrise. The lighting is warm and ethereal, with long shadows and golden highlights. The scene conveys health, safety, and a premium digital nomad lifestyle. Neutral stone tones blend with the natural environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaiNLErc9ItuU7QqtqQ8bDs5cmxjmtEJDH_ObP3-SGapvVD9Ueak_cua4yxDIA1j53CjymNVyedtID-ynt22QVh1i1P-_Ohdn3Rug2G2unPPmPZMOppZdg8p7-jqTDG73nArxZfwOijcme3ZfLnFVecQ9dvGJMlCE4_VQmF3WGeMk5YfC5k-aNsxBZ3GbHpg2RRdBkFCq9FUgTh4fy8YyaPR5miE0jUamZ0CAjg7rtCLyGyHrkvaVtqg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4">
+<span class="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Health</span>
+<p class="text-white font-title-md mt-1 leading-tight">Sunrise Flow Summit</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Trending Videos (Vertical Thumbnails) -->
+<section class="mb-section-gap">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-title-md text-title-md">Trending videos</h3>
+<span class="material-symbols-outlined text-outline cursor-pointer">more_horiz</span>
+</div>
+<div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+<!-- Video 1 -->
+<div class="flex-none w-32 aspect-[9/16] rounded-xl relative bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" alt="A short vertical video frame showing a high-speed drone shot of a music festival crowd jumping in unison. The lighting is dominated by violet lasers and spotlights against a night sky. High-energy, professional videography style with motion blur and cinematic color grading." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDr58BWUd12WeE4H74zAJyEQvi3Fk7yF8NzTpSKXC_rCSxDNzO6tiS7vzlCibkHjsmvEbvgAPpD7i1kQqWcuiErecZu4T7_qjvDDAbx4Lz5th2Zn5OFvqpOp5m4rcA-vAlWgStyqPQ1kVfyGNfEFN69ZtpdTHd5ITPcuAuwohBFfNwZyvKcbIRjEh9YVAZEthKow4LeYW2j4tUksxYSZrAuEHcJXc40CyXxym2X7AVtqxdRP-kBhR0f4Q"/>
+<div class="absolute inset-0 flex items-center justify-center bg-black/10">
+<span class="material-symbols-outlined text-white text-3xl opacity-80" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+</div>
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-white text-[12px]">visibility</span>
+<span class="text-white text-[10px] font-bold">12k</span>
+</div>
+</div>
+<!-- Video 2 -->
+<div class="flex-none w-32 aspect-[9/16] rounded-xl relative bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" alt="A vertical video frame capturing a close-up of a digital artist's hand using a stylus on a glowing tablet. The tablet screen shows vibrant violet and magenta geometric patterns. The surrounding space is dark and minimalist, emphasizing the tech-forward, high-end feel of the platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBncGLMI3iW_KFS9HKHqt9VtMdVPC9m3FtYyoCzs4KuG2IL12YgGOSBTjPKkKd8EN1QzraapnSB4JB5-T7CZl8U5-s8w8JGyg0u55JbPvnrRumIc1MAb9DhP4TDmF3KClFHc4JYFCkIpxYv2qvdi0X02MN6UtD0hHYFLiU0xLMABTVwNke-2qSah92y49sSlSBWXBkCS9tfDuFcl__j9GfwidxAuWexXHgXsUYS2HyO1x5Cea71aVMWdQ"/>
+<div class="absolute inset-0 flex items-center justify-center bg-black/10">
+<span class="material-symbols-outlined text-white text-3xl opacity-80" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+</div>
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-white text-[12px]">visibility</span>
+<span class="text-white text-[10px] font-bold">4.8k</span>
+</div>
+</div>
+<!-- Video 3 -->
+<div class="flex-none w-32 aspect-[9/16] rounded-xl relative bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" alt="Vertical video thumbnail showing a chef expertly slicing fresh salmon on a stone countertop. The lighting is soft-box studio quality, highlighting the glistening texture of the fish. The scene feels premium and precise, mirroring the biometric security aesthetic of the brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCA0sRKLPWJJHphYNljcXKuGrArrIwpNeR06LYs-P8OGlj1LocTJ3lo5raZFAG9DL55bNGqdeaJcQjS2nGvtQ33_UTbb7H84v0_QVlhsBZMMZhL_4Rk30-1RebFS1GYv3pvSK6dZ7kIlKG-1pNIW9aO4jcf2lQacBHOq-cY1_Iy7DoZQ1oeSLfLdR1FodGTCgJmtjn2yhBOcL8-ZuA14hWLE4WN5NVrGBrPJLsT5KF3fBgWGp7xEl9x4g"/>
+<div class="absolute inset-0 flex items-center justify-center bg-black/10">
+<span class="material-symbols-outlined text-white text-3xl opacity-80" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+</div>
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-white text-[12px]">visibility</span>
+<span class="text-white text-[10px] font-bold">22k</span>
+</div>
+</div>
+<!-- Video 4 -->
+<div class="flex-none w-32 aspect-[9/16] rounded-xl relative bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" alt="Vertical video shot of a high-end streetwear fashion runway. Models are walking through a minimalist concrete space with sharp shadow patterns. The overall look is modern, industrial, and sophisticated, dominated by neutral grays and violet light accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHCJbZFOv15rLo2o012IF9d4qe-uBo3Ev829hKwXQ5KqNuLEhv-0qCRFcQm3SFstOXjY_5yqABXKNrRkpjHyHfIq_RUB3bkiZmVSitZGbsLkj5p5osbgYLWpimSmkU3SdXnYedV01In_Ajz85ht5c5zHEVveiWd3r37twz5jk60YuaLdCsBELskW8bSkUOFJWuTwv3cjKWOZz6FAYyaD2w4-umUW8emcEqm_d2hu8OZUVpWfwCxW4kng"/>
+<div class="absolute inset-0 flex items-center justify-center bg-black/10">
+<span class="material-symbols-outlined text-white text-3xl opacity-80" style="font-variation-settings: 'FILL' 1;">play_circle</span>
+</div>
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-black/40 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-white text-[12px]">visibility</span>
+<span class="text-white text-[10px] font-bold">8.1k</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Featured (Large Hero Cards) -->
+<section class="mb-section-gap">
+<h3 class="font-title-md text-title-md mb-4">Featured</h3>
+<div class="space-y-6">
+<!-- Hero 1 -->
+<div class="w-full rounded-2xl overflow-hidden bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col md:flex-row">
+<div class="w-full md:w-2/5 h-64 md:h-auto relative">
+<img class="w-full h-full object-cover" alt="A wide-angle professional photograph of a tech conference keynote stage. The speaker is silhouetted against a massive LED screen displaying a complex biometric fingerprint scan in glowing violet. The audience is blurred in the foreground, creating a sense of scale and institutional trust. High-contrast, sleek minimalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC608i9BvUucTHMcWYhoou3H32WQyFnyutBNILnD5iaIxr_CoM25X6EIy_NXSsdrH5jn7cd_zhYEfiFTVbJyXyhOuiNdj5d1H3m_6h_McAW7J2rYgpFvGvOSmiscXk4sVX2XVmMP8qyZiNp1ILD1_XPNocySXimlW6WlKWQxVBBLU2tkUgbtdZ7qcTak9azx42wm81WWnyR1XGXzW_fW11iChcvtWWczCO-JkioQOqxHOpaEJ96UTkumQ"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full border border-outline-variant flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" alt="A studio portrait of a professional woman in a clean white blazer, smiling warmly. She has a look of confidence and approachability. The background is a soft neutral stone color, perfectly matching the design system's palette for a trustworthy organizer persona." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcsGXECL7RzvQEQVTzfdQ38650oejyNX_v9q-Gv52jShyS3ISMTr8etGDpT1B_JVPNxrfT_ZIYmGL1Cs1JP-E5NNCQtrzTLmFZ6i2mS8EgUEm95mguR_7teHtWsc56uXQdPCsH6vjWEm14jXKCzvzrbVKa9B71SMorlKYmNWaVc1p8q0anIQ9W3uWJ0oexRrWbk3M8zKAcHz1okVIO_g8ADtezZgeUJgusHgfp-Q7Ke4IkCQJ6vw4CEQ"/>
+<span class="text-[10px] font-bold text-on-surface">By TechGlobal</span>
+</div>
+</div>
+<div class="flex-1 p-6 flex flex-col justify-between">
+<div>
+<h4 class="font-headline-lg-mobile text-headline-lg-mobile mb-2">Biometric Frontier Summit 2024</h4>
+<p class="text-on-surface-variant font-body-sm line-clamp-2">Join the world's leading innovators in digital identity and security for a three-day intensive summit on the future of trust.</p>
+</div>
+<div class="mt-6 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-on-surface-variant font-label-caps uppercase">Starts from</span>
+<span class="text-primary font-bold text-xl">₦29,900.00</span>
+</div>
+<button class="bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:opacity-90 transition-opacity">Reserve Spot</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Up Next (Vertical List) -->
+<section class="mb-section-gap pb-12">
+<h3 class="font-title-md text-title-md mb-4">Up next</h3>
+<div class="grid gap-stack-gap">
+<!-- Item 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow group">
+<div class="w-20 h-20 rounded-lg overflow-hidden flex-none">
+<img class="w-full h-full object-cover" alt="A high-key macro shot of a single drop of water hitting a still pool, creating perfect ripples. The lighting is cold and clinical, with subtle violet highlights in the reflections. This symbolizes precision and cleanliness, aligning with the premium identification platform aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCu-frrYPrmuOmvh91tiGSdfJfNHrOBpueDB9WJxdWaqjRyXenjgxMEpkJSv9iOznINmRMtBj-HOVSwPxQM-wvvho3CLjSZLyRjK_kw85RmpzxXI3Pv5A-f3TKYuAOYOle9wlrDL0ijlYsjJ3Q7IqPTAgj2TZ3yRzJ3jqE143GfL4LvOstvaNiFetnvoqFAASKJB5U1nMPIC-z0TRdlEo--F2iNr8wU5jsNCMW6A66lUdPVXA4xzJGiLg"/>
+</div>
+<div class="flex-1 min-w-0">
+<span class="text-primary text-[10px] font-bold uppercase tracking-wider">Tomorrow, 10:00 AM</span>
+<h5 class="font-title-md text-on-surface truncate group-hover:text-primary transition-colors">Mindfulness in the Digital Age</h5>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-[12px]">Grand Hyatt Lounge</span>
+</div>
+</div>
+<button class="bg-surface-container-high text-on-surface-variant px-4 py-2 rounded-lg font-bold text-[12px] whitespace-nowrap hover:bg-primary hover:text-white transition-all">Get ticket</button>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow group">
+<div class="w-20 h-20 rounded-lg overflow-hidden flex-none">
+<img class="w-full h-full object-cover" alt="A top-down aesthetic shot of a workspace featuring a MacBook, a notebook with clean sketches, and a cup of espresso. The surfaces are white marble and light wood, creating a bright, sophisticated light-mode look. Violet lighting from an off-screen source provides a subtle brand accent." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhpLCMV93pENqupy-3399iF8YVeObhj2_rZ9GJgPzSyH_osWmJLDVgCGv6YCniUi29tEyDQpi5pmOL5OE7FFyVn8Oh1-vxEWNC9W_mTHHGuCQQyKe53wyWTRHal090EFJWfPnyFg02IG6IXEulfA9_RYoxPTGzlvRsC6rL29jhiIslFJC1vm9Zxq5zSnyZzBKgLjmHjDwjK5BIZrj9IblKRuW-4AGDQwMRc2ux_WtXXGl0SqdL8EU-mQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<span class="text-primary text-[10px] font-bold uppercase tracking-wider">Wed, 2:00 PM</span>
+<h5 class="font-title-md text-on-surface truncate group-hover:text-primary transition-colors">UI Design Masterclass</h5>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-[12px]">Creative Hub South</span>
+</div>
+</div>
+<button class="bg-surface-container-high text-on-surface-variant px-4 py-2 rounded-lg font-bold text-[12px] whitespace-nowrap hover:bg-primary hover:text-white transition-all">Get ticket</button>
+</div>
+<!-- Item 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow group">
+<div class="w-20 h-20 rounded-lg overflow-hidden flex-none">
+<img class="w-full h-full object-cover" alt="A vibrant night photography shot of a futuristic neon city street in Tokyo. The scene is full of glowing violet and electric blue signs reflected in rain-slicked pavement. The composition is sleek and cinematic, conveying a sense of global connectivity and modern tech." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhA7zETqAYY72MDrkEnzsem83SIEN0FFVHOqO0wDDOMBrXS3n4urCDLuVKY1hd1yXSLpMSBtrwks1z-xNwoN2pFDSRYyiL-4SfRS-ofVAldEQucIBCg0UxAuukdTZ4FZqbWZ1ED1t77pkgMtKQIE5OqH0unr69nfn84IoAbkjPJH24RuF2kpTtRPFxPVUEfHmvYPMPr7N6g_6fvMfftDGLEXzTRer4i-0uPU93dYp9f-QGAThwz_QGbA"/>
+</div>
+<div class="flex-1 min-w-0">
+<span class="text-primary text-[10px] font-bold uppercase tracking-wider">Fri, 8:00 PM</span>
+<h5 class="font-title-md text-on-surface truncate group-hover:text-primary transition-colors">Electric Dreams Night</h5>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-[12px]">Neon Gardens</span>
+</div>
+</div>
+<button class="bg-surface-container-high text-on-surface-variant px-4 py-2 rounded-lg font-bold text-[12px] whitespace-nowrap hover:bg-primary hover:text-white transition-all">Get ticket</button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant">
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1.5 transition-transform active:scale-95">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-caps text-label-caps">Explore</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">confirmation_number</span>
+<span class="font-label-caps text-label-caps">Tickets</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-caps text-label-caps">Profile</span>
+</button>
+</nav>
+<script>
+        // Simple micro-interaction for cards
+        document.querySelectorAll('.group').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                // Potential for adding subtle haptic feedback or sound effects via JS if required
+            });
+        });
+
+        // Horizontal scroll progress logic could be added here for decorative indicators
+    </script>
+</body></html>

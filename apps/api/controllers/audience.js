@@ -376,13 +376,26 @@ export const getAudienceByReference = async (req, res, next) => {
 // GET — self or admin (enforced in controller)
 export const getAudience = async (req, res, next) => {
     try {
-        const ticket = await Audience.findById(req.params.id)
+        const ticket = await Audience.findById(req.params.id).lean()
         if (!ticket) return next(createError(404, 'Ticket not found'))
         const requesterId = (req.user._id ?? req.user.id ?? '').toString()
         if (!req.user.isAdmin && ticket.user_id !== requesterId) {
             return next(createError(403, 'Not authorized'))
         }
-        res.status(200).json(ticket)
+
+        const event = await Event.findById(ticket.event_id).lean()
+
+        res.status(200).json({
+            ...ticket,
+            eventDate: event?.date || ticket.date,
+            eventTime: event?.startTime,
+            eventEndTime: event?.endTime,
+            eventVenue: event?.venue,
+            eventLocation: event?.location,
+            eventState: event?.state,
+            eventSlug: event?.slug,
+            eventImage: event?.images?.[0] || null,
+        })
     } catch (err) {
         next(err)
     }
@@ -472,7 +485,10 @@ export const getMyTickets = async (req, res, next) => {
             eventTime: eventMap[t.event_id?.toString?.()]?.startTime,
             eventEndTime: eventMap[t.event_id?.toString?.()]?.endTime,
             eventVenue: eventMap[t.event_id?.toString?.()]?.venue,
+            eventLocation: eventMap[t.event_id?.toString?.()]?.location,
+            eventState: eventMap[t.event_id?.toString?.()]?.state,
             eventSlug: eventMap[t.event_id?.toString?.()]?.slug,
+            eventImage: eventMap[t.event_id?.toString?.()]?.images?.[0] || null,
         }))
 
         res.status(200).json({ success: true, data: enriched })

@@ -1,5 +1,6 @@
 export * from './constants'
 export * from './auth'
+export * from './geo'
 
 // ─── Currency formatting ───────────────────────────────
 export function formatNaira(amount: number | null | undefined): string {
@@ -148,4 +149,5 @@ export const STORAGE_KEYS = {
   APP_MODE: 'comfytag_app_mode',
   PUSH_TOKEN: 'comfytag_push_token',
   TICKETS: 'comfytag_tickets',
+  EVENT_DRAFT: 'comfytag_event_draft',
 } as const

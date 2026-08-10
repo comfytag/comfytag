@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -67,6 +67,23 @@ export default function OrganizerProfileScreen({ route, navigation }: Props) {
   const { mutate: followOrganizer, isPending: isFollowPending } =
     useFollowOrganizer()
 
+  // GET /organizers/:id/follow/status — real initial state instead of always
+  // starting the button on "Follow" regardless of whether the user actually
+  // already follows this organizer.
+  const { data: followStatus } = useQuery({
+    queryKey: ['organizer-follow-status', organizerId],
+    queryFn: () =>
+      get<{ following: boolean; followerCount: number }>(
+        `/organizers/${organizerId}/follow/status`
+      ).then((r) => r.data),
+    staleTime: 60_000,
+    enabled: !!organizerId,
+  })
+
+  useEffect(() => {
+    if (followStatus !== undefined) setIsFollowing(followStatus.following)
+  }, [followStatus])
+
   // ── Derived ──────────────────────────────────────────────────────────────────
 
   const upcomingEvents = events.filter(isUpcoming)
@@ -78,9 +95,12 @@ export default function OrganizerProfileScreen({ route, navigation }: Props) {
   // ── Handlers ─────────────────────────────────────────────────────────────────
 
   const handleFollowToggle = () => {
-    const next = !isFollowing
-    setIsFollowing(next)
-    followOrganizer({ organizerId, slug: organizerId })
+    const previous = isFollowing
+    setIsFollowing(!previous)
+    followOrganizer(
+      { organizerId, slug: organizerId },
+      { onError: () => setIsFollowing(previous) }
+    )
   }
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -94,7 +114,7 @@ export default function OrganizerProfileScreen({ route, navigation }: Props) {
           hapticStyle="light"
           style={styles.backBtn}
         >
-          <ChevronLeft size={20} color={colors.mobile.textPrimary} />
+          <ChevronLeft size={20} color="#FFFFFF" />
         </AnimatedPressable>
       </View>
 
@@ -136,14 +156,14 @@ export default function OrganizerProfileScreen({ route, navigation }: Props) {
             disabled={isFollowPending}
           >
             {isFollowPending ? (
-              <ActivityIndicator size="small" color={colors.mobile.textPrimary} />
+              <ActivityIndicator size="small" color={isFollowing ? '#FFFFFF' : colors.textPublic.primary} />
             ) : isFollowing ? (
               <View style={styles.followingInner}>
-                <Check size={14} color={colors.mobile.textPrimary} />
-                <Text style={styles.followBtnText}>Following</Text>
+                <Check size={14} color="#FFFFFF" />
+                <Text style={[styles.followBtnText, { color: '#FFFFFF' }]}>Following</Text>
               </View>
             ) : (
-              <Text style={styles.followBtnText}>Follow</Text>
+              <Text style={[styles.followBtnText, { color: colors.textPublic.primary }]}>Follow</Text>
             )}
           </AnimatedPressable>
         </View>
@@ -239,7 +259,7 @@ export default function OrganizerProfileScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
 
   // ── Floating Back ─────────────────────────────────────────────────────────
@@ -286,21 +306,21 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: rd.full,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderWidth: 2,
-    borderColor: colors.mobile.textPrimary,
+    borderColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerAvatarText: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.brand.DEFAULT,
   },
   headerName: {
     fontSize: 24,
     fontWeight: '800',
-    color: colors.mobile.textPrimary,
+    color: '#FFFFFF',
     marginTop: sp[3],
   },
   headerRole: {
@@ -322,11 +342,11 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   statLabel: {
     fontSize: fs.xs,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     marginTop: 2,
   },
 
@@ -340,7 +360,7 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: rd.full,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
@@ -357,7 +377,6 @@ const styles = StyleSheet.create({
   followBtnText: {
     fontSize: fs.sm,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
   },
 
   // ── Tabs ──────────────────────────────────────────────────────────────────
@@ -379,7 +398,7 @@ const styles = StyleSheet.create({
     color: colors.brand.DEFAULT,
   },
   tabTextInactive: {
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   tabUnderline: {
     position: 'absolute',
@@ -409,7 +428,7 @@ const styles = StyleSheet.create({
   stateTitle: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
     marginBottom: sp[3],
   },

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Face Entry - ComfyTag</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .biometric-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.2; }
+            100% { transform: scale(0.8); opacity: 0.5; }
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "on-secondary-fixed": "#1e1b19",
+                        "secondary": "#625d5b",
+                        "surface-bright": "#f9f9f8",
+                        "outline": "#7b7487",
+                        "on-secondary-container": "#686361",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-primary-fixed": "#25005a",
+                        "tertiary": "#4d4f4e",
+                        "inverse-primary": "#d2bbff",
+                        "surface-dim": "#dadad9",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#e9e1dd",
+                        "on-primary-container": "#ede0ff",
+                        "tertiary-fixed-dim": "#c6c7c6",
+                        "outline-variant": "#ccc3d8",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d2bbff",
+                        "inverse-on-surface": "#f1f1f0",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#4a4455",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#630ed4",
+                        "tertiary-container": "#656766",
+                        "primary-fixed": "#eaddff",
+                        "background": "#f9f9f8",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eeeeed",
+                        "on-background": "#1a1c1c",
+                        "primary-container": "#7c3aed",
+                        "surface-tint": "#732ee4",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-low": "#f3f4f3",
+                        "inverse-surface": "#2f3130",
+                        "secondary-fixed-dim": "#ccc5c2",
+                        "surface": "#f9f9f8",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-container": "#e9e1dd",
+                        "surface-variant": "#e2e2e2",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-container-high": "#e8e8e7",
+                        "on-secondary-fixed-variant": "#4a4643",
+                        "on-tertiary-container": "#e6e6e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "stack-gap": "16px",
+                        "section-gap": "32px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-rg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-rg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-rg">
+<!-- Top AppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-gutter h-16 bg-surface border-b border-outline-variant">
+<button aria-label="Go back" class="flex items-center justify-center w-10 h-10 hover:opacity-80 transition-opacity duration-200">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md text-primary">Face Entry</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<main class="flex-1 mt-16 px-gutter pb-32 max-w-md mx-auto w-full flex flex-col items-center">
+<!-- Status Illustration Section -->
+<div class="relative w-full aspect-square max-w-[280px] flex items-center justify-center my-section-gap">
+<!-- Pulsing background for biometric focus -->
+<div class="absolute w-48 h-48 bg-primary/10 rounded-full biometric-pulse"></div>
+<div class="absolute w-36 h-36 bg-primary/20 rounded-full biometric-pulse" style="animation-delay: 0.5s;"></div>
+<!-- Main Icon Container -->
+<div class="relative z-10 w-32 h-32 bg-surface rounded-full flex items-center justify-center shadow-sm border border-outline-variant">
+<span class="material-symbols-outlined text-primary text-[64px]" style="font-variation-settings: 'FILL' 0, 'wght' 200;">face</span>
+<!-- Success Badge -->
+<div class="absolute -bottom-1 -right-1 bg-on-primary-fixed-variant text-white w-10 h-10 rounded-full border-4 border-surface flex items-center justify-center" id="status-badge">
+<span class="material-symbols-outlined text-[20px] font-bold">check</span>
+</div>
+</div>
+</div>
+<!-- Status Details Card -->
+<div class="w-full bg-white border border-outline-variant rounded-xl overflow-hidden mb-section-gap shadow-sm">
+<div class="p-5 space-y-stack-gap">
+<!-- Status Row -->
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Status</span>
+<span class="font-title-md text-title-md text-on-surface" id="enrollment-status-text">Enrolled</span>
+</div>
+<div class="h-[1px] bg-outline-variant/30 w-full"></div>
+<!-- SDK Mode Row -->
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">SDK Mode</span>
+<span class="font-body-rg text-body-rg text-on-surface">Secure Biometric v2.4</span>
+</div>
+<div class="h-[1px] bg-outline-variant/30 w-full"></div>
+<!-- Recognition Row -->
+<div class="flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">Recognition</span>
+<span class="font-body-rg text-body-rg text-on-surface">High Precision</span>
+</div>
+</div>
+</div>
+<!-- CTA Section (Enrolled State Default) -->
+<div class="w-full space-y-4" id="cta-container">
+<div class="text-center space-y-2 mb-6">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface" id="cta-heading">Your face is your ticket</h2>
+<p class="text-on-surface-variant text-body-sm px-4" id="cta-subheading">Fast, secure access to all ComfyTag venues without physical media.</p>
+</div>
+<button class="w-full bg-primary-container text-on-primary py-4 rounded-xl font-title-md transition-all active:scale-95 shadow-md shadow-primary/20">
+                Re-enroll Face Data
+            </button>
+<button class="w-full bg-surface-container-low text-on-surface border border-outline-variant py-4 rounded-xl font-title-md transition-all active:scale-95">
+                Disable Face Entry
+            </button>
+</div>
+<!-- Not Enrolled State (Hidden by default for demonstration, but can be toggled) -->
+<div class="hidden w-full space-y-4" id="cta-container-not-enrolled">
+<div class="text-center space-y-2 mb-6">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Set up face entry</h2>
+<p class="text-on-surface-variant text-body-sm px-4">Experience seamless entry by linking your biometric profile to your digital tag.</p>
+</div>
+<button class="w-full bg-primary-container text-on-primary py-4 rounded-xl font-title-md transition-all active:scale-95 shadow-md shadow-primary/20">
+                Enroll My Face
+            </button>
+</div>
+</main>
+<!-- Footer Privacy Note -->
+<footer class="mt-auto w-full py-8 px-gutter flex flex-col items-center gap-2">
+<div class="flex items-center gap-2 text-on-surface-variant/60">
+<span class="text-xl">🔒</span>
+<p class="font-label-caps text-label-caps">End-to-End Encrypted</p>
+</div>
+<p class="text-[10px] text-center text-on-surface-variant/40 max-w-xs leading-tight">
+            Your biometric data is processed locally and never leaves your device. We use industry-standard encryption to protect your privacy.
+        </p>
+</footer>
+<!-- Interactive Layer for Demo Toggle -->
+<script>
+        // Simple toggle logic to show both states for the prompt requirements
+        // In a real app, this would be reactive to the user's enrollment status
+        let isEnrolled = true;
+        
+        function toggleState() {
+            isEnrolled = !isEnrolled;
+            const badge = document.getElementById('status-badge');
+            const statusText = document.getElementById('enrollment-status-text');
+            const enrolledCTA = document.getElementById('cta-container');
+            const notEnrolledCTA = document.getElementById('cta-container-not-enrolled');
+            
+            if (isEnrolled) {
+                badge.classList.remove('hidden');
+                statusText.innerText = 'Enrolled';
+                statusText.classList.remove('text-error');
+                enrolledCTA.classList.remove('hidden');
+                notEnrolledCTA.classList.add('hidden');
+            } else {
+                badge.classList.add('hidden');
+                statusText.innerText = 'Not Set Up';
+                statusText.classList.add('text-error');
+                enrolledCTA.classList.add('hidden');
+                notEnrolledCTA.classList.remove('hidden');
+            }
+        }
+        
+        // Expose a way to toggle for reviewers
+        console.log("Call toggleState() in console to switch between Enrolled and Not Enrolled views.");
+    </script>
+</body></html>

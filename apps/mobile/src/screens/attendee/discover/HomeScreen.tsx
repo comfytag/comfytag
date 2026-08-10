@@ -1,556 +1,933 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
   View,
   Text,
+  Image,
   ScrollView,
-  FlatList,
+  ActivityIndicator,
   StyleSheet,
-  Dimensions,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useNavigation } from '@react-navigation/native'
 import type { StackNavigationProp } from '@react-navigation/stack'
-import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
-import { Search, Bell } from 'lucide-react-native'
 import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
-import { useEvents, useCategories } from '../../../hooks'
-import { EventCard, EventCardSkeleton } from '../../../components/ui/EventCard'
+import type { Event } from '@comfytag/types'
+import { formatDate } from '@comfytag/utils'
 import { AnimatedPressable } from '../../../components/ui/AnimatedPressable'
-import type { Event, Category } from '@comfytag/types'
-import type { DiscoverStackParamList, AttendeeTabParamList } from '../../../navigation/types'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { getEventPriceLabel } from '../../../lib/eventPricing'
+import { navigateToTabOrLogin, navigateUpTo } from '../../../lib/navigation'
+import { useEvents, useCategories, useFollowing } from '../../../hooks'
+import { useAuthStore } from '../../../store'
+import type { DiscoverStackParamList } from '../../../navigation/types'
+import { ArrowRight, Heart, MapPin, Search } from 'lucide-react-native'
 
 type Nav = StackNavigationProp<DiscoverStackParamList, 'HomeMain'>
-type TabNav = BottomTabNavigationProp<AttendeeTabParamList>
 
-interface DateGroup {
-  label: string
-  events: Event[]
+const ALL_CATEGORY_SLUG = 'all'
+
+// Built and wired up, just not ready for users yet — no follow-suggestion
+// flow exists to grow anyone's following list, so the section would be empty
+// for ~everyone. Flip to true once that's in place.
+const SHOW_FOLLOWING_SECTION = false
+
+function eventImage(event: Event): string | undefined {
+  return event.images[0] ?? event.coverImage
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+function isNewEvent(event: Event): boolean {
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+  return new Date(event.createdAt).getTime() >= sevenDaysAgo
+}
 
-function groupByDate(events: Event[]): DateGroup[] {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(today.getDate() + 1)
+// Sell-through — the closest read we have on "how fast people are buying".
+function getSoldPct(event: Event): number {
+  const totalCap = event.ticketType.reduce((s, t) => s + t.capacity, 0)
+  return totalCap > 0 ? event.sold / totalCap : 0
+}
 
-  const map = new Map<string, Event[]>()
-
-  for (const e of events) {
-    const d = new Date(e.date)
-    d.setHours(0, 0, 0, 0)
-    let label: string
-    if (d.getTime() === today.getTime()) {
-      label = 'Today'
-    } else if (d.getTime() === tomorrow.getTime()) {
-      label = 'Tomorrow'
-    } else {
-      label = d.toLocaleDateString('en-NG', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'short',
-      })
+// Weighted random pick without replacement — events selling faster are more
+// likely to land in the reel, but it's never the same static top-N list.
+// A weight floor keeps zero-sales events from being permanently excluded.
+function weightedSample<T>(items: T[], weightOf: (item: T) => number, count: number): T[] {
+  const pool = items.map((item) => ({ item, weight: Math.max(weightOf(item), 0.01) }))
+  const picked: T[] = []
+  while (picked.length < count && pool.length > 0) {
+    const total = pool.reduce((sum, p) => sum + p.weight, 0)
+    let r = Math.random() * total
+    let idx = pool.length - 1
+    for (let i = 0; i < pool.length; i++) {
+      r -= pool[i].weight
+      if (r <= 0) {
+        idx = i
+        break
+      }
     }
-    if (!map.has(label)) map.set(label, [])
-    map.get(label)!.push(e)
+    picked.push(pool[idx].item)
+    pool.splice(idx, 1)
   }
-
-  return Array.from(map.entries()).map(([label, evts]) => ({
-    label,
-    events: evts,
-  }))
+  return picked
 }
 
-// ─── Subcomponents ────────────────────────────────────────────────────────────
+const STORY_GRADIENT = ['#FEDA75', '#FA7E1E', '#D62976', '#962FBF', '#4F5BD5'] as const
 
-interface TopNavProps {
-  onSearchPress: () => void
-  onBellPress: () => void
+function initials(name: string): string {
+  return name
+    .split(' ')
+    .map((w) => w[0] ?? '')
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 }
-
-function TopNav({ onSearchPress, onBellPress }: TopNavProps) {
-  return (
-    <View style={styles.topNav}>
-      <Text style={styles.topNavTitle}>ComfyTag</Text>
-      <View style={styles.topNavActions}>
-        <AnimatedPressable
-          onPress={onSearchPress}
-          hapticStyle="light"
-          style={styles.iconBtn}
-        >
-          <Search size={22} color={colors.mobile.textSecondary} />
-        </AnimatedPressable>
-        <AnimatedPressable
-          onPress={onBellPress}
-          hapticStyle="light"
-          style={styles.iconBtn}
-        >
-          <Bell size={22} color={colors.mobile.textSecondary} />
-        </AnimatedPressable>
-      </View>
-    </View>
-  )
-}
-
-function HeroBanner() {
-  return (
-    <View style={styles.heroBanner}>
-      <View style={styles.heroOverlay} />
-      <View style={styles.heroContent}>
-        <Text style={styles.heroHeadline}>Don't hear about it, be there.</Text>
-        <Text style={styles.heroSubtitle}>Find your next vibe in Lagos</Text>
-      </View>
-    </View>
-  )
-}
-
-interface CategoryPillsProps {
-  categories: Category[]
-  selected: string
-  onSelect: (slug: string) => void
-  onCategoryNavigate: (cat: Category) => void
-}
-
-function CategoryPillsRow({
-  categories,
-  selected,
-  onSelect,
-  onCategoryNavigate,
-}: CategoryPillsProps) {
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.pillsScroll}
-      contentContainerStyle={styles.pillsContent}
-    >
-      <AnimatedPressable
-        onPress={() => onSelect('all')}
-        hapticStyle="light"
-        style={[
-          styles.pill,
-          selected === 'all' ? styles.pillActive : styles.pillInactive,
-        ]}
-      >
-        <Text
-          style={[
-            styles.pillText,
-            selected === 'all' ? styles.pillTextActive : styles.pillTextInactive,
-          ]}
-        >
-          All
-        </Text>
-      </AnimatedPressable>
-
-      {categories.map((cat) => {
-        const slug = cat.slug ?? cat._id
-        const isActive = selected === slug
-        return (
-          <AnimatedPressable
-            key={cat._id}
-            onPress={() => {
-              if (!isActive) onSelect(slug)
-              onCategoryNavigate(cat)
-            }}
-            hapticStyle="light"
-            style={[
-              styles.pill,
-              isActive ? styles.pillActive : styles.pillInactive,
-            ]}
-          >
-            <Text
-              style={[
-                styles.pillText,
-                isActive ? styles.pillTextActive : styles.pillTextInactive,
-              ]}
-            >
-              {cat.title}
-            </Text>
-          </AnimatedPressable>
-        )
-      })}
-    </ScrollView>
-  )
-}
-
-interface TrendingSectionProps {
-  events: Event[]
-  isLoading: boolean
-  onEventPress: (event: Event) => void
-}
-
-function TrendingSection({ events, isLoading, onEventPress }: TrendingSectionProps) {
-  const featured = events.filter((e) => e.featured).slice(0, 10)
-  const display = featured.length > 0 ? featured : events.slice(0, 10)
-
-  return (
-    <View style={styles.trendingSection}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Trending</Text>
-      </View>
-
-      {isLoading ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.trendingListContent}
-        >
-          {[0, 1, 2, 3, 4].map((i) => (
-            <EventCardSkeleton key={i} variant="trending" />
-          ))}
-        </ScrollView>
-      ) : (
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={display}
-          keyExtractor={(item) => item._id}
-          contentContainerStyle={styles.trendingListContent}
-          renderItem={({ item }) => (
-            <EventCard
-              event={item}
-              variant="trending"
-              onPress={() => onEventPress(item)}
-            />
-          )}
-        />
-      )}
-    </View>
-  )
-}
-
-interface FeedSectionProps {
-  groups: DateGroup[]
-  isLoading: boolean
-  onEventPress: (event: Event) => void
-}
-
-const SCREEN_WIDTH = Dimensions.get('window').width
-
-function FeedSection({ groups, isLoading, onEventPress }: FeedSectionProps) {
-  const cardWidth = (SCREEN_WIDTH - sp[4] * 2 - sp[3]) / 2
-
-  if (isLoading) {
-    return (
-      <View style={styles.feedSection}>
-        <View style={styles.groupHeader}>
-          <Text style={styles.groupLabel}>Upcoming</Text>
-        </View>
-        <View style={styles.gridRow}>
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <View key={i} style={{ width: cardWidth }}>
-              <EventCardSkeleton variant="grid" />
-            </View>
-          ))}
-        </View>
-      </View>
-    )
-  }
-
-  if (groups.length === 0) {
-    return (
-      <View style={styles.emptyFeed}>
-        <Text style={styles.emptyTitle}>No events near you yet</Text>
-        <Text style={styles.emptySubtitle}>Check back soon</Text>
-      </View>
-    )
-  }
-
-  return (
-    <>
-      {groups.map((group) => (
-        <View key={group.label} style={styles.feedSection}>
-          <View style={styles.groupHeader}>
-            <Text style={styles.groupLabel}>{group.label}</Text>
-          </View>
-          <View style={styles.gridRow}>
-            {group.events.map((event) => (
-              <View key={event._id} style={{ width: cardWidth }}>
-                <EventCard
-                  event={event}
-                  variant="grid"
-                  onPress={() => onEventPress(event)}
-                />
-              </View>
-            ))}
-          </View>
-        </View>
-      ))}
-    </>
-  )
-}
-
-// ─── HomeScreen ───────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
   const navigation = useNavigation<Nav>()
-  const tabNavigation = useNavigation<TabNav>()
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedCategory, setSelectedCategory] = useState<string>(ALL_CATEGORY_SLUG)
 
-  const { data: eventsData, isLoading, isError, refetch } = useEvents({ limit: 30 })
-  const { data: categories } = useCategories()
+  const user = useAuthStore((s) => s.user)
+  const avatarUri = user?.image ?? user?.avatar
 
-  const events = eventsData?.data ?? []
-  const cats: Category[] = categories ?? []
+  const { data: categories = [] } = useCategories()
 
-  const filteredEvents =
-    selectedCategory === 'all'
-      ? events
-      : events.filter((e) => e.category === selectedCategory)
+  // Unfiltered — the category chips only narrow Trending Now below; Hero,
+  // New Releases, and Nearby stay constant regardless of selected category.
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+  } = useEvents({ limit: 24 })
 
-  const dateGroups = groupByDate(filteredEvents)
+  const events = data?.data ?? []
 
-  const handleCategoryNavigate = (cat: Category) => {
-    navigation.navigate('Category', {
-      slug: cat.slug ?? cat._id,
-      name: cat.title,
-      gradient: cat.gradient,
-    })
+  // Instagram-style story reel — random 10, weighted by sell-through rate.
+  // Recomputed only when the event list itself changes, not on every
+  // re-render (e.g. category taps), so it doesn't reshuffle under the user.
+  const storyEvents = useMemo(() => weightedSample(events, getSoldPct, 10), [events])
+
+  const featuredEvent = events.find((e) => e.featured) ?? events[0]
+
+  const trendingEvents = useMemo(() => {
+    return events
+      .filter((e) => e._id !== featuredEvent?._id)
+      .filter(
+        (e) =>
+          selectedCategory === ALL_CATEGORY_SLUG ||
+          e.category.toLowerCase() === selectedCategory.toLowerCase()
+      )
+      .slice()
+      .sort((a, b) => b.sold - a.sold)
+      .slice(0, 3)
+  }, [events, featuredEvent, selectedCategory])
+
+  const newEvents = useMemo(() => {
+    return events
+      .filter((e) => e._id !== featuredEvent?._id && isNewEvent(e))
+      .slice()
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 8)
+  }, [events, featuredEvent])
+
+  // Personalized "Because You Follow" — gated behind SHOW_FOLLOWING_SECTION.
+  const { data: followedOrganizers = [] } = useFollowing()
+  const followingEvents = useMemo(() => {
+    if (followedOrganizers.length === 0) return []
+    const followedIds = new Set(followedOrganizers.map((o) => o._id))
+    return events
+      .filter((e) => e._id !== featuredEvent?._id && followedIds.has(e.planner_id))
+      .slice(0, 8)
+  }, [events, featuredEvent, followedOrganizers])
+
+  const moreEvents = useMemo(() => {
+    const shown = new Set([featuredEvent?._id, ...trendingEvents.map((e) => e._id)])
+    const exclusive = events.filter((e) => !shown.has(e._id))
+    if (exclusive.length > 0) return exclusive.slice(0, 3)
+    // Small catalogs get fully consumed by Featured + Trending, which would
+    // otherwise hide "Nearby Events" entirely. Fall back to overlapping with
+    // Trending (excluding only the hero) so the section still shows something.
+    return events.filter((e) => e._id !== featuredEvent?._id).slice(0, 3)
+  }, [events, featuredEvent, trendingEvents])
+
+  const handleEventPress = (slug: string) => {
+    navigation.navigate('EventDetail', { slug })
   }
 
-  const handleEventPress = (event: Event) => {
-    navigation.navigate('EventDetail', { slug: event.slug })
+  const handleSeeAll = () => {
+    navigateToTabOrLogin(navigation, 'Search')
   }
 
-  if (isError) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Couldn't load events</Text>
-          <AnimatedPressable onPress={() => void refetch()} hapticStyle="light">
-            <Text style={styles.retryText}>Tap to retry</Text>
-          </AnimatedPressable>
-        </View>
-      </SafeAreaView>
-    )
+  const handleAvatarPress = () => {
+    if (useAuthStore.getState().isLoggedIn) {
+      navigateUpTo(navigation, 'Profile')
+    } else {
+      navigateUpTo(navigation, 'Login')
+    }
   }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <TopNav
-        onSearchPress={() => tabNavigation.navigate('Search')}
-        onBellPress={() => tabNavigation.navigate('Inbox')}
-      />
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.topBar}>
+          <Text style={styles.topBarBrand}>ComfyTag</Text>
+          <View style={styles.topBarActions}>
+            <AnimatedPressable style={styles.topBarIconBtn} hapticStyle="light" onPress={handleSeeAll}>
+              <Search size={20} color={colors.textPublic.secondary} strokeWidth={2} />
+            </AnimatedPressable>
+            <AnimatedPressable style={styles.topBarAvatar} hapticStyle="light" onPress={handleAvatarPress}>
+              {avatarUri !== undefined ? (
+                <Image source={{ uri: avatarUri }} style={styles.topBarAvatarImage} />
+              ) : (
+                <Text style={styles.topBarAvatarText}>
+                  {user !== null ? initials(user.name) : ''}
+                </Text>
+              )}
+            </AnimatedPressable>
+          </View>
+        </View>
 
-      <ScrollView
-        style={styles.scroll}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <HeroBanner />
+        {storyEvents.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.storyRow}>
+            {storyEvents.map((event) => (
+              <AnimatedPressable
+                key={event._id}
+                style={styles.storyItem}
+                onPress={() => handleEventPress(event.slug)}
+                hapticStyle="light"
+              >
+                <LinearGradient
+                  colors={STORY_GRADIENT}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.storyRing}
+                >
+                  <View style={[styles.storyRingInner, { backgroundColor: colors.public.bg }]}>
+                    {eventImage(event) !== undefined ? (
+                      <Image source={{ uri: eventImage(event) }} style={styles.storyAvatar} />
+                    ) : (
+                      <View style={[styles.storyAvatar, styles.imageFallback]} />
+                    )}
+                  </View>
+                </LinearGradient>
+                <Text style={styles.storyLabel} numberOfLines={1}>{event.name}</Text>
+              </AnimatedPressable>
+            ))}
+          </ScrollView>
+        )}
 
-        <CategoryPillsRow
-          categories={isLoading ? [] : cats}
-          selected={selectedCategory}
-          onSelect={setSelectedCategory}
-          onCategoryNavigate={handleCategoryNavigate}
-        />
+        {isLoading && (
+          <View style={styles.centeredState}>
+            <ActivityIndicator size="large" color={colors.brand.DEFAULT} />
+          </View>
+        )}
 
-        <TrendingSection
-          events={events}
-          isLoading={isLoading}
-          onEventPress={handleEventPress}
-        />
+        {!isLoading && isError && (
+          <View style={styles.centeredState}>
+            <Text style={styles.errorText}>Couldn't load events</Text>
+            <AnimatedPressable onPress={() => void refetch()} hapticStyle="light">
+              <Text style={styles.retryText}>Tap to retry</Text>
+            </AnimatedPressable>
+          </View>
+        )}
 
-        <FeedSection
-          groups={isLoading ? [] : dateGroups}
-          isLoading={isLoading}
-          onEventPress={handleEventPress}
-        />
+        {!isLoading && !isError && events.length === 0 && (
+          <View style={styles.centeredState}>
+            <Text style={styles.errorText}>No events found</Text>
+            <Text style={styles.emptySubtext}>Check back soon for new events.</Text>
+          </View>
+        )}
 
-        <View style={styles.bottomSpacer} />
+        {!isLoading && !isError && featuredEvent !== undefined && (
+          <>
+            <View style={styles.heroCardShadow}>
+            <AnimatedPressable
+              style={styles.heroCard}
+              onPress={() => handleEventPress(featuredEvent.slug)}
+              hapticStyle="medium"
+            >
+              {eventImage(featuredEvent) !== undefined ? (
+                <Image source={{ uri: eventImage(featuredEvent) }} style={styles.heroImage} />
+              ) : (
+                <View style={[styles.heroImage, styles.imageFallback]} />
+              )}
+              <View style={styles.heroOverlay} />
+              <View style={styles.heroContent}>
+                <View style={styles.heroHeader}>
+                  <View style={styles.featuredBadge}>
+                    <Text style={styles.featuredBadgeText}>
+                      {featuredEvent.featured ? 'Featured' : featuredEvent.category}
+                    </Text>
+                  </View>
+                  <Text style={styles.heroMeta}>• {formatDate(featuredEvent.date)}</Text>
+                </View>
+                <Text style={styles.heroTitle} numberOfLines={2}>{featuredEvent.name}</Text>
+                <Text style={styles.heroSubtitle} numberOfLines={2}>{featuredEvent.venue}</Text>
+                <AnimatedPressable
+                  style={styles.heroCta}
+                  onPress={() => handleEventPress(featuredEvent.slug)}
+                  hapticStyle="medium"
+                >
+                  <Text style={styles.heroCtaText}>Get Tickets</Text>
+                  <ArrowRight size={16} color={colors.textPublic.onBrand} strokeWidth={2} />
+                </AnimatedPressable>
+              </View>
+            </AnimatedPressable>
+            </View>
+
+            {newEvents.length > 0 && (
+              <>
+                <View style={styles.sectionHeader}>
+                  <View>
+                    <Text style={styles.sectionTitle}>New Releases</Text>
+                    <Text style={styles.sectionSubtitle}>Freshly added this week</Text>
+                  </View>
+                </View>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.trendingRow}>
+                  {newEvents.map((event) => (
+                    <AnimatedPressable
+                      key={event._id}
+                      style={styles.trendingCard}
+                      onPress={() => handleEventPress(event.slug)}
+                      hapticStyle="light"
+                    >
+                      <View style={styles.trendingImageWrap}>
+                        {eventImage(event) !== undefined ? (
+                          <Image source={{ uri: eventImage(event) }} style={styles.trendingImage} />
+                        ) : (
+                          <View style={[styles.trendingImage, styles.imageFallback]} />
+                        )}
+                        <View style={styles.newBadge}>
+                          <Text style={styles.newBadgeText}>New</Text>
+                        </View>
+                      </View>
+                      <View style={styles.trendingBody}>
+                        <Text style={styles.trendingMeta}>{getEventPriceLabel(event.ticketType)}</Text>
+                        <Text style={styles.trendingTitle} numberOfLines={2}>{event.name}</Text>
+                        <View style={styles.trendingLocationRow}>
+                          <MapPin size={14} color={colors.textPublic.secondary} strokeWidth={2} />
+                          <Text style={styles.trendingSubtitle} numberOfLines={1}>{event.venue}</Text>
+                        </View>
+                      </View>
+                    </AnimatedPressable>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+
+            {/* Category chips — filters Trending Now only */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+              <AnimatedPressable
+                style={[styles.categoryChip, selectedCategory === ALL_CATEGORY_SLUG && styles.categoryChipActive]}
+                onPress={() => setSelectedCategory(ALL_CATEGORY_SLUG)}
+                hapticStyle="light"
+              >
+                <Text style={[styles.categoryText, selectedCategory === ALL_CATEGORY_SLUG && styles.categoryTextActive]}>
+                  All Events
+                </Text>
+              </AnimatedPressable>
+              {categories.map((category) => {
+                const active = category === selectedCategory
+                return (
+                  <AnimatedPressable
+                    key={category}
+                    style={[styles.categoryChip, active && styles.categoryChipActive]}
+                    onPress={() => setSelectedCategory(category)}
+                    hapticStyle="light"
+                  >
+                    <Text style={[styles.categoryText, active && styles.categoryTextActive]}>{category}</Text>
+                  </AnimatedPressable>
+                )
+              })}
+            </ScrollView>
+
+            {trendingEvents.length > 0 && (
+              <>
+                <View style={styles.sectionHeader}>
+                  <View>
+                    <Text style={styles.sectionTitle}>Trending Now</Text>
+                    <Text style={styles.sectionSubtitle}>What's hot this week</Text>
+                  </View>
+                  <AnimatedPressable style={styles.viewAllButton} hapticStyle="light" onPress={handleSeeAll}>
+                    <Text style={styles.viewAllText}>View All</Text>
+                  </AnimatedPressable>
+                </View>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.trendingRow}>
+                  {trendingEvents.map((event) => (
+                    <AnimatedPressable
+                      key={event._id}
+                      style={styles.trendingCard}
+                      onPress={() => handleEventPress(event.slug)}
+                      hapticStyle="light"
+                    >
+                      <View style={styles.trendingImageWrap}>
+                        {eventImage(event) !== undefined ? (
+                          <Image source={{ uri: eventImage(event) }} style={styles.trendingImage} />
+                        ) : (
+                          <View style={[styles.trendingImage, styles.imageFallback]} />
+                        )}
+                        <View style={styles.trendingHeart}>
+                          <Heart size={14} color={colors.brand.DEFAULT} strokeWidth={2} />
+                        </View>
+                      </View>
+                      <View style={styles.trendingBody}>
+                        <Text style={styles.trendingMeta}>{getEventPriceLabel(event.ticketType)}</Text>
+                        <Text style={styles.trendingTitle} numberOfLines={2}>{event.name}</Text>
+                        <View style={styles.trendingLocationRow}>
+                          <MapPin size={14} color={colors.textPublic.secondary} strokeWidth={2} />
+                          <Text style={styles.trendingSubtitle} numberOfLines={1}>{event.venue}</Text>
+                        </View>
+                      </View>
+                    </AnimatedPressable>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+
+            {SHOW_FOLLOWING_SECTION && followingEvents.length > 0 && (
+              <>
+                <View style={styles.sectionHeader}>
+                  <View>
+                    <Text style={styles.sectionTitle}>Because You Follow</Text>
+                    <Text style={styles.sectionSubtitle}>New from organisers you follow</Text>
+                  </View>
+                </View>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.trendingRow}>
+                  {followingEvents.map((event) => (
+                    <AnimatedPressable
+                      key={event._id}
+                      style={styles.trendingCard}
+                      onPress={() => handleEventPress(event.slug)}
+                      hapticStyle="light"
+                    >
+                      <View style={styles.trendingImageWrap}>
+                        {eventImage(event) !== undefined ? (
+                          <Image source={{ uri: eventImage(event) }} style={styles.trendingImage} />
+                        ) : (
+                          <View style={[styles.trendingImage, styles.imageFallback]} />
+                        )}
+                      </View>
+                      <View style={styles.trendingBody}>
+                        <Text style={styles.trendingMeta}>{event.planner}</Text>
+                        <Text style={styles.trendingTitle} numberOfLines={2}>{event.name}</Text>
+                        <View style={styles.trendingLocationRow}>
+                          <MapPin size={14} color={colors.textPublic.secondary} strokeWidth={2} />
+                          <Text style={styles.trendingSubtitle} numberOfLines={1}>{event.venue}</Text>
+                        </View>
+                      </View>
+                    </AnimatedPressable>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+
+            {moreEvents.length > 0 && (
+              <>
+                <View style={styles.sectionHeaderLarge}>
+                  <View>
+                    <Text style={styles.sectionTitle}>Nearby Events</Text>
+                    <Text style={styles.sectionSubtitle}>Happening around you</Text>
+                  </View>
+                </View>
+
+                <View style={styles.nearbyLargeCardShadow}>
+                <AnimatedPressable
+                  style={styles.nearbyLargeCard}
+                  onPress={() => handleEventPress(moreEvents[0].slug)}
+                  hapticStyle="light"
+                >
+                  {eventImage(moreEvents[0]) !== undefined ? (
+                    <Image source={{ uri: eventImage(moreEvents[0]) }} style={styles.nearbyLargeImage} />
+                  ) : (
+                    <View style={[styles.nearbyLargeImage, styles.imageFallback]} />
+                  )}
+                  <View style={styles.nearbyLargeOverlay} />
+                  <View style={styles.nearbyLargeContent}>
+                    <Text style={styles.nearbyLargeTitle} numberOfLines={2}>{moreEvents[0].name}</Text>
+                    <Text style={styles.nearbyLargeSubtitle} numberOfLines={1}>{moreEvents[0].venue}</Text>
+                    <View style={styles.nearbyTagRow}>
+                      <View style={styles.tagBadgeSmall}>
+                        <Text style={styles.tagBadgeText}>{moreEvents[0].category}</Text>
+                      </View>
+                      <Text style={styles.nearbyLargeMeta}>{getEventPriceLabel(moreEvents[0].ticketType)}</Text>
+                    </View>
+                  </View>
+                </AnimatedPressable>
+                </View>
+
+                <View style={styles.nearbySmallRow}>
+                  {moreEvents.slice(1).map((event) => (
+                    <AnimatedPressable
+                      key={event._id}
+                      style={styles.nearbySmallCard}
+                      onPress={() => handleEventPress(event.slug)}
+                      hapticStyle="light"
+                    >
+                      {eventImage(event) !== undefined ? (
+                        <Image source={{ uri: eventImage(event) }} style={styles.nearbySmallImage} />
+                      ) : (
+                        <View style={[styles.nearbySmallImage, styles.imageFallback]} />
+                      )}
+                      <View style={styles.nearbySmallBody}>
+                        <Text style={styles.nearbySmallTitle} numberOfLines={2}>{event.name}</Text>
+                        <Text style={styles.nearbySmallSubtitle} numberOfLines={1}>{event.venue}</Text>
+                        <Text style={styles.nearbySmallMeta}>{getEventPriceLabel(event.ticketType)}</Text>
+                      </View>
+                    </AnimatedPressable>
+                  ))}
+                </View>
+              </>
+            )}
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   )
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// Depth via shadow (not just borders) — matches the Comfytag_Designs mockups,
+// which supersede the old borders-only v2.0 rule for this screen.
+const shadowSm = {
+  shadowColor: '#1A1C1C',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.06,
+  shadowRadius: 4,
+  elevation: 2,
+}
+const shadowLg = {
+  shadowColor: '#1A1C1C',
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.14,
+  shadowRadius: 20,
+  elevation: 8,
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
-  scroll: {
-    flex: 1,
+  content: {
+    paddingBottom: sp[12],
   },
-  scrollContent: {
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: sp[5],
+    paddingTop: sp[4],
     paddingBottom: sp[4],
   },
-
-  // ── TopNav ────────────────────────────────────────────────────────────────
-  topNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: sp[4],
-    paddingVertical: sp[3],
-  },
-  topNavTitle: {
-    fontSize: fs.lg,
+  topBarBrand: {
+    fontSize: fs['2xl'],
     fontWeight: '800',
     color: colors.brand.DEFAULT,
   },
-  topNavActions: {
+  topBarActions: {
     flexDirection: 'row',
-    gap: sp[4],
+    alignItems: 'center',
+    gap: sp[3],
   },
-  iconBtn: {
-    minHeight: 44,
-    minWidth: 44,
+  topBarIconBtn: {
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  // ── Hero Banner ───────────────────────────────────────────────────────────
-  heroBanner: {
-    marginHorizontal: sp[4],
-    marginTop: sp[4],
-    borderRadius: rd.xl,
-    overflow: 'hidden',
-    backgroundColor: colors.brand.DEFAULT,
-    height: 180,
-  },
-  heroOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-  },
-  heroContent: {
-    flex: 1,
-    padding: sp[5],
-    justifyContent: 'flex-end',
-  },
-  heroHeadline: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: colors.mobile.textPrimary,
-    lineHeight: 28,
-  },
-  heroSubtitle: {
-    fontSize: fs.sm,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: sp[1],
-  },
-
-  // ── Category Pills ────────────────────────────────────────────────────────
-  pillsScroll: {
-    marginTop: sp[4],
-  },
-  pillsContent: {
-    paddingHorizontal: sp[4],
-    paddingVertical: sp[4],
-    gap: sp[2],
-  },
-  pill: {
-    paddingHorizontal: sp[4],
-    paddingVertical: sp[2],
+  topBarAvatar: {
+    width: 32,
+    height: 32,
     borderRadius: rd.full,
-    minHeight: 44,
+    backgroundColor: colors.brand.light,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  topBarAvatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  topBarAvatarText: {
+    fontSize: fs.xs,
+    fontWeight: '700',
+    color: colors.brand.DEFAULT,
+  },
+
+  // ── Story reel ───────────────────────────────────────────────────────────
+  storyRow: {
+    paddingLeft: sp[5],
+    paddingBottom: sp[4],
+    gap: sp[3],
+  },
+  storyItem: {
+    width: 68,
+    alignItems: 'center',
+    gap: sp[1],
+  },
+  storyRing: {
+    width: 66,
+    height: 66,
+    borderRadius: rd.full,
+    padding: 2.5,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  pillActive: {
-    backgroundColor: colors.brand.DEFAULT,
+  storyRingInner: {
+    width: '100%',
+    height: '100%',
+    borderRadius: rd.full,
+    padding: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  pillInactive: {
-    backgroundColor: colors.mobile.surface,
-    borderWidth: 1,
-    borderColor: colors.mobile.border,
+  storyAvatar: {
+    width: '100%',
+    height: '100%',
+    borderRadius: rd.full,
   },
-  pillText: {
-    fontSize: fs.sm,
+  storyLabel: {
+    fontSize: fs.xs,
     fontWeight: '600',
-  },
-  pillTextActive: {
-    color: colors.mobile.textPrimary,
-  },
-  pillTextInactive: {
-    color: colors.mobile.textSecondary,
-  },
-
-  // ── Trending Section ──────────────────────────────────────────────────────
-  trendingSection: {
-    marginTop: sp[6],
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: sp[4],
-    marginBottom: sp[3],
-  },
-  sectionTitle: {
-    fontSize: fs.base,
-    fontWeight: '700',
-    color: colors.mobile.textPrimary,
-  },
-  trendingListContent: {
-    paddingHorizontal: sp[4],
-    gap: sp[3],
-  },
-
-  // ── Feed Section ──────────────────────────────────────────────────────────
-  feedSection: {
-    marginTop: sp[6],
-  },
-  groupHeader: {
-    paddingHorizontal: sp[4],
-    marginBottom: sp[3],
-  },
-  groupLabel: {
-    fontSize: fs.sm,
-    fontWeight: '700',
-    color: colors.mobile.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  gridRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: sp[4],
-    gap: sp[3],
-  },
-
-  // ── Empty / Error ─────────────────────────────────────────────────────────
-  emptyFeed: {
-    marginTop: sp[12],
-    alignItems: 'center',
-    paddingHorizontal: sp[8],
-  },
-  emptyTitle: {
-    fontSize: fs.base,
-    fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.secondary,
+    width: 68,
     textAlign: 'center',
-    marginBottom: sp[2],
+    textTransform: 'capitalize',
   },
-  emptySubtitle: {
-    fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
-    textAlign: 'center',
-  },
-  errorContainer: {
-    flex: 1,
+
+  // ── Loading / error / empty ──────────────────────────────────────────────
+  centeredState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: sp[8],
+    paddingVertical: sp[10],
+    paddingHorizontal: sp[6],
+    gap: sp[3],
   },
-  errorTitle: {
+  errorText: {
     fontSize: fs.base,
-    fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    fontWeight: '600',
+    color: colors.textPublic.secondary,
     textAlign: 'center',
-    marginBottom: sp[3],
   },
   retryText: {
     fontSize: fs.sm,
-    color: colors.brand.DEFAULT,
     fontWeight: '600',
+    color: colors.brand.DEFAULT,
+  },
+  emptySubtext: {
+    fontSize: fs.sm,
+    color: colors.textPublic.muted,
+    textAlign: 'center',
   },
 
-  bottomSpacer: {
-    height: sp[8],
+  imageFallback: {
+    backgroundColor: colors.brand.DEFAULT,
+  },
+
+  // Shadow lives on this outer wrapper — `overflow: hidden` (needed to clip the
+  // image + gradient overlay to the rounded corners) would also clip the shadow
+  // itself if it were on the same view.
+  heroCardShadow: {
+    marginBottom: sp[5],
+    ...shadowLg,
+  },
+  heroCard: {
+    overflow: 'hidden',
+    minHeight: 480,
+  },
+  heroImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  heroContent: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    padding: sp[6],
+  },
+  heroHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: sp[4],
+  },
+  featuredBadge: {
+    backgroundColor: colors.energy.bg,
+    paddingHorizontal: sp[4],
+    paddingVertical: sp[2],
+    borderRadius: rd.full,
+  },
+  featuredBadgeText: {
+    color: colors.energy.DEFAULT,
+    fontSize: fs.xs,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  tagBadgeSmall: {
+    backgroundColor: colors.brand.DEFAULT,
+    paddingHorizontal: sp[3],
+    paddingVertical: sp[2],
+    borderRadius: rd.full,
+  },
+  tagBadgeText: {
+    color: colors.textPublic.onBrand,
+    fontSize: fs.xs,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  heroMeta: {
+    color: '#FFFFFF',
+    fontSize: fs.sm,
+    fontWeight: '600',
+  },
+  heroTitle: {
+    color: '#FFFFFF',
+    fontSize: fs['2xl'],
+    fontWeight: '800',
+    marginBottom: sp[3],
+    maxWidth: '85%',
+    textTransform: 'capitalize',
+  },
+  heroSubtitle: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: fs.base,
+    lineHeight: 22,
+    marginBottom: sp[4],
+    maxWidth: '90%',
+  },
+  heroCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sp[2],
+    backgroundColor: colors.brand.DEFAULT,
+    alignSelf: 'flex-start',
+    paddingHorizontal: sp[5],
+    paddingVertical: sp[3],
+    borderRadius: rd.xl,
+  },
+  heroCtaText: {
+    color: colors.textPublic.onBrand,
+    fontSize: fs.sm,
+    fontWeight: '700',
+  },
+  chipRow: {
+    paddingLeft: sp[5],
+    paddingBottom: sp[4],
+  },
+  categoryChip: {
+    paddingHorizontal: sp[5],
+    paddingVertical: sp[3],
+    borderRadius: rd.full,
+    backgroundColor: colors.public.surfaceAlt,
+    marginRight: sp[3],
+  },
+  categoryChipActive: {
+    backgroundColor: colors.brand.DEFAULT,
+  },
+  categoryText: {
+    color: colors.textPublic.secondary,
+    fontSize: fs.sm,
+    fontWeight: '600',
+  },
+  categoryTextActive: {
+    color: colors.textPublic.onBrand,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    paddingHorizontal: sp[5],
+    marginBottom: sp[4],
+  },
+  sectionHeaderLarge: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: sp[5],
+    marginBottom: sp[4],
+  },
+  sectionTitle: {
+    fontSize: fs.xl,
+    fontWeight: '800',
+    color: colors.textPublic.primary,
+  },
+  sectionSubtitle: {
+    marginTop: sp[1],
+    color: colors.textPublic.secondary,
+    fontSize: fs.sm,
+  },
+  viewAllButton: {
+    paddingVertical: sp[2],
+  },
+  viewAllText: {
+    color: colors.brand.DEFAULT,
+    fontSize: fs.sm,
+    fontWeight: '700',
+  },
+  trendingRow: {
+    paddingLeft: sp[5],
+    paddingBottom: sp[5],
+  },
+  trendingCard: {
+    width: 220,
+    marginRight: sp[4],
+    borderRadius: rd.xl,
+    backgroundColor: colors.public.surface,
+    ...shadowSm,
+  },
+  trendingImageWrap: {
+    position: 'relative',
+  },
+  trendingImage: {
+    width: '100%',
+    height: 150,
+    borderTopLeftRadius: rd.xl,
+    borderTopRightRadius: rd.xl,
+  },
+  trendingHeart: {
+    position: 'absolute',
+    top: sp[2],
+    right: sp[2],
+    width: 28,
+    height: 28,
+    borderRadius: rd.full,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  newBadge: {
+    position: 'absolute',
+    top: sp[2],
+    left: sp[2],
+    backgroundColor: colors.brand.DEFAULT,
+    paddingHorizontal: sp[3],
+    paddingVertical: sp[1],
+    borderRadius: rd.full,
+  },
+  newBadgeText: {
+    color: colors.textPublic.onBrand,
+    fontSize: fs.xs,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  trendingBody: {
+    padding: sp[4],
+  },
+  trendingMeta: {
+    color: colors.energy.DEFAULT,
+    fontSize: fs.sm,
+    fontWeight: '700',
+    marginBottom: sp[2],
+  },
+  trendingTitle: {
+    color: colors.textPublic.primary,
+    fontSize: fs.lg,
+    fontWeight: '800',
+    marginBottom: sp[2],
+    textTransform: 'capitalize',
+  },
+  trendingLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sp[1],
+  },
+  trendingSubtitle: {
+    color: colors.textPublic.secondary,
+    fontSize: fs.sm,
+  },
+  // Same shadow-vs-clip split as heroCardShadow/heroCard above.
+  nearbyLargeCardShadow: {
+    marginHorizontal: sp[5],
+    marginBottom: sp[4],
+    borderRadius: rd.xl,
+    ...shadowSm,
+  },
+  nearbyLargeCard: {
+    borderRadius: rd.xl,
+    overflow: 'hidden',
+    minHeight: 240,
+  },
+  nearbyLargeImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
+  nearbyLargeOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  nearbyLargeContent: {
+    position: 'absolute',
+    left: sp[5],
+    right: sp[5],
+    bottom: sp[5],
+  },
+  nearbyTagRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: sp[3],
+  },
+  nearbyLargeMeta: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: fs.sm,
+  },
+  nearbyLargeTitle: {
+    color: '#FFFFFF',
+    fontSize: fs['2xl'],
+    fontWeight: '800',
+    marginBottom: sp[2],
+    textTransform: 'capitalize',
+  },
+  nearbyLargeSubtitle: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: fs.sm,
+    lineHeight: 20,
+  },
+  nearbySmallRow: {
+    flexDirection: 'row',
+    paddingHorizontal: sp[5],
+    gap: sp[3],
+  },
+  nearbySmallCard: {
+    flex: 1,
+    backgroundColor: colors.public.surface,
+    borderRadius: rd.xl,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.public.border,
+    ...shadowSm,
+  },
+  nearbySmallImage: {
+    width: '100%',
+    height: 110,
+  },
+  nearbySmallBody: {
+    padding: sp[3],
+  },
+  nearbySmallTitle: {
+    color: colors.textPublic.primary,
+    fontSize: fs.sm,
+    fontWeight: '800',
+    marginBottom: sp[1],
+    textTransform: 'capitalize',
+  },
+  nearbySmallSubtitle: {
+    color: colors.textPublic.secondary,
+    fontSize: fs.xs,
+    marginBottom: sp[2],
+  },
+  nearbySmallMeta: {
+    color: colors.brand.DEFAULT,
+    fontSize: fs.sm,
+    fontWeight: '700',
   },
 })

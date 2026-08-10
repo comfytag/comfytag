@@ -2,7 +2,7 @@
 
 import React, { useCallback, useState } from 'react'
 import { Dialog } from 'radix-ui'
-import { useAuthModal } from '@/hooks/useAuthModal'
+import { useAuthModal, EMPTY_REGISTER_DRAFT } from '@/hooks/useAuthModal'
 import { LoginForm } from './LoginForm'
 import { RegisterForm } from './RegisterForm'
 import { ForgotPasswordForm } from './ForgotPasswordForm'
@@ -16,19 +16,27 @@ export function AuthModal() {
     switchView,
     successBanner,
     prefilledEmail,
+    registerDraft,
     _setSuccessBanner,
     _setPrefilledEmail,
+    _setRegisterDraft,
   } = useAuthModal()
 
   const [pendingMode, setPendingMode] = useState<'otp' | 'credentials'>('otp')
+  const [verifyCodeAlreadySent, setVerifyCodeAlreadySent] = useState(false)
 
   const handleRegisterSuccess = useCallback(
     (email: string) => {
+      // register() already sent a verification code — go straight to entering
+      // it instead of bouncing through login (which would require another
+      // "Send code" click that reissues and invalidates this one).
       _setPrefilledEmail(email)
       _setSuccessBanner('registered')
-      switchView('login')
+      _setRegisterDraft(EMPTY_REGISTER_DRAFT)
+      setVerifyCodeAlreadySent(true)
+      switchView('verify_email')
     },
-    [_setPrefilledEmail, _setSuccessBanner, switchView]
+    [_setPrefilledEmail, _setSuccessBanner, _setRegisterDraft, switchView]
   )
 
   const handlePasswordReset = useCallback(() => {
@@ -36,8 +44,9 @@ export function AuthModal() {
     switchView('login')
   }, [_setSuccessBanner, switchView])
 
-  const handleSwitchToVerify = useCallback((email: string) => {
+  const handleSwitchToVerify = useCallback((email: string, codeAlreadySent?: boolean) => {
     _setPrefilledEmail(email)
+    setVerifyCodeAlreadySent(!!codeAlreadySent)
     switchView('verify_email')
   }, [_setPrefilledEmail, switchView])
 
@@ -215,6 +224,8 @@ export function AuthModal() {
                 <RegisterForm
                   onSwitchToLogin={() => switchView('login')}
                   onSuccess={handleRegisterSuccess}
+                  initialDraft={registerDraft}
+                  onDraftChange={_setRegisterDraft}
                 />
               )}
               {view === 'forgot_password' && (
@@ -229,6 +240,7 @@ export function AuthModal() {
                   onSuccess={closeModal}
                   onBack={() => switchView('login')}
                   onRequiresPassword={handleRequiresPassword}
+                  codeAlreadySent={verifyCodeAlreadySent}
                 />
               )}
             </div>

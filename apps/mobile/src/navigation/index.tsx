@@ -1,34 +1,15 @@
-import React, { Suspense, useEffect } from 'react'
-import { View } from 'react-native'
+import React, { useEffect } from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 import { useAuthStore } from '../store'
 import { useModeStore } from '../store'
 import type { RootStackParamList } from './types'
 import GuestNavigator from './GuestNavigator'
-import { colors } from '@comfytag/ui/tokens'
+import AttendeeApp from './AttendeeNavigator'
+import OrganizerApp from './OrganizerNavigator'
 import { connectSocket, disconnectSocket } from '../lib/socket'
 import { registerForPushNotifications } from '../lib/pushNotifications'
 
-const LazyAttendeeNavigator = React.lazy(() => import('./AttendeeNavigator'))
-const LazyOrganizerNavigator = React.lazy(() => import('./OrganizerNavigator'))
-
 const Stack = createStackNavigator<RootStackParamList>()
-
-function AttendeeApp() {
-  return (
-    <Suspense fallback={<View style={{ flex: 1, backgroundColor: colors.mobile.bg }} />}>
-      <LazyAttendeeNavigator />
-    </Suspense>
-  )
-}
-
-function OrganizerApp() {
-  return (
-    <Suspense fallback={<View style={{ flex: 1, backgroundColor: colors.mobile.bg }} />}>
-      <LazyOrganizerNavigator />
-    </Suspense>
-  )
-}
 
 export default function RootNavigator() {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn)

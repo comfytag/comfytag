@@ -15,8 +15,9 @@ import type { Event } from '@comfytag/types'
 import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
 import { formatNaira, formatDate } from '@comfytag/utils'
 import { AnimatedPressable } from '../../../components/ui/AnimatedPressable'
+import { ChartCard } from '../../../components/ui/ChartCard'
 import { useAuthStore, useModeStore } from '../../../store'
-import { usePartnerRevenue, useMyEvents } from '../../../hooks'
+import { usePartnerRevenue, useMyEvents, usePartnerAnalytics } from '../../../hooks'
 import type { OrganizerTabParamList } from '../../../navigation/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -28,10 +29,10 @@ type TabNav = BottomTabNavigationProp<OrganizerTabParamList>
 const FINANCIAL_GOLD = '#D97706'
 
 const STATUS_BADGE: Record<string, { bg: string; text: string }> = {
-  draft:     { bg: '#292524', text: '#A8A29E' },
-  published: { bg: '#14532D', text: '#86EFAC' },
-  cancelled: { bg: '#450A0A', text: '#FCA5A5' },
-  completed: { bg: '#1C1917', text: '#78716C' },
+  draft:     { bg: '#F5F5F4', text: '#78716C' },
+  published: { bg: '#D1FAE5', text: '#065F46' },
+  cancelled: { bg: '#FEE2E2', text: '#991B1B' },
+  completed: { bg: '#F5F5F4', text: '#78716C' },
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -73,7 +74,7 @@ function SkeletonBlock({ height, style }: { height: number; style?: object }) {
         {
           height,
           borderRadius: rd.md,
-          backgroundColor: colors.mobile.surface,
+          backgroundColor: colors.public.surface,
           opacity,
         },
         style,
@@ -105,7 +106,7 @@ interface StatCardProps {
 function StatCard({ label, value, valueColor }: StatCardProps) {
   return (
     <View style={styles.statCard}>
-      <Text style={[styles.statValue, { color: valueColor ?? colors.mobile.textPrimary }]}>
+      <Text style={[styles.statValue, { color: valueColor ?? colors.textPublic.primary }]}>
         {value}
       </Text>
       <Text style={styles.statLabel}>{label}</Text>
@@ -149,7 +150,7 @@ function QuickActionRow({ icon, label, onPress }: QuickActionRowProps) {
         <View style={styles.quickActionIconWrap}>{icon}</View>
         <Text style={styles.quickActionLabel}>{label}</Text>
       </View>
-      <ChevronRight size={18} color={colors.mobile.textMuted} strokeWidth={2} />
+      <ChevronRight size={18} color={colors.textPublic.muted} strokeWidth={2} />
     </AnimatedPressable>
   )
 }
@@ -178,6 +179,8 @@ export default function DashboardScreen() {
     isFetching: eventsFetching,
     refetch: refetchEvents,
   } = useMyEvents()
+
+  const { data: analytics } = usePartnerAnalytics()
 
   const isLoading = revenueLoading || eventsLoading
   const isError = revenueError
@@ -221,7 +224,7 @@ export default function DashboardScreen() {
             hapticStyle="light"
             style={styles.switchPill}
           >
-            <Text style={styles.switchPillText}>Switch to Attendee</Text>
+            <Text style={styles.switchPillText}>Switch Mode</Text>
           </AnimatedPressable>
         </View>
 
@@ -238,13 +241,29 @@ export default function DashboardScreen() {
 
         {!isLoading && !isError && revenue !== undefined && (
           <>
-            {/* Revenue Card */}
-            <View style={styles.revenueCard}>
-              <Text style={styles.revenueTotalLabel}>TOTAL REVENUE</Text>
-              <Text style={styles.revenueTotalValue}>
-                {formatNaira(revenue.totalRevenue)}
-              </Text>
-              <View style={styles.revenueDivider} />
+            {/* Revenue Trend — leads the dashboard, Shopify Admin-style */}
+            {analytics !== undefined && analytics.monthlyRevenue.length > 0 ? (
+              <ChartCard
+                title="Revenue Trend"
+                data={analytics.monthlyRevenue.map((m) => ({
+                  label: m.month,
+                  value: m.revenue,
+                }))}
+                type="line"
+                accentColor={FINANCIAL_GOLD}
+                style={styles.chartCard}
+              />
+            ) : (
+              <View style={styles.chartEmptyCard}>
+                <Text style={styles.chartEmptyTitle}>Revenue Trend</Text>
+                <Text style={styles.chartEmptySubtitle}>
+                  Trend data appears once you have ticket sales.
+                </Text>
+              </View>
+            )}
+
+            {/* Balance */}
+            <View style={styles.balanceCard}>
               <View style={styles.revenueRow}>
                 <View style={styles.revenueRowItem}>
                   <Text style={styles.revenueSubLabel}>Available Balance</Text>
@@ -335,7 +354,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   scroll: {
     flex: 1,
@@ -360,11 +379,11 @@ const styles = StyleSheet.create({
   greetingText: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   subGreeting: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: 2,
   },
   switchPill: {
@@ -405,7 +424,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: fs.base,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textAlign: 'center',
   },
   retryButton: {
@@ -423,32 +442,14 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 
-  // Revenue Card
-  revenueCard: {
-    backgroundColor: colors.mobile.surface,
+  // Balance Card
+  balanceCard: {
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     padding: sp[5],
     marginBottom: sp[4],
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
-  },
-  revenueTotalLabel: {
-    fontSize: fs.xs,
-    color: colors.mobile.textMuted,
-    letterSpacing: 1,
-    fontWeight: '600',
-    marginBottom: sp[1],
-  },
-  revenueTotalValue: {
-    fontSize: fs['2xl'],
-    fontWeight: '700',
-    color: FINANCIAL_GOLD,
-    marginBottom: sp[4],
-  },
-  revenueDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.mobile.border,
-    marginBottom: sp[4],
+    borderColor: colors.public.border,
   },
   revenueRow: {
     flexDirection: 'row',
@@ -458,18 +459,41 @@ const styles = StyleSheet.create({
   },
   revenueRowDivider: {
     width: StyleSheet.hairlineWidth,
-    backgroundColor: colors.mobile.border,
+    backgroundColor: colors.public.border,
     marginHorizontal: sp[4],
   },
   revenueSubLabel: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginBottom: 4,
   },
   revenueSubValue: {
     fontSize: fs.lg,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
+  },
+
+  // Revenue Trend
+  chartCard: {
+    marginBottom: sp[4],
+  },
+  chartEmptyCard: {
+    backgroundColor: colors.public.surface,
+    borderRadius: rd.xl,
+    padding: sp[5],
+    marginBottom: sp[4],
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.public.border,
+  },
+  chartEmptyTitle: {
+    fontSize: fs.base,
+    fontWeight: '700',
+    color: colors.textPublic.primary,
+    marginBottom: sp[1],
+  },
+  chartEmptySubtitle: {
+    fontSize: fs.sm,
+    color: colors.textPublic.muted,
   },
 
   // Quick Stats Row
@@ -480,13 +504,13 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
     paddingVertical: sp[4],
     paddingHorizontal: sp[3],
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
   },
   statValue: {
     fontSize: fs['2xl'],
@@ -495,7 +519,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
   },
 
@@ -512,7 +536,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   seeAllButton: {
     minHeight: 44,
@@ -525,10 +549,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   sectionCard: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     overflow: 'hidden',
   },
 
@@ -548,12 +572,13 @@ const styles = StyleSheet.create({
   eventName: {
     fontSize: fs.sm,
     fontWeight: '600',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     marginBottom: 2,
+    textTransform: 'capitalize',
   },
   eventDate: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   statusBadge: {
     paddingHorizontal: sp[2],
@@ -566,7 +591,7 @@ const styles = StyleSheet.create({
   },
   rowDivider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.mobile.border,
+    backgroundColor: colors.public.border,
     marginHorizontal: sp[4],
   },
 
@@ -579,12 +604,12 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: fs.sm,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     marginBottom: sp[1],
   },
   emptyStateSubText: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
   },
 
@@ -596,12 +621,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
     paddingHorizontal: sp[4],
     minHeight: 56,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
   },
   quickActionLeft: {
     flexDirection: 'row',
@@ -617,6 +642,6 @@ const styles = StyleSheet.create({
   quickActionLabel: {
     fontSize: fs.sm,
     fontWeight: '600',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
 })

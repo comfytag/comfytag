@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag | Your face is your ticket</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "primary-container": "#7c3aed",
+                    "surface-tint": "#732ee4",
+                    "outline-variant": "#ccc3d8",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "primary": "#630ed4",
+                    "on-primary-container": "#ede0ff",
+                    "surface-container": "#f4ece8",
+                    "secondary-container": "#fea619",
+                    "on-primary": "#ffffff",
+                    "background": "#fff8f5",
+                    "on-surface-variant": "#4a4455",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#eee7e3",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "tertiary-container": "#9d5400",
+                    "outline": "#7b7487",
+                    "inverse-primary": "#d2bbff",
+                    "surface": "#fff8f5",
+                    "inverse-on-surface": "#f7efeb",
+                    "secondary": "#855300",
+                    "on-surface": "#1e1b19",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e9e1dd",
+                    "on-error": "#ffffff",
+                    "on-background": "#1e1b19",
+                    "on-secondary-fixed": "#2a1700",
+                    "inverse-surface": "#33302d",
+                    "primary-fixed": "#eaddff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#2f1500",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#faf2ee",
+                    "on-tertiary-container": "#ffe1cb",
+                    "surface-dim": "#e0d8d5",
+                    "tertiary": "#7a4000",
+                    "secondary-fixed": "#ffddb8",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "tertiary-fixed": "#ffdcc3",
+                    "surface-bright": "#fff8f5",
+                    "on-secondary": "#ffffff",
+                    "surface-variant": "#e9e1dd",
+                    "on-secondary-container": "#684000",
+                    "on-primary-fixed": "#25005a",
+                    "primary-fixed-dim": "#d2bbff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar-width-expanded": "240px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "margin-tablet": "24px",
+                    "base": "8px",
+                    "margin-desktop": "40px",
+                    "sidebar-width-collapsed": "72px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { background-color: #FAFAF9; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 70% 30%, #eaddff 0%, #fff8f5 60%);
+        }
+        .custom-scrollbar::-webkit-scrollbar { height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #ccc3d8; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar (Large) -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center h-[72px] px-margin-desktop bg-surface/80 backdrop-blur-md border-b border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-headline-md font-bold text-primary">ComfyTag</span>
+<div class="hidden md:flex relative group">
+<div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-[20px]">search</span>
+</div>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full w-[280px] focus:ring-2 focus:ring-primary/20 font-label-md text-on-surface-variant transition-all" placeholder="Search events..." type="text"/>
+</div>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<div class="flex items-center gap-6">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-md hover:text-primary transition-colors" href="#">Events</a>
+<a class="text-on-surface-variant font-medium font-label-md hover:text-primary transition-colors" href="#">About</a>
+<a class="text-on-surface-variant font-medium font-label-md hover:text-primary transition-colors" href="#">Help</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-high rounded-full transition-colors active:scale-95">account_balance_wallet</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-outline-variant/30 active:scale-95 transition-transform cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="A professional close-up studio portrait of a stylish young person with a friendly expression. The lighting is soft and cinematic, with a clean, high-key white background. The aesthetic is modern and corporate-chic, featuring a warm color temperature that aligns with the light-mode surface tones of the ComfyTag app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAagKYEv8qLAJDkdB1kf2TMkMA7wGnvdGg-dOUd6doi3oJ06t9JGECPbxPC-bMuR3RZjWE2AFjqtZTDKhcB9W85HRkmBwqBPICm_LqFSuECN3gZy8nNvO-kgYCkib5QqSuAE5s7KJkh1fNoYX3FSY_vi-yP-BSEbYg7phaROWY0lvfBs6Th0_Zkczjc6AF2OF-5LC_QXNBtEQtUII5Hcbvf8b547cxlTNUIOrTxdWlbBOqBDX8QFPb2Sg"/>
+</div>
+</div>
+</div>
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden material-symbols-outlined text-primary">menu</button>
+</nav>
+<main class="pt-[72px]">
+<!-- Hero Section -->
+<section class="relative min-h-[870px] flex items-center overflow-hidden hero-gradient">
+<div class="container mx-auto px-margin-desktop grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+<div class="md:col-span-6 z-10">
+<div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary font-bold text-label-sm mb-6 uppercase tracking-wider">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">face</span>
+                        Biometric Ticketing 2.0
+                    </div>
+<h1 class="font-display-lg text-display-lg text-on-surface leading-[1.1] mb-6">
+                        Your face is <br/><span class="text-primary">your ticket</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-lg">
+                        The world’s first seamless entry experience. No codes, no paper, no waiting. Just show up and enjoy the moment.
+                    </p>
+<div class="flex flex-wrap gap-4">
+<button class="px-8 py-4 bg-primary text-on-primary rounded-xl font-bold hover:shadow-lg hover:shadow-primary/20 transition-all active:scale-95">Explore Events</button>
+<button class="px-8 py-4 bg-white border-2 border-primary/20 text-primary rounded-xl font-bold hover:bg-primary/5 transition-all active:scale-95">How it Works</button>
+</div>
+</div>
+<div class="md:col-span-6 relative h-full min-h-[400px]">
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] opacity-20">
+
+</div>
+<div class="relative glass-card p-4 rounded-[2rem] shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700">
+<img class="rounded-[1.5rem] w-full h-[500px] object-cover" data-alt="A high-impact visual of a crowd of stylish attendees entering a futuristic neon-lit music festival. A transparent digital interface overlay shows a subtle biometric scan pattern over a happy person's face. The lighting is vibrant violet and gold, creating a professional and premium high-performance environment consistent with the ComfyTag brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD321eNNBlyhOUEwnKjghuRtwHIe7n5R_SyZLswsTlziJd9bG91rADKvGzP0lLxOLZiHzkg3ggczRDMTnyFeJ38YnnACElWmbYwdFjFvPFtt7rNOTGF3VFNSGCLnjnc90GIen63vFbJ3efJNx8KPXsG_0Ej46FR2T4igmcVpJGjuMyG7Ke4Q5Oo7VKGr-AbINsnqK7HQnZfu0jMvYkVXvKkYpPRYhULHrAUnNI0BfVbQWOqcuQyJanXrQ"/>
+<div class="absolute -bottom-6 -left-6 glass-card p-6 rounded-2xl shadow-xl max-w-[200px]">
+<p class="font-label-sm text-primary mb-1">Live Status</p>
+<p class="font-headline-md text-on-surface text-[18px]">12,402 Entered</p>
+<div class="flex mt-2 -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-200"></div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-300"></div>
+<div class="w-8 h-8 rounded-full border-2 border-white bg-slate-400"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Category Filter -->
+<section class="py-12 bg-white">
+<div class="container mx-auto px-margin-desktop">
+<div class="flex flex-wrap items-center gap-4 custom-scrollbar overflow-x-auto pb-2">
+<button class="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-full font-bold transition-all">
+<span class="material-symbols-outlined text-[20px]">all_inclusive</span>
+                        All Events
+                    </button>
+<button class="flex items-center gap-2 px-6 py-3 bg-surface-container text-on-surface-variant hover:bg-surface-container-high rounded-full font-medium transition-all">
+<span class="material-symbols-outlined text-[20px]">music_note</span>
+                        Music
+                    </button>
+<button class="flex items-center gap-2 px-6 py-3 bg-surface-container text-on-surface-variant hover:bg-surface-container-high rounded-full font-medium transition-all">
+<span class="material-symbols-outlined text-[20px]">hub</span>
+                        Networking
+                    </button>
+<button class="flex items-center gap-2 px-6 py-3 bg-surface-container text-on-surface-variant hover:bg-surface-container-high rounded-full font-medium transition-all">
+<span class="material-symbols-outlined text-[20px]">terminal</span>
+                        Tech
+                    </button>
+<button class="flex items-center gap-2 px-6 py-3 bg-surface-container text-on-surface-variant hover:bg-surface-container-high rounded-full font-medium transition-all">
+<span class="material-symbols-outlined text-[20px]">palette</span>
+                        Arts
+                    </button>
+</div>
+</div>
+</section>
+<!-- Featured Carousel -->
+<section class="py-12 bg-white overflow-hidden">
+<div class="container mx-auto px-margin-desktop mb-8 flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Featured Experiences</h2>
+<p class="text-on-surface-variant">Hand-picked events for your style</p>
+</div>
+<div class="flex gap-2">
+<button class="w-12 h-12 rounded-full border border-outline-variant/30 flex items-center justify-center hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="container mx-auto px-margin-desktop">
+<div class="flex gap-6 overflow-x-auto pb-8 custom-scrollbar">
+<!-- Carousel Card 1 -->
+<div class="min-w-[80vw] md:min-w-[600px] h-[400px] rounded-3xl overflow-hidden relative group cursor-pointer shadow-xl">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="A wide-angle professional shot of a modern, upscale networking gala in a high-ceiling glass atrium. Attendees are interacting in a sophisticated atmosphere with elegant lighting. The color palette is composed of soft whites, deep purples, and warm gold accents, maintaining a corporate-modern aesthetic for a premium experience." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBl3Ip12P-MKxGr2lWY9O6ZOctfzwd94ZyC_L_gCu5vq54QoDHX9lsYlTsiDmm-Ei9Th48himslsfQWjKli0NMlvMp9GE5M9F0jSZ07UDzGiU_CIO751Ws7OMoIyQBkW8lsutCx941FywWs9gpIlCZKIjMGWyoNZPt9xiksb_FMD6yuZjakUAoC1hNEs_N-qSAO__WDk9H0FLIG099BaKiQPScgJAOeS5X4qWGdI55V_mH8ZAYLg2qJXg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8">
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-label-sm font-bold w-fit mb-4">SELLING FAST</span>
+<h3 class="font-headline-lg text-white mb-2">Tech Summit 2024</h3>
+<p class="text-white/80 font-body-md mb-6 max-w-md">Join the brightest minds in tech for a weekend of innovation and future-shaping discussions.</p>
+<div class="flex items-center justify-between">
+<div class="flex gap-6 text-white/90 text-label-md">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">calendar_month</span> Oct 12-14</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">location_on</span> San Francisco</span>
+</div>
+<button class="px-6 py-2 bg-white text-primary font-bold rounded-lg active:scale-95 transition-transform">Get Ticket</button>
+</div>
+</div>
+</div>
+<!-- Carousel Card 2 -->
+<div class="min-w-[80vw] md:min-w-[600px] h-[400px] rounded-3xl overflow-hidden relative group cursor-pointer shadow-xl">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="A vibrant and energetic electronic dance music festival stage at night, featuring massive LED screens and laser light shows in electric violet and energy gold. A massive crowd is seen from behind, hands in the air, creating a feeling of excitement and scale. The image is captured with professional clarity and high dynamic range." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCaMW1QsJEgRW2oz-X3v-DQjnXLF2swW_JiY1vEDLUw-4OkdBOMw02OSy-kcvVfvfAGgcC-Vt-CLvyM166aMP_roOXL7ZCwXSY1AeOQ2txO9J9_xZNJsuoAW-9gIMowM2IEgOHnyAObli56LkrIJsnoDrzkz_8r6GFrrd0xjrOFMAbkn3ldVuv3H6mtTGf58VqoDj4UB1KbwICxLFxQixrlL8HSQm0jvuBQ48TudMT17VJl11EBuk2qw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8">
+<span class="px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-label-sm font-bold w-fit mb-4">EXCLUSIVE ACCESS</span>
+<h3 class="font-headline-lg text-white mb-2">Neon Nights Concert</h3>
+<p class="text-white/80 font-body-md mb-6 max-w-md">An immersive audiovisual journey with the world's top DJs and performance artists.</p>
+<div class="flex items-center justify-between">
+<div class="flex gap-6 text-white/90 text-label-md">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">calendar_month</span> Nov 05</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">location_on</span> Los Angeles</span>
+</div>
+<button class="px-6 py-2 bg-white text-primary font-bold rounded-lg active:scale-95 transition-transform">Get Ticket</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trending Grid -->
+<section class="py-20 bg-surface-container-lowest">
+<div class="container mx-auto px-margin-desktop">
+<div class="mb-12">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Trending Near You</h2>
+<p class="text-on-surface-variant">Popular events in your local community</p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+<!-- Event 1 -->
+<div class="group bg-white rounded-2xl overflow-hidden border border-outline-variant/10 hover:shadow-2xl hover:shadow-primary/5 transition-all">
+<div class="h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A minimalist, professional photography studio setup with high-end cameras and softbox lighting. The scene is bright and airy, representing an 'Arts' or 'Photography' category. The composition is clean and modern, following the high-quality whitespace design principle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8B0y6sZNtVGSKLLj-zinyoRBqDN8t2LJ03J7uksPGn3-A39_CGFwSQajhb8hqeErLaOLl2brRUrutt28PdbZHz_WiG3L8HeEZvkLsIYemqcduG2IM0BXUtwWEfkkIXzp_DSNswwEGSv1pcr9a3bd47z96TSMaxocL33uR8I4RDUx_o4rT76AJqWHPpxV5s0ofQcLlYFWdYjowT6JIhouq3qmA7BZiIdhO7yERNipcfH2ek-jhfBOlHQ"/>
+<div class="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-primary font-bold text-label-sm shadow-sm">
+                                $45.00
+                            </div>
+</div>
+<div class="p-5">
+<p class="text-primary font-bold text-label-sm mb-2 uppercase tracking-wide">Photography Workshop</p>
+<h4 class="font-headline-md text-[18px] text-on-surface mb-3 group-hover:text-primary transition-colors">Mastering Light &amp; Shadow</h4>
+<div class="space-y-2 mb-6">
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                                    Oct 24, 2024 • 10:00 AM
+                                </div>
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+                                    Creative Loft, NY
+                                </div>
+</div>
+<button class="w-full py-3 bg-surface-container text-on-surface font-bold rounded-xl group-hover:bg-primary group-hover:text-on-primary transition-all active:scale-95">View Details</button>
+</div>
+</div>
+<!-- Event 2 -->
+<div class="group bg-white rounded-2xl overflow-hidden border border-outline-variant/10 hover:shadow-2xl hover:shadow-primary/5 transition-all">
+<div class="h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A high-tech executive boardroom with floor-to-ceiling windows overlooking a city skyline at dusk. Professional business people are seated around a sleek black table with digital tablets. The lighting is composed of cool blues and warm office lights, emphasizing a focused, data-driven 'Networking' theme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAu9z_1oSK9uHtfxCI1T1f9FuKV64q7qy-yDkfTLVGfIvTsxTuyc3x7nds7VnBjIUExDstBSkWffWShBCCxzK_-4iXw7y7X-SJJp85QDMbeau9NJIDJ4Rj-sP2Yp0Ck5fN9lr6I09E-Alf0TmkjwSFfA17D9_LVyJuL5uySzOSZdTlb5tSXZIzHOmvVK7i6TeqEHvqqp3d2acLXWq8D8Hn-t1KbAAdqbE2fvuBvKXrxrrrU4RPCteLxcA"/>
+<div class="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-primary font-bold text-label-sm shadow-sm">
+                                $120.00
+                            </div>
+</div>
+<div class="p-5">
+<p class="text-primary font-bold text-label-sm mb-2 uppercase tracking-wide">Business Circle</p>
+<h4 class="font-headline-md text-[18px] text-on-surface mb-3 group-hover:text-primary transition-colors">CEO Roundtable 2024</h4>
+<div class="space-y-2 mb-6">
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                                    Oct 29, 2024 • 06:00 PM
+                                </div>
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+                                    Grand Plaza Hotel
+                                </div>
+</div>
+<button class="w-full py-3 bg-surface-container text-on-surface font-bold rounded-xl group-hover:bg-primary group-hover:text-on-primary transition-all active:scale-95">View Details</button>
+</div>
+</div>
+<!-- Event 3 -->
+<div class="group bg-white rounded-2xl overflow-hidden border border-outline-variant/10 hover:shadow-2xl hover:shadow-primary/5 transition-all">
+<div class="h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A modern art gallery opening with abstract large-scale paintings on white walls. Elegant guests are holding glasses of champagne while viewing the art. The lighting is focused and warm, highlighting the textures of the artwork. The aesthetic is clean, sophisticated, and artistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaJ2iEwM8vgJv6vEq1LIiZlkzdmG0uU7QmQvmwdEiqTiPHdXLHVJE-Due6QphkAa706Ow6Fc7K5M5cFhFcYFBoDNS60QqY7RTLvAzUGd64Qcg__Z44M86KdRkpAVyTvcM9xsNj3ieO1EBknJxcS-C2e1lsgHg0WLVSiTIbpVfUNX_oMlqAZoemfSBLR7oojI7SN_l6nUscw1ju6BJdNsogR3zFXl0TMgcUubarxhZjxicUyi0UCWCNBQ"/>
+<div class="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-primary font-bold text-label-sm shadow-sm">
+                                Free
+                            </div>
+</div>
+<div class="p-5">
+<p class="text-primary font-bold text-label-sm mb-2 uppercase tracking-wide">Exhibition</p>
+<h4 class="font-headline-md text-[18px] text-on-surface mb-3 group-hover:text-primary transition-colors">Urban Canvas Gallery</h4>
+<div class="space-y-2 mb-6">
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                                    Nov 02, 2024 • 11:00 AM
+                                </div>
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+                                    Soho District, NY
+                                </div>
+</div>
+<button class="w-full py-3 bg-surface-container text-on-surface font-bold rounded-xl group-hover:bg-primary group-hover:text-on-primary transition-all active:scale-95">View Details</button>
+</div>
+</div>
+<!-- Event 4 -->
+<div class="group bg-white rounded-2xl overflow-hidden border border-outline-variant/10 hover:shadow-2xl hover:shadow-primary/5 transition-all">
+<div class="h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A crowded outdoor amphitheater during an afternoon indie rock concert. The sunlight is golden and warm, casting long shadows. The atmosphere is casual and communal. The visual quality is cinematic and high-definition, focusing on the vibrant summer vibe of an outdoor event." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3AFwK9BZJdYl8SVHIyvK4TeYbwJH7Rz-mTi2R8ibEaXuTTXRUGq-8sPUvqpzL8QZwMdc_nk5AmnSRiLs9dFtYNy8xaF6LfkZROSu_43X6unl1yjideU0ufGKf73viBIstoYlsQj_YWxRJehShdiUqXECVW9Z8zKdKHx9RSZ5cXfM2MiQ65bqBkrFZ86jmxVuntyoIl9uQMKU227RHcBuBVADtVxHD1o8hs7Z55SiJI4KughcBr6V7Og"/>
+<div class="absolute top-3 right-3 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-primary font-bold text-label-sm shadow-sm">
+                                $25.00
+                            </div>
+</div>
+<div class="p-5">
+<p class="text-primary font-bold text-label-sm mb-2 uppercase tracking-wide">Live Music</p>
+<h4 class="font-headline-md text-[18px] text-on-surface mb-3 group-hover:text-primary transition-colors">Sunset Sessions Indie</h4>
+<div class="space-y-2 mb-6">
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                                    Nov 05, 2024 • 04:30 PM
+                                </div>
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+                                    Pier 15 Waterfront
+                                </div>
+</div>
+<button class="w-full py-3 bg-surface-container text-on-surface font-bold rounded-xl group-hover:bg-primary group-hover:text-on-primary transition-all active:scale-95">View Details</button>
+</div>
+</div>
+</div>
+<div class="mt-16 flex justify-center">
+<button class="flex items-center gap-2 px-10 py-4 bg-white border-2 border-primary/20 text-primary rounded-2xl font-bold hover:bg-primary/5 transition-all">
+                        Load More Events
+                        <span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Newsletter / CTA -->
+<section class="py-24">
+<div class="container mx-auto px-margin-desktop">
+<div class="relative bg-inverse-surface rounded-[3rem] p-12 md:p-24 overflow-hidden">
+<div class="absolute top-0 right-0 w-1/2 h-full opacity-30 pointer-events-none">
+
+</div>
+<div class="relative z-10 max-w-2xl">
+<h2 class="font-display-lg text-display-lg text-white mb-6">Never miss a <br/>moment again.</h2>
+<p class="text-white/60 font-body-lg mb-10">Get notified about the exclusive events, pre-sales, and early bird access tailored to your preferences.</p>
+<div class="flex flex-col sm:flex-row gap-4">
+<input class="flex-grow px-8 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder:text-white/40 focus:ring-2 focus:ring-primary focus:outline-none transition-all" placeholder="Enter your email" type="email"/>
+<button class="px-8 py-4 bg-primary text-on-primary rounded-2xl font-bold hover:bg-surface-tint transition-all whitespace-nowrap">Join Waitlist</button>
+</div>
+<p class="text-white/40 text-label-sm mt-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+                            We respect your privacy. No spam, ever.
+                        </p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-dim pt-20 pb-10">
+<div class="container mx-auto px-margin-desktop">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-12 border-b border-outline-variant/20 pb-16">
+<div class="md:col-span-4">
+<span class="text-headline-md font-headline-md font-bold text-primary mb-6 block">ComfyTag</span>
+<p class="text-on-surface-variant max-w-xs mb-8">Revolutionizing the event experience through seamless biometric entry and high-performance management tools.</p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-white transition-all" href="#"><span class="material-symbols-outlined text-[20px]">public</span></a>
+<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-white transition-all" href="#"><span class="material-symbols-outlined text-[20px]">alternate_email</span></a>
+<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-white transition-all" href="#"><span class="material-symbols-outlined text-[20px]">chat</span></a>
+</div>
+</div>
+<div class="md:col-span-2">
+<h5 class="font-bold text-on-surface mb-6">App</h5>
+<ul class="space-y-4 text-on-surface-variant text-label-md">
+<li><a class="hover:text-primary transition-colors" href="#">Find Events</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Tickets</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">How it Works</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">FAQ</a></li>
+</ul>
+</div>
+<div class="md:col-span-2">
+<h5 class="font-bold text-on-surface mb-6">Partners</h5>
+<ul class="space-y-4 text-on-surface-variant text-label-md">
+<li><a class="hover:text-primary transition-colors" href="#">Partner Suite</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Pricing</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Success Stories</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Resources</a></li>
+</ul>
+</div>
+<div class="md:col-span-4">
+<h5 class="font-bold text-on-surface mb-6">Download the App</h5>
+<div class="flex flex-col gap-3">
+<button class="flex items-center gap-3 px-6 py-3 bg-inverse-surface text-white rounded-xl hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[28px]">phone_iphone</span>
+<div class="text-left">
+<p class="text-[10px] uppercase leading-none opacity-60">Available on</p>
+<p class="text-[16px] font-bold">App Store</p>
+</div>
+</button>
+<button class="flex items-center gap-3 px-6 py-3 bg-inverse-surface text-white rounded-xl hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[28px]">ad_units</span>
+<div class="text-left">
+<p class="text-[10px] uppercase leading-none opacity-60">Available on</p>
+<p class="text-[16px] font-bold">Google Play</p>
+</div>
+</button>
+</div>
+</div>
+</div>
+<div class="pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-on-surface-variant text-label-sm">
+<p>© 2024 ComfyTag Inc. All rights reserved.</p>
+<div class="flex gap-8">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">Cookie Policy</a>
+</div>
+</div>
+</div>
+</footer>
+<!-- FAB (Suppressed on Landing but kept as logic reference if needed elsewhere) -->
+<!-- Determined not needed for primary landing per relevance check -->
+<script>
+        // Micro-interactions and effects
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.group');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // Simple smooth scroll behavior for filter navigation
+        const scrollContainer = document.querySelector('.custom-scrollbar');
+        if(scrollContainer) {
+            scrollContainer.addEventListener('wheel', (evt) => {
+                evt.preventDefault();
+                scrollContainer.scrollLeft += evt.deltaY;
+            });
+        }
+    </script>
+</body></html>

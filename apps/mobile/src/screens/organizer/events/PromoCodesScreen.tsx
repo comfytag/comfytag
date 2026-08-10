@@ -115,7 +115,7 @@ function PromoCard({ promo, onDelete }: PromoCardProps) {
         >
           <Trash2
             size={18}
-            color={canDelete ? colors.error.DEFAULT : colors.mobile.textMuted}
+            color={canDelete ? colors.error.DEFAULT : colors.textPublic.muted}
             strokeWidth={2}
           />
         </AnimatedPressable>
@@ -169,7 +169,7 @@ function AddPromoFormPanel({
         value={form.code}
         onChangeText={(v) => onChange('code', v)}
         placeholder="Code (e.g. LAUNCH20)"
-        placeholderTextColor={colors.mobile.textMuted}
+        placeholderTextColor={colors.textPublic.muted}
         autoCapitalize="characters"
         autoCorrect={false}
       />
@@ -217,7 +217,7 @@ function AddPromoFormPanel({
         value={form.discountValue}
         onChangeText={(v) => onChange('discountValue', v)}
         placeholder={form.discountType === 'percentage' ? 'Discount % (e.g. 20)' : 'Amount in ₦'}
-        placeholderTextColor={colors.mobile.textMuted}
+        placeholderTextColor={colors.textPublic.muted}
         keyboardType="decimal-pad"
       />
 
@@ -226,7 +226,7 @@ function AddPromoFormPanel({
         value={form.maxUses}
         onChangeText={(v) => onChange('maxUses', v)}
         placeholder="Max uses (leave blank for unlimited)"
-        placeholderTextColor={colors.mobile.textMuted}
+        placeholderTextColor={colors.textPublic.muted}
         keyboardType="number-pad"
       />
 
@@ -308,7 +308,7 @@ export default function PromoCodesScreen({ navigation, route }: Props) {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ChevronLeft size={24} color={colors.mobile.textPrimary} strokeWidth={2} />
+          <ChevronLeft size={24} color={colors.textPublic.primary} strokeWidth={2} />
         </AnimatedPressable>
         <Text style={styles.headerTitle} numberOfLines={1}>Promo Codes</Text>
         <View style={styles.headerSpacer} />
@@ -340,7 +340,7 @@ export default function PromoCodesScreen({ navigation, route }: Props) {
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.emptyState}>
-                <Tag size={48} color={colors.mobile.textMuted} strokeWidth={1.5} />
+                <Tag size={48} color={colors.textPublic.muted} strokeWidth={1.5} />
                 <Text style={styles.emptyTitle}>No promo codes yet</Text>
               </View>
             }
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   header: {
     flexDirection: 'row',
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     paddingHorizontal: sp[2],
   },
   headerSpacer: {
@@ -438,13 +438,13 @@ const styles = StyleSheet.create({
   skeletonCard: {
     height: 80,
     borderRadius: rd.lg,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
   },
   promoCard: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     padding: sp[4],
     gap: sp[2],
   },
@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
   promoCode: {
     fontSize: fs.lg,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     letterSpacing: 1,
   },
   discountBadge: {
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
     marginLeft: sp[3],
   },
   deleteButtonDisabled: {
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     opacity: 0.4,
   },
   promoMetaRow: {
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   },
   promoMeta: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   activeBadge: {
     paddingHorizontal: sp[3],
@@ -504,23 +504,23 @@ const styles = StyleSheet.create({
     borderRadius: rd.full,
   },
   activeBadgeOn: {
-    backgroundColor: '#052E16',
+    backgroundColor: 'rgba(16,185,129,0.15)',
   },
   activeBadgeOff: {
-    backgroundColor: '#1C1917',
+    backgroundColor: colors.public.surfaceAlt,
   },
   activeBadgeText: {
     fontSize: fs.xs,
     fontWeight: '600',
   },
   activeBadgeTextOn: {
-    color: colors.mobile.success,
+    color: colors.success.DEFAULT,
   },
   activeBadgeTextOff: {
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   addFormCard: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
     padding: sp[4],
     gap: sp[3],
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   addFormTitle: {
     fontSize: fs.sm,
     fontWeight: '700',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
@@ -539,11 +539,11 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: rd.md,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     paddingHorizontal: sp[3],
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     fontSize: fs.sm,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   typeToggleRow: {
     flexDirection: 'row',
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: rd.full,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
   typePillText: {
     fontSize: fs.xs,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   typePillTextActive: {
     color: '#FFFFFF',
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   toggleFormButtonCancel: {
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
   },
   toggleFormButtonText: {
     fontSize: fs.base,
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
     color: colors.brand.DEFAULT,
   },
   toggleFormButtonTextCancel: {
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   emptyState: {
     alignItems: 'center',
@@ -614,7 +614,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   centered: {
     flex: 1,
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
   },
   mutedText: {
     fontSize: fs.base,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   retryButton: {
     paddingHorizontal: sp[6],

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag - Payouts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-secondary-fixed": "#1e1b19",
+                    "secondary": "#625d5b",
+                    "surface-bright": "#f9f9f8",
+                    "outline": "#7b7487",
+                    "on-secondary-container": "#686361",
+                    "tertiary-fixed": "#e2e2e2",
+                    "on-primary-fixed": "#25005a",
+                    "tertiary": "#4d4f4e",
+                    "inverse-primary": "#d2bbff",
+                    "surface-dim": "#dadad9",
+                    "on-error": "#ffffff",
+                    "secondary-fixed": "#e9e1dd",
+                    "on-primary-container": "#ede0ff",
+                    "tertiary-fixed-dim": "#c6c7c6",
+                    "outline-variant": "#ccc3d8",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "primary-fixed-dim": "#d2bbff",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-surface-variant": "#4a4455",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#630ed4",
+                    "tertiary-container": "#656766",
+                    "primary-fixed": "#eaddff",
+                    "background": "#f9f9f8",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "on-background": "#1a1c1c",
+                    "primary-container": "#7c3aed",
+                    "surface-tint": "#732ee4",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-low": "#f3f4f3",
+                    "inverse-surface": "#2f3130",
+                    "secondary-fixed-dim": "#ccc5c2",
+                    "surface": "#f9f9f8",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary-container": "#e9e1dd",
+                    "surface-variant": "#e2e2e2",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "surface-container-high": "#e8e8e7",
+                    "on-secondary-fixed-variant": "#4a4643",
+                    "on-tertiary-container": "#e6e6e5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "gutter": "16px",
+                    "stack-gap": "16px",
+                    "section-gap": "32px",
+                    "container-padding": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-rg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-rg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #f5f5f4 25%, #e7e5e4 50%, #f5f5f4 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid #E7E5E4;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-gutter h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<button class="text-primary hover:opacity-80 transition-opacity duration-200">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">ComfyTag</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-primary hover:opacity-80 transition-opacity duration-200">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<main class="pt-20 px-container-padding max-w-[1200px] mx-auto space-y-section-gap">
+<!-- Large Balance Card -->
+<section class="relative overflow-hidden rounded-xl bg-primary-container text-on-primary-container p-6 flex flex-col gap-6 shadow-md">
+<!-- Background Decorative Elements -->
+<div class="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-64 h-64 bg-white opacity-5 rounded-full"></div>
+<div class="space-y-1">
+<p class="font-label-caps text-label-caps opacity-90">Available Balance</p>
+<h2 class="font-headline-lg text-headline-lg">₦12,450.00</h2>
+</div>
+<div class="grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
+<div>
+<p class="font-label-caps text-label-caps opacity-80">Pending</p>
+<p class="font-title-md text-title-md">₦1,200.00</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps opacity-80">Processed</p>
+<p class="font-title-md text-title-md">₦45,000.00</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps opacity-80">Reserved</p>
+<p class="font-title-md text-title-md">₦500.00</p>
+</div>
+</div>
+<button class="w-full bg-white text-primary font-title-md py-3 rounded-lg hover:bg-surface-bright transition-colors flex items-center justify-center gap-2" onclick="toggleModal('withdrawal-modal')">
+<span class="material-symbols-outlined">payments</span>
+                Request Withdrawal
+            </button>
+</section>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-section-gap">
+<!-- Withdrawal Form (Mobile Layout or Side column) -->
+<section class="lg:col-span-1 space-y-stack-gap">
+<h3 class="font-title-md text-title-md">Withdrawal Settings</h3>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Default Method</span>
+<button class="text-primary font-label-caps text-label-caps hover:underline">Change</button>
+</div>
+<!-- Bank Chip -->
+<div class="flex items-center gap-4 p-4 bg-surface-container-low rounded-lg border border-outline-variant">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<div>
+<p class="font-title-md text-[16px]">GTBank •••• 4291</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Expires 09/26</p>
+</div>
+</div>
+<div class="pt-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">Automatic Payouts</label>
+<div class="flex items-center justify-between bg-surface-container-low p-3 rounded-lg">
+<span class="font-body-rg text-body-rg">Weekly on Fridays</span>
+<div class="w-10 h-5 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Withdrawal History -->
+<section class="lg:col-span-2 space-y-stack-gap">
+<div class="flex items-center justify-between">
+<h3 class="font-title-md text-title-md">Withdrawal History</h3>
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+<span class="font-label-caps text-label-caps">Filter</span>
+</button>
+</div>
+<div class="space-y-4" id="history-container">
+<!-- Row 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center justify-between hover:border-primary transition-all cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">download_done</span>
+</div>
+<div>
+<p class="font-title-md text-title-md">₦2,500.00</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Aug 14, 2023 • Bank Transfer</p>
+</div>
+</div>
+<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-label-caps text-[10px] uppercase tracking-wider">Completed</span>
+</div>
+<!-- Row 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center justify-between hover:border-primary transition-all cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">pending</span>
+</div>
+<div>
+<p class="font-title-md text-title-md">₦1,200.00</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Aug 18, 2023 • Fast Pay</p>
+</div>
+</div>
+<span class="bg-primary-fixed text-primary px-3 py-1 rounded-full font-label-caps text-[10px] uppercase tracking-wider">Processing</span>
+</div>
+<!-- Row 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center justify-between hover:border-primary transition-all cursor-pointer opacity-80">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center text-error">
+<span class="material-symbols-outlined">error</span>
+</div>
+<div>
+<p class="font-title-md text-title-md">₦5,000.00</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">July 22, 2023 • Bank Transfer</p>
+</div>
+</div>
+<span class="bg-error-container text-error px-3 py-1 rounded-full font-label-caps text-[10px] uppercase tracking-wider">Failed</span>
+</div>
+<!-- Skeleton Loader State (Hidden by default) -->
+<div class="hidden space-y-4" id="skeleton-state">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex items-center justify-between">
+<div class="flex items-center gap-4 w-full">
+<div class="w-12 h-12 skeleton rounded-full"></div>
+<div class="space-y-2 flex-1">
+<div class="h-4 w-24 skeleton rounded"></div>
+<div class="h-3 w-48 skeleton rounded"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State (Hidden by default) -->
+<div class="hidden flex flex-col items-center justify-center py-16 text-center space-y-4" id="empty-state">
+<div class="w-24 h-24 bg-surface-container-high rounded-full flex items-center justify-center text-outline-variant mb-2">
+<span class="material-symbols-outlined text-5xl">receipt_long</span>
+</div>
+<div class="space-y-1">
+<h4 class="font-title-md text-title-md">No withdrawals yet</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">Your withdrawal history will appear here once you make your first request.</p>
+</div>
+<button class="text-primary font-title-md hover:underline">Make your first withdrawal</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Withdrawal Modal -->
+<div class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/40 backdrop-blur-sm" id="withdrawal-modal">
+<div class="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-300">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile">Request Withdrawal</h3>
+<button class="text-on-surface-variant hover:text-on-surface" onclick="toggleModal('withdrawal-modal')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<form class="space-y-6">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Amount to Withdraw</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 font-headline-lg-mobile text-on-surface-variant">$</span>
+<input class="w-full pl-10 pr-4 py-4 bg-surface-container-low border border-outline-variant rounded-lg text-headline-lg-mobile focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="0.00" type="number"/>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Max available: ₦12,450.00</p>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant">Destination</label>
+<div class="p-4 bg-surface-container-lowest border-2 border-primary rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">account_balance</span>
+<span class="font-body-rg text-body-rg font-semibold">GTBank ••••4291</span>
+</div>
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+</div>
+<!-- Biometric UI Integration -->
+<div class="bg-primary-fixed/30 p-4 rounded-xl flex items-center gap-4">
+<div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white animate-pulse">
+<span class="material-symbols-outlined">fingerprint</span>
+</div>
+<div>
+<p class="font-title-md text-[14px]">Security Verification</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Authorize with biometric ID to process instantly.</p>
+</div>
+</div>
+<div class="pt-4 flex gap-4">
+<button class="flex-1 py-3 border border-outline-variant rounded-lg font-title-md hover:bg-surface-container-low transition-colors" onclick="toggleModal('withdrawal-modal')" type="button">Cancel</button>
+<button class="flex-1 py-3 bg-primary text-white rounded-lg font-title-md hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all" type="submit">Withdraw</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant">
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-transform duration-150 active:scale-95">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-transform duration-150 active:scale-95">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-caps text-label-caps">Explore</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-transform duration-150 active:scale-95">
+<span class="material-symbols-outlined">confirmation_number</span>
+<span class="font-label-caps text-label-caps">Tickets</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 active:scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-transform duration-150 active:scale-95">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-caps text-label-caps">Profile</span>
+</div>
+</nav>
+<script>
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Simulating interactive skeleton loading for a better "premium" feel
+        const container = document.getElementById('history-container');
+        const skeleton = document.getElementById('skeleton-state');
+        
+        // This is just a UI demonstration of state switching
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 's') { // Toggle skeleton
+                skeleton.classList.toggle('hidden');
+            }
+            if (e.key === 'e') { // Toggle empty state
+                document.getElementById('empty-state').classList.toggle('hidden');
+                const rows = container.querySelectorAll('.bg-surface-container-lowest');
+                rows.forEach(r => r.classList.toggle('hidden'));
+            }
+        });
+    </script>
+</body></html>

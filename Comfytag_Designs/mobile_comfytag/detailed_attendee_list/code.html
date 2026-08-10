@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag - Attendee List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#ccc3d8",
+                    "secondary-fixed-dim": "#d3bbff",
+                    "on-secondary-fixed": "#250059",
+                    "outline": "#7b7487",
+                    "inverse-on-surface": "#f1f1f0",
+                    "tertiary-container": "#905b00",
+                    "tertiary": "#704500",
+                    "on-tertiary-container": "#ffe1c0",
+                    "on-background": "#1a1c1c",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed": "#2a1700",
+                    "on-surface": "#1a1c1c",
+                    "surface-container": "#eeeeed",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e2e2e2",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-error-container": "#93000a",
+                    "surface": "#f9f9f8",
+                    "on-secondary-container": "#fffbff",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "secondary": "#6e3aca",
+                    "on-primary-fixed": "#25005a",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#eaddff",
+                    "inverse-surface": "#2f3130",
+                    "primary": "#630ed4",
+                    "background": "#f9f9f8",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "secondary-container": "#8856e5",
+                    "on-secondary-fixed-variant": "#581db3",
+                    "inverse-primary": "#d2bbff",
+                    "primary-container": "#7c3aed",
+                    "tertiary-fixed": "#ffddb8",
+                    "on-primary-container": "#ede0ff",
+                    "primary-fixed-dim": "#d2bbff",
+                    "secondary-fixed": "#ebddff",
+                    "surface-dim": "#dadad9",
+                    "surface-tint": "#732ee4",
+                    "surface-container-low": "#f3f4f3",
+                    "surface-container-high": "#e8e8e7",
+                    "surface-bright": "#f9f9f8",
+                    "on-surface-variant": "#4a4455"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "40px",
+                    "margin-mobile": "20px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "stack-lg": "24px",
+                    "margin-tablet": "32px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ccc3d8;
+            border-radius: 10px;
+        }
+        .ticket-clip {
+            clip-path: radial-gradient(circle at 0 50%, transparent 12px, white 13px),
+                       radial-gradient(circle at 100% 50%, transparent 12px, white 13px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-lg min-h-screen pb-24">
+<!-- TopAppBar from JSON -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-sm h-16 flex justify-between items-center px-margin-mobile">
+<div class="flex items-center gap-base">
+<span class="material-symbols-outlined text-primary active:scale-95 transition-transform duration-200 cursor-pointer">menu</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight ml-2">ComfyTag</h1>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20 active:scale-95 transition-transform duration-200 cursor-pointer">
+<img class="w-full h-full object-cover" alt="A professional portrait of a tech-savvy Nigerian event organizer with a warm smile, wearing a sleek modern blazer. The background is a soft-focus minimalist office with subtle amber and violet lighting accents, matching a premium enterprise aesthetic. High-quality corporate photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4C-1ujZsostmLRQ_4PcO8Hae43QDnXP5wzKU0os6BNmYFnA89TWc1GXrwV6VND6NAuOrdziDF-90KZ6Ds5WFef-2j-5zSBVHE9biac9wnib01dUJrt_eMJO15Ljwn-rShaNnnwDdh-gk4Su7q5nSaZUrp8g67QXWWfIBWSHFau0KbxI8yNHInigsPTQqNx5-VwK5aY9Rkzo1PT6zHMeo3XSsLTdu2RjCWz2JcJJl6BZoDapkIZWjFZQ"/>
+</div>
+</header>
+<main class="pt-20 px-margin-mobile max-w-3xl mx-auto">
+<!-- Search & Branding Section -->
+<div class="mb-stack-lg">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Attendee List</h2>
+<p class="text-on-surface-variant font-body-md">Manage and track guest arrivals in real-time.</p>
+</div>
+<!-- Search Bar -->
+<div class="relative mb-stack-lg group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full h-14 pl-12 pr-4 bg-surface-container-lowest border-none rounded-xl shadow-sm focus:ring-2 focus:ring-primary/20 focus:outline-none text-body-lg placeholder:text-outline transition-all" placeholder="Search by name or Ticket ID..." type="text"/>
+</div>
+<!-- Filter Chips (Horizontal Scroll) -->
+<div class="flex gap-stack-sm overflow-x-auto pb-4 no-scrollbar mb-stack-lg">
+<button class="px-6 py-2 bg-primary text-on-primary rounded-full font-label-md whitespace-nowrap active:scale-95 transition-transform">All (124)</button>
+<button class="px-6 py-2 bg-surface-container-high text-on-surface-variant rounded-full font-label-md whitespace-nowrap hover:bg-surface-variant transition-colors active:scale-95">Checked-in (82)</button>
+<button class="px-6 py-2 bg-surface-container-high text-on-surface-variant rounded-full font-label-md whitespace-nowrap hover:bg-surface-variant transition-colors active:scale-95">Pending (38)</button>
+<button class="px-6 py-2 bg-surface-container-high text-on-surface-variant rounded-full font-label-md whitespace-nowrap hover:bg-surface-variant transition-colors active:scale-95">VIP (14)</button>
+</div>
+<!-- Attendee Grid/List -->
+<div class="space-y-stack-md">
+<!-- Attendee Card 1 (Checked-in) -->
+<div class="group bg-surface-container-lowest p-stack-md rounded-xl shadow-sm border border-outline-variant/10 flex items-center gap-stack-md hover:shadow-md transition-shadow">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" alt="A portrait of a cheerful young woman at a tech conference, wearing a casual but professional outfit. The lighting is bright and airy with a modern aesthetic. Soft violet and amber tones in the background bokeh reflect a vibrant event atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc_h1GScZK2pS_Uy3FmPCb55Uzosq5J9yi5Gdwz4K0VseG3slDioBGPnz9lrzE25rMKKywFeDBrr7Dldd2BOxrdvMz6b8GFm8fLJ2IqhuPjXcqu9dsluIbYrOhN2JqdD78EFx8q0hCugcuMRumPeNHdktzLlganE5P_vxoDUAdei-Mr5RzLBCXISsXrUOSFzREnm92xHxd21zCwJ-QsnatiyLPtonvzi_jv3l5Vvouz-nyvPnYy8a9SA"/>
+</div>
+<div class="flex-1">
+<h3 class="font-title-lg text-title-lg text-on-surface">Chinwe Okafor</h3>
+<div class="flex items-center gap-base text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-[16px]">confirmation_number</span>
+<span>CT-9902-VIP</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-base">
+<span class="px-3 py-1 bg-[#10B981]/10 text-[#10B981] font-label-md rounded-full">Checked-in</span>
+<span class="text-[10px] text-outline">10:45 AM</span>
+</div>
+</div>
+<!-- Attendee Card 2 (Pending) -->
+<div class="group bg-surface-container-lowest p-stack-md rounded-xl shadow-sm border border-outline-variant/10 flex items-center gap-stack-md hover:shadow-md transition-shadow">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" alt="A close-up portrait of a young professional man in a minimalist environment. He has a calm, confident expression. The lighting is crisp and natural, following a high-key soft minimalism style with clean backgrounds and subtle texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXVNHQ8VLAC01kFX-b8IhKT0CNWb5JbDTfdzRfB2gWyzmpLtRrr-cBmCeHoyEWys3e68x3Drc0KerWCWEq_funDH5M0EdLttAUQyOFGQ_IWHnrciM5pYgIXh7sFf9DzL0eoxMl8MBlMKa1KMEVdUaS-2vP2woNvMtDSRhflpQrzv3FolzbkPEl2z7O5YJ0W5gxd1dritVVB0Qf_lm9LjMfIcPGttHWnYHggf0ArmDEKzbqBDL0EnvNNA"/>
+</div>
+<div class="flex-1">
+<h3 class="font-title-lg text-title-lg text-on-surface">Adekunle Johnson</h3>
+<div class="flex items-center gap-base text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-[16px]">confirmation_number</span>
+<span>CT-1145-STD</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-base">
+<span class="px-3 py-1 bg-[#78716C]/10 text-[#78716C] font-label-md rounded-full">Pending</span>
+<span class="text-[10px] text-outline">---</span>
+</div>
+</div>
+<!-- Attendee Card 3 (VIP - Checked-in) -->
+<div class="group bg-surface-container-lowest p-stack-md rounded-xl shadow-sm border border-outline-variant/10 flex items-center gap-stack-md hover:shadow-md transition-shadow relative overflow-hidden">
+<div class="absolute top-0 right-0 w-12 h-12 bg-tertiary-fixed/20 -mr-6 -mt-6 rotate-45"></div>
+<div class="w-14 h-14 rounded-full overflow-hidden bg-surface-container-high ring-2 ring-tertiary-fixed">
+<img class="w-full h-full object-cover" alt="A portrait of a sophisticated woman dressed for a premium gala. Her attire is elegant and she wears a warm, welcoming smile. The lighting is high-end and warm, with amber accents and soft-focus backgrounds that suggest a luxurious event space." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCgiNXOXfKq36ofwfi5JV3r05VT8YVC7nSCAenmkXVUv2kow-e3x-sJ1jj9vHEd30jl7yVkoHOk0qyxZ0xJpKdfXXeO8hIVELxaS2cEPdp_DHXr8sDEPwTVnViHw-MkkXOCyyd5-vOuhwQOd5R-L7PB5XnWVbwQ6D8jHqNVFGTiUCxlLk0DG8cUNM0rGjx5Gxpc6AhiToRScbXGRGoj4Tu9xcRLymIoKlsF0ZCpG7KfSfW-1nzSGAFgg"/>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-base">
+<h3 class="font-title-lg text-title-lg text-on-surface">Amina Yusuf</h3>
+<span class="material-symbols-outlined text-tertiary-container text-[18px]" style="font-variation-settings: 'FILL' 1;">stars</span>
+</div>
+<div class="flex items-center gap-base text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-[16px]">confirmation_number</span>
+<span>CT-0001-VIP</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-base">
+<span class="px-3 py-1 bg-[#10B981]/10 text-[#10B981] font-label-md rounded-full">Checked-in</span>
+<span class="text-[10px] text-outline">09:12 AM</span>
+</div>
+</div>
+<!-- Attendee Card 4 (Checked-in) -->
+<div class="group bg-surface-container-lowest p-stack-md rounded-xl shadow-sm border border-outline-variant/10 flex items-center gap-stack-md hover:shadow-md transition-shadow">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" alt="A portrait of a young creative professional with a friendly and approachable look. The background is a bright, modern studio with vibrant colors blurred artistically. The lighting is soft and flattering, emphasizing a modern enterprise feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOeR8NLuRXVuACeXd7tmXP_a_z7un-4dqwxMb9JKuWoMWO0e4NuOzx8VbRLyqDQcCjh6-RjocJPxJgwrbJpneUG9wiFiVChth1AqiSU9EBdbSlc458QGuXUddtGDRwCtzwn1FHU-VcMagPOaMUbc4ObnMQR3c9BTGcpeJBYYFJN6yKvZCQzqD6-A4xB1zumk2uhWeyxF0vIiMtSYmo_U9UGu827Ph71pOyDLoaAlB82NXyQrckWJGn-A"/>
+</div>
+<div class="flex-1">
+<h3 class="font-title-lg text-title-lg text-on-surface">Emeka Nwosu</h3>
+<div class="flex items-center gap-base text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-[16px]">confirmation_number</span>
+<span>CT-8273-STD</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-base">
+<span class="px-3 py-1 bg-[#10B981]/10 text-[#10B981] font-label-md rounded-full">Checked-in</span>
+<span class="text-[10px] text-outline">11:02 AM</span>
+</div>
+</div>
+<!-- Attendee Card 5 (Pending) -->
+<div class="group bg-surface-container-lowest p-stack-md rounded-xl shadow-sm border border-outline-variant/10 flex items-center gap-stack-md hover:shadow-md transition-shadow">
+<div class="w-14 h-14 rounded-full overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" alt="A high-quality portrait of a professional woman in a minimalist, light-filled environment. She wears a sharp, stylish outfit. The visual style is premium and modernist, with a focus on clean lines and a palette of warm off-white and soft violets." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCshbSRnZrEXYHEzksGAnXgKphrVP5B66MCLrVzQz13lgJp4EWdGZ1Yt-Vz6Sc84lJfHZs3StPuEYLaH-PpRD7p8ejpv99wae6I0brWIHJquuvzG7IVEMA1F-Uzv-4VIqSOjhHDyzVyZ9EjUA2Bmm0kjThtMjhZjaBDE-EC4zVZucEpWgCFJ6-si2T-z2unixlYhzLqs6fqFCOKfEfdYszgWA-ErfF8JvvhZY92YQuCuQKF17SQQE-wQ"/>
+</div>
+<div class="flex-1">
+<h3 class="font-title-lg text-title-lg text-on-surface">Zainab Alabi</h3>
+<div class="flex items-center gap-base text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-[16px]">confirmation_number</span>
+<span>CT-4451-VIP</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-base">
+<span class="px-3 py-1 bg-[#78716C]/10 text-[#78716C] font-label-md rounded-full">Pending</span>
+<span class="text-[10px] text-outline">---</span>
+</div>
+</div>
+</div>
+<!-- Sticky FAB -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform duration-200 z-50 hover:bg-primary-container">
+<span class="material-symbols-outlined text-[32px]">person_add</span>
+</button>
+</main>
+<!-- BottomNavBar from JSON -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-stack-sm px-margin-mobile border-t border-outline-variant/20 bg-surface/80 backdrop-blur-xl z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-md text-label-md">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-md text-label-md">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">confirmation_number</span>
+<span class="font-label-md text-label-md">Tickets</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-primary-fixed/30 rounded-full px-4 py-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for filter chips
+        const chips = document.querySelectorAll('button.rounded-full');
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                chips.forEach(c => {
+                    c.classList.remove('bg-primary', 'text-on-primary');
+                    c.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                });
+                chip.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+                chip.classList.add('bg-primary', 'text-on-primary');
+            });
+        });
+
+        // Search input active state logic
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('input', (e) => {
+            const cards = document.querySelectorAll('.group');
+            const term = e.target.value.toLowerCase();
+            cards.forEach(card => {
+                const name = card.querySelector('h3').textContent.toLowerCase();
+                const ticket = card.querySelector('span:last-child').textContent.toLowerCase();
+                if (name.includes(term) || ticket.includes(term)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body></html>

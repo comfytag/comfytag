@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-type AppMode = 'attendee' | 'organizer'
+export type AppMode = 'attendee' | 'organizer'
 
 interface ModeState {
   mode: AppMode

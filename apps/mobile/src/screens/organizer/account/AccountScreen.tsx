@@ -46,15 +46,15 @@ function SettingsRow({
         {label}
       </Text>
       {badge ? (
-        <View style={[styles.rowBadge, { borderColor: badgeColor ?? colors.mobile.textMuted }]}>
-          <Text style={[styles.rowBadgeText, { color: badgeColor ?? colors.mobile.textMuted }]}>
+        <View style={[styles.rowBadge, { borderColor: badgeColor ?? colors.textPublic.muted }]}>
+          <Text style={[styles.rowBadgeText, { color: badgeColor ?? colors.textPublic.muted }]}>
             {badge}
           </Text>
         </View>
       ) : null}
       <ChevronRight
         size={18}
-        color={destructive ? '#EF4444' : colors.mobile.textMuted}
+        color={destructive ? '#EF4444' : colors.textPublic.muted}
         strokeWidth={2}
       />
     </AnimatedPressable>
@@ -135,10 +135,10 @@ export default function AccountScreen({ navigation }: Props) {
           />
           <View style={styles.divider} />
           <SettingsRow
-            icon={<ShieldCheck size={18} color={kycVerified ? colors.mobile.success : '#F59E0B'} strokeWidth={2} />}
+            icon={<ShieldCheck size={18} color={kycVerified ? colors.success.DEFAULT : '#F59E0B'} strokeWidth={2} />}
             label="KYC Verification"
             badge={kycVerified ? 'Verified' : 'Pending'}
-            badgeColor={kycVerified ? colors.mobile.success : '#F59E0B'}
+            badgeColor={kycVerified ? colors.success.DEFAULT : '#F59E0B'}
             onPress={() => navigation.navigate('Kyc')}
           />
         </View>
@@ -149,7 +149,7 @@ export default function AccountScreen({ navigation }: Props) {
         </View>
         <View style={styles.card}>
           <SettingsRow
-            icon={<RefreshCw size={18} color={colors.mobile.textSecondary} strokeWidth={2} />}
+            icon={<RefreshCw size={18} color={colors.textPublic.secondary} strokeWidth={2} />}
             label="Switch to Attendee Mode"
             onPress={handleSwitchMode}
           />
@@ -171,7 +171,7 @@ export default function AccountScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   scrollContent: {
     paddingBottom: sp[10],
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     letterSpacing: -0.3,
   },
 
@@ -194,10 +194,10 @@ const styles = StyleSheet.create({
   profileCard: {
     marginHorizontal: sp[5],
     marginVertical: sp[4],
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     paddingVertical: sp[5],
     alignItems: 'center',
   },
@@ -219,11 +219,11 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   profileEmail: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: sp[1],
   },
 
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   sectionLabelText: {
     fontSize: fs.xs,
     fontWeight: '700',
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
@@ -244,15 +244,15 @@ const styles = StyleSheet.create({
   card: {
     marginHorizontal: sp[5],
     marginBottom: sp[4],
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     overflow: 'hidden',
   },
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.mobile.border,
+    backgroundColor: colors.public.border,
     marginLeft: sp[4] + 18 + sp[3],
   },
 
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: fs.sm,
     fontWeight: '500',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   rowLabelDestructive: {
     color: '#EF4444',

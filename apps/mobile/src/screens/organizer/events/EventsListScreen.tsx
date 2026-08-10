@@ -29,10 +29,10 @@ type FilterOption = 'All' | 'Published' | 'Draft' | 'Completed' | 'Cancelled'
 const FILTER_OPTIONS: FilterOption[] = ['All', 'Published', 'Draft', 'Completed', 'Cancelled']
 
 const STATUS_BADGE: Record<string, { bg: string; text: string }> = {
-  draft:     { bg: '#292524', text: '#A8A29E' },
-  published: { bg: '#14532D', text: '#86EFAC' },
-  cancelled: { bg: '#450A0A', text: '#FCA5A5' },
-  completed: { bg: '#1C1917', text: '#78716C' },
+  draft:     { bg: '#F5F5F4', text: '#78716C' },
+  published: { bg: '#D1FAE5', text: '#065F46' },
+  cancelled: { bg: '#FEE2E2', text: '#991B1B' },
+  completed: { bg: '#F5F5F4', text: '#78716C' },
 }
 
 const STATUS_STRIP: Record<string, string> = {
@@ -189,7 +189,7 @@ export default function EventsListScreen({ navigation }: Props) {
         </View>
       ) : isError ? (
         <View style={styles.emptyContainer}>
-          <CalendarX size={48} color={colors.mobile.textMuted} strokeWidth={1.5} />
+          <CalendarX size={48} color={colors.textPublic.muted} strokeWidth={1.5} />
           <Text style={styles.emptyTitle}>Failed to load events</Text>
           <Text style={styles.emptySubtitle}>Pull down to try again</Text>
         </View>
@@ -214,7 +214,7 @@ export default function EventsListScreen({ navigation }: Props) {
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <CalendarX size={48} color={colors.mobile.textMuted} strokeWidth={1.5} />
+              <CalendarX size={48} color={colors.textPublic.muted} strokeWidth={1.5} />
               <Text style={styles.emptyTitle}>No events found</Text>
               <Text style={styles.emptySubtitle}>
                 {activeFilter === 'All'
@@ -234,7 +234,7 @@ export default function EventsListScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   header: {
     flexDirection: 'row',
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   addButton: {
     width: 44,
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand.DEFAULT,
   },
   filterPillInactive: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
   },
   filterPillText: {
     fontSize: fs.sm,
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   filterPillTextInactive: {
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   listContent: {
     paddingHorizontal: sp[4],
@@ -294,10 +294,10 @@ const styles = StyleSheet.create({
   },
   card: {
     flexDirection: 'row',
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     overflow: 'hidden',
   },
   statusStrip: {
@@ -313,11 +313,12 @@ const styles = StyleSheet.create({
   eventName: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
+    textTransform: 'capitalize',
   },
   eventMeta: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
   },
   ticketsSold: {
     fontSize: fs.xs,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   skeletonContainer: {
     padding: sp[4],
@@ -345,7 +346,7 @@ const styles = StyleSheet.create({
   skeletonCard: {
     height: 80,
     width: '100%',
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
   },
   emptyContainer: {
@@ -358,11 +359,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   emptySubtitle: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
     paddingHorizontal: sp[6],
   },

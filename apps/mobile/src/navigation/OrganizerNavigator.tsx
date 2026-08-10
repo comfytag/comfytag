@@ -1,6 +1,5 @@
 import React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { colors, layout } from '@comfytag/ui/tokens'
 import {
   LayoutDashboard,
   CalendarDays,
@@ -10,6 +9,7 @@ import {
 } from 'lucide-react-native'
 import type { OrganizerTabParamList } from './types'
 import { ErrorBoundary } from '../components/ui/ErrorBoundary'
+import { SharedTabBar } from '../components/navigation/SharedTabBar'
 import DashboardScreen from '../screens/organizer/dashboard/DashboardScreen'
 import OrganizerEventsStackNavigator from './OrganizerEventsStackNavigator'
 import OrganizerCheckInStackNavigator from './OrganizerCheckInStackNavigator'
@@ -20,34 +20,17 @@ const Tab = createBottomTabNavigator<OrganizerTabParamList>()
 
 export default function OrganizerNavigator() {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary theme="light">
     <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colors.mobile.surface,
-          borderTopColor: colors.mobile.border,
-          borderTopWidth: 1,
-          height: parseInt(layout.tabBarHeight),
-          paddingBottom: 8,
-        },
-        tabBarActiveTintColor: colors.brand.DEFAULT,
-        tabBarInactiveTintColor: colors.mobile.textMuted,
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          marginTop: 4,
-        },
-      }}
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <SharedTabBar {...props} theme="light" />}
     >
       <Tab.Screen
         name="Dashboard"
         component={DashboardScreen}
         options={{
           tabBarLabel: 'Dashboard',
-          tabBarIcon: ({ color }) => (
-            <LayoutDashboard size={24} color={color} strokeWidth={2} />
-          ),
+          tabBarIcon: ({ color }) => <LayoutDashboard size={22} color={color} strokeWidth={2} />,
         }}
       />
       <Tab.Screen
@@ -55,9 +38,7 @@ export default function OrganizerNavigator() {
         component={OrganizerEventsStackNavigator}
         options={{
           tabBarLabel: 'Events',
-          tabBarIcon: ({ color }) => (
-            <CalendarDays size={24} color={color} strokeWidth={2} />
-          ),
+          tabBarIcon: ({ color }) => <CalendarDays size={22} color={color} strokeWidth={2} />,
         }}
       />
       <Tab.Screen
@@ -65,9 +46,7 @@ export default function OrganizerNavigator() {
         component={OrganizerCheckInStackNavigator}
         options={{
           tabBarLabel: 'Check-in',
-          tabBarIcon: ({ color }) => (
-            <ScanFace size={24} color={color} strokeWidth={2} />
-          ),
+          tabBarIcon: ({ color }) => <ScanFace size={22} color={color} strokeWidth={2} />,
         }}
       />
       <Tab.Screen
@@ -75,9 +54,7 @@ export default function OrganizerNavigator() {
         component={PayoutsScreen}
         options={{
           tabBarLabel: 'Payouts',
-          tabBarIcon: ({ color }) => (
-            <Wallet size={24} color={color} strokeWidth={2} />
-          ),
+          tabBarIcon: ({ color }) => <Wallet size={22} color={color} strokeWidth={2} />,
         }}
       />
       <Tab.Screen
@@ -85,9 +62,7 @@ export default function OrganizerNavigator() {
         component={OrganizerAccountStackNavigator}
         options={{
           tabBarLabel: 'Account',
-          tabBarIcon: ({ color }) => (
-            <Settings size={24} color={color} strokeWidth={2} />
-          ),
+          tabBarIcon: ({ color }) => <Settings size={22} color={color} strokeWidth={2} />,
         }}
       />
     </Tab.Navigator>

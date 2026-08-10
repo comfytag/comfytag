@@ -15,11 +15,12 @@ import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
 import { AnimatedPressable } from '../../../components/ui/AnimatedPressable'
 import { useAuthStore, useModeStore } from '../../../store'
 import { useMyProfile, useFollowing } from '../../../hooks'
+import { FEATURES } from '../../../lib/features'
 import type { ProfileStackParamList } from '../../../navigation/types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type Props = StackScreenProps<ProfileStackParamList, 'Profile'>
+type Props = StackScreenProps<ProfileStackParamList, 'ProfileMain'>
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
@@ -136,21 +137,29 @@ export default function ProfileScreen({ navigation }: Props): React.ReactElement
             <Text style={styles.infoLabel}>Member since</Text>
             <Text style={styles.infoValue}>{formatDate(profile.createdAt)}</Text>
           </View>
-          <View style={[styles.infoRow, styles.infoRowMiddle]}>
+          <View
+            style={[
+              styles.infoRow,
+              styles.infoRowMiddle,
+              !FEATURES.faceVerification && styles.infoRowLast,
+            ]}
+          >
             <Text style={styles.infoLabel}>Account type</Text>
             <Text style={styles.infoValue}>{isPartner ? 'Organizer' : 'Attendee'}</Text>
           </View>
-          <AnimatedPressable
-            style={[styles.infoRow, styles.infoRowLast]}
-            onPress={() => navigation.navigate('FaceEnrollmentStatus')}
-            hapticStyle="light"
-          >
-            <Text style={styles.infoLabel}>Face Entry</Text>
-            <View style={styles.infoRowRight}>
-              <Text style={styles.infoValueBrand}>Manage</Text>
-              <ChevronRight size={14} color={colors.brand.DEFAULT} strokeWidth={2} />
-            </View>
-          </AnimatedPressable>
+          {FEATURES.faceVerification && (
+            <AnimatedPressable
+              style={[styles.infoRow, styles.infoRowLast]}
+              onPress={() => navigation.navigate('FaceEnrollmentStatus')}
+              hapticStyle="light"
+            >
+              <Text style={styles.infoLabel}>Face Entry</Text>
+              <View style={styles.infoRowRight}>
+                <Text style={styles.infoValueBrand}>Manage</Text>
+                <ChevronRight size={14} color={colors.brand.DEFAULT} strokeWidth={2} />
+              </View>
+            </AnimatedPressable>
+          )}
         </View>
 
         {/* Mode switch card */}
@@ -161,7 +170,7 @@ export default function ProfileScreen({ navigation }: Props): React.ReactElement
               style={styles.modeSwitchRow}
               hapticStyle="medium"
             >
-              <Text style={styles.modeSwitchText}>Switch to Organizer Mode</Text>
+              <Text style={styles.modeSwitchText}>Switch Mode</Text>
               <ChevronRight size={18} color={colors.brand.DEFAULT} strokeWidth={2} />
             </AnimatedPressable>
           </View>
@@ -178,7 +187,7 @@ export default function ProfileScreen({ navigation }: Props): React.ReactElement
               hapticStyle="light"
             >
               <Text style={styles.modeUpgradeText}>Become an Organizer</Text>
-              <ChevronRight size={18} color={colors.mobile.textMuted} strokeWidth={2} />
+              <ChevronRight size={18} color={colors.textPublic.muted} strokeWidth={2} />
             </AnimatedPressable>
           </View>
         )}
@@ -191,7 +200,7 @@ export default function ProfileScreen({ navigation }: Props): React.ReactElement
             hapticStyle="medium"
           >
             <Text style={styles.logoutText}>Log Out</Text>
-            <ChevronRight size={18} color={colors.mobile.error} strokeWidth={2} />
+            <ChevronRight size={18} color={colors.error.DEFAULT} strokeWidth={2} />
           </AnimatedPressable>
         </View>
 
@@ -206,7 +215,7 @@ export default function ProfileScreen({ navigation }: Props): React.ReactElement
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
 
   // ── Loading / error ───────────────────────────────────────────────────────
@@ -219,7 +228,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
   },
   retryPressable: {
@@ -239,7 +248,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: sp[4],
     paddingTop: sp[2],
     paddingBottom: sp[3],
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   headerSpacer: {
     width: 44,
@@ -248,7 +257,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
   },
   editButton: {
@@ -284,27 +293,27 @@ const styles = StyleSheet.create({
   avatarInitials: {
     fontSize: fs['2xl'],
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: '#FFFFFF',
     letterSpacing: 1,
   },
   displayName: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     marginBottom: 4,
   },
   displayEmail: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
 
   // ── Shared card ───────────────────────────────────────────────────────────
   card: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     marginBottom: sp[4],
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
   },
 
   // ── Stats card ────────────────────────────────────────────────────────────
@@ -324,12 +333,12 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
   },
   statDivider: {
     width: StyleSheet.hairlineWidth,
-    backgroundColor: colors.mobile.border,
+    backgroundColor: colors.public.border,
     marginVertical: sp[1],
   },
 
@@ -344,23 +353,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: sp[4],
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.mobile.border,
+    borderBottomColor: colors.public.border,
   },
   infoRowMiddle: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.mobile.border,
+    borderBottomColor: colors.public.border,
   },
   infoRowLast: {
     borderBottomWidth: 0,
   },
   infoLabel: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   infoValue: {
     fontSize: fs.sm,
     fontWeight: '500',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     flexShrink: 1,
     textAlign: 'right',
     marginLeft: sp[3],
@@ -396,7 +405,7 @@ const styles = StyleSheet.create({
   modeUpgradeText: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
 
   // ── Danger zone card ──────────────────────────────────────────────────────
@@ -414,7 +423,7 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.error,
+    color: colors.error.DEFAULT,
   },
 
   // ── Bottom spacer ─────────────────────────────────────────────────────────

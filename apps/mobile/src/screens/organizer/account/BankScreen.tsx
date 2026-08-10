@@ -61,7 +61,7 @@ function BankRow({ bank, onDelete }: BankRowProps) {
           <Text style={styles.bankName}>{bank.bankName}</Text>
           {bank.isActive && (
             <View style={styles.activeBadge}>
-              <BadgeCheck size={12} color={colors.mobile.success} strokeWidth={2} />
+              <BadgeCheck size={12} color={colors.success.DEFAULT} strokeWidth={2} />
               <Text style={styles.activeBadgeText}>Active</Text>
             </View>
           )}
@@ -166,7 +166,7 @@ export default function BankScreen({ navigation }: Props) {
           onPress={() => navigation.goBack()}
           hapticStyle="light"
         >
-          <ChevronLeft size={24} color={colors.mobile.textPrimary} strokeWidth={2} />
+          <ChevronLeft size={24} color={colors.textPublic.primary} strokeWidth={2} />
         </AnimatedPressable>
         <Text style={styles.headerTitle}>Bank Account</Text>
         <View style={styles.headerSpacer} />
@@ -227,7 +227,7 @@ export default function BankScreen({ navigation }: Props) {
                     value={bankName}
                     onChangeText={(v) => { setBankName(v); setFormError('') }}
                     placeholder="Bank name (e.g. First Bank)"
-                    placeholderTextColor={colors.mobile.textMuted}
+                    placeholderTextColor={colors.textPublic.muted}
                     autoCapitalize="words"
                   />
                   <TextInput
@@ -235,7 +235,7 @@ export default function BankScreen({ navigation }: Props) {
                     value={acctNumber}
                     onChangeText={(v) => { setAcctNumber(v); setFormError('') }}
                     placeholder="Account number"
-                    placeholderTextColor={colors.mobile.textMuted}
+                    placeholderTextColor={colors.textPublic.muted}
                     keyboardType="number-pad"
                     maxLength={10}
                   />
@@ -244,7 +244,7 @@ export default function BankScreen({ navigation }: Props) {
                     value={acctName}
                     onChangeText={(v) => { setAcctName(v); setFormError('') }}
                     placeholder="Account name"
-                    placeholderTextColor={colors.mobile.textMuted}
+                    placeholderTextColor={colors.textPublic.muted}
                     autoCapitalize="words"
                   />
                   {formError ? <Text style={styles.formError}>{formError}</Text> : null}
@@ -291,7 +291,7 @@ export default function BankScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   scrollContent: {
     paddingBottom: sp[10],
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
   },
   headerSpacer: {
@@ -326,10 +326,10 @@ const styles = StyleSheet.create({
   // Bank list
   list: {
     marginHorizontal: sp[5],
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     overflow: 'hidden',
     marginBottom: sp[4],
   },
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   bankName: {
     fontSize: fs.sm,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   activeBadge: {
     flexDirection: 'row',
@@ -365,16 +365,16 @@ const styles = StyleSheet.create({
   activeBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: colors.mobile.success,
+    color: colors.success.DEFAULT,
   },
   bankAcctName: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     marginTop: 2,
   },
   bankAcctNumber: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: 2,
   },
   deleteBtn: {
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   },
   rowDivider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.mobile.border,
+    backgroundColor: colors.public.border,
     marginHorizontal: sp[4],
   },
 
@@ -416,28 +416,28 @@ const styles = StyleSheet.create({
   // Form
   formCard: {
     marginHorizontal: sp[5],
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     padding: sp[5],
     marginBottom: sp[4],
   },
   formTitle: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     marginBottom: sp[4],
   },
   input: {
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     borderRadius: rd.lg,
     height: 48,
     paddingHorizontal: sp[4],
     fontSize: fs.sm,
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     marginBottom: sp[3],
   },
   formError: {
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     flex: 1,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     borderRadius: rd.lg,
     height: 44,
     alignItems: 'center',
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     fontSize: fs.sm,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   saveBtn: {
     flex: 1,
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   },
   skeletonRow: {
     height: 80,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
   },
 
@@ -498,11 +498,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   emptySubText: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
     marginTop: sp[2],
     lineHeight: 20,
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: fs.base,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   retryBtn: {
     paddingHorizontal: sp[6],

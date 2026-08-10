@@ -150,6 +150,12 @@ export const initiateTransfer = async (req, res, next) => {
         senderId,
         shareQuantity: qty,
         isPartial,
+        // Only in-app channel that carries this besides the email deep link
+        // (acceptLink/declineLink below) — the recipient needs it to call
+        // POST /tickets/transfer/accept|decline, and GET /tickets/transfer/incoming
+        // deliberately strips it from its response, so without this the app
+        // has no way to complete a transfer without leaving the app for email.
+        transferToken,
       },
       io,
     }).catch(err => console.error('[Notification] Transfer received failed:', err.message))
@@ -412,10 +418,29 @@ export const getIncomingTransfers = async (req, res, next) => {
       transferToken: { $ne: null },
     }).select('+transferToken').lean()
 
-    // Remove sensitive transferToken from response before sending to client
+    // Batch-fetch event details to avoid N+1 queries
+    const eventIds = [...new Set(pendingTransfers.map(t => t.event_id))]
+    const events = await Event.find({ _id: { $in: eventIds } }).lean()
+    const eventMap = Object.fromEntries(events.map(e => [e._id.toString(), e]))
+
+    // Remove sensitive transferToken from response before sending to client,
+    // and enrich with event metadata (mirrors getMyTickets/getAudience) so
+    // the review screen can show a real image/venue/date, not just the bare
+    // ticket fields.
     const transfers = pendingTransfers.map(t => {
       const { transferToken, ...rest } = t
-      return rest
+      const event = eventMap[t.event_id?.toString?.()]
+      return {
+        ...rest,
+        eventDate: event?.date || t.date,
+        eventTime: event?.startTime,
+        eventEndTime: event?.endTime,
+        eventVenue: event?.venue,
+        eventLocation: event?.location,
+        eventState: event?.state,
+        eventSlug: event?.slug,
+        eventImage: event?.images?.[0] || null,
+      }
     })
 
     res.status(200).json({

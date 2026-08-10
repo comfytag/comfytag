@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Elena Vance | ComfyTag Organizer Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#f7efeb",
+                    "surface-container-low": "#faf2ee",
+                    "on-surface-variant": "#4a4455",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e9e1dd",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed": "#25005a",
+                    "on-primary-container": "#ede0ff",
+                    "surface-bright": "#fff8f5",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#eaddff",
+                    "inverse-surface": "#33302d",
+                    "surface-tint": "#732ee4",
+                    "surface-container-highest": "#e9e1dd",
+                    "on-error-container": "#93000a",
+                    "secondary": "#855300",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "error-container": "#ffdad6",
+                    "on-surface": "#1e1b19",
+                    "inverse-primary": "#d2bbff",
+                    "surface-container-high": "#eee7e3",
+                    "outline": "#7b7487",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "surface-dim": "#e0d8d5",
+                    "tertiary": "#7a4000",
+                    "tertiary-fixed": "#ffdcc3",
+                    "on-secondary-fixed": "#2a1700",
+                    "surface-container": "#f4ece8",
+                    "surface": "#fff8f5",
+                    "on-tertiary-fixed": "#2f1500",
+                    "outline-variant": "#ccc3d8",
+                    "on-secondary-container": "#684000",
+                    "tertiary-container": "#9d5400",
+                    "secondary-fixed": "#ffddb8",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "background": "#fff8f5",
+                    "primary-container": "#7c3aed",
+                    "primary-fixed-dim": "#d2bbff",
+                    "secondary-container": "#fea619",
+                    "on-tertiary-container": "#ffe1cb",
+                    "on-background": "#1e1b19",
+                    "primary": "#630ed4",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar-width-expanded": "240px",
+                    "margin-desktop": "40px",
+                    "margin-mobile": "16px",
+                    "container-max": "1280px",
+                    "sidebar-width-collapsed": "72px",
+                    "gutter": "24px",
+                    "margin-tablet": "24px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-lg-mobile": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .text-naira::before { content: "₦"; }
+        .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -10px rgba(124, 58, 237, 0.15); }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center h-[72px] px-margin-desktop bg-surface/80 backdrop-blur-md border-b border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-headline-md font-bold text-primary">ComfyTag</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">Events</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">About</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">Help</a>
+</nav>
+</div>
+<div class="flex-1 max-w-md mx-8 hidden lg:block">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-high border-none rounded-full py-2 pl-10 pr-4 focus:ring-2 focus:ring-primary/20 text-body-md transition-all" placeholder="Search events..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors active:scale-95">account_balance_wallet</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a premium event attendee, styled in a high-key lighting setup with a soft beige background. The portrait shows a young professional wearing a sleek, modern blazer, reflecting a clean corporate and sophisticated aesthetic that aligns with the ComfyTag brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_XlR0yjVL8Swq7LHxVlTDnhXbXWE_SLMRt95PeJBPP48Jn0hSq5V2B12NtGrzoM2oSoyj1n_yTYaHPnxdsmoRvSLTU44YtdCRWbY7IQIfGM5yp-gqkTmTxHP6Urshy_J-H2VLpustWPjBWUezIu-ZG658mznHL3u035ROApE4LEdZZHDnFSlWf4PMJo8WxvQRSpinq1oDW-ueojuVCjorMxhAT48lNGSf3TFai5aCjmQpRIzYcGrNxA"/>
+</div>
+</div>
+</header>
+<main class="pt-[72px]">
+<!-- Hero Header -->
+<section class="relative">
+<div class="h-[280px] w-full overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="An expansive, cinematic wide-angle shot of a sophisticated event venue during sunset. The scene features architectural glass, soft purple and orange ambient lighting, and high-end modern furniture. The vibe is premium, serene, and professional, perfectly suited for an elite event organizer profile background." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAnGSG93zFOxvOVZ8px6IpqyMzJaSUde6fSmEb_mU09__2MQB3w2jqUb5LxrmNLlHPxSxkc0_SUAF3WgXPvYE41vZjKfgJO8TH-KzerBP-T_IP64XyuIRU_PbjicZHKaLjt7xNEx1n-QoJJonq-m0h4W-SXKLDBjKJS9idzdwMd1rS4GuSR3GmkUVLXlK6kZ3a_LXuVp2wPYh_lx0IK3VRMAuZyeGsr08IfaJRz6v0sGkdGpaQ8f3fShw')"></div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-desktop relative -mt-20">
+<div class="flex flex-col md:flex-row items-end gap-6 pb-8 border-b border-outline-variant/10">
+<div class="relative group">
+<div class="w-40 h-40 rounded-full border-[6px] border-background overflow-hidden shadow-lg bg-surface">
+<img class="w-full h-full object-cover" data-alt="A detailed portrait of Elena Vance, a premium event host. She is a visionary professional with a welcoming smile, dressed in a minimalist violet and white outfit. The setting is a bright, high-tech event registration lobby with soft bokeh. The overall visual style is crisp, professional, and reflects high-end corporate elegance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAV9lNJEs8n3W85kwEp8qJZoN_CTsVkgePiqQeVuF3kutG8oQo56SL7p36wLDfiYJD-aJE91w7YyUUSCvL2Oie978gr4lTm3Fhovu59qY4uq9AzTgWGi0tKtFHZHs9OZVh4vnE9jRpnpVyXifFSc-qpv9jH-q4g3td6LE4X6zVJ-b6c9oj7ixB1ZTRCydnm3HpfiArkq6Zs7nAQGJgazTKcVxQcB4D3qZseP0o6MkoXm_IGRsB_uMPyw"/>
+</div>
+<div class="absolute bottom-2 right-2 bg-primary text-on-primary p-1.5 rounded-full shadow-md">
+<span class="material-symbols-outlined text-[20px]" data-weight="fill">verified</span>
+</div>
+</div>
+<div class="flex-1 mb-2">
+<div class="flex flex-wrap items-center gap-3 mb-2">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Elena Vance</h1>
+<span class="px-3 py-1 bg-primary/10 text-primary rounded-full text-label-sm font-semibold">Verified Event Host</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                            Visionary event host dedicated to creating seamless biometric entry experiences through sustainable design and intelligent tracking.
+                        </p>
+</div>
+<div class="flex items-center gap-3 mb-2">
+<div class="flex gap-2 mr-4">
+<a class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all" href="#"><span class="material-symbols-outlined">public</span></a>
+<a class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all" href="#"><span class="material-symbols-outlined">alternate_email</span></a>
+</div>
+<button class="material-symbols-outlined w-10 h-10 flex items-center justify-center border-2 border-outline-variant text-on-surface-variant rounded-xl hover:bg-surface-container transition-all">share</button>
+<button class="bg-primary text-on-primary px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-primary-container transition-all active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined">person_add</span>
+                            Follow
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats Row -->
+<section class="py-10 bg-surface-container-low/30">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="glass-card p-6 rounded-2xl flex items-center gap-5 shadow-sm">
+<div class="w-14 h-14 rounded-2xl bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[32px]">event_available</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-on-surface">24</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Events Hosted</div>
+</div>
+</div>
+<div class="glass-card p-6 rounded-2xl flex items-center gap-5 shadow-sm">
+<div class="w-14 h-14 rounded-2xl bg-primary-container/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[32px]">group</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-on-surface">85K+</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Total Attendees</div>
+</div>
+</div>
+<div class="glass-card p-6 rounded-2xl flex items-center gap-5 shadow-sm">
+<div class="w-14 h-14 rounded-2xl bg-tertiary-container/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[32px]">star</span>
+</div>
+<div>
+<div class="font-headline-md text-headline-md text-on-surface">4.9 ★</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Host Rating</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Upcoming Events -->
+<section class="py-16">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<div class="flex justify-between items-center mb-10">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Upcoming Events</h2>
+<a class="text-primary font-bold flex items-center gap-1 hover:gap-2 transition-all" href="#">
+                        View All <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Event Card 1 -->
+<div class="bg-surface rounded-2xl overflow-hidden border border-outline-variant/10 shadow-sm hover-lift group">
+<div class="h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A vibrant jazz performance scene in Lagos, featuring a silhouette of a saxophone player against a backdrop of deep blues and purples. The lighting is moody and artistic with warm highlights on the brass instrument, capturing the soulful essence of Lagos Jazz Nights. High-quality digital photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDac3iPCTPXyTkzA9YQgqUojO9ysBhuhjAkuHQVoGAH8K0Tz1_juME1bsXPORCvf4HsL6Zp18TE7tsUqGWygqBizJy0L8R1-wZ2lV1SS2EWMJ0LR-GMu9XluKI2EDtX5VPtTHk31e5rExb_Twyf3BK2pLTormt72yTRU_Y2FGV3zo_5LpifNH2K5271IQT07sadFez2sZ4mJqHdzTaV2LMGOguWvYNIP8tR5xtabbhUGnqOlPB1hOtrow"/>
+<div class="absolute top-4 right-4 bg-surface/90 backdrop-blur-md px-3 py-1.5 rounded-xl font-bold text-primary shadow-sm">
+                                22 OCT
+                            </div>
+</div>
+<div class="p-6">
+<h3 class="font-headline-sm text-headline-sm mb-2 group-hover:text-primary transition-colors">Lagos Jazz Nights</h3>
+<div class="flex items-center gap-2 text-on-surface-variant mb-4">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="font-label-md text-label-md">Muson Centre, Lagos</span>
+</div>
+<div class="flex justify-between items-center pt-4 border-t border-outline-variant/10">
+<span class="font-headline-md text-headline-md text-on-surface text-naira">15,000</span>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-xl font-bold hover:bg-primary-container transition-all">Get Ticket</button>
+</div>
+</div>
+</div>
+<!-- Event Card 2 -->
+<div class="bg-surface rounded-2xl overflow-hidden border border-outline-variant/10 shadow-sm hover-lift group">
+<div class="h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A high-tech conference stage with large LED screens displaying abstract data visualizations in neon violet and electric blue. The setting is a grand convention center with sleek modern architecture, representing the Future Tech Summit. The aesthetic is clean, professional, and forward-thinking." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbtOFbALblbx5SHmO1YSdBqYMBLRcxjB27dxlLBNDWUORpcXqKs4hZSIsA-sgvtqlvDYLM18zF6QGJ6PRMwmjK5JpLLrmkLVGyYIsIf0zOZTdxOsYev22mBWGQ8Oyw72Cdv49uBebLX8plhAqIvbBjJmiNY8scexN3SZg9dX9DB2L2JKQTv0djay_bi5KKUFqZhivfagyjvkviE_KqB8kwfCLxL1qJEHVzJfJ2zPdXINQuKVSkxw55vg"/>
+<div class="absolute top-4 right-4 bg-surface/90 backdrop-blur-md px-3 py-1.5 rounded-xl font-bold text-primary shadow-sm">
+                                05 NOV
+                            </div>
+</div>
+<div class="p-6">
+<h3 class="font-headline-sm text-headline-sm mb-2 group-hover:text-primary transition-colors">Future Tech Summit</h3>
+<div class="flex items-center gap-2 text-on-surface-variant mb-4">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="font-label-md text-label-md">Eko Hotels, VI</span>
+</div>
+<div class="flex justify-between items-center pt-4 border-t border-outline-variant/10">
+<span class="font-headline-md text-headline-md text-on-surface text-naira">45,000</span>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-xl font-bold hover:bg-primary-container transition-all">Get Ticket</button>
+</div>
+</div>
+</div>
+<!-- Event Card 3 -->
+<div class="bg-surface rounded-2xl overflow-hidden border border-outline-variant/10 shadow-sm hover-lift group">
+<div class="h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A lush outdoor garden venue decorated with sustainable bamboo structures and elegant soft warm lighting. The atmosphere is an eco-friendly high-end gala, featuring tables with linen and botanical centerpieces. The style is sophisticated, organic, and premium, emphasizing sustainable event design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAFfZUyrFivY3dK1BqM5lqJ7x8Eiqc0CTHEJ2pgQ5iXwfqV992JT4_i8AgPwDxQwhbHCgr45mfDpko51F1jwI8w8QU_8o9PV3IzecUevJW-vKBPH2pGnbnJI33PvdHENDSmneRag5NbMHsYFifJ0w6MHQGuMn9lKEZaNiTzXXQfOORx0yw8tpw0jJ25A7OxN4I_3PyIVSiF1S42ljKY3GJYD46vz1wnHkC4tHGJhyiRsdANDf5AyU2lg"/>
+<div class="absolute top-4 right-4 bg-surface/90 backdrop-blur-md px-3 py-1.5 rounded-xl font-bold text-primary shadow-sm">
+                                18 DEC
+                            </div>
+</div>
+<div class="p-6">
+<h3 class="font-headline-sm text-headline-sm mb-2 group-hover:text-primary transition-colors">Sustainable Design Gala</h3>
+<div class="flex items-center gap-2 text-on-surface-variant mb-4">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="font-label-md text-label-md">The Wheatbaker, Ikoyi</span>
+</div>
+<div class="flex justify-between items-center pt-4 border-t border-outline-variant/10">
+<span class="font-headline-md text-headline-md text-on-surface text-naira">30,000</span>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-xl font-bold hover:bg-primary-container transition-all">Get Ticket</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Past Events Gallery -->
+<section class="py-16 bg-surface-container-low/20">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-10">Past Successes</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 h-[500px]">
+<div class="relative rounded-2xl overflow-hidden group col-span-2 row-span-2">
+<img class="w-full h-full object-cover" data-alt="A wide-shot panorama of a successful stadium concert with thousands of attendees holding up glowing lights. The stage features high-end pyrotechnics and a massive LED screen. The photo captures a moment of intense energy and collective joy at a premium large-scale event managed by ComfyTag." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBquPNQ4TIH589sRrgdm8m-YSoHZP8Th4giR1TuEkJHUqQ_MQnK3pJgnIgYYOKLQSrYGfMzt9KCZyv2WH3IZFKmBQiW7yZERnumH4-a-vtMIew_bMg6ku8YCXxdXijpTOdFvi98caFwHvKlWmuPVRWEfgd8SqwZ55cHuCIIVDFo8h78wn_WpGZdiFCFdENmV5DyfeWLOCbWgrG-G7rsxHc7FhlHABiE7iiIXTgtsRD3mTq54tVLne5k-A"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
+<h4 class="text-on-primary font-bold text-headline-md">World Beat Festival 2023</h4>
+<p class="text-on-primary/80 font-label-md">25,000 Attendees • Sold Out</p>
+</div>
+</div>
+<div class="relative rounded-2xl overflow-hidden group">
+<img class="w-full h-full object-cover" data-alt="A close-up shot of an artistic biometric check-in kiosk at a high-end corporate event. The kiosk is sleek, made of brushed aluminum with a subtle purple glow, fitting the ComfyTag brand. Professionals in the background are seen moving smoothly through the entry point, showcasing intelligent tracking." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCScrJOILyn7A3Hm_JjI6TEDZf3j9rLs7S-kJEyh2avkJdE2ANEQKEnvT2Yw41_bsCk2h2o8RaubTm_NjVfLXTZgxZ7WdeDFCDBl5j20YAvFoSv2-F8Vou3kmKNoQWNcWE6dQYrOjQgYSGsAwEOIiqd1ey-IU9KLZwO40dDrZZZzc576VN2OXxv7z0ZY4EcxhAGzsqltR3nZjrc4onoZooxWcw35teBm3jRSveXhBSswbi__jigOr2i-A"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<h4 class="text-on-primary font-bold text-label-md">CEO Round Table</h4>
+</div>
+</div>
+<div class="relative rounded-2xl overflow-hidden group">
+<img class="w-full h-full object-cover" data-alt="An elegant evening garden party at a luxury villa. Guests are seen socializing around a illuminated swimming pool with violet ambient lighting. The scene is refined, peaceful, and showcases the high-quality lifestyle events curated by the organizer. Warm white and violet color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbS2zoJwJk4LvrfK_1SYr45dmsEraUAcNhfbiQAiz0-mKYMcu2g3uejKL6XTVIA9tvO9hGd9JJDUN4xejSGBKOdi-abMn-B4hm27iuXGsFMJ--FiFIjSukw1OLbw418ZVgbm_bJglQchDssqYwRW5vbtai8HakG3FeEemZf4nqtdNNoZU-AxfRRbpPZxLI_rssHgKVZT0tYrsGgkc-iW3taEz0-zZ8Jzqw2pRAfEbpqvVAHCaeQCbNQw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<h4 class="text-on-primary font-bold text-label-md">Private Villa Soiree</h4>
+</div>
+</div>
+<div class="relative rounded-2xl overflow-hidden group col-span-2">
+<img class="w-full h-full object-cover" data-alt="A minimalist white art gallery space featuring large-scale digital projections of abstract fluid shapes in violet and gold. People are silhouetted against the bright projections, creating a modern, high-art atmosphere. The shot emphasizes the intelligent and artistic approach to event hosting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBn1_j9AFBVbIXoI50s8VTdSyMp3RZJrVQefG9a5azf-gx9aKReWcF6qZcNLx0-t_tJ365PxvPLEZSmbPeiGD4G0nJ1TmOx4EW7o33Chpl_0inlKLD70v89qHoyvMxbLSt1LsE69cxyXBvKgNLMo6qoKM9AxH0FCl5SIFa0Do1v8sh9DdEgFCLBRPL3eDSUmRYYy5ydlmeTzaI1Jo-XE8VS2-9tewGBy__Qbik4rH72kabm2ZjpPCeZfg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+<h4 class="text-on-primary font-bold text-label-md">Digital Art Expo</h4>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-inverse-surface text-inverse-on-surface py-12 px-margin-desktop">
+<div class="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+<div>
+<span class="text-headline-md font-bold text-primary-fixed-dim">ComfyTag</span>
+<p class="text-surface-variant mt-2 text-label-md max-w-xs">Premium biometric entry and intelligent event tracking solutions.</p>
+</div>
+<div class="flex gap-8">
+<a class="text-surface-variant hover:text-primary-fixed-dim transition-colors text-label-md" href="#">Terms</a>
+<a class="text-surface-variant hover:text-primary-fixed-dim transition-colors text-label-md" href="#">Privacy</a>
+<a class="text-surface-variant hover:text-primary-fixed-dim transition-colors text-label-md" href="#">Support</a>
+</div>
+<div class="flex gap-4">
+<button class="w-10 h-10 rounded-full border border-outline-variant/30 flex items-center justify-center hover:bg-primary-fixed-dim hover:text-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+</div>
+</div>
+<div class="max-w-container-max mx-auto border-t border-outline-variant/10 mt-10 pt-6 text-center text-surface-variant/60 text-label-sm">
+            © 2024 ComfyTag. All rights reserved. Professional Event Management Ecosystem.
+        </div>
+</footer>
+<script>
+        // Micro-interaction for follow button
+        const followBtn = document.querySelector('button:has(span:contains("person_add"))');
+        if(followBtn) {
+            followBtn.addEventListener('click', function() {
+                const icon = this.querySelector('.material-symbols-outlined');
+                const textNode = this.childNodes[2];
+                
+                if (this.classList.contains('bg-primary')) {
+                    this.classList.remove('bg-primary', 'text-on-primary');
+                    this.classList.add('bg-surface-container', 'text-on-surface');
+                    icon.textContent = 'check';
+                    textNode.textContent = 'Following';
+                } else {
+                    this.classList.add('bg-primary', 'text-on-primary');
+                    this.classList.remove('bg-surface-container', 'text-on-surface');
+                    icon.textContent = 'person_add';
+                    textNode.textContent = 'Follow';
+                }
+            });
+        }
+
+        // Custom selector helper for the script above since :contains isn't standard JS
+        function containsText(selector, text) {
+            const elements = document.querySelectorAll(selector);
+            return Array.from(elements).filter(el => el.textContent.includes(text));
+        }
+    </script>
+</body></html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ComfyTag - My Ticket Wallet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e2e2e2",
+                    "primary-fixed": "#eaddff",
+                    "on-primary-fixed": "#25005a",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-secondary-container": "#fffbff",
+                    "surface": "#f9f9f8",
+                    "on-primary-container": "#ede0ff",
+                    "primary": "#630ed4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary": "#704500",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#d2bbff",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary": "#6e3aca",
+                    "on-secondary-fixed-variant": "#581db3",
+                    "outline": "#7b7487",
+                    "inverse-surface": "#2f3130",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-error-container": "#93000a",
+                    "background": "#f9f9f8",
+                    "primary-container": "#7c3aed",
+                    "on-tertiary-fixed": "#2a1700",
+                    "surface-dim": "#dadad9",
+                    "secondary-fixed": "#ebddff",
+                    "outline-variant": "#ccc3d8",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "inverse-primary": "#d2bbff",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "on-tertiary-container": "#ffe1c0",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "surface-bright": "#f9f9f8",
+                    "surface-container-high": "#e8e8e7",
+                    "on-surface-variant": "#4a4455",
+                    "on-background": "#1a1c1c",
+                    "secondary-container": "#8856e5",
+                    "on-secondary-fixed": "#250059",
+                    "surface-container-low": "#f3f4f3",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#ffddb8",
+                    "surface-tint": "#732ee4",
+                    "secondary-fixed-dim": "#d3bbff",
+                    "tertiary-container": "#905b00",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "40px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "stack-lg": "24px",
+                    "stack-md": "16px",
+                    "margin-tablet": "32px",
+                    "gutter": "16px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9f8; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ticket-clip-path {
+            mask-image: radial-gradient(circle at 0 50%, transparent 12px, black 12px), 
+                        radial-gradient(circle at 100% 50%, transparent 12px, black 12px);
+            mask-position: left, right;
+            mask-size: 100% 100%;
+            mask-repeat: no-repeat;
+        }
+        .glass-nav {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="text-on-background min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-sm h-16 flex justify-between items-center px-margin-mobile">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary hover:opacity-80 transition-opacity active:scale-95 duration-200">menu</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">ComfyTag</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" alt="A professional profile portrait of a stylish young Nigerian woman with a warm, friendly smile, set against a soft lavender and white studio background. The lighting is clean and high-key, reflecting a premium modernist aesthetic that fits a high-end tech lifestyle application. The image is crisp with natural depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTa9lHvZJaoK9aGfHD_FyMhon-JbVMgT_38mGqnmE5TMtK6FeZxE1OWUbRUbbPB5TB1x3WbRrf2kHgzNJHKVP547e2HoivZzFK-EaVYKKur1qeXkzNyOVhesov-SaTVsEGRkIqwRWkUoG86c3BUyWJvL6xx5eSJRDJhqx0zfmB1EGjkM7c_EMaDfoOsKAon0993scTTNdVjXzxo-NVV9BMOvbGsF18rJWBQRZbr-9Svb-mKfS64QxInw">
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="pt-24 px-margin-mobile max-w-2xl mx-auto">
+<!-- Header Section -->
+<section class="mb-section-gap">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-stack-sm">My Tickets</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your upcoming event experiences</p>
+</section>
+<!-- Filter Tabs -->
+<div class="flex gap-stack-md mb-stack-lg overflow-x-auto pb-2 no-scrollbar">
+<button class="px-6 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md transition-all active:scale-95 shadow-sm">
+                Upcoming
+            </button>
+<button class="px-6 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md hover:bg-surface-variant transition-all active:scale-95">
+                Past
+            </button>
+</div>
+<!-- Ticket List (Bento-style Stack) -->
+<div class="flex flex-col gap-stack-lg">
+<!-- Ticket Card 1 -->
+<div class="group relative bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 border border-outline-variant/10">
+<div class="flex flex-col md:flex-row h-full">
+<!-- Image Side -->
+<div class="relative w-full md:w-40 h-32 md:h-auto overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="A vibrant night-time aerial shot of a large music concert in Lagos, featuring a sea of glowing light-sticks in shades of violet and amber. High-quality professional photography capturing the electric energy of the Nigerian music scene. The atmosphere is cinematic, featuring soft bokeh and sharp focus on the stage lights in the distance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACnM7iJ3BuEIPq1OcV9PXin-SMTEKPqVpsycEejl7PjGHom2jcaUqQZrikc57aIYAbe5V3QDsS_xF6rq45PxDkNmNfY_h0QlK5e-h8GQprJ7dZmnFcXJqbgXXd_FJ1Yz1vy81vVA7mFn3v45Y9nfkyy2BuwkK1eL9Hf4EbuUHVj1tbDdynN5XaOH90IyPmH5Mh4y-vTd8dsUcKpN2HXpFoLbVj4cPOkAMJNWTDatlbAGoa1sJ7ix1WCw">
+<div class="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent"></div>
+</div>
+<!-- Content Side -->
+<div class="flex-1 p-stack-md flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-base">
+<h3 class="font-title-lg text-title-lg text-on-surface leading-tight">Afrobeats Sunset Live</h3>
+<div class="bg-primary-fixed/30 text-on-primary-fixed px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                                    Ready for Entry
+                                </div>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant mb-stack-sm">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<p class="font-body-md text-body-md">Saturday, Oct 24 • 6:00 PM</p>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<p class="font-body-md text-body-md">Eko Atlantic, Lagos</p>
+</div>
+</div>
+<div class="mt-stack-md pt-stack-md border-t border-outline-variant/20 flex justify-between items-center">
+<span class="font-label-md text-label-md text-outline">SEC B • ROW 12 • SEAT 4</span>
+<button class="text-primary font-bold text-body-md hover:opacity-80 flex items-center gap-1">
+                                View Ticket <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Ticket Card 2 (Premium Gold Variant) -->
+<div class="group relative bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 border border-outline-variant/10">
+<div class="flex flex-col md:flex-row h-full">
+<div class="relative w-full md:w-40 h-32 md:h-auto overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="A minimalist, high-end fine dining event setup in a minimalist modern pavilion. Soft warm amber lighting reflects off crystal glassware and polished surfaces. The aesthetic is clean, luxurious, and quiet, emphasizing premium exclusivity. High-key lighting with a focus on pristine textures and a sophisticated white and soft lavender palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-41mjd4GoQeRW6KSAGuT-erNF6BK4zDq8SgDCO109-zvBVFe83kPiGcCx1Wu_lM0RwjxzjOF5tasb9aQtLmRgYnrgJHT_8aCj-iiVlbzVcHKU4FoarUesgTj3T8_5Fv3lDv8rSy-OMHemvmGOJq1vpd7PW1ULNMxB61BTy2oVjz2JfcC-2Hca4_xp4DOV-K3k7V5utEdAKTB7oNXgnlvuYai4FMi-ZsYeKKV75Kh7Cnmtg4oEbFSMYw">
+<div class="absolute top-2 left-2 bg-tertiary-fixed text-on-tertiary-fixed px-2 py-0.5 rounded text-[10px] font-bold">VIP</div>
+</div>
+<div class="flex-1 p-stack-md flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-base">
+<h3 class="font-title-lg text-title-lg text-on-surface leading-tight">The Nigerian Tech Summit</h3>
+<div class="bg-primary-fixed/30 text-on-primary-fixed px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                                    Ready for Entry
+                                </div>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant mb-stack-sm">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<p class="font-body-md text-body-md">Friday, Nov 12 • 9:00 AM</p>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<p class="font-body-md text-body-md">Landmark Centre, VI</p>
+</div>
+</div>
+<div class="mt-stack-md pt-stack-md border-t border-outline-variant/20 flex justify-between items-center">
+<span class="font-label-md text-label-md text-outline">ALL ACCESS PASS</span>
+<button class="text-primary font-bold text-body-md hover:opacity-80 flex items-center gap-1">
+                                View Ticket <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State / Past Event Placeholder Hint -->
+<div class="p-stack-lg border-2 border-dashed border-outline-variant/30 rounded-xl flex flex-col items-center justify-center text-center opacity-60">
+<span class="material-symbols-outlined text-outline text-[40px] mb-stack-sm">history</span>
+<p class="font-body-md text-body-md text-on-surface-variant italic">Your past tickets will appear in the 'Past' tab.</p>
+</div>
+</div>
+<!-- Featured Section (Bento Element) -->
+<div class="mt-section-gap bg-secondary-fixed text-on-secondary-fixed rounded-2xl p-stack-lg relative overflow-hidden">
+<div class="relative z-10 flex flex-col gap-base max-w-[60%]">
+<span class="font-label-md text-label-md uppercase tracking-widest text-on-secondary-fixed-variant">Member Exclusive</span>
+<h4 class="font-headline-md text-headline-md">Get 20% off your next booking</h4>
+<p class="font-body-md text-body-md opacity-80 mb-stack-md">Use code COMFY20 at checkout for any upcoming concert this season.</p>
+<button class="w-fit bg-primary text-white px-6 py-2 rounded-full font-label-md text-label-md shadow-lg active:scale-95 transition-transform">Claim Offer</button>
+</div>
+<div class="absolute -right-12 -bottom-12 w-64 h-64 bg-primary/20 rounded-full blur-3xl"></div>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 opacity-20">
+<span class="material-symbols-outlined text-[120px]">confirmation_number</span>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-stack-sm px-margin-mobile border-t border-outline-variant/20 bg-surface/80 backdrop-blur-xl z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-md text-label-md mt-1">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-md text-label-md mt-1">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-primary-fixed/30 rounded-full px-4 py-1 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">confirmation_number</span>
+<span class="font-label-md text-label-md mt-1">Tickets</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md mt-1">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md mt-1">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple Interaction logic for tabs
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.parentElement.classList.contains('flex')) {
+                    this.parentElement.querySelectorAll('button').forEach(b => {
+                        b.classList.remove('bg-primary', 'text-on-primary', 'shadow-sm');
+                        b.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                    });
+                    this.classList.add('bg-primary', 'text-on-primary', 'shadow-sm');
+                    this.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+                }
+            });
+        });
+
+        // Add subtle parallax to ticket cards
+        window.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.group');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (x > 0 && x < rect.width && y > 0 && y < rect.height) {
+                    const rotateX = (y / rect.height - 0.5) * 4;
+                    const rotateY = (x / rect.width - 0.5) * -4;
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                } else {
+                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+                }
+            });
+        });
+    </script>
+</body></html>

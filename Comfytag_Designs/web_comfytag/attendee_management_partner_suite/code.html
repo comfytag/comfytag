@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0F0F0F;
+            color: #f7efeb;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(204, 195, 216, 0.1);
+        }
+        .status-pill {
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .shimmer {
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .scan-line {
+            height: 2px;
+            background: #7c3aed;
+            position: absolute;
+            width: 100%;
+            top: 0;
+            left: 0;
+            box-shadow: 0 0 15px #7c3aed;
+            animation: scan 3s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0f0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #33302d;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a4455;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error": "#ba1a1a",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "on-primary-fixed-variant": "#5a00c6",
+                      "primary-container": "#7c3aed",
+                      "surface-tint": "#732ee4",
+                      "outline-variant": "#ccc3d8",
+                      "on-secondary-fixed-variant": "#653e00",
+                      "primary": "#630ed4",
+                      "on-primary-container": "#ede0ff",
+                      "secondary-container": "#fea619",
+                      "on-primary": "#ffffff",
+                      "background": "#0F0F0F",
+                      "on-surface-variant": "#4a4455",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-high": "#eee7e3",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "tertiary-container": "#9d5400",
+                      "outline": "#7b7487",
+                      "inverse-primary": "#d2bbff",
+                      "surface": "#0F0F0F",
+                      "inverse-on-surface": "#f7efeb",
+                      "secondary": "#855300",
+                      "on-surface": "#f7efeb",
+                      "on-error-container": "#93000a",
+                      "surface-container-highest": "#e9e1dd",
+                      "on-error": "#ffffff",
+                      "on-background": "#f7efeb",
+                      "on-secondary-fixed": "#2a1700",
+                      "inverse-surface": "#33302d",
+                      "primary-fixed": "#eaddff",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed": "#2f1500",
+                      "surface-container-lowest": "#1A1A1A",
+                      "surface-container-low": "#faf2ee",
+                      "on-tertiary-container": "#ffe1cb",
+                      "surface-dim": "#e0d8d5",
+                      "tertiary": "#7a4000",
+                      "secondary-fixed": "#ffddb8",
+                      "secondary-fixed-dim": "#ffb95f",
+                      "tertiary-fixed": "#ffdcc3",
+                      "surface-bright": "#fff8f5",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#e9e1dd",
+                      "on-secondary-container": "#684000",
+                      "on-primary-fixed": "#25005a",
+                      "primary-fixed-dim": "#d2bbff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sidebar-width-expanded": "240px",
+                      "gutter": "24px",
+                      "margin-mobile": "16px",
+                      "margin-tablet": "24px",
+                      "base": "8px",
+                      "margin-desktop": "40px",
+                      "sidebar-width-collapsed": "72px",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "display-lg-mobile": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Partner Side Navigation Shell -->
+<nav class="fixed left-0 top-0 h-full z-40 flex flex-col w-sidebar-width-expanded bg-inverse-surface dark:bg-surface-container-lowest shadow-lg">
+<div class="p-6 flex flex-col gap-1">
+<h1 class="text-headline-sm font-headline-sm text-primary-fixed">Partner Suite</h1>
+<p class="text-label-sm text-surface-variant">Event Management</p>
+</div>
+<div class="mt-4 flex-1 flex flex-col gap-1">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<!-- Events -->
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">event</span>
+<span class="font-label-md text-label-md">Events</span>
+</a>
+<!-- Attendees (ACTIVE) -->
+<a class="flex items-center gap-3 bg-primary-container/20 text-primary-fixed border-l-4 border-primary-container px-4 py-3 transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-md text-label-md">Attendees</span>
+</a>
+<!-- Analytics -->
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<!-- Payouts -->
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Payouts</span>
+</a>
+<!-- Settings -->
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+<div class="mt-auto p-4 flex flex-col gap-4">
+<button class="w-full bg-primary-container text-on-primary py-2.5 rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                Create Event
+            </button>
+<div class="flex flex-col gap-1 border-t border-outline-variant/10 pt-4">
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- Main Content Shell -->
+<main class="ml-sidebar-width-expanded min-h-screen flex flex-col">
+<!-- Top Bar -->
+<header class="fixed top-0 right-0 left-sidebar-width-expanded h-16 z-30 flex justify-between items-center px-gutter bg-surface dark:bg-inverse-surface border-b border-outline-variant/20">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Attendee Verification</h2>
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-highest/20 rounded-full border border-outline-variant/10">
+<span class="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+<span class="text-label-sm text-surface-variant uppercase tracking-wider">Live System</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative group">
+<span class="material-symbols-outlined text-surface-variant group-hover:text-primary transition-colors cursor-pointer">notifications</span>
+<span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-error rounded-full border-2 border-inverse-surface"></span>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/20 cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a tech-focused event manager with sharp, modern features, set against a dark cinematic background with subtle violet and gold light flares. The lighting is low-key and high-contrast, emphasizing a premium corporate persona for a luxury event management platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgghpEx3aEGl80hijb73QZpFNQxVLp1k0wOXDnNZXYnWfwCi8t1OEogj0d12SvPolicPDjCvOAhNFQAAc0hIxbpyyfzH--OlXhw0bUWC1zoab476T_YBJ57-XLsOf_ZZYSfcKZlEO9WFh8DbcaGVQe9YFahZZVha_3zR-p21yAUeakUdYCWYKaUB4rKuul7KPCD8g24W3gJzbY_qzhvB70DtkEOVmwASxV2tHXwwKrnYwQK1RV1WCmng"/>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="mt-16 p-gutter flex-1 grid grid-cols-12 gap-gutter">
+<!-- Left Side: Table & Controls -->
+<div class="col-span-8 flex flex-col gap-6">
+<!-- Stats Row -->
+<div class="grid grid-cols-3 gap-6">
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2">
+<span class="text-label-md text-surface-variant">Total Attendees</span>
+<div class="flex items-end gap-2">
+<span class="font-headline-lg text-headline-lg">1,284</span>
+<span class="text-[#10B981] text-label-sm flex items-center mb-1"><span class="material-symbols-outlined text-[14px]">arrow_upward</span> 12%</span>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2">
+<span class="text-label-md text-surface-variant">Checked In</span>
+<div class="flex items-end gap-2">
+<span class="font-headline-lg text-headline-lg">856</span>
+<span class="text-surface-variant text-label-sm mb-1">/ 67%</span>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-xl flex flex-col gap-2">
+<span class="text-label-md text-surface-variant">Pending Arrival</span>
+<div class="flex items-end gap-2">
+<span class="font-headline-lg text-headline-lg text-secondary-container">428</span>
+<span class="text-surface-variant text-label-sm mb-1">Est. 2h</span>
+</div>
+</div>
+</div>
+<!-- Table Header & Filters -->
+<div class="glass-panel rounded-xl flex flex-col overflow-hidden">
+<div class="p-6 border-b border-outline-variant/10 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-surface-variant">search</span>
+<input class="bg-[#212121] border border-outline-variant/10 text-on-surface rounded-lg pl-10 pr-4 py-2 w-80 focus:ring-2 focus:ring-primary-container outline-none transition-all" placeholder="Search by name, email or ticket ID..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-4 py-2 rounded-lg bg-[#212121] border border-outline-variant/10 text-on-surface hover:bg-white/5 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                                    Filters
+                                </button>
+<button class="px-4 py-2 rounded-lg bg-[#212121] border border-outline-variant/10 text-on-surface hover:bg-white/5 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                    Export
+                                </button>
+</div>
+</div>
+<div class="flex gap-2 p-1 bg-[#212121] rounded-lg border border-outline-variant/10">
+<button class="px-3 py-1 rounded-md text-label-sm bg-primary text-on-primary">All</button>
+<button class="px-3 py-1 rounded-md text-label-sm text-surface-variant hover:text-on-surface">Checked In</button>
+<button class="px-3 py-1 rounded-md text-label-sm text-surface-variant hover:text-on-surface">Pending</button>
+</div>
+</div>
+<!-- Datatable -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#1a1a1a] text-surface-variant text-label-sm uppercase tracking-wider">
+<th class="px-6 py-4 font-semibold">Attendee</th>
+<th class="px-6 py-4 font-semibold">Ticket Tier</th>
+<th class="px-6 py-4 font-semibold">Arrival Time</th>
+<th class="px-6 py-4 font-semibold">Status</th>
+<th class="px-6 py-4 font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-white/5 transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary-fixed overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a high-profile event attendee with elegant features and stylish evening wear. The background is softly blurred with bokeh effects of a premium gala event. Dark mode aesthetics with deep shadows and soft violet highlight lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7yKPxL39UGyYAFx39g0GEja47mgFPnxHon4gOApUrzn_i95JpzKNaIhkzF7FJLvTxJ6c0tbgpyH0FPfwptzhuOayc94hyXCnqey3boyDNzCC3HSqOe7hNG-HJENswpCmKHrAdc-oDu4cKEtjQmXkySjCVe4YIQgf5tzM_hTQlnPqFXzjYHt6iyRX8k3u2fnkpCDLSDpTU8HAaxy-LNLa9ZDCNSFMidFVBG6DAiTUwLQab5wVZqV5Lhg"/>
+</div>
+<div>
+<div class="font-medium text-on-surface">Marcus Sterling</div>
+<div class="text-[12px] text-surface-variant">#VIP-9921-A</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[#FEA619] font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                                            Titanium VIP
+                                        </span>
+</td>
+<td class="px-6 py-4 text-surface-variant text-label-md">19:42 PM</td>
+<td class="px-6 py-4">
+<span class="status-pill bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">Checked In</span>
+</td>
+<td class="px-6 py-4">
+<button class="p-2 rounded-lg text-surface-variant hover:bg-primary-container hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary-fixed overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of a creative professional attendee with an artistic and sophisticated look. The lighting uses neon accents of blue and violet against a deep black background, maintaining the dark corporate theme of the platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDA3oMQYe4uknSLGy17_YOr0qRzWKg_IltYRXeyVmMAuZNvKQHETFL7AxgIqGRT---0V7eZh-DEUa3flkDQd_5stNk2Scd7F3Tjsuvr3y5ElUTTA_rXkjqvUGPX7EYwfbpHujWX_Xw349sqpTPlnOhD-JhH515YcQwDUscVhjuYZSLwLEMZ9FCFqb1agPFMRErf6yXQ2xJVbx0FA5J5UxrRPwkQWDbvSTCCefmcLtSVyCKqS0IdFF2t7w"/>
+</div>
+<div>
+<div class="font-medium text-on-surface">Elena Rodriguez</div>
+<div class="text-[12px] text-surface-variant">#GA-8820-B</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-surface-variant font-medium flex items-center gap-1">
+                                            General Entry
+                                        </span>
+</td>
+<td class="px-6 py-4 text-surface-variant text-label-md">--:--</td>
+<td class="px-6 py-4">
+<span class="status-pill bg-outline-variant/10 text-surface-variant border border-outline-variant/20">Pending</span>
+</td>
+<td class="px-6 py-4">
+<button class="p-2 rounded-lg text-surface-variant hover:bg-primary-container hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary-fixed overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of a young entrepreneur attendee with a sharp, modern appearance. Cinematic lighting with deep shadows and warm gold highlights. The background is a dark, luxury interior with high-quality textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVjX5F_CNqGzNzzC96Q1Q1KH9maEEX8vmJrUs-6yNA1Puu3P1S4V2XsS7LraMy7JjVTo12OtiL_gn-534xViC2nf9ccKdP5bXuSLEMB9K54wpi_r4GvD9QWbR2B5GWOTF4hhNPjppnObHMFHL0TDNba_CbyPukDEn1JhTGd248zSmcWM6t0DLtIgONOmv5KGZe2i8hAVL7mhevHCVuLbqFToMhSywKykrlThTZwuDg4jFcHOXbATJ0EQ"/>
+</div>
+<div>
+<div class="font-medium text-on-surface">Julian Chen</div>
+<div class="text-[12px] text-surface-variant">#VIP-9945-C</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[#FEA619] font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                                            Gold VIP
+                                        </span>
+</td>
+<td class="px-6 py-4 text-surface-variant text-label-md">20:05 PM</td>
+<td class="px-6 py-4">
+<span class="status-pill bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20">Checked In</span>
+</td>
+<td class="px-6 py-4">
+<button class="p-2 rounded-lg text-surface-variant hover:bg-primary-container hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary-fixed overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close up facial portrait of an elegant woman with refined features. Low-key dramatic lighting on a dark black background. Modern corporate aesthetic with high-end texture and clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPA4HehmhvoBWUv0pzgcjxtUXCEU2sUOvXfAXfo29njnQS181k_iw8q6ZI8cCM7Bhf-49PMLKSdW8nDgzSfI4w-5V4cfn67A5dsoXndlbgDTSotVtpxSmkEO7KOeyGS2knTQ7pNIng14ozAd9Tj23paSJjD4SpbdI_uhEXN7ba_6A1NUmukOPLegA6UKB1jtQkqwfICmo50E_Wob5HQMHT9ronEiRngoiMfE9Yx5Ku8LMlbubXYWuQkg"/>
+</div>
+<div>
+<div class="font-medium text-on-surface">Sarah Van der Wood</div>
+<div class="text-[12px] text-surface-variant">#VIP-1102-S</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-[#FEA619] font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                                            Platinum VIP
+                                        </span>
+</td>
+<td class="px-6 py-4 text-surface-variant text-label-md">--:--</td>
+<td class="px-6 py-4">
+<span class="status-pill bg-outline-variant/10 text-surface-variant border border-outline-variant/20">Pending</span>
+</td>
+<td class="px-6 py-4">
+<button class="p-2 rounded-lg text-surface-variant hover:bg-primary-container hover:text-on-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-6 border-t border-outline-variant/10 flex items-center justify-between">
+<span class="text-label-md text-surface-variant">Showing 1-10 of 1,284 attendees</span>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg border border-outline-variant/10 text-surface-variant hover:bg-white/5 disabled:opacity-50">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 rounded-lg border border-outline-variant/10 text-surface-variant hover:bg-white/5">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Side: Live Face Check-in & Panel -->
+<div class="col-span-4 flex flex-col gap-6">
+<!-- Live Camera Feed Container -->
+<div class="glass-panel rounded-2xl overflow-hidden flex flex-col shadow-2xl border-primary-container/20 relative">
+<div class="p-4 flex items-center justify-between bg-primary-container/10">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">videocam</span>
+<span class="font-label-md font-bold text-on-surface">Face Verification</span>
+</div>
+<span class="text-[10px] uppercase font-bold tracking-widest text-[#10B981]">Gate 04 Active</span>
+</div>
+<div class="relative w-full aspect-[4/3] bg-black">
+<!-- Simulated Camera Feed -->
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-60" data-alt="A focused high-resolution live camera view of an attendee's face within a verification frame. The scene is shot with high-end camera optics, shallow depth of field, and crisp detailing. Dark mode aesthetic with futuristic UI overlays, scanning lines, and facial recognition data points floating in space." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKZZbyMoeQU-0OTYYytRq4DqylaURIUct8E0inMG6X5XN_9qJY-Cy2I9IWWu4f2aSjgLMqEqtipVg7lAqFRFIWb6FesOQ_8dNOm9JoMhAow_TIqbTcHlAbkec7DiyK5loGHOjjFcB4LzBuvpksav70Pxy2sgdIal-aUVpRZDdL67uAicEpgoFFye5ouW00Jma6d4NSwiNjQ9du0sZ0cMyo--u2NvlrkQqapsDGnovgUnYsBOY88vkHtQ"/>
+</div>
+<!-- Verification Overlays -->
+<div class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
+<div class="w-64 h-64 border-2 border-primary-container/40 rounded-[40px] relative">
+<div class="scan-line"></div>
+<div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-lg"></div>
+<div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-primary rounded-tr-lg"></div>
+<div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-primary rounded-bl-lg"></div>
+<div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
+</div>
+</div>
+<!-- Success Verification Overlay (Animated State) -->
+<div class="absolute inset-0 z-20 bg-[#10B981]/80 backdrop-blur-sm flex flex-col items-center justify-center opacity-0 transition-opacity duration-500 scale-95 pointer-events-none" id="successOverlay">
+<div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-[#10B981] text-[48px]" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-white mb-1">Verified</h3>
+<p class="text-white/80 font-label-md">Entry Granted - VIP Zone</p>
+</div>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<div class="flex items-center justify-between pb-4 border-b border-outline-variant/10">
+<div>
+<p class="text-label-sm text-surface-variant uppercase tracking-tighter">Current Scanning</p>
+<h4 class="font-headline-sm text-headline-sm">Marcus Sterling</h4>
+</div>
+<div class="text-right">
+<p class="text-label-sm text-surface-variant uppercase tracking-tighter">Confidence</p>
+<h4 class="font-headline-sm text-headline-sm text-primary">98.4%</h4>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between text-label-md">
+<span class="text-surface-variant">Ticket ID:</span>
+<span class="font-medium">#VIP-9921-A</span>
+</div>
+<div class="flex justify-between text-label-md">
+<span class="text-surface-variant">Access Level:</span>
+<span class="font-medium text-[#FEA619]">All Access</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-2">
+<button class="bg-[#10B981] text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all" onclick="triggerSuccess()">
+<span class="material-symbols-outlined">how_to_reg</span>
+                                Confirm
+                            </button>
+<button class="bg-surface-container-highest text-on-surface py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-error/20 hover:text-error transition-all">
+<span class="material-symbols-outlined">cancel</span>
+                                Reject
+                            </button>
+</div>
+</div>
+</div>
+<!-- Recent Activity Feed -->
+<div class="glass-panel rounded-2xl p-6 flex flex-col gap-4">
+<h3 class="font-label-md text-label-md font-bold uppercase tracking-widest text-surface-variant">Recent Activity</h3>
+<div class="flex flex-col gap-4">
+<div class="flex gap-4 items-start relative pb-4 after:content-[''] after:absolute after:left-2 after:top-5 after:bottom-0 after:w-0.5 after:bg-outline-variant/10">
+<div class="w-4 h-4 rounded-full bg-[#10B981] mt-1 relative z-10"></div>
+<div class="flex-1">
+<p class="text-body-md text-on-surface"><span class="font-bold">Julian Chen</span> checked in at Gate 4</p>
+<p class="text-label-sm text-surface-variant">2 minutes ago</p>
+</div>
+</div>
+<div class="flex gap-4 items-start relative pb-4 after:content-[''] after:absolute after:left-2 after:top-5 after:bottom-0 after:w-0.5 after:bg-outline-variant/10">
+<div class="w-4 h-4 rounded-full bg-primary mt-1 relative z-10"></div>
+<div class="flex-1">
+<p class="text-body-md text-on-surface"><span class="font-bold">Staff Marcus</span> authorized VIP guest</p>
+<p class="text-label-sm text-surface-variant">5 minutes ago</p>
+</div>
+</div>
+<div class="flex gap-4 items-start">
+<div class="w-4 h-4 rounded-full bg-error mt-1 relative z-10"></div>
+<div class="flex-1">
+<p class="text-body-md text-on-surface"><span class="font-bold">Entry Denied</span> - Invalid Ticket #GA-221</p>
+<p class="text-label-sm text-surface-variant">12 minutes ago</p>
+</div>
+</div>
+</div>
+<button class="text-primary font-label-md text-center py-2 hover:underline">View All logs</button>
+</div>
+</div>
+</div>
+</main>
+<script>
+        function triggerSuccess() {
+            const overlay = document.getElementById('successOverlay');
+            overlay.classList.remove('opacity-0', 'scale-95');
+            overlay.classList.add('opacity-100', 'scale-100');
+            
+            // Create haptic simulation or sound if needed
+            console.log("Verification Success Triggered");
+
+            setTimeout(() => {
+                overlay.classList.add('opacity-0', 'scale-95');
+                overlay.classList.remove('opacity-100', 'scale-100');
+            }, 2500);
+        }
+
+        // Add some interaction listeners
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Flash interaction
+                row.classList.add('bg-primary-container/10');
+                setTimeout(() => row.classList.remove('bg-primary-container/10'), 200);
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag - Discover Events</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "primary-container": "#7c3aed",
+                        "surface-tint": "#732ee4",
+                        "outline-variant": "#ccc3d8",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "primary": "#630ed4",
+                        "on-primary-container": "#ede0ff",
+                        "surface-container": "#f4ece8",
+                        "secondary-container": "#fea619",
+                        "on-primary": "#ffffff",
+                        "background": "#fff8f5",
+                        "on-surface-variant": "#4a4455",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#eee7e3",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "tertiary-container": "#9d5400",
+                        "outline": "#7b7487",
+                        "inverse-primary": "#d2bbff",
+                        "surface": "#fff8f5",
+                        "inverse-on-surface": "#f7efeb",
+                        "secondary": "#855300",
+                        "on-surface": "#1e1b19",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e9e1dd",
+                        "on-error": "#ffffff",
+                        "on-background": "#1e1b19",
+                        "on-secondary-fixed": "#2a1700",
+                        "inverse-surface": "#33302d",
+                        "primary-fixed": "#eaddff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#2f1500",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#faf2ee",
+                        "on-tertiary-container": "#ffe1cb",
+                        "surface-dim": "#e0d8d5",
+                        "tertiary": "#7a4000",
+                        "secondary-fixed": "#ffddb8",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "tertiary-fixed": "#ffdcc3",
+                        "surface-bright": "#fff8f5",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e9e1dd",
+                        "on-secondary-container": "#684000",
+                        "on-primary-fixed": "#25005a",
+                        "primary-fixed-dim": "#d2bbff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar-width-expanded": "240px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "margin-tablet": "24px",
+                        "base": "8px",
+                        "margin-desktop": "40px",
+                        "sidebar-width-collapsed": "72px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #FAFAF9;
+            font-family: 'Inter', sans-serif;
+            color: #1e1b19;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(204, 195, 216, 0.3);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ccc3d8;
+            border-radius: 10px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #630ed4;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+<!-- TopNavBar: Large Type -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center h-[72px] px-margin-desktop bg-surface/80 backdrop-blur-md border-b border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed-dim">ComfyTag</span>
+<!-- Search Bar: on_left -->
+<div class="relative hidden lg:block w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-body-md focus:ring-2 focus:ring-primary transition-all" placeholder="Search events..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="hidden md:flex items-center gap-6">
+<!-- Navigation Links with Active Logic: Events is active -->
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-md text-label-md hover:text-primary transition-colors active:scale-95 transition-transform" href="#">Events</a>
+<a class="text-on-surface-variant font-medium font-label-md text-label-md hover:text-primary transition-colors active:scale-95 transition-transform" href="#">About</a>
+<a class="text-on-surface-variant font-medium font-label-md text-label-md hover:text-primary transition-colors active:scale-95 transition-transform" href="#">Help</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all">account_balance_wallet</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container/20">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a young creative professional with a friendly smile, photographed in a modern office with warm natural lighting and soft focus background. The aesthetic is clean and high-end, fitting for a premium event management platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy_J_FwEBvn91FtBf9gd-cT6Oas20kQYRn_zV-LH-TSRbLavB9Yw50_h1Lcl4YDF64E_g_G6ZTLwFyNy65vpOser43VSn7oMhR5iXg0e6Hzy8I9-bFxLVPoCHDhCB223AwUJq9-KoxFcbyL3Z7JlC6J3XuN5v2cGS4B8DUMo2mwsFDYX2Pdhqpq_08pZc-WlJOjk20uvNDwu-5Y_Y5CV5modwsN05twmBvg9MoI_i0-FUFYcpPIKulVA"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Layout Container -->
+<main class="pt-[72px] flex min-h-screen">
+<!-- Left Filter Sidebar -->
+<aside class="w-sidebar-width-expanded fixed left-0 top-[72px] bottom-0 overflow-y-auto bg-surface-container-low/50 border-r border-outline-variant/20 p-6 custom-scrollbar hidden xl:block">
+<div class="flex flex-col gap-8">
+<h2 class="font-headline-md text-headline-md text-on-surface">Filters</h2>
+<!-- Location -->
+<div class="flex flex-col gap-3">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Location</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">location_on</span>
+<select class="w-full bg-white border-outline-variant/30 rounded-lg py-2 pl-9 pr-4 text-body-md focus:ring-primary focus:border-primary appearance-none">
+<option>All Cities</option>
+<option>New York, NY</option>
+<option>London, UK</option>
+<option>Tokyo, JP</option>
+<option>Berlin, DE</option>
+</select>
+</div>
+</div>
+<!-- Date Range -->
+<div class="flex flex-col gap-3">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Date Range</label>
+<div class="flex flex-col gap-2">
+<input class="w-full bg-white border-outline-variant/30 rounded-lg py-2 px-3 text-body-md focus:ring-primary focus:border-primary" type="date"/>
+<input class="w-full bg-white border-outline-variant/30 rounded-lg py-2 px-3 text-body-md focus:ring-primary focus:border-primary" type="date"/>
+</div>
+</div>
+<!-- Ticket Price Range -->
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Price Range</label>
+<span class="text-label-sm font-label-sm text-primary">$0 - $500</span>
+</div>
+<input class="w-full h-1.5 bg-outline-variant/30 rounded-lg appearance-none cursor-pointer accent-primary" max="1000" min="0" step="10" type="range"/>
+</div>
+<!-- Categories -->
+<div class="flex flex-col gap-3">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Categories</label>
+<div class="flex flex-col gap-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary transition-all" type="checkbox"/>
+<span class="text-body-md text-on-surface-variant group-hover:text-primary transition-colors">Music</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary transition-all" type="checkbox"/>
+<span class="text-body-md text-on-surface-variant group-hover:text-primary transition-colors">Tech Conferences</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary transition-all" type="checkbox"/>
+<span class="text-body-md text-on-surface-variant group-hover:text-primary transition-colors">Art Exhibits</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary transition-all" type="checkbox"/>
+<span class="text-body-md text-on-surface-variant group-hover:text-primary transition-colors">Workshops</span>
+</label>
+</div>
+</div>
+<button class="mt-4 bg-primary text-on-primary py-3 rounded-xl font-label-md text-label-md hover:brightness-110 active:scale-95 transition-all shadow-md">Apply Filters</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<section class="flex-1 xl:ml-sidebar-width-expanded p-6 lg:p-margin-desktop">
+<!-- Header & Sort -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface mb-2">Discover Events</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Find experiences that match your vibe.</p>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-label-md font-label-md text-on-surface-variant">Sort by:</span>
+<select class="bg-surface border-none rounded-full py-2 pl-4 pr-10 text-body-md font-medium text-primary focus:ring-2 focus:ring-primary-container shadow-sm cursor-pointer appearance-none">
+<option>Newest</option>
+<option>Price: Low to High</option>
+<option>Price: High to Low</option>
+<option>Popularity</option>
+</select>
+</div>
+</div>
+<!-- Events Grid (3-column) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Event Card 1 -->
+<article class="glass-card rounded-xl overflow-hidden group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+<div class="relative h-48 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A vibrant night music festival with neon stage lighting, a silhouettes of a cheering crowd, and light beams piercing through purple and cyan atmospheric haze. High-energy mood, modern concert photography style with rich blacks and glowing highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBL2rJpxYq-JW6pxucPHXXdq-JOf1dYfydSsW0Z48vS8CQ7wDhdlrNmzTwfJbitQ_I7n7GGdxyckhlBoMtICVB_YI_8QyN1kkZNqZmwzBUDzOumzW3QWTPTd4Zy8C0P50N72Abil0FEgXH6L8E2HV7MJzVWQhl3tx-pPOuQkG46o_A5O1sSR3K5J3dxFd5_fARZOn0KMwlG1TfMkJUaHLZsPU6v-GFUv5PdGulWvHzS3Sb8Ve80An5ovw"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-label-sm font-label-sm text-primary">Music</div>
+<div class="absolute bottom-4 right-4 bg-primary text-on-primary px-3 py-1 rounded-lg font-label-md text-label-md">$45.00</div>
+</div>
+<div class="p-5 flex flex-col gap-3">
+<h3 class="font-headline-md text-headline-md text-on-surface line-clamp-1">Neon Pulse Music Fest</h3>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">calendar_month</span>
+<span class="text-label-md font-label-md">Oct 24, 2024 • 8:00 PM</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">The Warehouse, NYC</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded-lg border-1.5 border-primary text-primary font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-all">View Tickets</button>
+</div>
+</article>
+<!-- Event Card 2 -->
+<article class="glass-card rounded-xl overflow-hidden group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+<div class="relative h-48 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A minimalist tech conference stage with large LED screens displaying abstract geometric code patterns. The audience is seated in sleek, ergonomic chairs within a high-tech auditorium. Soft ambient violet lighting creates a focused, professional innovation-themed atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0ME8i6YhRnJt11dxI0SWwzhBd0BlJ_fdefd-klWLO4IbtTDGjWClH19PfUbS26lKLxOzK0QrsDVz1FjQPhT8iDF4XJck8u2iIyDFLAXwBfPoYsu2gXpWFsjPOV-Quv6DFDA--yxheEQ0qsZCzbVH8cr7f-mbAG3vS-IKpBet9knA2VY-OKBs6ps_pa4DEEt3vEZFOwKWHzqbZLU36EFkvLiOLvg6Eg8KsewmP8UE5MSGwKdNRkl58Jw"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-label-sm font-label-sm text-primary">Tech</div>
+<div class="absolute bottom-4 right-4 bg-primary text-on-primary px-3 py-1 rounded-lg font-label-md text-label-md">Free</div>
+</div>
+<div class="p-5 flex flex-col gap-3">
+<h3 class="font-headline-md text-headline-md text-on-surface line-clamp-1">Future Stack Summit</h3>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">calendar_month</span>
+<span class="text-label-md font-label-md">Nov 12, 2024 • 9:00 AM</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">Convention Center, Austin</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded-lg border-1.5 border-primary text-primary font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-all">Reserve Spot</button>
+</div>
+</article>
+<!-- Event Card 3 -->
+<article class="glass-card rounded-xl overflow-hidden group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+<div class="relative h-48 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A sophisticated art gallery opening with large abstract canvases on white walls. Elegant guests in cocktail attire are conversing with wine glasses in hand. The lighting is precise, with track spotlights highlighting the textures of the oil paintings. Upscale and cultural mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3P6peDxKViPidZom2WIZmJ9LVZM2RCyUoZCPnEwChteGKRsia9PrYZNQrx8yU1PgNBslNA8DyNI9f7655XOI81h_zvC-_bO9jQ0tY8kHM9gp69FmnGSlE1p5ZEedho7OsYhpsXBdBn_MwIbiV68sgkt0xps3uBvO5O9jOdSF6oFYHeVN70m6YRl6aMR5Nob54UdONsDr3FV_VHoheUDOGoYluKl5zIg8c_OjwGq8xrQIwVTeXS_StVQ"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-label-sm font-label-sm text-primary">Art</div>
+<div class="absolute bottom-4 right-4 bg-primary text-on-primary px-3 py-1 rounded-lg font-label-md text-label-md">$25.00</div>
+</div>
+<div class="p-5 flex flex-col gap-3">
+<h3 class="font-headline-md text-headline-md text-on-surface line-clamp-1">Visions: Abstract Expo</h3>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">calendar_month</span>
+<span class="text-label-md font-label-md">Dec 05, 2024 • 6:30 PM</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">Lumina Gallery, London</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded-lg border-1.5 border-primary text-primary font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-all">View Tickets</button>
+</div>
+</article>
+<!-- Event Card 4 -->
+<article class="glass-card rounded-xl overflow-hidden group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+<div class="relative h-48 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A cozy artisan pottery workshop with clay-covered hands molding a pot on a spinning wheel. The studio is filled with natural light, rustic wooden tables, and finished ceramic pieces in the background. Tactile, warm, and inviting artisan atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKk_QZikC1cp3xczfgRz28eO4iN85ueVaciJcUht_OMiVzx09by4BFVlzZrQhbcfW9dg8tZzB3Q8MNXLw6tInomskn3vA0FxmfdPAsYq9olSAC7cRyeu3WZHzLi3vmF_hSigE3tDlmBj1Z0iGObkvfnZP4Hj3G6R9NfUrOF9HGNwRYAH2_YaAgv7TNPAXr6nQDolehMMj_1kTJAm8RLaicXMIoW_3NEEznzo3X-p_QrIvnchFPuwCXfA"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-label-sm font-label-sm text-primary">Workshop</div>
+<div class="absolute bottom-4 right-4 bg-primary text-on-primary px-3 py-1 rounded-lg font-label-md text-label-md">$60.00</div>
+</div>
+<div class="p-5 flex flex-col gap-3">
+<h3 class="font-headline-md text-headline-md text-on-surface line-clamp-1">Wheel Throwing 101</h3>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">calendar_month</span>
+<span class="text-label-md font-label-md">Oct 30, 2024 • 10:00 AM</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">Clay Studio, Brooklyn</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded-lg border-1.5 border-primary text-primary font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-all">Book Session</button>
+</div>
+</article>
+<!-- Event Card 5 -->
+<article class="glass-card rounded-xl overflow-hidden group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+<div class="relative h-48 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A rooftop garden lounge at sunset with people laughing and holding artisanal cocktails. String lights hang overhead, and the city skyline glows in the background with warm golden hour light. Vibrant social atmosphere, sophisticated and trendy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHDGiKPnARq4v4ulLCGa9tJzbMlVyG416wnLcSebdZ4RfBRN2IfIJxaW0ZJVE95CQdHSIABzi7t3B9we652JVt2-yrZ-hfgpJ-jTkJJQlUTapX1r2qwrNVm6cg6wzTTSMSkrTdlJifrqcYhizUF-yeD43Tr6NLl9qTFjsocaOO7ljNtkHnS3NwRfiuUa2iudZ-NX05tNwgqzGf8_1w2NHtolVdDPyRG0Ke4o5ntaoj9gCv9nu8BZNNrg"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-label-sm font-label-sm text-primary">Social</div>
+<div class="absolute bottom-4 right-4 bg-primary text-on-primary px-3 py-1 rounded-lg font-label-md text-label-md">$15.00</div>
+</div>
+<div class="p-5 flex flex-col gap-3">
+<h3 class="font-headline-md text-headline-md text-on-surface line-clamp-1">Sunset Social Mixer</h3>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">calendar_month</span>
+<span class="text-label-md font-label-md">Nov 02, 2024 • 5:00 PM</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">Horizon Roof, LA</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded-lg border-1.5 border-primary text-primary font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-all">Join List</button>
+</div>
+</article>
+<!-- Event Card 6 -->
+<article class="glass-card rounded-xl overflow-hidden group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+<div class="relative h-48 overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A large-scale outdoor food festival with various colorful stalls, smoke rising from a grill, and people enjoying different global cuisines at communal tables. High-key daylight, bustling energy, and a focus on delicious diverse food textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCreg6OH0IyN35tfUAwXKpQcWYngVK-oPVLF2Gip0AYcsGGVH-qi83vY9zcOnFUA3ARGx9RT-kWBUq6TCJCPssjpmxT83M-DXl1-MqFtZP_i5HgnqVnO7XkgWfFHGPpL33-iHz9FQzv_4eOpz7LB79bcesQ1ZIQSSWA7smM8HnY6KhyfgWAgjongOAYUbcrlalFqFCcQ9adgcU6MokhWRzc_YLFuNRUV8S6Y-3zbGLlcCMuBbzDPUmWnA"/>
+<div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-label-sm font-label-sm text-primary">Food</div>
+<div class="absolute bottom-4 right-4 bg-primary text-on-primary px-3 py-1 rounded-lg font-label-md text-label-md">$30.00</div>
+</div>
+<div class="p-5 flex flex-col gap-3">
+<h3 class="font-headline-md text-headline-md text-on-surface line-clamp-1">Global Bite Fest</h3>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">calendar_month</span>
+<span class="text-label-md font-label-md">Oct 28, 2024 • 12:00 PM</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-label-md font-label-md">Centennial Park, Toronto</span>
+</div>
+</div>
+<button class="mt-2 w-full py-2.5 rounded-lg border-1.5 border-primary text-primary font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-all">Get Pass</button>
+</div>
+</article>
+</div>
+<!-- Pagination/Load More -->
+<div class="mt-12 flex justify-center">
+<button class="flex items-center gap-2 bg-surface-container-high text-on-surface px-8 py-3 rounded-full font-label-md text-label-md hover:bg-outline-variant/40 transition-all">
+                    Load More Events
+                    <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Interactive FAB for Ticket access on mobile -->
+<button class="fixed bottom-6 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center lg:hidden active:scale-90 transition-transform">
+<span class="material-symbols-outlined">confirmation_number</span>
+</button>
+<script>
+        // Micro-interaction for filter sidebar toggling on small screens (simulated)
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('article');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    // Subtle lift is handled by CSS, but we could add more JS effects here
+                });
+            });
+
+            // Smooth scroll for nav links
+            document.querySelectorAll('nav a').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Just a visual response for the demo
+                    this.style.opacity = '0.5';
+                    setTimeout(() => this.style.opacity = '1', 150);
+                });
+            });
+        });
+    </script>
+</body></html>

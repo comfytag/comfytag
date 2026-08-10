@@ -3,7 +3,9 @@ import { createStackNavigator } from '@react-navigation/stack'
 import type { TicketsStackParamList } from './types'
 import MyTicketsScreen from '../screens/attendee/tickets/MyTicketsScreen'
 import TicketDetailScreen from '../screens/attendee/tickets/TicketDetailScreen'
+import FaceCheckInScreen from '../screens/attendee/tickets/FaceCheckInScreen'
 import TransferTicketScreen from '../screens/attendee/tickets/TransferTicketScreen'
+import IncomingTransferScreen from '../screens/attendee/tickets/IncomingTransferScreen'
 
 const Stack = createStackNavigator<TicketsStackParamList>()
 
@@ -28,7 +30,9 @@ export default function TicketsStackNavigator() {
     >
       <Stack.Screen name="TicketsList" component={MyTicketsScreen} />
       <Stack.Screen name="TicketDetail" component={TicketDetailScreen} />
+      <Stack.Screen name="FaceCheckIn" component={FaceCheckInScreen} />
       <Stack.Screen name="TransferTicket" component={TransferTicketScreen} />
+      <Stack.Screen name="IncomingTransfer" component={IncomingTransferScreen} />
     </Stack.Navigator>
   )
 }

@@ -156,7 +156,7 @@ export default function AudienceScreen({ navigation, route }: Props) {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ChevronLeft size={24} color={colors.mobile.textPrimary} strokeWidth={2} />
+          <ChevronLeft size={24} color={colors.textPublic.primary} strokeWidth={2} />
         </AnimatedPressable>
         <Text style={styles.headerTitle} numberOfLines={1}>{eventName} Attendees</Text>
         <View style={styles.headerSpacer} />
@@ -180,8 +180,8 @@ export default function AudienceScreen({ navigation, route }: Props) {
           {/* Summary stats */}
           <View style={styles.statsRow}>
             <StatMini label="Total" value={totalCount} valueColor={colors.brand.DEFAULT} />
-            <StatMini label="Checked In" value={checkedInCount} valueColor={colors.mobile.success} />
-            <StatMini label="Not In" value={notCheckedInCount} valueColor={colors.mobile.textMuted} />
+            <StatMini label="Checked In" value={checkedInCount} valueColor={colors.success.DEFAULT} />
+            <StatMini label="Not In" value={notCheckedInCount} valueColor={colors.textPublic.muted} />
           </View>
 
           {/* Search bar */}
@@ -191,7 +191,7 @@ export default function AudienceScreen({ navigation, route }: Props) {
               value={search}
               onChangeText={setSearch}
               placeholder="Search attendees…"
-              placeholderTextColor={colors.mobile.textMuted}
+              placeholderTextColor={colors.textPublic.muted}
               autoCapitalize="none"
               autoCorrect={false}
               clearButtonMode="while-editing"
@@ -236,7 +236,7 @@ export default function AudienceScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   header: {
     flexDirection: 'row',
@@ -256,8 +256,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     paddingHorizontal: sp[2],
+    textTransform: 'capitalize',
   },
   headerSpacer: {
     width: 44,
@@ -270,10 +271,10 @@ const styles = StyleSheet.create({
   },
   statMini: {
     flex: 1,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     paddingVertical: sp[3],
     paddingHorizontal: sp[2],
     alignItems: 'center',
@@ -282,11 +283,11 @@ const styles = StyleSheet.create({
   statMiniValue: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   statMiniLabel: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
   },
   searchRow: {
@@ -297,11 +298,11 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: rd.lg,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     paddingHorizontal: sp[4],
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     fontSize: fs.sm,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
   },
   listContent: {
     paddingHorizontal: sp[4],
@@ -316,7 +317,7 @@ const styles = StyleSheet.create({
   },
   attendeeRowBorder: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.mobile.border,
+    borderBottomColor: colors.public.border,
   },
   avatar: {
     width: 40,
@@ -339,11 +340,11 @@ const styles = StyleSheet.create({
   attendeeName: {
     fontSize: fs.sm,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   attendeeTicketType: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   checkInBadge: {
     paddingHorizontal: sp[2],
@@ -352,20 +353,20 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   checkInBadgeIn: {
-    backgroundColor: '#052E16',
+    backgroundColor: 'rgba(16,185,129,0.15)',
   },
   checkInBadgeOut: {
-    backgroundColor: '#1C1917',
+    backgroundColor: colors.public.surfaceAlt,
   },
   checkInBadgeText: {
     fontSize: fs.xs,
     fontWeight: '600',
   },
   checkInBadgeTextIn: {
-    color: colors.mobile.success,
+    color: colors.success.DEFAULT,
   },
   checkInBadgeTextOut: {
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   skeletonContainer: {
     paddingHorizontal: sp[4],
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
   skeletonRow: {
     height: 60,
     borderRadius: rd.lg,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
   },
   emptyState: {
     alignItems: 'center',
@@ -383,7 +384,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: fs.base,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   centered: {
     flex: 1,
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
   },
   mutedText: {
     fontSize: fs.base,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   retryButton: {
     paddingHorizontal: sp[6],

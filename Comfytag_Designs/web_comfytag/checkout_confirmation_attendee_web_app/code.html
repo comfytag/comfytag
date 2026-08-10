@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Checkout &amp; Face Sync | ComfyTag</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "error": "#ba1a1a",
+                "tertiary-fixed-dim": "#ffb77d",
+                "on-primary-fixed-variant": "#5a00c6",
+                "primary-container": "#7c3aed",
+                "surface-tint": "#732ee4",
+                "outline-variant": "#ccc3d8",
+                "on-secondary-fixed-variant": "#653e00",
+                "primary": "#630ed4",
+                "on-primary-container": "#ede0ff",
+                "surface-container": "#f4ece8",
+                "secondary-container": "#fea619",
+                "on-primary": "#ffffff",
+                "background": "#fff8f5",
+                "on-surface-variant": "#4a4455",
+                "on-tertiary": "#ffffff",
+                "surface-container-high": "#eee7e3",
+                "on-tertiary-fixed-variant": "#6e3900",
+                "tertiary-container": "#9d5400",
+                "outline": "#7b7487",
+                "inverse-primary": "#d2bbff",
+                "surface": "#fff8f5",
+                "inverse-on-surface": "#f7efeb",
+                "secondary": "#855300",
+                "on-surface": "#1e1b19",
+                "on-error-container": "#93000a",
+                "surface-container-highest": "#e9e1dd",
+                "on-error": "#ffffff",
+                "on-background": "#1e1b19",
+                "on-secondary-fixed": "#2a1700",
+                "inverse-surface": "#33302d",
+                "primary-fixed": "#eaddff",
+                "error-container": "#ffdad6",
+                "on-tertiary-fixed": "#2f1500",
+                "surface-container-lowest": "#ffffff",
+                "surface-container-low": "#faf2ee",
+                "on-tertiary-container": "#ffe1cb",
+                "surface-dim": "#e0d8d5",
+                "tertiary": "#7a4000",
+                "secondary-fixed": "#ffddb8",
+                "secondary-fixed-dim": "#ffb95f",
+                "tertiary-fixed": "#ffdcc3",
+                "surface-bright": "#fff8f5",
+                "on-secondary": "#ffffff",
+                "surface-variant": "#e9e1dd",
+                "on-secondary-container": "#684000",
+                "on-primary-fixed": "#25005a",
+                "primary-fixed-dim": "#d2bbff"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "sidebar-width-expanded": "240px",
+                "gutter": "24px",
+                "margin-mobile": "16px",
+                "margin-tablet": "24px",
+                "base": "8px",
+                "margin-desktop": "40px",
+                "sidebar-width-collapsed": "72px",
+                "container-max": "1280px"
+            },
+            "fontFamily": {
+                "headline-md": ["Inter"],
+                "label-sm": ["Inter"],
+                "display-lg-mobile": ["Inter"],
+                "headline-lg": ["Inter"],
+                "label-md": ["Inter"],
+                "body-lg": ["Inter"],
+                "body-md": ["Inter"],
+                "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom micro-interactions */
+        .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- TopNavBar (Shared Component Identity) -->
+<!-- Note: TopNavBar is typically visible as a global anchor, though instruction implies suppressing for transactional pages, 
+         the prompt explicitly requests "TopNavBar included". -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center h-[72px] px-margin-desktop bg-surface/80 backdrop-blur-md border-b border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-headline-md font-bold text-primary">ComfyTag</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">Events</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">About</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">Help</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary active:scale-95 transition-transform" data-icon="account_balance_wallet">account_balance_wallet</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a young woman with a friendly expression, captured in high-key lighting that emphasizes a clean and trustworthy aesthetic. She is framed against a soft cream background that aligns with the ComfyTag light-mode color palette, featuring subtle violet accents in her attire. The image quality is sharp, conveying a sense of security and modern corporate reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAeJ7zs0eeYrg-P2I52I_p9SDTDwIrgB7qq7knSx4p-yH4VBul80KtBEgo-YC8X4zYDACm0hFZXZuJpZbRcNTaKsRZVI0UZjWgasloVYPVSlxVOYNayWWcnJBkOcO7zJ1WJg2MkUj3LhHe1drxgG5E5Y0gqq5P6Gu--8440oP2N0Nxfucc70qJBMBPSxqttcIs2b6vz7DlL1T9IDmg8LECxbSuK_RQcrPHrMcevtVrUhQ_E_4XdUtsjMw"/>
+</div>
+</div>
+</header>
+<main class="pt-[100px] pb-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<!-- Back button/Step indicator -->
+<div class="mb-8 flex items-center gap-2 text-label-md text-on-surface-variant">
+<button class="flex items-center gap-1 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_back">arrow_back</span>
+                Back to Details
+            </button>
+<span class="mx-2 opacity-30">/</span>
+<span class="text-primary font-bold">Secure Checkout</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column: Payment Options -->
+<div class="lg:col-span-7 space-y-gutter">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Secure Payment</h1>
+<p class="text-body-md text-on-surface-variant mb-6">Choose your preferred method for a seamless event entry experience.</p>
+<!-- Payment Methods -->
+<div class="space-y-4">
+<!-- Credit/Debit Card -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-6 hover-lift cursor-pointer group active:border-primary">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="credit_card">credit_card</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface text-[18px]">Debit / Credit Card</h3>
+<p class="text-label-md text-on-surface-variant">Visa, Mastercard, AMEX</p>
+</div>
+</div>
+<input checked="" class="w-5 h-5 text-primary focus:ring-primary" name="payment" type="radio"/>
+</div>
+<div class="space-y-4">
+<div class="grid grid-cols-1 gap-4">
+<label class="block">
+<span class="text-label-md text-on-surface mb-1 block">Cardholder Name</span>
+<input class="w-full h-12 px-4 rounded-lg border-outline-variant/50 bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="John Doe" type="text"/>
+</label>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<label class="block">
+<span class="text-label-md text-on-surface mb-1 block">Card Number</span>
+<div class="relative">
+<input class="w-full h-12 px-4 rounded-lg border-outline-variant/50 bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="0000 0000 0000 0000" type="text"/>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 flex gap-2">
+<span class="material-symbols-outlined text-on-surface-variant/40" data-icon="credit_card">credit_card</span>
+</div>
+</div>
+</label>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<label class="block">
+<span class="text-label-md text-on-surface mb-1 block">Expiry Date</span>
+<input class="w-full h-12 px-4 rounded-lg border-outline-variant/50 bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="MM/YY" type="text"/>
+</label>
+<label class="block">
+<span class="text-label-md text-on-surface mb-1 block">CVV</span>
+<input class="w-full h-12 px-4 rounded-lg border-outline-variant/50 bg-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="***" type="password"/>
+</label>
+</div>
+</div>
+</div>
+<!-- Bank Transfer -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-6 hover-lift cursor-pointer group transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface text-[18px]">Bank Transfer</h3>
+<p class="text-label-md text-on-surface-variant">Pay via your mobile banking app</p>
+</div>
+</div>
+<input class="w-5 h-5 text-primary focus:ring-primary" name="payment" type="radio"/>
+</div>
+</div>
+<!-- Secure Checkout Indicator -->
+<div class="flex items-center gap-3 p-4 bg-primary-container/5 rounded-lg border border-primary/10">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="verified_user">verified_user</span>
+<span class="text-label-md text-on-surface-variant">Your transaction is encrypted with 256-bit SSL security.</span>
+</div>
+</div>
+</div>
+<!-- Right Column: Order Summary & Biometrics -->
+<div class="lg:col-span-5 space-y-gutter">
+<!-- Order Summary Card -->
+<div class="glass-card rounded-2xl p-6 shadow-sm">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">Order Summary</h2>
+<div class="flex gap-4 mb-6">
+<div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A vibrant, high-energy concert scene captured from the stage perspective, showing a massive crowd illuminated by purple and gold stage lights. The atmosphere is electric and premium, reflecting the excitement of a ComfyTag event. The lighting is dramatic yet clear, with high-fidelity details of the audience's silhouettes against the glowing arena." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqel51p_snBDhjZMEoulozYmk8FWALFGe8PnCkTUQhHbA6rYEHHauedvbMi3wleR_txo3Rx-u6ssjzspvNdKlqK_gc94zmzh4M_ng1uudMtrnaFJhVz0MNYTfYJWgZQxjeNc3_-rHvKhnvv_BgQyrWZS015QG7vyv6Nw8UV-vLDBPMCr3NOmTJ6Rjc8K91NP5rBY_SNUjT8OsKoCxKZ4kCImbmWtF0_a1yn9BL31O2-N1aV9Z47_L-pw"/>
+</div>
+<div class="flex-grow">
+<h4 class="font-bold text-on-surface">Neon Horizons VIP Pass</h4>
+<p class="text-label-sm text-on-surface-variant">Saturday, Oct 24 • 8:00 PM</p>
+<p class="text-label-sm text-primary mt-1">Tier 1 Entrance Included</p>
+</div>
+</div>
+<div class="space-y-3 pt-6 border-t border-outline-variant/20">
+<div class="flex justify-between text-body-md text-on-surface-variant">
+<span>Subtotal</span>
+<span>$149.00</span>
+</div>
+<div class="flex justify-between text-body-md text-on-surface-variant">
+<span>Service Fee</span>
+<span>$12.50</span>
+</div>
+<div class="flex justify-between text-body-md text-on-surface-variant">
+<span>Taxes</span>
+<span>$8.45</span>
+</div>
+<div class="flex justify-between font-bold text-headline-md text-primary pt-3">
+<span>Total</span>
+<span>$169.95</span>
+</div>
+</div>
+<button class="w-full mt-8 bg-primary text-on-primary font-bold py-4 rounded-xl hover:bg-primary-container active:scale-[0.98] transition-all shadow-lg shadow-primary/20">
+                        Complete Purchase
+                    </button>
+</div>
+<!-- Biometric Enrollment Status -->
+<div class="bg-surface-container-highest border border-outline-variant/30 rounded-2xl p-6 relative overflow-hidden">
+<!-- Subtle background decoration -->
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-primary-container/10 rounded-full blur-3xl"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-green-600" data-icon="face">face</span>
+</div>
+<div>
+<h3 class="font-bold text-on-surface">Biometric Profile Linked</h3>
+<p class="text-label-sm text-green-700">Ready for Face-Sync Entry</p>
+</div>
+</div>
+<p class="text-body-md text-on-surface-variant leading-relaxed mb-6">
+                            Your face-enrollment is complete. Once your purchase is confirmed, you can walk straight through the gates at the event without showing a ticket.
+                        </p>
+<div class="bg-surface/50 p-4 rounded-xl border border-outline-variant/20 flex items-center gap-4">
+<div class="w-16 h-16 rounded-lg bg-surface flex items-center justify-center overflow-hidden border border-primary/20">
+<img class="w-full h-full object-cover opacity-60" data-alt="A clean, minimalist biometric facial scan visualization. It shows a simplified, elegant wireframe of a human face with subtle glowing nodes in violet and gold. The background is a soft ivory gradient, conveying high-tech security and clinical precision. The aesthetic is sophisticated, professional, and non-intrusive." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3W9c5shC4qRdp52uhqjed5sOjAsbvTZ5_e1nUj8_O3vVCjmTUjUCzQ7BPaPIPZv-8oMNmJvN7_zmA13S6yCowQBVPeWvXBZJKHZ5xoqMxXTAbFMVfAPXFNedrqv4Iu_7-KwgsKS-YHvtY7GWUW2Z9IVgQ70E8eSsIw1J3Hu975ED0PlOqRBVqNe2zTjn3LAyBJIx1J1CPQx804pfOaMtT0iXaSvuLhk3Kb-Iv8jHUfOi2_hq9ZNN2ZQ"/>
+</div>
+<div>
+<p class="text-label-sm font-bold text-on-surface">User Verified</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Sync ID: CT-9920-F</p>
+</div>
+<div class="ml-auto">
+<span class="material-symbols-outlined text-green-500" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Assistance Callout -->
+<div class="text-center">
+<p class="text-label-md text-on-surface-variant">Need help? <a class="text-primary font-bold hover:underline" href="#">Contact Support</a></p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer-like indicator for visual completeness -->
+<footer class="mt-auto py-8 text-center text-label-sm text-on-surface-variant/60 border-t border-outline-variant/10">
+<div class="max-w-container-max mx-auto px-margin-desktop flex justify-between items-center">
+<p>© 2024 ComfyTag. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="hover:text-primary" href="#">Privacy Policy</a>
+<a class="hover:text-primary" href="#">Terms of Service</a>
+<a class="hover:text-primary" href="#">Refund Policy</a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interaction for payment selection
+        const paymentCards = document.querySelectorAll('input[name="payment"]');
+        paymentCards.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                document.querySelectorAll('.bg-surface-container-lowest').forEach(card => {
+                    card.classList.remove('border-primary', 'bg-primary-container/5');
+                });
+                if(e.target.checked) {
+                    e.target.closest('.bg-surface-container-lowest').classList.add('border-primary', 'bg-primary-container/5');
+                }
+            });
+        });
+
+        // Initialize state for the checked radio
+        document.querySelector('input[name="payment"]:checked').closest('.bg-surface-container-lowest').classList.add('border-primary', 'bg-primary-container/5');
+    </script>
+</body></html>

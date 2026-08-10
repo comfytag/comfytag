@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Event Details | ComfyTag</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e2e2e2",
+                    "primary-fixed": "#eaddff",
+                    "on-primary-fixed": "#25005a",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-secondary-container": "#fffbff",
+                    "surface": "#f9f9f8",
+                    "on-primary-container": "#ede0ff",
+                    "primary": "#630ed4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary": "#704500",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#d2bbff",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary": "#6e3aca",
+                    "on-secondary-fixed-variant": "#581db3",
+                    "outline": "#7b7487",
+                    "inverse-surface": "#2f3130",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-error-container": "#93000a",
+                    "background": "#f9f9f8",
+                    "primary-container": "#7c3aed",
+                    "on-tertiary-fixed": "#2a1700",
+                    "surface-dim": "#dadad9",
+                    "secondary-fixed": "#ebddff",
+                    "outline-variant": "#ccc3d8",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "inverse-primary": "#d2bbff",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "on-tertiary-container": "#ffe1c0",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "surface-bright": "#f9f9f8",
+                    "surface-container-high": "#e8e8e7",
+                    "on-surface-variant": "#4a4455",
+                    "on-background": "#1a1c1c",
+                    "secondary-container": "#8856e5",
+                    "on-secondary-fixed": "#250059",
+                    "surface-container-low": "#f3f4f3",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#ffddb8",
+                    "surface-tint": "#732ee4",
+                    "secondary-fixed-dim": "#d3bbff",
+                    "tertiary-container": "#905b00",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "40px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "stack-lg": "24px",
+                    "stack-md": "16px",
+                    "margin-tablet": "32px",
+                    "gutter": "16px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-nav {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .ticket-clip {
+            position: relative;
+            background: white;
+            overflow: visible;
+        }
+        .ticket-clip::before, .ticket-clip::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            background: #f9f9f8;
+            border-radius: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+        .ticket-clip::before { left: -10px; }
+        .ticket-clip::after { right: -10px; }
+
+        .image-parallax {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Top App Bar (As per JSON Blueprint) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-sm h-16 flex justify-between items-center px-margin-mobile">
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">ComfyTag</h1>
+<div class="flex items-center gap-base">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30 active:scale-95 transition-transform">
+<img class="w-full h-full object-cover" alt="A close-up professional headshot of a stylish Nigerian creative professional, clean studio lighting with soft shadows, against a minimalist soft lavender background, expressing confidence and premium lifestyle aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoiqx3jRLUiTwWiNNpwSIwkV5_UVabkxeHpKlY5o00qMdJ3tK40XkqjDqFud9r_8RtX-zb20B6bd8ubEQC4VFejBbY5R2FQZcZ3pwWnyGxzSFBgx1NbwWiw1RF7Fb4EJQwWLUjHixmfk-672_5CjAzBW_rPBAijw_9EOxyiAWjxz9iwL_Jb2hl-5C4-9Nxx2rFVspK3CSQl5cll99jdPJppnqn_4l4PBFz_AkPK1oYa97gzirO0sL72Q"/>
+</div>
+</div>
+</header>
+<main class="pb-32 pt-16">
+<!-- Hero Section -->
+<section class="relative w-full h-[45vh] overflow-hidden">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-700 hover:scale-105" data-alt="A breathtaking aerial view of a vibrant outdoor concert festival in Lagos at twilight. Intense violet and amber stage lights pierce the night air, illuminating a dense, energetic crowd. The visual style is cinematic with high dynamic range, capturing the rhythmic atmosphere of the Nigerian music scene with lush detail and atmospheric haze." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDrwXyU1BSInWwocYxqyrgoqtxPkGkCwsCOuipUPydGo7aG9fpMmDVPcOxf-sr8EUPjg_1megoAK3PNW_3G5dImxqqtXuMJmeIKckPBhH-sR-VJbQipG1izLTqKIZQiJSUskn2CeNqfT59uASzETAxtl0JHHttXxUJZ4QFOusDqiED8-AZOKPwxzOeJo75fGlFidW--XCS_j7Mw4hM7tik7vlIwFZ_jkF8FvMatw5-gGh54WAI6LU9HpQ')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+</section>
+<!-- Content Canvas -->
+<div class="px-margin-mobile -mt-12 relative z-10">
+<!-- Event Header Card -->
+<div class="bg-surface-container-lowest p-stack-lg rounded-xl shadow-sm border border-outline-variant/10">
+<div class="flex items-center gap-base mb-stack-sm">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full font-label-md text-label-md">LIVE CONCERT</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-stack-sm leading-tight">Vibrant Echoes: The Summer Fusion Festival</h2>
+<div class="space-y-base text-on-surface-variant font-body-md text-body-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">calendar_today</span>
+<span>Saturday, 24th August 2024 • 6:00 PM</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">location_on</span>
+<span class="font-semibold text-on-surface underline">Eko Convention Center, Lagos</span>
+</div>
+</div>
+</div>
+<!-- Description Section -->
+<section class="mt-section-gap">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-stack-md">About the Event</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                    Experience an unforgettable night where traditional rhythms meet modern electronic soundscapes. Featuring a curated lineup of Africa's most innovative artists, Summer Fusion is more than a concert—it's a cultural phenomenon. Enjoy high-fidelity sound, immersive light installations, and an atmosphere designed for pure comfort and premium enjoyment.
+                </p>
+<div class="mt-stack-md flex flex-wrap gap-base">
+<span class="px-4 py-2 bg-surface-container-high rounded-full font-label-md text-label-md text-on-surface-variant">#Afrobeat</span>
+<span class="px-4 py-2 bg-surface-container-high rounded-full font-label-md text-label-md text-on-surface-variant">#LagosNightlife</span>
+<span class="px-4 py-2 bg-surface-container-high rounded-full font-label-md text-label-md text-on-surface-variant">#Fusion</span>
+</div>
+</section>
+<!-- Location Preview (Bento Style) -->
+<section class="mt-section-gap grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="h-48 rounded-xl overflow-hidden shadow-sm relative group cursor-pointer border border-outline-variant/10">
+<img class="w-full h-full object-cover" alt="A clean, minimalist vector map of Victoria Island, Lagos, highlighting the Eko Convention Center with a soft violet pin. The map uses a premium light-mode palette with subtle grays and whites, focused on clarity and elegant cartography." data-location="Lagos" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAva9n_PNouwjcOOx9QQjc1pJKWy-jkgYdl7ycLEl8kXvQqcayh7hbQ4jIJUUWntfJ8xd2HhJ-GZeevxuvB7mS6zygUTd8o51SXud_xpHMp-HKTZCk-ymGP_PgSSGZq4iraYhSahFV4cryAIWkrATVIx8OdrdxyEs_3i9IyUs9nujbeKtYpnu2UEM29RW4x-1Gm4c9aRj0gjWjgtMXyOTVcfwfxUQWgFMP8t9iuuvFyFwZ9SZRrMm9t1g"/>
+<div class="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors"></div>
+<div class="absolute bottom-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm">
+<span class="font-label-md text-label-md text-primary">Open in Maps</span>
+</div>
+</div>
+<div class="bg-secondary-fixed text-on-secondary-fixed p-stack-lg rounded-xl flex flex-col justify-center">
+<span class="material-symbols-outlined mb-base text-3xl">info</span>
+<h4 class="font-title-lg text-title-lg font-bold mb-base">Arrival Info</h4>
+<p class="font-body-md text-body-md opacity-80">Free valet parking available for VIP ticket holders. Please arrive 45 minutes before start time for smooth check-in.</p>
+</div>
+</section>
+<!-- Ticket Tiers -->
+<section class="mt-section-gap">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-stack-md">Organized by</h3>
+<div class="bg-surface-container-lowest p-stack-lg rounded-xl shadow-sm border border-outline-variant/10 flex items-center justify-between group cursor-pointer active:scale-[0.98] transition-all">
+<div class="flex items-center gap-gutter">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-primary/20">
+<img alt="Elena Vance" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoiqx3jRLUiTwWiNNpwSIwkV5_UVabkxeHpKlY5o00qMdJ3tK40XkqjDqFud9r_8RtX-zb20B6bd8ubEQC4VFejBbY5R2FQZcZ3pwWnyGxzSFBgx1NbwWiw1RF7Fb4EJQwWLUjHixmfk-672_5CjAzBW_rPBAijw_9EOxyiAWjxz9iwL_Jb2hl-5C4-9Nxx2rFVspK3CSQl5cll99jdPJppnqn_4l4PBFz_AkPK1oYa97gzirO0sL72Q"/>
+</div>
+<div>
+<h4 class="font-title-lg text-title-lg text-on-surface">Elena Vance</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Premium Event Curator</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-2">
+<button class="bg-primary-fixed/10 text-primary px-4 py-2 rounded-xl font-label-md text-label-md flex items-center gap-2 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">storefront</span>
+<span>View Organizer Profile</span>
+</button>
+</div>
+</div>
+</section><section class="mt-section-gap">
+<div class="flex justify-between items-end mb-stack-md">
+<h3 class="font-title-lg text-title-lg text-on-surface">Ticket Tiers</h3>
+<span class="font-label-md text-label-md text-on-surface-variant">Prices exclude VAT</span>
+</div>
+<div class="space-y-gutter">
+<!-- Regular Ticket -->
+<div class="ticket-clip p-stack-lg rounded-xl shadow-sm border border-outline-variant/20 flex justify-between items-center group cursor-pointer active:scale-[0.98] transition-all">
+<div>
+<h4 class="font-title-lg text-title-lg text-on-surface">Regular Access</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">General floor access &amp; standard refreshments</p>
+<div class="mt-base flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[18px]">confirmation_number</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">85 Tickets left</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-headline-md text-headline-md text-tertiary-container">₦15,000</span>
+<div class="mt-2 w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">add</span>
+</div>
+</div>
+</div>
+<!-- VIP Ticket -->
+<div class="ticket-clip p-stack-lg rounded-xl shadow-sm border-2 border-primary/20 bg-primary-fixed/10 flex justify-between items-center group cursor-pointer active:scale-[0.98] transition-all overflow-hidden relative">
+<div class="absolute top-0 right-0 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-tighter">Recommended</div>
+<div>
+<h4 class="font-title-lg text-title-lg text-primary font-bold">VIP Experience</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Front row seating, private lounge &amp; bar</p>
+<div class="mt-base flex items-center gap-1 text-error">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Fast Selling</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-headline-md text-headline-md text-tertiary-container">₦45,000</span>
+<div class="mt-2 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
+<span class="material-symbols-outlined">check</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Sticky Bottom "Buy Ticket" Section -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-xl border-t border-outline-variant/10 px-margin-mobile py-stack-md flex items-center justify-between z-50">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase">Total Price</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold">₦45,000</span>
+</div>
+<button class="bg-primary hover:bg-secondary text-white font-bold px-stack-lg py-4 rounded-xl min-w-[180px] min-h-[56px] shadow-lg shadow-primary/20 flex items-center justify-center gap-2 active:scale-95 transition-all duration-200" id="buy-button">
+<span>Buy Ticket</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const buyButton = document.getElementById('buy-button');
+            const tickets = document.querySelectorAll('.ticket-clip');
+
+            tickets.forEach(ticket => {
+                ticket.addEventListener('click', () => {
+                    // Visual feedback for selection
+                    tickets.forEach(t => {
+                        t.classList.remove('border-primary');
+                        t.classList.add('border-outline-variant/20');
+                    });
+                    ticket.classList.remove('border-outline-variant/20');
+                    ticket.classList.add('border-primary');
+                    
+                    // Simple Haptic-style feedback
+                    if (window.navigator.vibrate) {
+                        window.navigator.vibrate(10);
+                    }
+                });
+            });
+
+            buyButton.addEventListener('click', () => {
+                buyButton.innerHTML = `
+                    <span class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>Processing...</span>
+                `;
+                setTimeout(() => {
+                    buyButton.innerHTML = `
+                        <span class="material-symbols-outlined">verified</span>
+                        <span>Success!</span>
+                    `;
+                    buyButton.classList.replace('bg-primary', 'bg-green-600');
+                }, 1500);
+            });
+        });
+    </script>
+</body></html>

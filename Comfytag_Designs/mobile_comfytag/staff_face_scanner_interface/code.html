@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag - Staff Scanner</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#ccc3d8",
+                    "secondary-fixed-dim": "#d3bbff",
+                    "on-secondary-fixed": "#250059",
+                    "outline": "#7b7487",
+                    "inverse-on-surface": "#f1f1f0",
+                    "tertiary-container": "#905b00",
+                    "tertiary": "#704500",
+                    "on-tertiary-container": "#ffe1c0",
+                    "on-background": "#1a1c1c",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed": "#2a1700",
+                    "on-surface": "#1a1c1c",
+                    "surface-container": "#eeeeed",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e2e2e2",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-error-container": "#93000a",
+                    "surface": "#f9f9f8",
+                    "on-secondary-container": "#fffbff",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "secondary": "#6e3aca",
+                    "on-primary-fixed": "#25005a",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#eaddff",
+                    "inverse-surface": "#2f3130",
+                    "primary": "#630ed4",
+                    "background": "#f9f9f8",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "secondary-container": "#8856e5",
+                    "on-secondary-fixed-variant": "#581db3",
+                    "inverse-primary": "#d2bbff",
+                    "primary-container": "#7c3aed",
+                    "tertiary-fixed": "#ffddb8",
+                    "on-primary-container": "#ede0ff",
+                    "primary-fixed-dim": "#d2bbff",
+                    "secondary-fixed": "#ebddff",
+                    "surface-dim": "#dadad9",
+                    "surface-tint": "#732ee4",
+                    "surface-container-low": "#f3f4f3",
+                    "surface-container-high": "#e8e8e7",
+                    "surface-bright": "#f9f9f8",
+                    "on-surface-variant": "#4a4455"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "40px",
+                    "margin-mobile": "20px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "stack-lg": "24px",
+                    "margin-tablet": "32px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .scanner-frame {
+            position: relative;
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.6);
+        }
+
+        .success-pulse {
+            animation: pulse-ring 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 30px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .scanning-line {
+            height: 3px;
+            width: 100%;
+            background: linear-gradient(to right, transparent, #630ed4, transparent);
+            position: absolute;
+            top: 0;
+            left: 0;
+            animation: scan 3s linear infinite;
+            z-index: 20;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-lg overflow-hidden h-screen flex flex-col">
+<!-- Top Navigation Anchor (As per JSON) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl shadow-sm">
+<div class="flex justify-between items-center px-margin-mobile h-16 w-full max-w-full">
+<div class="flex items-center gap-base active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined text-primary">menu</span>
+</div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">ComfyTag</h1>
+<div class="active:scale-95 transition-transform duration-200">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-label-md">
+                    JD
+                </div>
+</div>
+</div>
+</header>
+<!-- Main Viewport (Camera Canvas) -->
+<main class="relative flex-1 flex flex-col items-center justify-center pt-16 pb-20 overflow-hidden">
+<!-- Live Camera Placeholder -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center grayscale-[0.2]" data-alt="A focused, professional photograph of a young man smiling softly towards a camera in a brightly lit modern event space. The background shows blurred warm interior lights of a convention center with purple and amber accent lighting. High-end cinematography style, shallow depth of field, sharp focus on the facial features for biometrics verification context." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA3gDYFnOhq8Z6sSnQz7GRDtH5zdu2LexRZDonm3KE2M52EoUF6iFb2uOjJJ4-Ubk-iV15Pxzmxmfb849rSM_feWickOWFFfH3u2TbEQVLjLnCNRjMuPI8mvSQk8AynytFYiif0UIJfS36VKxJo9TwkgYC47rP_71UjPtukuDp28dondsfdnavyS_ZIx1hzdx7xYeTpTkTHmLR_8TovKceGvlKSCej4DgfWuIns3cSMfAYzTCAlTsA1Zg')"></div>
+</div>
+<!-- Scanner UI Overlay -->
+<div class="relative z-10 w-full h-full flex flex-col items-center justify-center">
+<!-- Scanning Frame -->
+<div class="relative w-64 h-64 md:w-80 md:h-80 border-2 border-primary/40 rounded-[40px] scanner-frame overflow-hidden transition-all duration-500 success-pulse">
+<!-- Scanning Line -->
+<div class="scanning-line"></div>
+<!-- Corner Accents -->
+<div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-3xl"></div>
+<div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-3xl"></div>
+<div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-3xl"></div>
+<div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-3xl"></div>
+</div>
+<!-- Status Indicator -->
+<div class="mt-stack-lg flex flex-col items-center transition-all duration-300 transform scale-100" id="status-container">
+<div class="glass-panel px-stack-lg py-stack-md rounded-full flex items-center gap-stack-md shadow-lg border border-white/20">
+<div class="w-3 h-3 rounded-full bg-[#10B981] animate-pulse"></div>
+<span class="font-title-lg text-title-lg text-on-surface">Verified - Welcome, Alex!</span>
+<span class="material-symbols-outlined text-[#10B981]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<!-- Secondary Info -->
+<div class="mt-stack-sm flex flex-col items-center">
+<p class="font-label-md text-label-md uppercase tracking-widest text-white drop-shadow-md">All-Access Pass • VIP Section</p>
+</div>
+</div>
+</div>
+<!-- Bottom Actions (Glassmorphism) -->
+<div class="absolute bottom-24 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-30">
+<div class="glass-panel p-stack-md rounded-2xl shadow-xl flex items-center justify-between border border-white/40">
+<button class="flex flex-col items-center gap-base active:scale-90 transition-transform text-on-surface-variant hover:text-primary">
+<span class="material-symbols-outlined">flashlight_on</span>
+<span class="font-label-md text-label-md">Torch</span>
+</button>
+<button class="bg-primary hover:opacity-90 text-white px-stack-lg py-3 rounded-xl flex items-center gap-stack-md active:scale-95 transition-all shadow-md">
+<span class="material-symbols-outlined">badge</span>
+<span class="font-title-lg text-title-lg">Manual ID Entry</span>
+</button>
+<button class="flex flex-col items-center gap-base active:scale-90 transition-transform text-on-surface-variant hover:text-primary">
+<span class="material-symbols-outlined">cameraswitch</span>
+<span class="font-label-md text-label-md">Flip</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Side Navigation Drawer (Hidden on mobile by default, but defined in JSON) -->
+<aside class="fixed left-0 top-0 h-full w-80 z-[60] bg-surface-container-low transform -translate-x-full lg:translate-x-0 transition-transform duration-300 shadow-xl lg:hidden">
+<div class="flex flex-col h-full py-stack-lg gap-base">
+<div class="px-margin-mobile mb-stack-lg">
+<div class="flex items-center gap-stack-md mb-stack-sm">
+<div class="w-12 h-12 rounded-full bg-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" alt="Close up professional portrait of a tech-savvy event organizer wearing a modern headset, clean white studio background, vibrant violet lighting accents, professional commercial photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvBFhmarG48L2AkB8MgUDrcsNtVwY46t9bVfSHELfrtppW32Y4QRqOHqSiPShVo-m5jes1trC1AkSVHtXSHMXqvN2zI-4rgYnqJHPNQDCBOeJAiAgFcDAOzxjTgVaIjI_Kqudpx-i4gloMYe5vjvaKYiKWrXBwWrdeHC28p2vmIe9bnxUchAf5M2sJ103J_sD2WuSm8KPChu-8b1LOWoCgOEz3krDgrMT_zQMm1YlGFIqd_3tLuVAfcg"/>
+</div>
+<div>
+<h2 class="font-title-lg text-title-lg text-primary">ComfyTag Organizer</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Premium Events Ltd</p>
+</div>
+</div>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full text-label-md font-label-md uppercase">Verified Organizer</span>
+</div>
+<nav class="flex-1">
+<div class="text-on-surface-variant mx-2 px-4 py-3 hover:bg-surface-variant/50 transition-colors rounded-lg flex items-center gap-stack-md">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-lg text-body-lg">Event Dashboard</span>
+</div>
+<div class="bg-secondary-container text-on-secondary-container font-bold rounded-lg mx-2 px-4 py-3 flex items-center gap-stack-md">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+<span class="font-body-lg text-body-lg">Staff Scanner</span>
+</div>
+<div class="text-on-surface-variant mx-2 px-4 py-3 hover:bg-surface-variant/50 transition-colors rounded-lg flex items-center gap-stack-md">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-lg text-body-lg">Attendee List</span>
+</div>
+<div class="text-on-surface-variant mx-2 px-4 py-3 hover:bg-surface-variant/50 transition-colors rounded-lg flex items-center gap-stack-md">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-lg text-body-lg">Analytics</span>
+</div>
+<div class="text-on-surface-variant mx-2 px-4 py-3 hover:bg-surface-variant/50 transition-colors rounded-lg flex items-center gap-stack-md">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-lg text-body-lg">Billing</span>
+</div>
+<div class="text-on-surface-variant mx-2 px-4 py-3 hover:bg-surface-variant/50 transition-colors rounded-lg flex items-center gap-stack-md">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-lg text-body-lg">Settings</span>
+</div>
+</nav>
+</div>
+</aside>
+<!-- Bottom Navigation Shell (Mobile Only) — staff/organizer nav, matching attendee_list's
+     organizer bottom bar. This screen previously showed the attendee-facing
+     Discover/Search/Tickets/Alerts/Profile nav, which would let a staff member
+     mid-shift accidentally tap into consumer browsing during check-in. -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-stack-sm px-margin-mobile border-t border-outline-variant/20 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl z-50 md:hidden">
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</div>
+<!-- Active Tab: Scanner -->
+<div class="flex flex-col items-center justify-center text-primary bg-primary-fixed/30 rounded-full px-4 py-1">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+<span class="font-label-md text-label-md">Scanner</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">Attendees</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</div>
+</nav>
+<script>
+        // Simple Interaction logic for simulation
+        const statusContainer = document.getElementById('status-container');
+        const frame = document.querySelector('.scanner-frame');
+        
+        function simulateStatus(type) {
+            if (type === 'success') {
+                statusContainer.innerHTML = `
+                    <div class="glass-panel px-stack-lg py-stack-md rounded-full flex items-center gap-stack-md shadow-lg border border-white/20 animate-in fade-in zoom-in duration-300">
+                        <div class="w-3 h-3 rounded-full bg-[#10B981] animate-pulse"></div>
+                        <span class="font-title-lg text-title-lg text-on-surface">Verified - Welcome, Alex!</span>
+                        <span class="material-symbols-outlined text-[#10B981]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    </div>
+                    <div class="mt-stack-sm flex flex-col items-center">
+                        <p class="font-label-md text-label-md uppercase tracking-widest text-white drop-shadow-md">All-Access Pass • VIP Section</p>
+                    </div>
+                `;
+                frame.classList.add('success-pulse');
+                frame.style.borderColor = '#10B981';
+            } else if (type === 'error') {
+                statusContainer.innerHTML = `
+                    <div class="glass-panel px-stack-lg py-stack-md rounded-full flex items-center gap-stack-md shadow-lg border border-white/20 animate-in fade-in zoom-in duration-300">
+                        <div class="w-3 h-3 rounded-full bg-[#EF4444]"></div>
+                        <span class="font-title-lg text-title-lg text-on-surface">Access Denied</span>
+                        <span class="material-symbols-outlined text-[#EF4444]" style="font-variation-settings: 'FILL' 1;">cancel</span>
+                    </div>
+                    <div class="mt-stack-sm flex flex-col items-center">
+                        <p class="font-label-md text-label-md uppercase tracking-widest text-[#EF4444] drop-shadow-md bg-white/20 px-2 py-0.5 rounded">Invalid Ticket ID or Expired</p>
+                    </div>
+                `;
+                frame.classList.remove('success-pulse');
+                frame.style.borderColor = '#EF4444';
+            } else {
+                statusContainer.innerHTML = `
+                    <div class="glass-panel px-stack-lg py-stack-md rounded-full flex items-center gap-stack-md shadow-lg border border-white/20">
+                        <div class="w-3 h-3 rounded-full bg-primary animate-ping"></div>
+                        <span class="font-title-lg text-title-lg text-on-surface">Scanning...</span>
+                    </div>
+                `;
+                frame.classList.remove('success-pulse');
+                frame.style.borderColor = 'rgba(99, 14, 212, 0.4)';
+            }
+        }
+
+        // Mock cycle for visual demonstration
+        /* 
+        setTimeout(() => simulateStatus('error'), 3000);
+        setTimeout(() => simulateStatus('scanning'), 6000);
+        setTimeout(() => simulateStatus('success'), 9000);
+        */
+    </script>
+</body></html>

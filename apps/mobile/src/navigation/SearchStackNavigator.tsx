@@ -1,6 +1,7 @@
 import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 import type { SearchStackParamList } from './types'
+import ExploreScreen from '../screens/attendee/discover/ExploreScreen'
 import SearchScreen from '../screens/attendee/search/SearchScreen'
 import EventDetailScreen from '../screens/attendee/discover/EventDetailScreen'
 
@@ -25,6 +26,7 @@ export default function SearchStackNavigator() {
         }),
       }}
     >
+      <Stack.Screen name="ExploreMain" component={ExploreScreen} />
       <Stack.Screen name="SearchMain" component={SearchScreen} />
       <Stack.Screen name="EventDetail" component={EventDetailScreen} />
     </Stack.Navigator>

@@ -6,8 +6,10 @@ import {
   StyleSheet,
   Animated,
 } from 'react-native'
+import { MapPin } from 'lucide-react-native'
 import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
 import { AnimatedPressable } from './AnimatedPressable'
+import { getEventPriceLabel } from '../../lib/eventPricing'
 import type { Event } from '@comfytag/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -21,14 +23,22 @@ interface BadgeConfig {
 export interface EventCardProps {
   event: Event
   onPress: () => void
-  variant: 'trending' | 'grid'
+  variant: 'trending' | 'grid' | 'portrait'
   likedIds?: Set<string>
   onLike?: (id: string) => void
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getBadge(event: Event): BadgeConfig | null {
+function getBadge(event: Event, options: { includeEnded?: boolean } = {}): BadgeConfig | null {
+  if (options.includeEnded === true && event.status === 'ended') {
+    return {
+      label: 'Ended',
+      color: colors.textPublic.muted,
+      bg: colors.public.surfaceAlt,
+    }
+  }
+
   const totalCap = event.ticketType.reduce((s, t) => s + t.capacity, 0)
   const soldRatio = totalCap > 0 ? event.sold / totalCap : 0
   const minPrice =
@@ -39,34 +49,32 @@ function getBadge(event: Event): BadgeConfig | null {
   if (soldRatio >= 0.9)
     return {
       label: 'Almost Sold Out',
-      color: colors.mobile.error,
+      color: colors.error.DEFAULT,
       bg: 'rgba(239,68,68,0.15)',
     }
   if (soldRatio >= 0.7)
     return {
       label: 'Selling Fast',
-      color: colors.mobile.energy,
+      color: colors.energy.DEFAULT,
       bg: 'rgba(245,158,11,0.15)',
     }
   if (minPrice === 0)
     return {
       label: 'Free',
-      color: colors.mobile.success,
+      color: colors.success.DEFAULT,
       bg: 'rgba(16,185,129,0.15)',
     }
   if (event.featured)
     return {
       label: 'Trending',
-      color: colors.mobile.energy,
+      color: colors.energy.DEFAULT,
       bg: 'rgba(245,158,11,0.15)',
     }
   return null
 }
 
 function getPrice(event: Event): string {
-  if (event.ticketType.length === 0) return 'Free'
-  const min = Math.min(...event.ticketType.map((t) => t.price))
-  return min === 0 ? 'Free' : `₦${min.toLocaleString()}`
+  return getEventPriceLabel(event.ticketType)
 }
 
 function shortDate(dateStr: string): string {
@@ -106,7 +114,9 @@ export const EventCard = React.memo(function EventCard({
 }: EventCardProps) {
   const [imageError, setImageError] = useState(false)
   const imageUri = getImageUri(event)
-  const badge = getBadge(event)
+  // 'Ended' only applies to trending/portrait per this task's scope — grid
+  // keeps its existing sold-out/selling-fast/free/trending badge behavior.
+  const badge = getBadge(event, { includeEnded: variant !== 'grid' })
   const showImage = imageUri !== null && !imageError
 
   if (variant === 'trending') {
@@ -147,6 +157,53 @@ export const EventCard = React.memo(function EventCard({
           <Text style={styles.trendingDate} numberOfLines={1}>
             {shortDate(event.date)}
           </Text>
+        </View>
+      </AnimatedPressable>
+    )
+  }
+
+  if (variant === 'portrait') {
+    return (
+      <AnimatedPressable
+        onPress={onPress}
+        scaleDown={0.97}
+        hapticStyle="light"
+        style={styles.trendingCard}
+      >
+        {/* Background */}
+        {showImage ? (
+          <Image
+            source={{ uri: imageUri }}
+            style={styles.trendingImage}
+            resizeMode="cover"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <View style={[styles.trendingImage, styles.imageFallback]} />
+        )}
+
+        {/* Bottom dark overlay */}
+        <View style={styles.trendingOverlay} />
+
+        {/* Top-right badge */}
+        {badge !== null && (
+          <View style={styles.badgeTopRight}>
+            <BadgePill badge={badge} />
+          </View>
+        )}
+
+        {/* Bottom content */}
+        <View style={styles.trendingContent}>
+          <Text style={styles.trendingName} numberOfLines={2}>
+            {event.name}
+          </Text>
+          <View style={styles.portraitLocationRow}>
+            <MapPin size={11} color="rgba(255,255,255,0.8)" strokeWidth={2} />
+            <Text style={styles.portraitLocationText} numberOfLines={1}>
+              {event.venue}
+            </Text>
+          </View>
+          <Text style={styles.portraitPrice}>{getPrice(event)}</Text>
         </View>
       </AnimatedPressable>
     )
@@ -199,7 +256,7 @@ export const EventCard = React.memo(function EventCard({
 // ─── EventCardSkeleton ────────────────────────────────────────────────────────
 
 interface SkeletonProps {
-  variant: 'trending' | 'grid'
+  variant: 'trending' | 'grid' | 'portrait'
 }
 
 export const EventCardSkeleton = React.memo(function EventCardSkeleton({ variant }: SkeletonProps) {
@@ -225,7 +282,7 @@ export const EventCardSkeleton = React.memo(function EventCardSkeleton({ variant
   }, [opacity])
 
   const cardStyle =
-    variant === 'trending' ? styles.trendingCard : styles.gridCard
+    variant === 'grid' ? styles.gridCard : styles.trendingCard
 
   return (
     <Animated.View
@@ -244,7 +301,7 @@ const styles = StyleSheet.create({
     borderRadius: rd.lg,
     overflow: 'hidden',
     marginRight: sp[3],
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
   },
   trendingImage: {
     position: 'absolute',
@@ -273,13 +330,33 @@ const styles = StyleSheet.create({
   trendingName: {
     fontSize: 13,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: '#FFFFFF',
     lineHeight: 17,
     marginBottom: sp[1],
+    textTransform: 'capitalize',
   },
   trendingDate: {
     fontSize: 11,
-    color: colors.mobile.textSecondary,
+    color: 'rgba(255,255,255,0.8)',
+  },
+
+  // ── Portrait (adds venue + price under the name) ─────────────────────────
+  portraitLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sp[1],
+    marginTop: 2,
+  },
+  portraitLocationText: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.8)',
+    flexShrink: 1,
+  },
+  portraitPrice: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: sp[1],
   },
 
   // ── Grid ──────────────────────────────────────────────────────────────────
@@ -287,7 +364,7 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: rd.lg,
     overflow: 'hidden',
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
   },
   gridImage: {
     position: 'absolute',
@@ -316,18 +393,19 @@ const styles = StyleSheet.create({
   gridName: {
     fontSize: 13,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: '#FFFFFF',
     lineHeight: 17,
     marginBottom: 2,
+    textTransform: 'capitalize',
   },
   gridVenue: {
     fontSize: 11,
-    color: colors.mobile.textSecondary,
+    color: 'rgba(255,255,255,0.8)',
     marginBottom: 2,
   },
   gridPrice: {
     fontSize: 11,
-    color: colors.mobile.textSecondary,
+    color: 'rgba(255,255,255,0.8)',
     fontWeight: '600',
   },
 
@@ -352,6 +430,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand.DEFAULT,
   },
   skeletonBg: {
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
   },
 })

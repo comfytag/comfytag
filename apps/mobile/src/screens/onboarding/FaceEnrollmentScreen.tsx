@@ -7,16 +7,26 @@ import {
   Dimensions,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import type { StackNavigationProp } from '@react-navigation/stack'
+import { ChevronLeft, Lightbulb, CircleOff, Lock, ShieldCheck } from 'lucide-react-native'
 import { enrollFace, checkLiveness } from '../../lib/faceSDK'
+import { post } from '../../lib/api'
+import { useAuthStore } from '../../store'
 import { colors, rd } from '@comfytag/ui/tokens'
 import { AnimatedPressable } from '../../components/ui/AnimatedPressable'
+import type { ProfileStackParamList } from '../../navigation/types'
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
-  Dimensions.get('window')
-const OVAL_WIDTH = SCREEN_WIDTH * 0.72
-const OVAL_HEIGHT = OVAL_WIDTH * 1.35
+interface EnrollFaceResponse {
+  message: string
+  faceEnrolled: true
+  faceEnrolledAt: string
+}
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
+const CIRCLE_SIZE = SCREEN_WIDTH * 0.72
 
 type EnrollmentState =
   | 'idle'
@@ -26,6 +36,7 @@ type EnrollmentState =
   | 'error'
 
 interface Props {
+  navigation?: StackNavigationProp<ProfileStackParamList, 'FaceEnrollment'>
   route?: {
     params?: {
       mode?: 'onboarding' | 'transfer'
@@ -38,6 +49,7 @@ interface Props {
 }
 
 export default function FaceEnrollmentScreen({
+  navigation,
   route,
   onEnrollmentComplete,
   onSkip,
@@ -48,16 +60,15 @@ export default function FaceEnrollmentScreen({
   const [enrollmentState, setEnrollmentState] =
     useState<EnrollmentState>('idle')
   const [instruction, setInstruction] =
-    useState('Position your face in the oval')
+    useState('Position your face in the circle')
   const [errorMessage, setErrorMessage] = useState('')
 
-  // Oval pulse animation
+  // Pulse + border-color animation — runs during scanning state
   const pulseAnim = useRef(new Animated.Value(1)).current
-  const ovalColorAnim = useRef(new Animated.Value(0)).current
+  const ringOpacityAnim = useRef(new Animated.Value(0.5)).current
+  const frameColorAnim = useRef(new Animated.Value(0)).current
   const successScaleAnim = useRef(new Animated.Value(0.8)).current
-  const fadeAnim = useRef(new Animated.Value(1)).current
 
-  // Pulse animation — runs during scanning state
   useEffect(() => {
     if (enrollmentState === 'scanning') {
       const pulse = Animated.loop(
@@ -76,18 +87,35 @@ export default function FaceEnrollmentScreen({
       )
       pulse.start()
 
-      // Animate oval border from grey to brand purple
-      Animated.timing(ovalColorAnim, {
+      const ring = Animated.loop(
+        Animated.sequence([
+          Animated.timing(ringOpacityAnim, {
+            toValue: 0,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(ringOpacityAnim, {
+            toValue: 0.5,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ])
+      )
+      ring.start()
+
+      Animated.timing(frameColorAnim, {
         toValue: 1,
         duration: 600,
         useNativeDriver: false,
       }).start()
 
-      return () => pulse.stop()
+      return () => {
+        pulse.stop()
+        ring.stop()
+      }
     }
   }, [enrollmentState])
 
-  // Success animation
   useEffect(() => {
     if (enrollmentState === 'success') {
       Animated.spring(successScaleAnim, {
@@ -99,9 +127,9 @@ export default function FaceEnrollmentScreen({
     }
   }, [enrollmentState])
 
-  const ovalBorderColor = ovalColorAnim.interpolate({
+  const frameBorderColor = frameColorAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['#3D3D3D', colors.brand.DEFAULT],
+    outputRange: [colors.public.border, colors.brand.DEFAULT],
   })
 
   const startEnrollment = async () => {
@@ -109,7 +137,6 @@ export default function FaceEnrollmentScreen({
       setEnrollmentState('scanning')
       setInstruction('Hold still and look at the camera')
 
-      // Run liveness check first
       const livenessResult = await checkLiveness()
 
       if (!livenessResult.isLive) {
@@ -124,7 +151,6 @@ export default function FaceEnrollmentScreen({
       setInstruction('Almost done...')
       setEnrollmentState('processing')
 
-      // Enroll face
       const enrollResult = await enrollFace()
 
       if (!enrollResult.success || !enrollResult.faceTemplate) {
@@ -136,15 +162,42 @@ export default function FaceEnrollmentScreen({
         return
       }
 
+      // Persist the template server-side — without this the capture above
+      // never leaves the device and `user.faceEnrolled` never becomes true.
+      const user = useAuthStore.getState().user
+      if (user === null) {
+        setEnrollmentState('error')
+        setErrorMessage('You must be logged in to enroll your face.')
+        return
+      }
+      try {
+        const res = await post<EnrollFaceResponse>(
+          `/face/enroll/${user._id}`,
+          { faceTemplate: enrollResult.faceTemplate, deviceId: Platform.OS }
+        )
+        useAuthStore.getState().updateUser({
+          faceEnrolled: true,
+          faceEnrolledAt: res.data.faceEnrolledAt,
+        })
+      } catch {
+        setEnrollmentState('error')
+        setErrorMessage(
+          'Your face was captured, but we could not save it. Please check your connection and try again.'
+        )
+        return
+      }
+
       setEnrollmentState('success')
       setInstruction("You're all set!")
 
-      // Notify parent after short success display
       setTimeout(() => {
         onEnrollmentComplete?.(enrollResult.faceTemplate!)
+        if (navigation?.canGoBack()) {
+          navigation.goBack()
+        }
       }, 1800)
 
-    } catch (err) {
+    } catch {
       setEnrollmentState('error')
       setErrorMessage('Something went wrong. Please try again.')
     }
@@ -152,16 +205,16 @@ export default function FaceEnrollmentScreen({
 
   const retry = () => {
     setEnrollmentState('idle')
-    setInstruction('Position your face in the oval')
+    setInstruction('Position your face in the circle')
     setErrorMessage('')
     pulseAnim.setValue(1)
-    ovalColorAnim.setValue(0)
+    ringOpacityAnim.setValue(0.5)
+    frameColorAnim.setValue(0)
     successScaleAnim.setValue(0.8)
   }
 
   const handleSkip = () => {
     if (isTransferMode) {
-      // Cannot skip face enrollment on ticket transfer
       Alert.alert(
         'Face Required',
         'You must enroll your face to accept this ticket. ' +
@@ -173,43 +226,65 @@ export default function FaceEnrollmentScreen({
     onSkip?.()
   }
 
+  const handleBack = () => {
+    if (navigation?.canGoBack()) {
+      navigation.goBack()
+    }
+  }
+
   // ─── Render helpers ───────────────────────────────
 
-  const renderOval = () => {
+  const statusLabel = (): string => {
+    switch (enrollmentState) {
+      case 'scanning':
+        return 'Scanning'
+      case 'processing':
+        return 'Processing'
+      case 'success':
+        return 'Enrolled'
+      case 'error':
+        return 'Try again'
+      default:
+        return 'Ready'
+    }
+  }
+
+  const renderCircle = () => {
     const isScanning = enrollmentState === 'scanning'
     const isSuccess = enrollmentState === 'success'
     const isError = enrollmentState === 'error'
 
-    const borderColor = isSuccess
-      ? colors.mobile.success
+    const staticBorderColor = isSuccess
+      ? colors.success.DEFAULT
       : isError
-      ? colors.mobile.error
-      : isScanning
-      ? undefined // controlled by animation
-      : '#3D3D3D'
+      ? colors.error.DEFAULT
+      : colors.public.border
 
     return (
-      <View style={styles.ovalContainer}>
+      <View style={styles.circleContainer}>
+        {/* Decorative outer ring */}
+        <View style={styles.outerRing} />
+
+        {/* Pulse ring — scanning only */}
+        {isScanning && (
+          <Animated.View
+            style={[styles.pulseRing, { opacity: ringOpacityAnim }]}
+          />
+        )}
+
+        {/* Main circular preview */}
         <Animated.View
           style={[
-            styles.oval,
+            styles.circle,
             {
               transform: [{ scale: pulseAnim }],
-              borderColor: isScanning
-                ? ovalBorderColor
-                : borderColor,
+              borderColor: isScanning ? frameBorderColor : staticBorderColor,
             },
           ]}
         >
-          {/* Camera preview placeholder */}
-          {/* In production: replace View with
-              CameraView from expo-camera */}
           <View style={styles.cameraPlaceholder}>
             {enrollmentState === 'processing' && (
-              <ActivityIndicator
-                size="large"
-                color="#7C3AED"
-              />
+              <ActivityIndicator size="large" color={colors.brand.DEFAULT} />
             )}
             {enrollmentState === 'success' && (
               <Animated.View
@@ -224,32 +299,43 @@ export default function FaceEnrollmentScreen({
           </View>
         </Animated.View>
 
-        {/* Corner guide dots */}
-        {(['topLeft', 'topRight', 'bottomLeft', 'bottomRight'] as const)
-          .map(pos => (
-            <View
-              key={pos}
-              style={[styles.cornerDot, styles[pos]]}
-            />
-          ))
-        }
+        {/* Status pill */}
+        <View style={styles.statusPill}>
+          <View style={styles.statusDot} />
+          <Text style={styles.statusPillText}>{statusLabel()}</Text>
+        </View>
       </View>
     )
   }
 
-  const renderInstruction = () => (
-    <View style={styles.instructionContainer}>
-      <Text style={styles.instructionText}>{instruction}</Text>
-      {enrollmentState === 'scanning' && (
-        <Text style={styles.subInstruction}>
-          Blink slowly when prompted
-        </Text>
-      )}
-      {enrollmentState === 'error' && (
-        <Text style={styles.errorText}>{errorMessage}</Text>
-      )}
-    </View>
-  )
+  const renderTips = () => {
+    if (enrollmentState !== 'idle') {
+      return (
+        <View style={styles.instructionContainer}>
+          <Text style={styles.instructionText}>{instruction}</Text>
+          {enrollmentState === 'scanning' && (
+            <Text style={styles.subInstruction}>Blink slowly when prompted</Text>
+          )}
+          {enrollmentState === 'error' && (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          )}
+        </View>
+      )
+    }
+
+    return (
+      <View style={styles.tipsContainer}>
+        <View style={styles.tipRow}>
+          <Lightbulb size={20} color={colors.brand.DEFAULT} strokeWidth={2} />
+          <Text style={styles.tipText}>Face the camera clearly in a well-lit area</Text>
+        </View>
+        <View style={styles.tipRow}>
+          <CircleOff size={20} color={colors.brand.DEFAULT} strokeWidth={2} />
+          <Text style={styles.tipText}>Remove glasses or hats if necessary</Text>
+        </View>
+      </View>
+    )
+  }
 
   const renderAction = () => {
     switch (enrollmentState) {
@@ -260,29 +346,23 @@ export default function FaceEnrollmentScreen({
             onPress={startEnrollment}
             hapticStyle="medium"
           >
-            <Text style={styles.primaryButtonText}>
-              Start Face Enrollment
-            </Text>
+            <Text style={styles.primaryButtonText}>Start enrollment</Text>
           </AnimatedPressable>
         )
       case 'scanning':
       case 'processing':
         return (
           <View style={styles.processingIndicator}>
-            <ActivityIndicator size="small" color="#7C3AED" />
+            <ActivityIndicator size="small" color={colors.brand.DEFAULT} />
             <Text style={styles.processingText}>
-              {enrollmentState === 'scanning'
-                ? 'Scanning...'
-                : 'Processing...'}
+              {enrollmentState === 'scanning' ? 'Scanning...' : 'Processing...'}
             </Text>
           </View>
         )
       case 'success':
         return (
           <View style={styles.successMessage}>
-            <Text style={styles.successText}>
-              Your face is your ticket 🎉
-            </Text>
+            <Text style={styles.successText}>Your face is your ticket 🎉</Text>
           </View>
         )
       case 'error':
@@ -292,9 +372,7 @@ export default function FaceEnrollmentScreen({
             onPress={retry}
             hapticStyle="medium"
           >
-            <Text style={styles.primaryButtonText}>
-              Try Again
-            </Text>
+            <Text style={styles.primaryButtonText}>Try Again</Text>
           </AnimatedPressable>
         )
     }
@@ -304,55 +382,52 @@ export default function FaceEnrollmentScreen({
 
   return (
     <SafeAreaView style={styles.container}>
-
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>
-          {isTransferMode
-            ? 'Link Your Face to This Ticket'
-            : 'Set Up Face Entry'}
-        </Text>
-        <Text style={styles.subtitle}>
-          {isTransferMode
-            ? 'Your face is required to accept and use this ticket'
-            : 'Skip queues at every event. Your face is your pass.'}
-        </Text>
+        <AnimatedPressable style={styles.backButton} onPress={handleBack} hapticStyle="light">
+          <ChevronLeft size={22} color={colors.textPublic.primary} strokeWidth={2} />
+        </AnimatedPressable>
       </View>
 
-      {/* Oval camera view */}
-      {renderOval()}
+      <View style={styles.content}>
+        <View style={styles.titleBlock}>
+          <Text style={styles.title}>
+            {isTransferMode ? 'Link Your Face to This Ticket' : 'Set up your face'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {isTransferMode
+              ? 'Your face is required to accept and use this ticket'
+              : 'Secure your tickets with facial biometric authentication.'}
+          </Text>
+        </View>
 
-      {/* Instruction text */}
-      {renderInstruction()}
+        {renderCircle()}
+        {renderTips()}
+      </View>
 
-      {/* Action button */}
-      <View style={styles.actionContainer}>
+      <View style={styles.footer}>
         {renderAction()}
 
-        {/* Skip — only in onboarding mode */}
         {enrollmentState === 'idle' && !isTransferMode && (
-          <AnimatedPressable
-            style={styles.skipButton}
-            onPress={handleSkip}
-            hapticStyle="light"
-          >
-            <Text style={styles.skipText}>
-              Skip for now
-            </Text>
+          <AnimatedPressable style={styles.skipButton} onPress={handleSkip} hapticStyle="light">
+            <Text style={styles.skipText}>Remind me later</Text>
           </AnimatedPressable>
         )}
       </View>
 
-      {/* Trust signal footer */}
       {enrollmentState === 'idle' && (
-        <View style={styles.trustFooter}>
-          <Text style={styles.trustText}>
-            🔒 Your face data is encrypted and stored
-            securely on your device. Never shared.
-          </Text>
+        <View style={styles.trustBadges}>
+          <View style={styles.trustBadge}>
+            <Lock size={14} color={colors.textPublic.secondary} strokeWidth={2} />
+            <Text style={styles.trustBadgeText}>ENCRYPTED</Text>
+          </View>
+          <View style={styles.trustBadgeDivider} />
+          <View style={styles.trustBadge}>
+            <ShieldCheck size={14} color={colors.textPublic.secondary} strokeWidth={2} />
+            <Text style={styles.trustBadgeText}>GDPR COMPLIANT</Text>
+          </View>
         </View>
       )}
-
     </SafeAreaView>
   )
 }
@@ -362,41 +437,73 @@ export default function FaceEnrollmentScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
-    alignItems: 'center',
+    backgroundColor: colors.public.bg,
   },
   header: {
-    paddingHorizontal: 32,
-    paddingTop: 24,
-    paddingBottom: 32,
+    flexDirection: 'row',
     alignItems: 'center',
+    height: 56,
+    paddingHorizontal: 20,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  titleBlock: {
+    alignItems: 'center',
+    marginBottom: 32,
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#F5F5F4',
+    color: colors.textPublic.primary,
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   subtitle: {
-    fontSize: 15,
-    color: '#A8A29E',
+    fontSize: 16,
+    color: colors.textPublic.secondary,
     textAlign: 'center',
     lineHeight: 22,
   },
-  ovalContainer: {
-    width: OVAL_WIDTH + 24,
-    height: OVAL_HEIGHT + 24,
+  circleContainer: {
+    width: CIRCLE_SIZE,
+    height: CIRCLE_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+    marginBottom: 40,
   },
-  oval: {
-    width: OVAL_WIDTH,
-    height: OVAL_HEIGHT,
-    borderRadius: OVAL_WIDTH / 2,
-    borderWidth: 2.5,
-    borderColor: '#3D3D3D',
+  outerRing: {
+    position: 'absolute',
+    width: CIRCLE_SIZE * 1.05,
+    height: CIRCLE_SIZE * 1.05,
+    borderRadius: (CIRCLE_SIZE * 1.05) / 2,
+    borderWidth: 2,
+    borderColor: 'rgba(124, 58, 237, 0.2)',
+  },
+  pulseRing: {
+    position: 'absolute',
+    width: CIRCLE_SIZE * 1.1,
+    height: CIRCLE_SIZE * 1.1,
+    borderRadius: (CIRCLE_SIZE * 1.1) / 2,
+    borderWidth: 2,
+    borderColor: colors.brand.DEFAULT,
+  },
+  circle: {
+    width: CIRCLE_SIZE,
+    height: CIRCLE_SIZE,
+    borderRadius: CIRCLE_SIZE / 2,
+    borderWidth: 3,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -404,26 +511,15 @@ const styles = StyleSheet.create({
   cameraPlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#1A1A1A',
+    backgroundColor: colors.public.surfaceAlt,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cornerDot: {
-    position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.brand.DEFAULT,
-  },
-  topLeft: { top: 12, left: 12 },
-  topRight: { top: 12, right: 12 },
-  bottomLeft: { bottom: 12, left: 12 },
-  bottomRight: { bottom: 12, right: 12 },
   successIcon: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.mobile.success,
+    backgroundColor: colors.success.DEFAULT,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -432,70 +528,112 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
   },
-  instructionContainer: {
-    paddingHorizontal: 32,
-    paddingTop: 24,
+  statusPill: {
+    position: 'absolute',
+    bottom: -16,
+    flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 64,
+    gap: 8,
+    backgroundColor: colors.public.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: rd.full,
+    borderWidth: 1,
+    borderColor: colors.public.border,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.brand.DEFAULT,
+  },
+  statusPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: colors.textPublic.secondary,
+  },
+  tipsContainer: {
+    width: '100%',
+    gap: 12,
+  },
+  tipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.public.surfaceAlt,
+    borderRadius: rd.xl,
+  },
+  tipText: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.textPublic.primary,
+  },
+  instructionContainer: {
+    alignItems: 'center',
+    minHeight: 48,
   },
   instructionText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#F5F5F4',
+    color: colors.textPublic.primary,
     textAlign: 'center',
   },
   subInstruction: {
     fontSize: 13,
-    color: '#78716C',
+    color: colors.textPublic.secondary,
     textAlign: 'center',
     marginTop: 6,
   },
   errorText: {
     fontSize: 13,
-    color: colors.mobile.error,
+    color: colors.error.DEFAULT,
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 20,
   },
-  actionContainer: {
+  footer: {
     width: '100%',
-    paddingHorizontal: 32,
-    paddingTop: 32,
+    paddingHorizontal: 20,
+    paddingTop: 8,
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
   },
   primaryButton: {
     width: '100%',
-    height: 52,
+    height: 56,
     backgroundColor: colors.brand.DEFAULT,
-    borderRadius: rd.md,
+    borderRadius: rd.xl,
     alignItems: 'center',
     justifyContent: 'center',
   },
   primaryButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: colors.textPublic.onBrand,
   },
   processingIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    height: 52,
+    height: 56,
   },
   processingText: {
     fontSize: 15,
-    color: '#A8A29E',
+    color: colors.textPublic.secondary,
   },
   successMessage: {
-    height: 52,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
   },
   successText: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.mobile.success,
+    color: colors.success.DEFAULT,
   },
   skipButton: {
     paddingVertical: 10,
@@ -503,18 +641,30 @@ const styles = StyleSheet.create({
   },
   skipText: {
     fontSize: 14,
-    color: '#78716C',
-    textDecorationLine: 'underline',
+    color: colors.textPublic.secondary,
   },
-  trustFooter: {
-    position: 'absolute',
-    bottom: 32,
-    paddingHorizontal: 40,
+  trustBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingBottom: 20,
   },
-  trustText: {
-    fontSize: 12,
-    color: '#78716C',
-    textAlign: 'center',
-    lineHeight: 18,
+  trustBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  trustBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    color: colors.textPublic.secondary,
+  },
+  trustBadgeDivider: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: colors.textPublic.secondary,
   },
 })

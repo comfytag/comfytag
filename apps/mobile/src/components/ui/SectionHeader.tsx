@@ -59,11 +59,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fs.lg,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   subtitle: {
     fontSize: fs.xs,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     marginTop: 2,
   },
   seeAll: {

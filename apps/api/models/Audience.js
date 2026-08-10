@@ -65,6 +65,16 @@ const AudienceSchema = new Schema({
         default: 'active',
     },
 
+    // ─── Referral Redemption ────────────────────────
+    referralRedeemed: {
+        type: Boolean,
+        default: false,
+    },
+    referralCreditedAt: {
+        type: Date,
+        default: null,
+    },
+
     // ─── Split Ticket Lineage ───────────────────────
     // Set on child documents created by a partial transfer.
     // Null on original (non-split) tickets.

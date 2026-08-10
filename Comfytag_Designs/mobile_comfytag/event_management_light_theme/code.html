@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag Partner Portal - Events Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e9e1dd",
+                        "on-primary-fixed": "#25005a",
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "tertiary": "#005b3d",
+                        "secondary-container": "#fe932c",
+                        "primary": "#630ed4",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#d2bbff",
+                        "on-tertiary-container": "#76ffc2",
+                        "surface-container-high": "#eee7e3",
+                        "surface-container-low": "#faf2ee",
+                        "secondary-fixed-dim": "#ffb77d",
+                        "on-secondary-fixed": "#2f1500",
+                        "inverse-primary": "#d2bbff",
+                        "surface": "#fff8f5",
+                        "on-surface-variant": "#4a4455",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-background": "#1e1b19",
+                        "tertiary-fixed": "#6ffbbe",
+                        "secondary-fixed": "#ffdcc3",
+                        "inverse-on-surface": "#f7efeb",
+                        "on-error": "#ffffff",
+                        "outline-variant": "#ccc3d8",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed": "#eaddff",
+                        "surface-bright": "#fff8f5",
+                        "secondary": "#904d00",
+                        "outline": "#7b7487",
+                        "surface-dim": "#e0d8d5",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1e1b19",
+                        "background": "#fff8f5",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#007650",
+                        "primary-container": "#7c3aed",
+                        "inverse-surface": "#33302d",
+                        "surface-container": "#f4ece8",
+                        "on-secondary-container": "#663500",
+                        "surface-tint": "#732ee4",
+                        "on-secondary-fixed-variant": "#6e3900",
+                        "on-tertiary-fixed": "#002113",
+                        "surface-variant": "#e9e1dd",
+                        "on-primary-container": "#ede0ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "md": "16px",
+                        "margin-mobile": "16px",
+                        "base": "4px",
+                        "sm": "8px",
+                        "margin-desktop": "40px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "financial-xl": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "financial-xl": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar Anchor -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface-container-lowest flex flex-col gap-sm p-md border-r border-outline-variant z-50">
+<div class="flex items-center gap-md px-sm py-md">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary-container shadow-lg">
+<span class="material-symbols-outlined text-display-lg" style="font-variation-settings: 'FILL' 1;">confirmation_number</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">ComfyTag</h1>
+<p class="font-label-md text-label-md text-on-surface-variant opacity-70">Partner Portal</p>
+</div>
+</div>
+<nav class="mt-lg flex flex-col gap-xs flex-1">
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm bg-primary-fixed text-primary font-semibold rounded-lg transition-transform active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="font-body-md text-body-md">Events</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-body-md text-body-md">Attendees</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md text-body-md">Analytics</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-md text-body-md">Payouts</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-md">
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar Anchor -->
+<header class="h-16 fixed top-0 right-0 w-[calc(100%-280px)] z-40 bg-surface flex justify-between items-center px-lg border-b border-outline-variant shadow-sm">
+<div class="flex items-center gap-md w-1/3">
+<div class="relative w-full group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-md py-2 text-body-md focus:ring-2 focus:ring-primary-container transition-all" placeholder="Search events..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="hover:bg-surface-container-high rounded-full p-2 text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:bg-surface-container-high rounded-full p-2 text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">light_mode</span>
+</button>
+<div class="w-[1px] h-6 bg-outline-variant mx-sm"></div>
+<div class="flex items-center gap-sm">
+<div class="text-right">
+<p class="font-label-md text-label-md font-semibold text-on-surface">Alex Rivera</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Premium Partner</p>
+</div>
+<img class="w-9 h-9 rounded-full object-cover border border-outline-variant" alt="A professional studio portrait of a modern tech entrepreneur with a warm smile, wearing a clean charcoal blazer, set against a soft blurred office background with warm lighting and a professional corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz9WUxnt1Cgl6xOnBboLiSwyFOSeGXuuG2TJ2rddQKu5NT31HQe_UkQTBpZ1EgJPvRt_Bycu_4_8UjnTXIL-mNvCOFFqlaNsRgF5oHvF3jLGkz_5tIJ-v05Hreljb5QvIN5TLgmwGYD2CgPNbV_1SZsZQrU-rJDPK8qLgpF-4GDLfVFjydZN3EEQzK6ro8XteIbpYA7rnaTKDNwpZnTRA9hl06Nhd47Yf6LqKktLvQwXh2gK5gwV-xSw"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-16 min-h-screen bg-background">
+<div class="max-w-[1440px] mx-auto p-lg flex flex-col gap-lg">
+<!-- Header Section -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Events Library</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Manage your portfolio of events and ticket distributions.</p>
+</div>
+<button class="bg-primary hover:bg-primary-container text-white px-lg py-md rounded-xl font-semibold flex items-center gap-sm shadow-md transition-all active:scale-[0.98]" onclick="openModal()">
+<span class="material-symbols-outlined">add</span>
+                    Create New Event
+                </button>
+</div>
+<!-- Tabs Section -->
+<div class="flex gap-lg border-b border-outline-variant">
+<button class="px-md py-sm font-label-md text-label-md text-primary border-b-2 border-primary font-semibold">All Events (24)</button>
+<button class="px-md py-sm font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Drafts (3)</button>
+<button class="px-md py-sm font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors">Past (112)</button>
+</div>
+<!-- Bento Data Grid -->
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-widest">Event Details</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-widest">Status</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-widest">Date &amp; Time</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-widest">Ticket Sales</th>
+<th class="px-lg py-md font-label-sm text-label-sm text-outline uppercase tracking-widest text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="px-lg py-lg">
+<div class="flex items-center gap-md">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest">
+<img class="w-full h-full object-cover" alt="A vibrant concert scene with neon purple and electric blue lighting, featuring a silhouette of a DJ booth and a cheering crowd under a shower of laser lights. Modern high-energy aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoX0JmQkN1Ank-MUaemnar87a9zvcX7anndfZKzd9BeJIoZKNvZW7eNfvMZ2tq12Q3hfYa6fe_beUuqZzknef6rBu-QusNlTzrfyuR2xAXRXHe48Rjqp6GnzIMqwkJJhy_7Re56UyDwP1N7J9SaEVcdFGIlRQ9T7dmc5adnZeSCl0_np-r9JStdVuQsYlKuyhpRFS60ge3gs7cqllrJH5RpzVmp7Uwnf3dpYT9GiJ63mJafQWyou_rZQ"/>
+</div>
+<div>
+<h4 class="font-headline-md text-[16px] text-on-surface">Neon Pulse Festival</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Music &amp; Nightlife • Waterfront Arena</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg">
+<span class="px-md py-1 rounded-full bg-[#10B981]/10 text-[#10B981] font-label-sm text-label-sm flex items-center gap-xs w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></span>
+                                    Live
+                                </span>
+</td>
+<td class="px-lg py-lg">
+<p class="font-body-md text-body-md text-on-surface font-semibold">Oct 24, 2024</p>
+<p class="font-label-md text-label-md text-on-surface-variant">08:00 PM - 02:00 AM</p>
+</td>
+<td class="px-lg py-lg">
+<div class="w-48">
+<div class="flex justify-between items-center mb-xs">
+<span class="font-label-md text-label-md text-on-surface-variant">850 / 1200 Sold</span>
+<span class="font-label-md text-label-md text-primary font-bold">71%</span>
+</div>
+<div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 71%;"></div>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="p-2 hover:bg-primary-fixed rounded-lg text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="px-lg py-lg">
+<div class="flex items-center gap-md">
+<div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-surface-container-highest">
+<img class="w-full h-full object-cover" alt="A clean, professional tech summit stage with a large LED screen displaying abstract data visualizations in shades of royal blue and silver. Soft overhead spotlights and minimalist furniture create an elite corporate atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnNQGM7aVgrKTiZW3E9Zg2S8iyUuSVCbSTVQFkYHbtiJhvFpaF6uttQBbnL6i-0gRdSMeFW3LRQ_SLzIABIO4rezMA0-0meTlBZY3XWPAvW4b0ANDZkH2kPjrNgkChrY82gRnptvWThCCOfw8e2Kpt24KqkClVVY4WFd9WUm8xUs_u2VJZo7MLX4Yqu-j1VxDKnDSEZMEfa7yr3QHzZYyzQnhWCTA4F6p4fWwmEmVMIBKBmJAYrc5GNw"/>
+</div>
+<div>
+<h4 class="font-headline-md text-[16px] text-on-surface">Global Tech Summit 2024</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Technology • Convention Center</p>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg">
+<span class="px-md py-1 rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm flex items-center gap-xs w-fit">
+                                    Draft
+                                </span>
+</td>
+<td class="px-lg py-lg">
+<p class="font-body-md text-body-md text-on-surface font-semibold">Nov 12, 2024</p>
+<p class="font-label-md text-label-md text-on-surface-variant">09:00 AM - 05:00 PM</p>
+</td>
+<td class="px-lg py-lg">
+<div class="w-48">
+<div class="flex justify-between items-center mb-xs">
+<span class="font-label-md text-label-md text-on-surface-variant">0 / 500 Sold</span>
+<span class="font-label-md text-label-md text-outline font-bold">0%</span>
+</div>
+<div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="bg-outline h-full rounded-full w-0"></div>
+</div>
+</div>
+</td>
+<td class="px-lg py-lg text-right">
+<button class="p-2 hover:bg-primary-fixed rounded-lg text-on-surface-variant group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="px-lg py-md bg-surface flex justify-between items-center">
+<p class="font-body-md text-body-md text-on-surface-variant">Showing 1 to 10 of 24 events</p>
+<div class="flex gap-sm">
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="px-4 py-2 bg-primary-fixed text-primary font-semibold rounded-lg">1</button>
+<button class="px-4 py-2 hover:bg-surface-container-low rounded-lg transition-colors">2</button>
+<button class="px-4 py-2 hover:bg-surface-container-low rounded-lg transition-colors">3</button>
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Multi-Step Create Event Modal Overlay -->
+<div class="fixed inset-0 z-[60] bg-on-background/40 backdrop-blur-sm hidden items-center justify-center p-md" id="modal-overlay">
+<div class="bg-surface w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300" id="modal-content">
+<!-- Modal Header -->
+<div class="px-xl py-lg border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Create New Event</h3>
+<div class="flex gap-sm mt-sm">
+<div class="flex items-center gap-xs">
+<span class="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold">1</span>
+<span class="font-label-md text-label-md text-primary font-semibold">Basic Info</span>
+</div>
+<div class="w-8 h-[1px] bg-outline-variant self-center"></div>
+<div class="flex items-center gap-xs">
+<span class="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center text-[10px] font-bold">2</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Ticketing</span>
+</div>
+<div class="w-8 h-[1px] bg-outline-variant self-center"></div>
+<div class="flex items-center gap-xs">
+<span class="w-6 h-6 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center text-[10px] font-bold">3</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Review</span>
+</div>
+</div>
+</div>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors" onclick="closeModal()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Body: Step 1 -->
+<div class="p-xl space-y-lg">
+<div class="grid grid-cols-1 gap-lg">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant block">Event Title</label>
+<input class="w-full rounded-xl border border-outline-variant px-md py-3 focus:ring-2 focus:ring-primary-container focus:border-primary transition-all outline-none" placeholder="e.g., Summer Night Lights Gala" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-lg">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant block">Category</label>
+<select class="w-full rounded-xl border border-outline-variant px-md py-3 focus:ring-2 focus:ring-primary-container outline-none bg-surface">
+<option>Music &amp; Concerts</option>
+<option>Business &amp; Networking</option>
+<option>Arts &amp; Culture</option>
+<option>Sports &amp; Wellness</option>
+</select>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant block">Visibility</label>
+<div class="flex p-1 bg-surface-container-low rounded-xl border border-outline-variant">
+<button class="flex-1 py-2 bg-white rounded-lg text-primary font-semibold shadow-sm text-label-md">Public</button>
+<button class="flex-1 py-2 text-on-surface-variant text-label-md">Private</button>
+</div>
+</div>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant block">Location / Venue Name</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">location_on</span>
+<input class="w-full rounded-xl border border-outline-variant pl-10 pr-md py-3 focus:ring-2 focus:ring-primary-container outline-none" placeholder="Add a venue or online link" type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-lg">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant block">Start Date &amp; Time</label>
+<input class="w-full rounded-xl border border-outline-variant px-md py-3 focus:ring-2 focus:ring-primary-container outline-none" type="datetime-local"/>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant block">End Date &amp; Time</label>
+<input class="w-full rounded-xl border border-outline-variant px-md py-3 focus:ring-2 focus:ring-primary-container outline-none" type="datetime-local"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="px-xl py-lg bg-surface-container-low flex justify-between items-center border-t border-outline-variant">
+<button class="px-lg py-2 font-semibold text-on-surface-variant hover:text-on-surface transition-colors" onclick="closeModal()">Save as Draft</button>
+<div class="flex gap-md">
+<button class="px-lg py-2 font-semibold text-on-surface-variant opacity-50 cursor-not-allowed">Back</button>
+<button class="bg-primary hover:bg-primary-container text-white px-xl py-2 rounded-xl font-semibold shadow-md transition-all flex items-center gap-sm">
+                        Next Step
+                        <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+        function openModal() {
+            const overlay = document.getElementById('modal-overlay');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('modal-overlay');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside content
+        document.getElementById('modal-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Interactive states for table rows
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Future implementation: navigate to details
+                console.log('Row clicked');
+            });
+        });
+    </script>
+</body></html>

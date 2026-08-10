@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0F0F0F;
+            color: #f7efeb;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(124, 58, 237, 0.3);
+            border-radius: 10px;
+        }
+        .step-transition {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error": "#ba1a1a",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "on-primary-fixed-variant": "#5a00c6",
+                      "primary-container": "#7c3aed",
+                      "surface-tint": "#732ee4",
+                      "outline-variant": "#ccc3d8",
+                      "on-secondary-fixed-variant": "#653e00",
+                      "primary": "#630ed4",
+                      "on-primary-container": "#ede0ff",
+                      "surface-container": "#f4ece8",
+                      "secondary-container": "#fea619",
+                      "on-primary": "#ffffff",
+                      "background": "#0f0f0f",
+                      "on-surface-variant": "#4a4455",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-high": "#eee7e3",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "tertiary-container": "#9d5400",
+                      "outline": "#7b7487",
+                      "inverse-primary": "#d2bbff",
+                      "surface": "#1a1a1a",
+                      "inverse-on-surface": "#f7efeb",
+                      "secondary": "#855300",
+                      "on-surface": "#f7efeb",
+                      "on-error-container": "#93000a",
+                      "surface-container-highest": "#e9e1dd",
+                      "on-error": "#ffffff",
+                      "on-background": "#f7efeb",
+                      "on-secondary-fixed": "#2a1700",
+                      "inverse-surface": "#33302d",
+                      "primary-fixed": "#eaddff",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed": "#2f1500",
+                      "surface-container-lowest": "#000000",
+                      "surface-container-low": "#faf2ee",
+                      "on-tertiary-container": "#ffe1cb",
+                      "surface-dim": "#0f0f0f",
+                      "tertiary": "#7a4000",
+                      "secondary-fixed": "#ffddb8",
+                      "secondary-fixed-dim": "#ffb95f",
+                      "tertiary-fixed": "#ffdcc3",
+                      "surface-bright": "#fff8f5",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#e9e1dd",
+                      "on-secondary-container": "#684000",
+                      "on-primary-fixed": "#25005a",
+                      "primary-fixed-dim": "#d2bbff"
+              },
+              "spacing": {
+                      "sidebar-width-expanded": "240px",
+                      "gutter": "24px",
+                      "margin-mobile": "16px",
+                      "margin-tablet": "24px",
+                      "base": "8px",
+                      "margin-desktop": "40px",
+                      "sidebar-width-collapsed": "72px",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "display-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Sidebar Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full z-40 flex flex-col w-sidebar-width-expanded bg-surface-container-lowest shadow-lg border-r border-white/5">
+<div class="p-6">
+<h1 class="text-headline-sm font-headline-sm text-primary-fixed-dim tracking-tight">Partner Suite</h1>
+<p class="text-[10px] uppercase tracking-widest text-outline mt-1">Event Management</p>
+</div>
+<nav class="flex-1 mt-4 px-2 space-y-1">
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 bg-primary-container/20 text-primary-fixed border-l-4 border-primary-container px-4 py-3 rounded-r-lg" href="#">
+<span class="material-symbols-outlined text-[22px]">event</span>
+<span class="font-label-md text-label-md">Events</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">group</span>
+<span class="font-label-md text-label-md">Attendees</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">payments</span>
+<span class="font-label-md text-label-md">Payouts</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined text-[22px]">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto p-4 space-y-1">
+<button class="w-full bg-primary-container text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 mb-6 hover:brightness-110 active:scale-95 transition-all" onclick="openWizard()">
+<span class="material-symbols-outlined">add</span>
+<span>Create Event</span>
+</button>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-2 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+<a class="flex items-center gap-3 text-error px-4 py-2 hover:bg-error/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-sidebar-width-expanded min-h-screen">
+<!-- Top Navigation (Small Variant) -->
+<header class="fixed top-0 right-0 left-sidebar-width-expanded h-16 z-30 flex justify-between items-center px-gutter bg-surface border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-sm text-headline-sm">Events Library</h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined text-surface-variant cursor-pointer hover:text-primary transition-colors">notifications</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
+</div>
+<div class="h-8 w-8 rounded-full bg-primary-fixed-dim/20 flex items-center justify-center overflow-hidden border border-white/10">
+<img class="w-full h-full object-cover" data-alt="Close up professional headshot of a creative event director with a confident smile, set against a dark, moody studio background with subtle violet lighting accents. High-end editorial photography style, sharp focus, 8k resolution." src="https://lh3.googleusercontent.com/aida-public/AB6AXuASmqlrngSlkg5lCEMjRBHJHsPQc9klvApgH9nVHNGkvA431WfejfxEVyg-I7ct0V3AUe-FRFDv1YsucsopYn7WulyjJsZIm03g57UhVAteP318HAiO_40QSxZQyVquf1DVRhAw13ewTGztWJwK_v1KKluQXC1cW7m0CqkNhck_7ZB9DnBPSB0A6WGxSHYDB5jURHDnz6Hv5FnKMLNMTZwsJTY_KCGIlgZr0NQCTsFID94pGVb8TNee8A"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="pt-24 pb-12 px-margin-desktop">
+<!-- Statistics Overview (Bento Style) -->
+<div class="grid grid-cols-12 gap-6 mb-10">
+<div class="col-span-12 md:col-span-4 glass-panel rounded-2xl p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">trending_up</span>
+</div>
+<p class="text-surface-variant font-label-md mb-2">Total Tickets Sold</p>
+<h3 class="text-display-lg font-display-lg text-primary-fixed-dim">12,482</h3>
+<p class="text-secondary-fixed flex items-center gap-1 text-label-sm mt-2">
+<span class="material-symbols-outlined text-sm">north</span>
+                        +14% vs last month
+                    </p>
+</div>
+<div class="col-span-12 md:col-span-4 glass-panel rounded-2xl p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">payments</span>
+</div>
+<p class="text-surface-variant font-label-md mb-2">Gross Revenue</p>
+<h3 class="text-display-lg font-display-lg text-secondary-fixed-dim">$342.5k</h3>
+<p class="text-secondary-fixed flex items-center gap-1 text-label-sm mt-2">
+<span class="material-symbols-outlined text-sm">north</span>
+                        +8.2% month-on-month
+                    </p>
+</div>
+<div class="col-span-12 md:col-span-4 glass-panel rounded-2xl p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">star</span>
+</div>
+<p class="text-surface-variant font-label-md mb-2">Avg. Engagement</p>
+<h3 class="text-display-lg font-display-lg text-tertiary-fixed-dim">94%</h3>
+<div class="w-full bg-white/5 h-1.5 rounded-full mt-4">
+<div class="bg-tertiary-fixed-dim h-full rounded-full" style="width: 94%"></div>
+</div>
+</div>
+</div>
+<!-- Events Datatable -->
+<div class="glass-panel rounded-2xl overflow-hidden">
+<div class="px-6 py-4 flex items-center justify-between border-b border-white/5">
+<div class="flex items-center gap-6">
+<button class="text-primary-fixed-dim border-b-2 border-primary-fixed-dim pb-3 -mb-4 font-semibold text-label-md">All Events</button>
+<button class="text-surface-variant hover:text-white pb-3 -mb-4 font-medium text-label-md transition-colors">Drafts</button>
+<button class="text-surface-variant hover:text-white pb-3 -mb-4 font-medium text-label-md transition-colors">Past</button>
+</div>
+<div class="flex items-center gap-3">
+<div class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 flex items-center gap-2">
+<span class="material-symbols-outlined text-surface-variant text-sm">search</span>
+<input class="bg-transparent border-none outline-none text-label-md w-48 placeholder:text-surface-variant/50" placeholder="Search events..." type="text"/>
+</div>
+<button class="bg-white/5 hover:bg-white/10 p-2 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-surface-variant">filter_list</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-surface-variant text-label-sm border-b border-white/5 bg-white/[0.02]">
+<th class="px-6 py-4 font-medium uppercase tracking-wider">Event Details</th>
+<th class="px-6 py-4 font-medium uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 font-medium uppercase tracking-wider">Date</th>
+<th class="px-6 py-4 font-medium uppercase tracking-wider">Tickets</th>
+<th class="px-6 py-4 font-medium uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<!-- Row 1 -->
+<tr class="hover:bg-white/[0.03] transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg overflow-hidden border border-white/10">
+<img class="w-full h-full object-cover" data-alt="Vibrant futuristic music festival poster featuring neon violet and gold light trails, abstract 3D shapes, and a crowd silhouette against a dark cosmic background. Premium digital art aesthetic, high contrast." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsF0jh_kjhl6ufqQ8CWhZr715K9CcOUhalmVTJcVqce1gSS37o_sN4v17M9cigGEEelvgNXLnErj3COVNCmtuY4uyd81z30fGDxuoIeNwD28SKSn5kvUMyMcoXTN8lEM0gG8I3JjhnWP6o0UOmnlfdpZHTkg_sg6GSCaZTTaL7TCuAXWojktOnjyAnDAEwT2wxnVTdnePXLZkZRcjH8AHiDLS6hT75QL-mBmUpBlzgvkSzYyRIdaS6lw"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface">Neon Genesis Festival 2024</p>
+<p class="text-label-sm text-surface-variant">San Francisco, CA</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-green-500/10 text-green-400 border border-green-500/20">Live</span>
+</td>
+<td class="px-6 py-4">
+<p class="text-label-md">Oct 24 - 26, 2024</p>
+<p class="text-[11px] text-surface-variant">10:00 PM Start</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between text-[11px] text-surface-variant">
+<span>4,280 / 5,000</span>
+<span>86%</span>
+</div>
+<div class="w-32 bg-white/5 h-1 rounded-full">
+<div class="bg-primary-container h-full rounded-full" style="width: 86%"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-surface-variant hover:text-white transition-colors">more_vert</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-white/[0.03] transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg overflow-hidden border border-white/10">
+<img class="w-full h-full object-cover" data-alt="Sleek corporate tech conference visual showing a minimalist podium with holographic data displays and soft professional violet lighting in a luxury glass auditorium. Modern corporate architecture, high-end photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBByFyEjiLvlJPeUKonwlH7L2RgGfz95WMtBKYiOOit8x56D6m8GY1siZESRLGXYjvq5Il8Wnirrjgpl55QtrXh7-78cWlb5dBRcfq9tuRSOR0AMOxALqDYQSKgrD54VhrUmnu6KmeZY6hgrWuovYVNPIIqit6LKNNwBP9brygsH4kSjh_5DQhvYWjA2m_RSpXDzbS4_0ZdiVSveD17LdlOnJn5vt1hJHfoDZSKMDahdMZD9vyRUEig0g"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface">TechSummit Enterprise</p>
+<p class="text-label-sm text-surface-variant">London, UK</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-primary-container/10 text-primary-fixed border border-primary-container/20">Draft</span>
+</td>
+<td class="px-6 py-4">
+<p class="text-label-md">Nov 12, 2024</p>
+<p class="text-[11px] text-surface-variant">09:00 AM Start</p>
+</td>
+<td class="px-6 py-4">
+<p class="text-label-md text-surface-variant">Not Published</p>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-surface-variant hover:text-white transition-colors">more_vert</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-white/[0.03] transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg overflow-hidden border border-white/10 opacity-60">
+<img class="w-full h-full object-cover" data-alt="Abstract art workshop setting with canvas, vibrant paint splashes of violet and gold, and warm morning light filtering through a loft window. Creative and inviting atmosphere, shallow depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCe5wHaiBRwifLO0-jHrzhyXjSunDaPJ8Ou7aYDf9ORQHQnrKSYwzyZwXfjqpTf9qnuo_acnsxR5jpPAKuYpbXC8kpjMeS6BooqRSHjti-UZPzIP1o-fJyANoUZCIef-FNtWC32Ttn0A8jTLxsCtoC1CVH96UOtSREbqOB53IvGZI2t8ttQIkAEzoNW8ejIKgKK1dDB9UIWpt2GjBPn-TkeQUaJ_kqyc3B_cUm83hnaLt25LQSrYxaTvQ"/>
+</div>
+<div>
+<p class="font-semibold text-on-surface/60">Creative Masterclass Series</p>
+<p class="text-label-sm text-surface-variant">Remote / Virtual</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-white/5 text-outline border border-white/10">Past</span>
+</td>
+<td class="px-6 py-4 text-surface-variant">
+<p class="text-label-md">Sep 05, 2024</p>
+<p class="text-[11px]">Completed</p>
+</td>
+<td class="px-6 py-4 text-surface-variant">
+<p class="text-label-md">1,200 / 1,200</p>
+<div class="w-32 bg-white/5 h-1 rounded-full overflow-hidden">
+<div class="bg-outline h-full" style="width: 100%"></div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-surface-variant hover:text-white transition-colors">analytics</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 border-t border-white/5 flex items-center justify-between text-surface-variant text-label-sm">
+<span>Showing 1-10 of 42 events</span>
+<div class="flex items-center gap-2">
+<button class="p-1 hover:text-white transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="w-8 h-8 rounded bg-primary-container/20 text-primary-fixed flex items-center justify-center">1</button>
+<button class="w-8 h-8 rounded hover:bg-white/5 flex items-center justify-center">2</button>
+<button class="w-8 h-8 rounded hover:bg-white/5 flex items-center justify-center">3</button>
+<button class="p-1 hover:text-white transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Create Event Wizard Modal -->
+<div class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300" id="eventWizard">
+<div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeWizard()"></div>
+<div class="relative w-full max-w-2xl glass-panel rounded-3xl overflow-hidden transform scale-95 transition-all duration-300 shadow-2xl">
+<!-- Modal Header -->
+<div class="p-8 border-b border-white/5 flex justify-between items-center bg-gradient-to-br from-primary-container/10 to-transparent">
+<div>
+<h2 class="text-headline-md font-headline-md">Create New Event</h2>
+<div class="flex items-center gap-2 mt-2">
+<div class="h-1.5 w-12 rounded-full transition-all duration-500" id="stepIndicator1" style="background-color: #7C3AED;"></div>
+<div class="h-1.5 w-12 rounded-full transition-all duration-500" id="stepIndicator2" style="background-color: rgba(255,255,255,0.1);"></div>
+</div>
+</div>
+<button class="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors" onclick="closeWizard()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Content (Steps Container) -->
+<div class="relative overflow-hidden min-h-[440px]">
+<!-- Step 1: Info -->
+<div class="p-8 step-transition translate-x-0" id="step1">
+<div class="space-y-6">
+<div>
+<label class="block text-label-md text-surface-variant mb-2">Event Title</label>
+<input class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary-container transition-all text-body-md placeholder:text-surface-variant/30" placeholder="e.g. Summer Solstice Gala" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-label-md text-surface-variant mb-2">Date</label>
+<div class="relative">
+<input class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary-container transition-all text-body-md appearance-none" type="date"/>
+<span class="material-symbols-outlined absolute right-4 top-3 text-surface-variant pointer-events-none">calendar_today</span>
+</div>
+</div>
+<div>
+<label class="block text-label-md text-surface-variant mb-2">Location</label>
+<div class="relative">
+<input class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary-container transition-all text-body-md" placeholder="Venue or Online" type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-3 text-surface-variant pointer-events-none">location_on</span>
+</div>
+</div>
+</div>
+<div>
+<label class="block text-label-md text-surface-variant mb-2">Description</label>
+<textarea class="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-primary-container transition-all text-body-md resize-none placeholder:text-surface-variant/30" placeholder="Describe your event's theme and unique value..." rows="4"></textarea>
+</div>
+</div>
+</div>
+<!-- Step 2: Tickets -->
+<div class="p-8 step-transition absolute top-0 left-0 w-full translate-x-full opacity-0 pointer-events-none" id="step2">
+<div class="space-y-6">
+<div class="bg-primary-container/5 border border-primary-container/20 rounded-2xl p-6">
+<div class="flex justify-between items-center mb-4">
+<h4 class="font-semibold text-primary-fixed">Ticket Tier 1</h4>
+<button class="text-error text-label-sm flex items-center gap-1"><span class="material-symbols-outlined text-sm">delete</span> Remove</button>
+</div>
+<div class="grid grid-cols-12 gap-4">
+<div class="col-span-8">
+<label class="block text-label-sm text-surface-variant mb-1">Tier Name</label>
+<input class="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-2 text-label-md" type="text" value="General Admission"/>
+</div>
+<div class="col-span-4">
+<label class="block text-label-sm text-surface-variant mb-1">Price ($)</label>
+<input class="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-2 text-label-md" type="number" value="49"/>
+</div>
+<div class="col-span-12">
+<label class="block text-label-sm text-surface-variant mb-1">Capacity</label>
+<input class="w-full bg-black/20 border border-white/5 rounded-lg px-3 py-2 text-label-md" placeholder="No limit" type="number"/>
+</div>
+</div>
+</div>
+<button class="w-full border-2 border-dashed border-white/10 rounded-2xl py-4 flex items-center justify-center gap-2 text-surface-variant hover:text-white hover:border-white/20 transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="font-medium">Add Another Tier</span>
+</button>
+<div class="flex items-center gap-3 bg-white/5 p-4 rounded-xl">
+<span class="material-symbols-outlined text-secondary-fixed">info</span>
+<p class="text-label-sm text-surface-variant">We recommend adding at least one 'Early Bird' tier to boost initial sales velocity by up to 30%.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="p-8 bg-black/20 border-t border-white/5 flex justify-between items-center">
+<button class="px-6 py-2.5 rounded-xl text-surface-variant font-medium hover:bg-white/5 transition-all opacity-0 pointer-events-none" id="prevBtn" onclick="prevStep()">
+                    Back
+                </button>
+<div class="flex gap-4">
+<button class="px-6 py-2.5 rounded-xl text-surface-variant font-medium hover:bg-white/5 transition-all" onclick="closeWizard()">
+                        Save as Draft
+                    </button>
+<button class="bg-primary-container text-white px-8 py-2.5 rounded-xl font-bold hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary-container/20" id="nextBtn" onclick="nextStep()">
+                        Next: Tickets
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+        let currentStep = 1;
+
+        function openWizard() {
+            const modal = document.getElementById('eventWizard');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('.transform').classList.remove('scale-95');
+            modal.querySelector('.transform').classList.add('scale-100');
+        }
+
+        function closeWizard() {
+            const modal = document.getElementById('eventWizard');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('.transform').classList.add('scale-95');
+            modal.querySelector('.transform').classList.remove('scale-100');
+            // Reset wizard after closing
+            setTimeout(() => {
+                currentStep = 1;
+                updateStepUI();
+            }, 300);
+        }
+
+        function nextStep() {
+            if (currentStep === 1) {
+                currentStep = 2;
+                updateStepUI();
+            } else {
+                // Finalize logic
+                alert('Event Publication Initiated! Redirecting to dashboard...');
+                closeWizard();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep === 2) {
+                currentStep = 1;
+                updateStepUI();
+            }
+        }
+
+        function updateStepUI() {
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const indicator1 = document.getElementById('stepIndicator1');
+            const indicator2 = document.getElementById('stepIndicator2');
+
+            if (currentStep === 1) {
+                step1.classList.remove('-translate-x-full', 'opacity-0');
+                step1.classList.add('translate-x-0');
+                
+                step2.classList.add('translate-x-full', 'opacity-0', 'pointer-events-none');
+                step2.classList.remove('translate-x-0');
+
+                nextBtn.innerText = 'Next: Tickets';
+                prevBtn.classList.add('opacity-0', 'pointer-events-none');
+
+                indicator1.style.backgroundColor = '#7C3AED';
+                indicator2.style.backgroundColor = 'rgba(255,255,255,0.1)';
+            } else {
+                step1.classList.add('-translate-x-full', 'opacity-0');
+                step1.classList.remove('translate-x-0');
+
+                step2.classList.remove('translate-x-full', 'opacity-0', 'pointer-events-none');
+                step2.classList.add('translate-x-0');
+
+                nextBtn.innerText = 'Publish Event';
+                prevBtn.classList.remove('opacity-0', 'pointer-events-none');
+
+                indicator1.style.backgroundColor = '#7C3AED';
+                indicator2.style.backgroundColor = '#7C3AED';
+            }
+        }
+    </script>
+</body></html>

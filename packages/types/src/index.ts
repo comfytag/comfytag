@@ -119,12 +119,18 @@ export interface Ticket {
   status: 'active' | 'used' | 'transferred' | 'refunded' | 'ended'
   transferredTo?: string
   transferredAt?: string
+  checkedIn?: boolean
+  checkedInAt?: string
+  checkedInMethod?: 'face' | 'qr' | 'manual' | null
   // Backend-enriched event details:
   eventDate?: string                // Event start date (ISO 8601 string)
   eventTime?: string                // Event start time (HH:MM format)
   eventEndTime?: string             // Event end time (HH:MM format); may cross midnight
   eventVenue?: string               // Event venue name
+  eventLocation?: string            // Event area/neighbourhood (e.g. "Ikoyi")
+  eventState?: string               // Event state (e.g. "lagos")
   eventSlug?: string                // Event slug for routing
+  eventImage?: string | null        // Event cover image URL
 }
 
 // ─── Bank & Payouts ────────────────────────────────────

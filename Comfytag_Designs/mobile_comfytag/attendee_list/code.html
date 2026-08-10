@@ -1,0 +1,301 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Attendee List - ComfyTag</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e2e2e2",
+                    "primary-fixed": "#eaddff",
+                    "on-primary-fixed": "#25005a",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-secondary-container": "#fffbff",
+                    "surface": "#f9f9f8",
+                    "on-primary-container": "#ede0ff",
+                    "primary": "#630ed4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary": "#704500",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#d2bbff",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary": "#6e3aca",
+                    "on-secondary-fixed-variant": "#581db3",
+                    "outline": "#7b7487",
+                    "inverse-surface": "#2f3130",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-error-container": "#93000a",
+                    "background": "#f9f9f8",
+                    "primary-container": "#7c3aed",
+                    "on-tertiary-fixed": "#2a1700",
+                    "surface-dim": "#dadad9",
+                    "secondary-fixed": "#ebddff",
+                    "outline-variant": "#ccc3d8",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "inverse-primary": "#d2bbff",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "on-tertiary-container": "#ffe1c0",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "surface-bright": "#f9f9f8",
+                    "surface-container-high": "#e8e8e7",
+                    "on-surface-variant": "#4a4455",
+                    "on-background": "#1a1c1c",
+                    "secondary-container": "#8856e5",
+                    "on-secondary-fixed": "#250059",
+                    "surface-container-low": "#f3f4f3",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#ffddb8",
+                    "surface-tint": "#732ee4",
+                    "secondary-fixed-dim": "#d3bbff",
+                    "tertiary-container": "#905b00",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "40px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "stack-lg": "24px",
+                    "stack-md": "16px",
+                    "margin-tablet": "32px",
+                    "gutter": "16px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-sm h-16 flex justify-between items-center px-margin-mobile">
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary active:scale-95 transition-transform duration-200">menu</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">ComfyTag</h1>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden active:scale-95 transition-transform">
+<img class="w-full h-full object-cover" alt="A professional headshot of an event organizer, styled in a high-key studio setting with soft lighting. The subject has a warm, confident expression, wearing minimalist professional attire against a clean, off-white background that reflects a premium, high-trust enterprise aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYEvZBs14Ka8rUm8bbq9Ozhknzmcd6iKzUvV789hK-qzXOUwtt0FOsY8jv6LNuMzbGRL4agqQv7DvawluRnEEBTyOGf9MBVPpwu6oHHH4QotaMb36VOgRhkgcSdGrwUqR46_NnM0AmhAAcotLe0O9kqhz2EE5vO-InMrqeTSU7SF3gIQ_6ftBaikqUuqplA2gE9B5HVJHH2oTr3s1GmfkEX4SQFbMxeY12avgfIGZQ7c9v4BQUX1glIA">
+</div>
+</header>
+<main class="pt-20 pb-24 px-margin-mobile max-w-4xl mx-auto min-h-screen">
+<!-- Summary Metrics -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-gutter mb-section-gap">
+<div class="bg-surface-container-lowest p-stack-md rounded-xl shadow-sm border border-outline-variant/10">
+<span class="font-label-md text-label-md text-on-surface-variant block mb-1">TOTAL GUESTS</span>
+<span class="font-headline-md text-headline-md text-primary">1,248</span>
+</div>
+<div class="bg-surface-container-lowest p-stack-md rounded-xl shadow-sm border border-outline-variant/10">
+<span class="font-label-md text-label-md text-on-surface-variant block mb-1">CHECKED-IN</span>
+<span class="font-headline-md text-headline-md text-secondary">842</span>
+</div>
+<div class="bg-surface-container-lowest p-stack-md rounded-xl shadow-sm border border-outline-variant/10">
+<span class="font-label-md text-label-md text-on-surface-variant block mb-1">VIP REMAINING</span>
+<span class="font-headline-md text-headline-md text-tertiary">12</span>
+</div>
+<div class="bg-surface-container-lowest p-stack-md rounded-xl shadow-sm border border-outline-variant/10">
+<span class="font-label-md text-label-md text-on-surface-variant block mb-1">PENDING</span>
+<span class="font-headline-md text-headline-md text-error">406</span>
+</div>
+</section>
+<!-- Search and Filters -->
+<div class="sticky top-16 z-40 bg-surface/95 backdrop-blur-md pt-base pb-stack-md">
+<div class="relative mb-stack-md">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full h-14 pl-12 pr-4 bg-surface-container-lowest border-none rounded-xl shadow-sm focus:ring-2 focus:ring-primary/20 text-body-lg font-body-lg placeholder:text-outline/60" placeholder="Search by name, email or ticket ID..." type="text">
+</div>
+<div class="flex gap-stack-sm overflow-x-auto hide-scrollbar pb-2">
+<button class="px-5 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md whitespace-nowrap">All Attendees</button>
+<button class="px-5 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md whitespace-nowrap active:scale-95 transition-all">VIP Only</button>
+<button class="px-5 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md whitespace-nowrap active:scale-95 transition-all">Regular</button>
+<button class="px-5 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md whitespace-nowrap active:scale-95 transition-all">Staff</button>
+<button class="px-5 py-2 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md whitespace-nowrap active:scale-95 transition-all flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">filter_list</span> Filter
+                </button>
+</div>
+</div>
+<!-- Attendee List Table-like Layout -->
+<div class="mt-stack-lg flex flex-col gap-base">
+<!-- Row 1 -->
+<div class="bg-surface-container-lowest p-stack-md rounded-xl shadow-sm flex items-center justify-between group active:scale-[0.99] transition-transform">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center font-bold text-on-secondary-fixed">OA</div>
+<div>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface">Olowolagba Adetola</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">VIP • ID: #CT-9920</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="px-3 py-1 rounded-full bg-primary-fixed/40 text-on-primary-fixed font-label-md text-[10px] uppercase tracking-wider font-bold">Checked-in</span>
+<p class="text-[10px] text-outline font-label-md">14:22 PM</p>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="bg-surface-container-lowest p-stack-md rounded-xl shadow-sm flex items-center justify-between active:scale-[0.99] transition-transform">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center font-bold text-on-tertiary-fixed">CI</div>
+<div>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface">Chukwudi Ifeanyi</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">Regular • ID: #CT-8812</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-md text-[10px] uppercase tracking-wider font-bold">Pending</span>
+<p class="text-[10px] text-outline font-label-md">—</p>
+</div>
+</div>
+<!-- Row 3 -->
+<div class="bg-surface-container-lowest p-stack-md rounded-xl shadow-sm flex items-center justify-between active:scale-[0.99] transition-transform">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-full bg-primary-fixed-dim flex items-center justify-center font-bold text-on-primary-fixed">MS</div>
+<div>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface">Musa Sani</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">VIP • ID: #CT-9945</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="px-3 py-1 rounded-full bg-primary-fixed/40 text-on-primary-fixed font-label-md text-[10px] uppercase tracking-wider font-bold">Checked-in</span>
+<p class="text-[10px] text-outline font-label-md">14:45 PM</p>
+</div>
+</div>
+<!-- Row 4 -->
+<div class="bg-surface-container-lowest p-stack-md rounded-xl shadow-sm flex items-center justify-between active:scale-[0.99] transition-transform">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed-dim flex items-center justify-center font-bold text-on-secondary-fixed">EA</div>
+<div>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface">Elizabeth Ayodele</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">Regular • ID: #CT-7701</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-md text-[10px] uppercase tracking-wider font-bold">Pending</span>
+<p class="text-[10px] text-outline font-label-md">—</p>
+</div>
+</div>
+<!-- Row 5 -->
+<div class="bg-surface-container-lowest p-stack-md rounded-xl shadow-sm flex items-center justify-between active:scale-[0.99] transition-transform border-l-4 border-tertiary">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" alt="A macro close-up portrait of an elegant woman with intricate braided hair, wearing gold jewelry. The photography is professional and atmospheric, with soft side-lighting that creates depth. The colors are warm and premium, perfectly matching the Nigerian luxury event scene aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvAESrd09ygDgfAh1-5A9Rp8gxtcA3d_mfykpj5FrmRDPe5Uc6yO2N3H-BLgkRapPz9evZh7laxeD6B8NJcIXjdLC2rseoxYAgxIsZijnk4n4PEUtWI469rRgBQ2TChDduFJ-F1q59GqwikJJFeHMjTcAA1vgGI8LC1YFm4qhstJqBKH7KzxxWb-nC4AhPCpPd8lMkLPKJtISshryvRkP-B82BtUfvjLhgqJNd9TnRUu71Z-fUDxMYOg">
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface">Zainab Yusuf</h3>
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">VIP • ID: #CT-0001</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="px-3 py-1 rounded-full bg-primary-fixed/40 text-on-primary-fixed font-label-md text-[10px] uppercase tracking-wider font-bold">Checked-in</span>
+<p class="text-[10px] text-outline font-label-md">15:01 PM</p>
+</div>
+</div>
+<!-- Row 6 -->
+<div class="bg-surface-container-lowest p-stack-md rounded-xl shadow-sm flex items-center justify-between active:scale-[0.99] transition-transform">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-full bg-outline-variant flex items-center justify-center font-bold text-on-surface-variant">KE</div>
+<div>
+<h3 class="font-body-lg text-body-lg font-semibold text-on-surface">Kamsi Eze</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">Regular • ID: #CT-5521</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<span class="px-3 py-1 rounded-full bg-primary-fixed/40 text-on-primary-fixed font-label-md text-[10px] uppercase tracking-wider font-bold">Checked-in</span>
+<p class="text-[10px] text-outline font-label-md">15:10 PM</p>
+</div>
+</div>
+</div>
+<!-- Load More / End of List -->
+<div class="py-stack-lg text-center">
+<button class="text-primary font-label-md text-label-md hover:underline decoration-2 underline-offset-4">Load 20 more attendees</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-stack-sm px-margin-mobile bg-surface/80 backdrop-blur-xl z-50 border-t border-outline-variant/20 rounded-t-xl shadow-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+<span class="font-label-md text-label-md">Scanner</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-primary-fixed/30 rounded-full px-4 py-1" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-md text-label-md">Attendees</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<!-- Floating Action Button for Adding Attendees -->
+<button class="fixed right-6 bottom-24 w-14 h-14 rounded-2xl bg-primary text-on-primary shadow-lg flex items-center justify-center active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined">person_add</span>
+</button>
+<script>
+        // Simple search interaction placeholder
+        const searchInput = document.querySelector('input');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-[1.01]');
+            searchInput.parentElement.classList.add('transition-transform');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-[1.01]');
+        });
+    </script>
+</body></html>

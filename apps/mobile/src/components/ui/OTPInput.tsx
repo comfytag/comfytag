@@ -81,13 +81,13 @@ const styles = StyleSheet.create({
   cell: {
     width: 48,
     height: 56,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.md,
     borderWidth: 1.5,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     fontSize: fs['2xl'],
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
   },
   cellFilled: {

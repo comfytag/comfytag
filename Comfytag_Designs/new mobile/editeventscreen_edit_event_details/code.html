@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Event - ComfyTag</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-secondary-fixed": "#1e1b19",
+                    "secondary": "#625d5b",
+                    "surface-bright": "#f9f9f8",
+                    "outline": "#7b7487",
+                    "on-secondary-container": "#686361",
+                    "tertiary-fixed": "#e2e2e2",
+                    "on-primary-fixed": "#25005a",
+                    "tertiary": "#4d4f4e",
+                    "inverse-primary": "#d2bbff",
+                    "surface-dim": "#dadad9",
+                    "on-error": "#ffffff",
+                    "secondary-fixed": "#e9e1dd",
+                    "on-primary-container": "#ede0ff",
+                    "tertiary-fixed-dim": "#c6c7c6",
+                    "outline-variant": "#ccc3d8",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "primary-fixed-dim": "#d2bbff",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-surface-variant": "#4a4455",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#630ed4",
+                    "tertiary-container": "#656766",
+                    "primary-fixed": "#eaddff",
+                    "background": "#f9f9f8",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "on-background": "#1a1c1c",
+                    "primary-container": "#7c3aed",
+                    "surface-tint": "#732ee4",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-low": "#f3f4f3",
+                    "inverse-surface": "#2f3130",
+                    "secondary-fixed-dim": "#ccc5c2",
+                    "surface": "#f9f9f8",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary-container": "#e9e1dd",
+                    "surface-variant": "#e2e2e2",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "surface-container-high": "#e8e8e7",
+                    "on-secondary-fixed-variant": "#4a4643",
+                    "on-tertiary-container": "#e6e6e5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "gutter": "16px",
+                    "stack-gap": "16px",
+                    "section-gap": "32px",
+                    "container-padding": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-rg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-rg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #F5F5F4 25%, #E7E5E4 50%, #F5F5F4 75%);
+            background-size: 200% 100%;
+            animation: skeleton-pulse 1.5s infinite;
+        }
+        @keyframes skeleton-pulse {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .error-banner-enter {
+            animation: slide-down 0.3s ease-out forwards;
+        }
+        @keyframes slide-down {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-rg text-body-rg min-h-screen pb-24">
+<!-- Top Navigation Bar (Shared Component Strategy) -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-gutter h-16 bg-surface border-b border-outline-variant transition-opacity duration-200">
+<div class="flex items-center gap-4">
+<button aria-label="Go back" class="p-2 hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-title-md text-title-md text-primary">Edit Event</h1>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-title-md text-title-md hover:opacity-90 transition-all active:scale-95 flex items-center gap-2" id="save-btn">
+            Save
+        </button>
+</header>
+<main class="max-w-[600px] mx-auto pt-24 px-gutter flex flex-col gap-section-gap">
+<!-- Error Banner (Conditional Visibility) -->
+<div class="hidden error-banner-enter bg-error-container text-on-error-container p-4 rounded-xl border border-error flex items-start gap-3" id="error-banner">
+<span class="material-symbols-outlined text-error">report</span>
+<div class="flex-1">
+<p class="font-title-md text-title-md">Unable to save changes</p>
+<p class="text-body-sm">Please check the required fields below and try again.</p>
+</div>
+<button class="p-1" onclick="document.getElementById('error-banner').classList.add('hidden')">
+<span class="material-symbols-outlined text-on-error-container">close</span>
+</button>
+</div>
+<!-- Main Form Section -->
+<form class="flex flex-col gap-stack-gap" id="edit-event-form">
+<!-- 1. Event Name -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">EVENT NAME</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Enter event name" type="text" value="Premium Tech Symposium 2024"/>
+</div>
+<!-- 2. Category -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">CATEGORY</label>
+<div class="relative">
+<select class="w-full appearance-none bg-white border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all cursor-pointer">
+<option>Conference</option>
+<option selected="">Symposium</option>
+<option>Workshop</option>
+<option>Networking</option>
+<option>Exhibition</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<!-- 3. Description -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">DESCRIPTION</label>
+<textarea class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" placeholder="Describe your event..." rows="4">A multi-day technical gathering focusing on the intersection of biometrics, financial security, and minimalist user experience design in the modern digital age.</textarea>
+</div>
+<!-- Horizontal Layout for Date and Times -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-gap">
+<!-- 4. Date -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">DATE</label>
+<div class="relative">
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" type="date" value="2024-11-15"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">calendar_today</span>
+</div>
+</div>
+<!-- 5. Times (Start/End) -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">START TIME</label>
+<div class="relative">
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" type="time" value="09:00"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">schedule</span>
+</div>
+</div>
+</div>
+<!-- 6. Venue Name -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">VENUE NAME</label>
+<div class="relative">
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 pl-12 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Venue name" type="text" value="Stone & Glass Gallery"/>
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">location_on</span>
+</div>
+</div>
+<!-- 7. Address -->
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">ADDRESS</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Street address" type="text" value="1242 Innovation Way, Building 4"/>
+</div>
+<!-- 8. State/City Row -->
+<div class="grid grid-cols-2 gap-stack-gap">
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">CITY</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" type="text" value="San Francisco"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">STATE</label>
+<div class="relative">
+<select class="w-full appearance-none bg-white border border-outline-variant rounded-lg px-4 py-3 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all cursor-pointer">
+<option selected="" value="CA">California</option>
+<option value="NY">New York</option>
+<option value="TX">Texas</option>
+<option value="WA">Washington</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">unfold_more</span>
+</div>
+</div>
+</div>
+<!-- Visual Media Section (Extra Value Add) -->
+<div class="mt-4 p-gutter border border-outline-variant rounded-xl bg-surface-container-low flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<label class="font-label-caps text-label-caps text-on-surface-variant">EVENT COVER</label>
+<button class="text-primary font-label-caps text-label-caps hover:underline" type="button">REPLACE</button>
+</div>
+<div class="relative w-full h-40 rounded-lg overflow-hidden group">
+<img class="w-full h-full object-cover grayscale-[20%] group-hover:scale-105 transition-transform duration-500" alt="A premium minimalist high-tech interior of a modern conference hall with violet accent lighting and clean glass surfaces. The space is filled with soft natural light and features stone-textured architectural details, creating a sophisticated and professional atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsQZcxusCyqjzJLJRyJf6xozURWm29QZNAoav4fv2J9Zw3rfu1O_1Lbo1Aw0GoFSAgnjKTTDuTskhLfX_ATbLZ32wi4ZFc0kW0x7vtuMBy0QGSy4vho6xmr6dl1gpjAus9ZloVRH26AviOD6OWQG-iI2RxLNWjBY92K2m8kHvnqc5vGfrdJ1TF1tjuFfvV4SMVWtGdTBqGdaCaVwA6RwYK5psHrF--hsQyB4o7wL_zukI2Q9lwdlcT2g"/>
+<div class="absolute inset-0 bg-black/10"></div>
+</div>
+</div>
+</form>
+<!-- Loading State Example (Skeleton) -->
+<div class="hidden flex flex-col gap-stack-gap opacity-50 pointer-events-none" id="loading-overlay">
+<div class="h-12 w-full skeleton rounded-lg"></div>
+<div class="h-32 w-full skeleton rounded-lg"></div>
+<div class="h-12 w-3/4 skeleton rounded-lg"></div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Active Tab: Dashboard) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-caps text-label-caps">Explore</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">confirmation_number</span>
+<span class="font-label-caps text-label-caps">Tickets</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-caps text-label-caps">Profile</span>
+</a>
+</nav>
+<script>
+        const saveBtn = document.getElementById('save-btn');
+        const errorBanner = document.getElementById('error-banner');
+        const form = document.getElementById('edit-event-form');
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        saveBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Toggle Loading State
+            saveBtn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span> Saving...`;
+            saveBtn.disabled = true;
+            
+            // Mock interaction
+            setTimeout(() => {
+                // Show error banner for demonstration
+                errorBanner.classList.remove('hidden');
+                saveBtn.innerHTML = `Save`;
+                saveBtn.disabled = false;
+                
+                // Scroll to top to see error
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 1200);
+        });
+
+        // Micro-interaction for form focus
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.querySelector('label').classList.replace('text-on-surface-variant', 'text-primary');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.querySelector('label').classList.replace('text-primary', 'text-on-surface-variant');
+            });
+        });
+    </script>
+</body></html>

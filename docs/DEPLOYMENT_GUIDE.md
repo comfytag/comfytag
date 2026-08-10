@@ -339,7 +339,6 @@ docker compose -f docker-compose.prod.yml ps
 # comfytag-api          Up 3 days
 # comfytag-nginx        Up 3 days
 # comfytag-redis        Up 3 days
-# comfytag-mongodb      Up 3 days
 
 # Check disk space
 df -h

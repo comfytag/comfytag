@@ -194,7 +194,7 @@ export default function ManualCheckInScreen({ navigation, route }: Props) {
           onPress={() => navigation.goBack()}
           hapticStyle="light"
         >
-          <ChevronLeft size={24} color={colors.mobile.textPrimary} strokeWidth={2} />
+          <ChevronLeft size={24} color={colors.textPublic.primary} strokeWidth={2} />
         </AnimatedPressable>
 
         <Text style={styles.headerTitle} numberOfLines={1}>
@@ -211,7 +211,7 @@ export default function ManualCheckInScreen({ navigation, route }: Props) {
           value={query}
           onChangeText={setQuery}
           placeholder="Search attendees…"
-          placeholderTextColor={colors.mobile.textMuted}
+          placeholderTextColor={colors.textPublic.muted}
           autoCorrect={false}
           autoCapitalize="none"
           returnKeyType="search"
@@ -281,7 +281,7 @@ const CHECKED_IN_BG = 'rgba(16,185,129,0.20)'
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
 
   // Header
@@ -302,9 +302,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
     marginHorizontal: sp[2],
+    textTransform: 'capitalize',
   },
   headerSpacer: {
     width: 44,
@@ -317,14 +318,14 @@ const styles = StyleSheet.create({
     paddingBottom: sp[3],
   },
   searchInput: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     borderRadius: rd.lg,
     minHeight: 48,
     paddingHorizontal: sp[4],
     fontSize: fs.sm,
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
 
   // Stats
@@ -335,7 +336,7 @@ const styles = StyleSheet.create({
   },
   statsText: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
 
   // List
@@ -358,7 +359,7 @@ const styles = StyleSheet.create({
   },
   skeletonRow: {
     height: 60,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
   },
 
@@ -366,10 +367,10 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     paddingHorizontal: sp[4],
     paddingVertical: sp[3],
     minHeight: 60,
@@ -396,11 +397,11 @@ const styles = StyleSheet.create({
   rowName: {
     fontSize: fs.sm,
     fontWeight: '600',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   rowTicketType: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: 2,
   },
 
@@ -423,7 +424,7 @@ const styles = StyleSheet.create({
   checkedInPill: {
     backgroundColor: CHECKED_IN_BG,
     borderWidth: 1,
-    borderColor: colors.mobile.success,
+    borderColor: colors.success.DEFAULT,
     borderRadius: rd.full,
     paddingHorizontal: sp[3],
     paddingVertical: sp[1],
@@ -434,7 +435,7 @@ const styles = StyleSheet.create({
   checkedInPillText: {
     fontSize: fs.xs,
     fontWeight: '600',
-    color: colors.mobile.success,
+    color: colors.success.DEFAULT,
   },
 
   // Empty state
@@ -447,11 +448,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   emptySubText: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: sp[2],
     textAlign: 'center',
   },

@@ -10,8 +10,8 @@ export function useMyProfile() {
   const { user, isLoggedIn } = useAuthStore()
   return useQuery({
     queryKey: profileKeys.me,
-    queryFn: () =>
-      get<ApiResponse<User>>(`/users/${user!._id}`).then((r) => r.data.data),
+    // GET /users/:id returns the user object directly, not wrapped in { success, data }.
+    queryFn: () => get<User>(`/users/${user!._id}`).then((r) => r.data),
     staleTime: 120_000,
     enabled: isLoggedIn && !!user,
   })
@@ -22,8 +22,7 @@ export function useMyProfile() {
 export function useUserById(userId: string) {
   return useQuery({
     queryKey: profileKeys.user(userId),
-    queryFn: () =>
-      get<ApiResponse<User>>(`/users/${userId}`).then((r) => r.data.data),
+    queryFn: () => get<User>(`/users/${userId}`).then((r) => r.data),
     staleTime: 300_000,
     enabled: !!userId,
   })
@@ -36,7 +35,7 @@ export function useFollowing() {
   return useQuery({
     queryKey: profileKeys.following,
     queryFn: () =>
-      get<ApiResponse<User[]>>('/organizer/following').then(
+      get<ApiResponse<User[]>>('/organizers/following').then(
         (r) => r.data.data ?? []
       ),
     staleTime: 120_000,
@@ -61,6 +60,24 @@ export function useSavedEventIds() {
 
 // ─── Mutations ─────────────────────────────────────────────────────────────────
 
+// Shared generic image upload (apps/api/routes/upload.js) — any authenticated
+// user, not partner-gated. Folder is hardcoded server-side to 'comfytag/events'
+// regardless of what's actually being uploaded; harmless for a profile photo,
+// just a Cloudinary bucket path.
+export function useUploadProfilePhoto() {
+  return useMutation({
+    mutationFn: (file: { uri: string; name: string; type: string }) => {
+      const formData = new FormData()
+      formData.append('file', file as unknown as Blob)
+      return post<{ success: boolean; url: string; publicId: string }>(
+        '/upload',
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      ).then((r) => r.data)
+    },
+  })
+}
+
 interface UpdateProfilePayload {
   name?: string
   username?: string
@@ -72,10 +89,9 @@ export function useUpdateProfile() {
   const { user, setUser, token } = useAuthStore()
   const qc = useQueryClient()
   return useMutation({
+    // PUT /users/:id returns the updated user object directly, not { success, data }.
     mutationFn: (payload: UpdateProfilePayload) =>
-      put<ApiResponse<User>>(`/users/${user!._id}`, payload).then(
-        (r) => r.data.data
-      ),
+      put<User>(`/users/${user!._id}`, payload).then((r) => r.data),
     onSuccess: (updated) => {
       if (token) setUser(updated, token)
       qc.invalidateQueries({ queryKey: profileKeys.me })
@@ -99,15 +115,17 @@ export function useChangePassword() {
 }
 
 export function useUpgradeToOrganizer() {
-  const { user, setUser, token } = useAuthStore()
+  const { user, setUser } = useAuthStore()
   const qc = useQueryClient()
   return useMutation({
+    // PUT /auth/register-organizer/:id returns { message, user, token }, not { success, data }.
+    // The token reflects the new organizer role — must replace the stored one, not reuse the old one.
     mutationFn: () =>
-      put<ApiResponse<User>>(`/auth/register-organizer/${user!._id}`).then(
-        (r) => r.data.data
-      ),
-    onSuccess: (updated) => {
-      if (token) setUser(updated, token)
+      put<{ message: string; user: User; token: string }>(
+        `/auth/register-organizer/${user!._id}`
+      ).then((r) => r.data),
+    onSuccess: ({ user: updated, token: newToken }) => {
+      setUser(updated, newToken)
       qc.invalidateQueries({ queryKey: profileKeys.me })
     },
   })

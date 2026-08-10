@@ -376,8 +376,12 @@ describe('utils', () => {
       expect(STORAGE_KEYS.AUTH_TOKEN).toBe('comfytag_auth_token')
     })
 
-    it('STORAGE_KEYS has 5 keys', () => {
-      expect(Object.keys(STORAGE_KEYS).length).toBe(5)
+    it('STORAGE_KEYS.EVENT_DRAFT exists', () => {
+      expect(STORAGE_KEYS.EVENT_DRAFT).toBe('comfytag_event_draft')
+    })
+
+    it('STORAGE_KEYS has 6 keys', () => {
+      expect(Object.keys(STORAGE_KEYS).length).toBe(6)
     })
   })
 })

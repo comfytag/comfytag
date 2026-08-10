@@ -67,8 +67,18 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: 📝 Inject Frontend Environment Variables
         run: |
-          echo "NEXT_PUBLIC_API_URL=https://api.comfytag.com" > apps/web/.env.production
-          echo "NEXT_PUBLIC_API_URL=https://api.comfytag.com" > apps/partner/.env.production
+          # NEXT_PUBLIC_* vars are baked into the client bundle at build time —
+          # this runs on the GitHub Actions runner, which never sees the VPS's
+          # .env files, so anything the frontend needs at build time must be
+          # set here, not just in apps/*/.env on the server.
+          {
+            echo "NEXT_PUBLIC_API_URL=https://api.comfytag.com"
+            echo "NEXT_PUBLIC_PARTNER_URL=https://partner.comfytag.com"
+          } > apps/web/.env.production
+          {
+            echo "NEXT_PUBLIC_API_URL=https://api.comfytag.com"
+            echo "NEXT_PUBLIC_WEB_URL=https://comfytag.com"
+          } > apps/partner/.env.production
           echo "NEXT_PUBLIC_API_URL=https://api.comfytag.com" > apps/admin/.env.production
       - name: 🔨 Build Docker images
         run: docker compose -f docker-compose.prod.yml build

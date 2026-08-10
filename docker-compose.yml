@@ -1,22 +1,6 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:7.0
-    container_name: comfytag-mongodb
-    restart: unless-stopped
-    ports:
-      - "27018:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASS:-changeme}
-      MONGO_INITDB_DATABASE: comfytag
-    volumes:
-      - mongodb_data:/data/db
-      - mongodb_config:/data/configdb
-    networks:
-      - comfytag-network
-
   redis:
     image: redis:7.2-alpine
     container_name: comfytag-redis
@@ -38,14 +22,11 @@ services:
       - "4002:4002"
     environment:
       - NODE_ENV=development
-      - MONGO=mongodb://admin:changeme@mongodb:27017/comfytag?authSource=admin
       - REDIS_URL=redis://comfytag-redis:6379
-      - MONGODB_URI=mongodb://admin:changeme@mongodb:27017/comfytag?authSource=admin
       - PORT=4002
     env_file:
       - ./apps/api/.env
     depends_on:
-      - mongodb
       - redis
     volumes:
       - ./apps/api:/app
@@ -54,8 +35,6 @@ services:
       - comfytag-network
 
 volumes:
-  mongodb_data:
-  mongodb_config:
   redis_data:
 
 networks:

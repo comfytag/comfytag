@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag - Create Account</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .pulse-soft {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .7; }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "on-secondary-fixed": "#1e1b19",
+                        "secondary": "#625d5b",
+                        "surface-bright": "#f9f9f8",
+                        "outline": "#7b7487",
+                        "on-secondary-container": "#686361",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-primary-fixed": "#25005a",
+                        "tertiary": "#4d4f4e",
+                        "inverse-primary": "#d2bbff",
+                        "surface-dim": "#dadad9",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#e9e1dd",
+                        "on-primary-container": "#ede0ff",
+                        "tertiary-fixed-dim": "#c6c7c6",
+                        "outline-variant": "#ccc3d8",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d2bbff",
+                        "inverse-on-surface": "#f1f1f0",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#4a4455",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#630ed4",
+                        "tertiary-container": "#656766",
+                        "primary-fixed": "#eaddff",
+                        "background": "#f9f9f8",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eeeeed",
+                        "on-background": "#1a1c1c",
+                        "primary-container": "#7c3aed",
+                        "surface-tint": "#732ee4",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-low": "#f3f4f3",
+                        "inverse-surface": "#2f3130",
+                        "secondary-fixed-dim": "#ccc5c2",
+                        "surface": "#f9f9f8",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-container": "#e9e1dd",
+                        "surface-variant": "#e2e2e2",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-container-high": "#e8e8e7",
+                        "on-secondary-fixed-variant": "#4a4643",
+                        "on-tertiary-container": "#e6e6e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "stack-gap": "16px",
+                        "section-gap": "32px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-rg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-rg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-rg text-body-rg">
+<!-- Top App Bar (Shared Component Anchor) -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-gutter h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<button class="text-primary hover:opacity-80 transition-opacity duration-200">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">ComfyTag</span>
+</div>
+<div class="flex items-center">
+<button class="text-on-surface-variant hover:opacity-80 transition-opacity duration-200">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center px-gutter pt-24 pb-12 w-full max-w-[1200px] mx-auto">
+<!-- Content Header -->
+<div class="w-full max-w-md mb-section-gap text-center md:text-left">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Create account</h1>
+<p class="text-on-surface-variant font-body-rg text-body-rg">Join our premium biometric ecosystem for secure, seamless interactions.</p>
+</div>
+<!-- Registration Card -->
+<div class="w-full max-w-md bg-surface-container-lowest border border-outline-variant rounded-xl p-container-padding">
+<form class="space-y-stack-gap" id="registrationForm">
+<!-- Full Name -->
+<div class="space-y-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">Full name</label>
+<div class="relative">
+<input class="w-full h-12 px-4 bg-surface-bright border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all" placeholder="Enter your full name" required="" type="text"/>
+</div>
+</div>
+<!-- Username -->
+<div class="space-y-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">Username</label>
+<div class="relative">
+<input class="w-full h-12 px-4 bg-surface-bright border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all" placeholder="Choose a username" required="" type="text"/>
+</div>
+</div>
+<!-- Email -->
+<div class="space-y-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">Email</label>
+<div class="relative">
+<input class="w-full h-12 px-4 bg-surface-bright border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all" placeholder="example@domain.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password -->
+<div class="space-y-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">Password</label>
+<div class="relative">
+<input class="w-full h-12 px-4 bg-surface-bright border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all" id="passwordInput" placeholder="Min. 8 characters" required="" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors" onclick="togglePassword('passwordInput')" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Confirm Password -->
+<div class="space-y-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant px-1">Confirm Password</label>
+<div class="relative">
+<input class="w-full h-12 px-4 bg-surface-bright border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all" id="confirmPasswordInput" placeholder="Repeat your password" required="" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors" onclick="togglePassword('confirmPasswordInput')" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- Submit Button -->
+<button class="w-full h-14 mt-4 bg-primary-container text-on-primary hover:opacity-90 active:scale-95 transition-all duration-200 rounded-lg font-title-md text-title-md flex items-center justify-center gap-2 group" type="submit">
+                    Create account
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</form>
+</div>
+<!-- Footer -->
+<div class="mt-section-gap text-center">
+<p class="text-on-surface-variant">
+                Already have an account? 
+                <a class="text-primary font-semibold hover:underline underline-offset-4 ml-1 transition-all" href="#">Sign in</a>
+</p>
+</div>
+</main>
+<!-- Success State Overlay (Hidden by default) -->
+<div class="fixed inset-0 z-[60] bg-on-background/10 glass-effect hidden items-center justify-center px-gutter" id="successOverlay">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 max-w-sm w-full text-center shadow-lg transform scale-95 opacity-0 transition-all duration-300 ease-out" id="successCard">
+<div class="w-20 h-20 bg-primary-container/10 text-primary-container rounded-full flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-[48px] pulse-soft" data-icon="mark_email_read" style="font-variation-settings: 'FILL' 1;">mark_email_read</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-3">Check your email</h2>
+<p class="text-on-surface-variant mb-8">We've sent a verification link to your inbox. Please follow the instructions to activate your account.</p>
+<button class="w-full h-12 bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-colors rounded-lg font-title-md text-title-md" onclick="hideSuccess()">
+                Got it
+            </button>
+<p class="mt-6 text-body-sm font-body-sm text-on-surface-variant">
+                Didn't receive anything? <button class="text-primary font-semibold hover:underline">Resend</button>
+</p>
+</div>
+</div>
+<!-- Navigation suppression check: Hidden on transactional/focused journey as per mandate -->
+<!-- BottomNavBar would be here but suppressed for registration flow focus -->
+<script>
+        function togglePassword(id) {
+            const input = document.getElementById(id);
+            const icon = input.nextElementSibling.querySelector('.material-symbols-outlined');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
+
+        const form = document.getElementById('registrationForm');
+        const overlay = document.getElementById('successOverlay');
+        const card = document.getElementById('successCard');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Show Success Overlay
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            // Trigger animation
+            setTimeout(() => {
+                card.classList.remove('scale-95', 'opacity-0');
+                card.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        });
+
+        function hideSuccess() {
+            card.classList.add('scale-95', 'opacity-0');
+            card.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            }, 300);
+        }
+    </script>
+</body></html>

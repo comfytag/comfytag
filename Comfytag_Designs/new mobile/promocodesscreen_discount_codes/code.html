@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag - Promo Codes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "on-secondary-fixed": "#1e1b19",
+                        "secondary": "#625d5b",
+                        "surface-bright": "#f9f9f8",
+                        "outline": "#7b7487",
+                        "on-secondary-container": "#686361",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-primary-fixed": "#25005a",
+                        "tertiary": "#4d4f4e",
+                        "inverse-primary": "#d2bbff",
+                        "surface-dim": "#dadad9",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#e9e1dd",
+                        "on-primary-container": "#ede0ff",
+                        "tertiary-fixed-dim": "#c6c7c6",
+                        "outline-variant": "#ccc3d8",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d2bbff",
+                        "inverse-on-surface": "#f1f1f0",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#4a4455",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#630ed4",
+                        "tertiary-container": "#656766",
+                        "primary-fixed": "#eaddff",
+                        "background": "#f9f9f8",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eeeeed",
+                        "on-background": "#1a1c1c",
+                        "primary-container": "#7c3aed",
+                        "surface-tint": "#732ee4",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-low": "#f3f4f3",
+                        "inverse-surface": "#2f3130",
+                        "secondary-fixed-dim": "#ccc5c2",
+                        "surface": "#f9f9f8",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-container": "#e9e1dd",
+                        "surface-variant": "#e2e2e2",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-container-high": "#e8e8e7",
+                        "on-secondary-fixed-variant": "#4a4643",
+                        "on-tertiary-container": "#e6e6e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "stack-gap": "16px",
+                        "section-gap": "32px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-rg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-rg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #FAFAF9; /* Using the specified Background Level 0 from style guidance */
+            color: #1A1C1C;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-sheet {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .custom-shadow {
+            box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+        /* Custom Toggle Logic */
+        #toggle-percent:checked ~ .toggle-bg { transform: translateX(0%); }
+        #toggle-fixed:checked ~ .toggle-bg { transform: translateX(100%); }
+    </style>
+</head>
+<body class="bg-background min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-gutter h-16 bg-surface border-b border-outline-variant transition-opacity duration-200">
+<div class="flex items-center gap-4">
+<button class="hover:opacity-80 transition-opacity duration-200 text-primary">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">ComfyTag</h1>
+</div>
+<button class="hover:opacity-80 transition-opacity duration-200 text-primary">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</header>
+<main class="pt-20 px-container-padding max-w-[1200px] mx-auto">
+<!-- Action Header Section -->
+<section class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-section-gap">
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Promo Campaigns</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage your tag activation rewards and discount codes.</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-lg font-title-md text-title-md flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 shadow-sm" onclick="toggleForm()">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                New Promo Code
+            </button>
+</section>
+<!-- New Promo Code Form (Expandable) -->
+<div class="hidden overflow-hidden transition-all duration-300 mb-section-gap" id="new-code-form">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 custom-shadow">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-title-md text-title-md text-on-surface">Create New Promotion</h3>
+<button class="text-on-surface-variant hover:text-error transition-colors" onclick="toggleForm()">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Promo Code Name</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-body-rg text-body-rg uppercase" placeholder="e.g. LAUNCH2024" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Discount Type</label>
+<div class="relative bg-secondary-fixed p-1 rounded-lg flex h-12 items-center">
+<label class="flex-1 text-center cursor-pointer z-10 font-label-caps text-label-caps">
+<input checked="" class="hidden peer" name="type" type="radio"/>
+<span class="peer-checked:text-on-primary transition-colors">Percentage</span>
+</label>
+<label class="flex-1 text-center cursor-pointer z-10 font-label-caps text-label-caps">
+<input class="hidden peer" name="type" type="radio"/>
+<span class="peer-checked:text-on-primary transition-colors">Fixed Amount</span>
+</label>
+<div class="absolute w-[calc(50%-4px)] h-[calc(100%-8px)] bg-primary rounded-md transition-transform duration-200 left-1 peer-checked:translate-x-full"></div>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Value</label>
+<div class="relative">
+<input class="w-full bg-white border border-outline-variant rounded-lg p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-body-rg text-body-rg" placeholder="0.00" type="number"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-title-md">%</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Total Uses Available</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg p-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-body-rg text-body-rg" placeholder="e.g. 500" type="number"/>
+</div>
+</div>
+<div class="mt-8 flex justify-end gap-3">
+<button class="bg-surface-container-high px-6 py-3 rounded-lg font-title-md text-title-md hover:bg-surface-container-highest transition-colors" onclick="toggleForm()">Cancel</button>
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-title-md text-title-md hover:opacity-90 transition-all">Create Code</button>
+</div>
+</div>
+</div>
+<!-- Empty State (Conditional Display - Hidden by default for this demo) -->
+<div class="hidden flex flex-col items-center justify-center py-20 text-center" id="empty-state">
+<div class="bg-surface-container p-8 rounded-full mb-6">
+<span class="material-symbols-outlined text-outline-variant text-[64px]" data-icon="sell" style="font-variation-settings: 'FILL' 1;">sell</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile mb-2">No Promo Codes Yet</h3>
+<p class="font-body-rg text-body-rg text-on-surface-variant max-w-sm mb-8">Boost your brand awareness by creating discount codes for your ComfyTag users.</p>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-lg font-title-md text-title-md" onclick="toggleForm()">Create Your First Code</button>
+</div>
+<!-- Bento Grid of Promo Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-section-gap">
+<!-- Card 1: Active Percentage -->
+<div class="bg-white border border-outline-variant rounded-xl p-6 transition-all hover:border-primary/50 group">
+<div class="flex justify-between items-start mb-4">
+<span class="bg-primary-container text-on-primary-container font-label-caps text-label-caps px-3 py-1 rounded-full">ACTIVE</span>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div class="mb-6">
+<h4 class="font-headline-lg text-primary tracking-widest mb-1 group-hover:scale-105 transition-transform origin-left">LAUNCH20</h4>
+<div class="flex items-center gap-2">
+<span class="bg-secondary-container text-on-secondary-container font-label-caps text-[10px] px-2 py-0.5 rounded tracking-wider">20% OFF</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Expires: Dec 31</span>
+</div>
+</div>
+<div class="space-y-4 pt-4 border-t border-outline-variant/30">
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Usage</span>
+<span class="font-title-md text-title-md">412 / 500</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 82.4%;"></div>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]" data-icon="trending_up">trending_up</span>
+<span class="font-label-caps text-[11px]">+12% this week</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Expired Fixed Amount -->
+<div class="bg-white border border-outline-variant rounded-xl p-6 opacity-75 grayscale-[0.5]">
+<div class="flex justify-between items-start mb-4">
+<span class="bg-surface-container-highest text-on-surface-variant font-label-caps text-label-caps px-3 py-1 rounded-full">EXPIRED</span>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="refresh">refresh</span>
+</button>
+</div>
+<div class="mb-6">
+<h4 class="font-headline-lg text-on-surface-variant tracking-widest mb-1">SAVE10</h4>
+<div class="flex items-center gap-2">
+<span class="bg-surface-container text-on-surface-variant font-label-caps text-[10px] px-2 py-0.5 rounded tracking-wider">₦1,000 OFF</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Expired: Oct 15</span>
+</div>
+</div>
+<div class="space-y-4 pt-4 border-t border-outline-variant/30">
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Total Redemptions</span>
+<span class="font-title-md text-title-md">1,240</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-outline h-full rounded-full w-full"></div>
+</div>
+</div>
+</div>
+<!-- Card 3: New High Value -->
+<div class="bg-white border border-outline-variant rounded-xl p-6 transition-all hover:border-primary/50 group relative overflow-hidden">
+<div class="absolute -right-8 -top-8 bg-error/10 w-24 h-24 rounded-full blur-2xl"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="bg-error-container text-on-error-container font-label-caps text-label-caps px-3 py-1 rounded-full">LIMITED</span>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div class="mb-6">
+<h4 class="font-headline-lg text-primary tracking-widest mb-1 group-hover:scale-105 transition-transform origin-left">VIPACCESS</h4>
+<div class="flex items-center gap-2">
+<span class="bg-secondary-container text-on-secondary-container font-label-caps text-[10px] px-2 py-0.5 rounded tracking-wider">50% OFF</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">One-time use</span>
+</div>
+</div>
+<div class="space-y-4 pt-4 border-t border-outline-variant/30">
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Remaining</span>
+<span class="font-title-md text-title-md">12 / 20</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 60%;"></div>
+</div>
+</div>
+</div>
+<!-- Card 4: Ghost/Draft Code -->
+<div class="bg-surface-container-low border border-dashed border-outline-variant rounded-xl p-6 flex flex-col justify-center items-center gap-4 cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-outline-variant text-[40px]" data-icon="add_circle">add_circle</span>
+<span class="font-title-md text-title-md text-on-surface-variant">Add Draft Code</span>
+</div>
+</div>
+</main>
+<!-- BottomNavBar Shell -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant">
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-caps text-label-caps">Explore</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1">
+<span class="material-symbols-outlined" data-icon="confirmation_number">confirmation_number</span>
+<span class="font-label-caps text-label-caps">Tickets</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 transition-transform duration-150 active:scale-95">
+<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps">Profile</span>
+</div>
+</nav>
+<script>
+        function toggleForm() {
+            const form = document.getElementById('new-code-form');
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                form.classList.add('animate-in', 'fade-in', 'slide-in-from-top-4');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                form.classList.add('hidden');
+            }
+        }
+
+        // Simulating usage updates or micro-interactions
+        const progressBars = document.querySelectorAll('.bg-primary.h-full');
+        progressBars.forEach(bar => {
+            const targetWidth = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.transition = 'width 1s cubic-bezier(0.4, 0, 0.2, 1)';
+                bar.style.width = targetWidth;
+            }, 300);
+        });
+    </script>
+</body></html>

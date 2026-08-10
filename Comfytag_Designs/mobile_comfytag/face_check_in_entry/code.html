@@ -1,0 +1,252 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ComfyTag | Face Check-in</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e2e2e2",
+                    "primary-fixed": "#eaddff",
+                    "on-primary-fixed": "#25005a",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-secondary-container": "#fffbff",
+                    "surface": "#f9f9f8",
+                    "on-primary-container": "#ede0ff",
+                    "primary": "#630ed4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary": "#704500",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#d2bbff",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary": "#6e3aca",
+                    "on-secondary-fixed-variant": "#581db3",
+                    "outline": "#7b7487",
+                    "inverse-surface": "#2f3130",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-error-container": "#93000a",
+                    "background": "#f9f9f8",
+                    "primary-container": "#7c3aed",
+                    "on-tertiary-fixed": "#2a1700",
+                    "surface-dim": "#dadad9",
+                    "secondary-fixed": "#ebddff",
+                    "outline-variant": "#ccc3d8",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "inverse-primary": "#d2bbff",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "on-tertiary-container": "#ffe1c0",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "surface-bright": "#f9f9f8",
+                    "surface-container-high": "#e8e8e7",
+                    "on-surface-variant": "#4a4455",
+                    "on-background": "#1a1c1c",
+                    "secondary-container": "#8856e5",
+                    "on-secondary-fixed": "#250059",
+                    "surface-container-low": "#f3f4f3",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#ffddb8",
+                    "surface-tint": "#732ee4",
+                    "secondary-fixed-dim": "#d3bbff",
+                    "tertiary-container": "#905b00",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "40px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "stack-lg": "24px",
+                    "stack-md": "16px",
+                    "margin-tablet": "32px",
+                    "gutter": "16px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        @keyframes scan {
+            0%, 100% { transform: translateY(0); opacity: 0.2; }
+            50% { transform: translateY(320px); opacity: 1; }
+        }
+        
+        .scan-line {
+            animation: scan 3s ease-in-out infinite;
+        }
+
+        .pulse-soft {
+            animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(1.02); }
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg overflow-hidden">
+<!-- Top App Bar (Shared Component) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-sm flex justify-between items-center px-margin-mobile h-16 max-w-full">
+<div class="flex items-center gap-base">
+<button class="material-symbols-outlined text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">menu</button>
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight ml-2">ComfyTag</span>
+</div>
+<div class="flex items-center">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden border-2 border-primary-container">
+<div class="w-full h-full bg-cover bg-center" data-alt="A professional headshot of a premium event organizer, featuring soft studio lighting, a minimalist blurred background, and a friendly, confident expression. The style is clean and high-fidelity, matching the premium modernist aesthetic of the ComfyTag brand." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDPL5s4_9cSW8S_Xmly59G88ecFUqNSSR1XNlo--Xj7Jj9xm1nsZDIvCuNEHkwE6huFf2hM3tMKbjjn9TZwmYf6pod4Cl07-4UbXHN9XtCKhSLLe5UG3i0bcyXeOGoPT9YKvqyfahIEH0fdlwDKGFG-SUAdSyGyQWp2pQTQhWcS-QluCxeKa2bFKxNpqJGeIr3XC8XnsVNM5cY23fUBkVmzvI8GmAwNuBCDf6fi3cDssV897Hj5gAU1_g')"></div>
+</div>
+</div>
+</header>
+<!-- Main Entry Canvas -->
+<main class="relative h-screen w-full flex flex-col items-center justify-center bg-black">
+<!-- Camera View -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center opacity-70 grayscale-[0.3]" data-alt="A POV camera view of a modern entry foyer with soft ambient lighting. The perspective is from a front-facing camera, focusing on where a user's face would be positioned. The environment is a high-end corporate event lobby with premium finishes and a warm, inviting atmosphere in soft violet and amber tones." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuArBMfvmll5dltqTH_T8aFLrwoq0X0KMEalK6regk1lzRI6VhSfHTfHshbOCXY1rdop9i-5uJQ2-RG_0CvuG3AWfxRfxWqrJuQB7vTDeYOOCzLjIF5dWgvJWQP9IiKAwVzFwHMF9W8JG4xggjTlZdt3tVWUI9bIz926fN5TFqPJbQXsUkdKLjk6Ro8ImXhFdCXlYpV5-cKAerXKcaMzHTiVbc8hGI6c6sxEckoSLSUEf3hzHAbm8NUlNg')"></div>
+<!-- Atmospheric Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40"></div>
+</div>
+<!-- Scanning Overlay Interface -->
+<div class="relative z-10 w-full max-w-md px-margin-mobile flex flex-col items-center">
+<!-- Face Tracking Bracket -->
+<div class="relative w-80 h-80 md:w-96 md:h-96 flex items-center justify-center">
+<!-- Corner Brackets -->
+<div class="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-primary rounded-tl-3xl"></div>
+<div class="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-primary rounded-tr-3xl"></div>
+<div class="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-primary rounded-bl-3xl"></div>
+<div class="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-primary rounded-br-3xl"></div>
+<!-- Active Scan Line -->
+<div class="scan-line absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-fixed to-transparent shadow-[0_0_15px_rgba(115,46,228,0.8)] z-20" id="scan-element"></div>
+<!-- Central Verification State (Hidden by default, shown via JS) -->
+<div class="hidden flex flex-col items-center animate-in fade-in zoom-in duration-500" id="verified-icon">
+<div class="w-24 h-24 rounded-full bg-emerald-500/20 flex items-center justify-center border-4 border-emerald-500 shadow-[0_0_40px_rgba(16,185,129,0.4)]">
+<span class="material-symbols-outlined text-white text-5xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Instruction Text -->
+<div class="mt-stack-lg text-center" id="status-container">
+<p class="font-headline-md text-headline-md text-white tracking-wide pulse-soft" id="status-text">Scanning Face...</p>
+<p class="font-body-md text-body-md text-white/60 mt-base" id="sub-status-text">Hold still for secure authentication</p>
+</div>
+<!-- Verification Card (Glassmorphism) -->
+<div class="hidden mt-section-gap w-full bg-white/10 backdrop-blur-md p-stack-lg rounded-xl border border-white/20 shadow-2xl animate-in slide-in-from-bottom-10 duration-700" id="success-card">
+<div class="flex items-center gap-stack-md">
+<div class="w-14 h-14 rounded-full border-2 border-emerald-500/50 p-0.5">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="A crisp profile picture of a young professional attendee, brightly lit with a clean background. The individual is smiling slightly, exuding confidence. The image quality is extremely high, representing a 'Verified' status state in a high-end application." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCFIjcOQ-_LsG3p-O7RjXqsva2jfsEYZtte8dA2Io4QHwrp40Wnduif_0uwTTaY4588a5voIzaR3HL53wEzbJm6-ocOGzv1uHxUOybqAtSObj19Zy2USn4PlzwHxTH_ctQ2FJn6JsB9nagkmC9zkcYXBRt9SvWyIxcFI27X8sarPRyTG5fKydx9vG94Si1vn7vGymYgHT5094diDvbmmOFf8RglhrMG69UwAp5AE4Uco-uO-L9pLWX7NA')"></div>
+</div>
+<div>
+<h2 class="font-title-lg text-title-lg text-white">Chidi Okafor</h2>
+<p class="font-label-md text-label-md text-emerald-400 uppercase tracking-widest">Verified Attendee</p>
+</div>
+<div class="ml-auto">
+<span class="material-symbols-outlined text-emerald-400 text-3xl">verified</span>
+</div>
+</div>
+<div class="mt-stack-md pt-stack-md border-t border-white/10 flex justify-between items-center">
+<div>
+<p class="text-white/40 text-[10px] uppercase font-bold tracking-tighter">Event Access</p>
+<p class="text-white font-medium">Main Stage • VIP</p>
+</div>
+<button class="bg-primary hover:bg-primary-container text-white px-stack-lg py-2 rounded-full font-label-md text-label-md transition-all active:scale-95">
+                        Enter Now
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation (Shared Component) - Hidden on this focused screen per instructions -->
+<!-- We prioritize the Canvas for high-focus check-in -->
+<script>
+        // Simulate a face recognition process
+        document.addEventListener('DOMContentLoaded', () => {
+            const scanElement = document.getElementById('scan-element');
+            const statusText = document.getElementById('status-text');
+            const subStatusText = document.getElementById('sub-status-text');
+            const verifiedIcon = document.getElementById('verified-icon');
+            const successCard = document.getElementById('success-card');
+            const statusContainer = document.getElementById('status-container');
+
+            setTimeout(() => {
+                // Phase 2: Processing
+                statusText.innerText = "Analyzing Biometrics...";
+                statusText.classList.remove('pulse-soft');
+                
+                setTimeout(() => {
+                    // Phase 3: Success
+                    scanElement.style.display = 'none';
+                    verifiedIcon.classList.remove('hidden');
+                    
+                    statusText.innerText = "Verified";
+                    statusText.classList.add('text-emerald-400');
+                    subStatusText.innerText = "Welcome back, Chidi";
+                    subStatusText.classList.add('text-emerald-400/80');
+
+                    // Show detailed card
+                    successCard.classList.remove('hidden');
+                    
+                    // Subtle haptic-like pulse on success
+                    document.body.classList.add('bg-emerald-950/20');
+                    setTimeout(() => document.body.classList.remove('bg-emerald-950/20'), 300);
+
+                }, 2000);
+
+            }, 2500);
+        });
+
+        // Toggle mobile drawer placeholder logic (simulation only)
+        function toggleDrawer() {
+            console.log('Navigation drawer would open here.');
+        }
+    </script>
+</body></html>

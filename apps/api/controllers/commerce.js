@@ -271,6 +271,20 @@ export const applyReferral = async (req, res, next) => {
       return res.status(200).json({ success: true, credited: false, reason: 'self-referral' })
     }
 
+    if (ticket.referralRedeemed) {
+      return res.status(200).json({ success: true, credited: false, reason: 'already-redeemed' })
+    }
+
+    // Atomic claim closes the race between two concurrent calls for the same ticket.
+    const claimed = await Audience.findOneAndUpdate(
+      { _id: ticketId, referralRedeemed: { $ne: true } },
+      { $set: { referralRedeemed: true, referralCreditedAt: new Date() } },
+      { new: true }
+    )
+    if (!claimed) {
+      return res.status(200).json({ success: true, credited: false, reason: 'already-redeemed' })
+    }
+
     // Credit ₦500 to referrer wallet
     await Wallet.findOneAndUpdate(
       { user_id: referral.referrer_id },

@@ -1,0 +1,346 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ComfyTag | Staff Scanner</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e2e2e2",
+                    "primary-fixed": "#eaddff",
+                    "on-primary-fixed": "#25005a",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-secondary-container": "#fffbff",
+                    "surface": "#f9f9f8",
+                    "on-primary-container": "#ede0ff",
+                    "primary": "#630ed4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary": "#704500",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#d2bbff",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary": "#6e3aca",
+                    "on-secondary-fixed-variant": "#581db3",
+                    "outline": "#7b7487",
+                    "inverse-surface": "#2f3130",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-error-container": "#93000a",
+                    "background": "#f9f9f8",
+                    "primary-container": "#7c3aed",
+                    "on-tertiary-fixed": "#2a1700",
+                    "surface-dim": "#dadad9",
+                    "secondary-fixed": "#ebddff",
+                    "outline-variant": "#ccc3d8",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "inverse-primary": "#d2bbff",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "on-tertiary-container": "#ffe1c0",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "surface-bright": "#f9f9f8",
+                    "surface-container-high": "#e8e8e7",
+                    "on-surface-variant": "#4a4455",
+                    "on-background": "#1a1c1c",
+                    "secondary-container": "#8856e5",
+                    "on-secondary-fixed": "#250059",
+                    "surface-container-low": "#f3f4f3",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#905b00",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "40px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "stack-lg": "24px",
+                    "stack-md": "16px",
+                    "margin-tablet": "32px",
+                    "gutter": "16px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .camera-overlay {
+            background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.6) 100%);
+        }
+        .scanner-line {
+            height: 2px;
+            background: #7c3aed;
+            box-shadow: 0 0 15px #7c3aed;
+            animation: scan 3s infinite ease-in-out;
+        }
+        @keyframes scan {
+            0% { top: 20%; opacity: 0; }
+            50% { opacity: 1; }
+            100% { top: 80%; opacity: 0; }
+        }
+        .status-popup {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-black overflow-hidden font-body-lg text-body-lg text-on-surface">
+<!-- Top Navigation Anchor (Simulating TopAppBar structure) -->
+<header class="fixed top-0 w-full z-50 bg-black/40 backdrop-blur-md h-20 flex items-center px-margin-mobile justify-between text-white border-b border-white/10">
+<div class="flex items-center gap-stack-md">
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 active:scale-95 transition-transform" onclick="window.history.back()">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div>
+<h1 class="font-headline-md text-headline-md leading-tight">Staff Scanner</h1>
+<p class="font-label-md text-label-md text-white/60 uppercase tracking-widest">Main Entrance Portal</p>
+</div>
+</div>
+<!-- Live Counters -->
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
+<span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+<span class="font-label-md text-label-md font-bold tracking-tight" id="checkin-count">1,248 Checked In</span>
+</div>
+<p class="font-label-md text-label-md text-white/40 mt-1">Goal: 5,000</p>
+</div>
+</header>
+<!-- Main Scanning View (Full Screen Canvas) -->
+<main class="relative h-screen w-full flex items-center justify-center overflow-hidden">
+<!-- Live Camera Placeholder -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center opacity-60 grayscale-[0.5]" data-alt="A high-definition view of a person standing in a bright, modern event venue entrance, ready for facial recognition. The scene is lit with cool blue and white architectural lighting, creating a professional and futuristic security checkpoint atmosphere. The background shows blurred crowds and premium signage consistent with a high-end Nigerian event like a fashion gala or tech summit." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD3V8S34oZNnD9sWMRjkXS31ykOD9WhiHMzwO5c5CIgTkvoxuM8adIwFlFEVIFsU6vabDlUPR1krbUqWRVmcn4AcpG4V7tdN93zVsvqftaQoAIw6dA10jEusSfSaNg3rnfrdqzzc7jK-b8gZbqOyh8PXsHo2w-dW_ftHVJIENpI4pwxS1Y1ecke_eD0-L3fIenUEiAGmfysQlHQ6KjJ9-AxFeSH7fZbljHPfJBO7-X7oRyKMLTG0S_Xuw')"></div>
+<div class="absolute inset-0 camera-overlay"></div>
+</div>
+<!-- Scanning Frame -->
+<div class="relative z-10 w-72 h-96 md:w-96 md:h-[30rem] border-2 border-white/30 rounded-[3rem] overflow-hidden">
+<!-- Corners -->
+<div class="absolute top-8 left-8 w-12 h-12 border-t-4 border-l-4 border-primary rounded-tl-2xl"></div>
+<div class="absolute top-8 right-8 w-12 h-12 border-t-4 border-r-4 border-primary rounded-tr-2xl"></div>
+<div class="absolute bottom-8 left-8 w-12 h-12 border-b-4 border-l-4 border-primary rounded-bl-2xl"></div>
+<div class="absolute bottom-8 right-8 w-12 h-12 border-b-4 border-r-4 border-primary rounded-br-2xl"></div>
+<!-- Scanning Line -->
+<div class="scanner-line absolute w-full z-20"></div>
+<!-- Facial Guide -->
+<div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+<span class="material-symbols-outlined text-[12rem] text-white" style="font-variation-settings: 'wght' 100;">face</span>
+</div>
+</div>
+<!-- Feedback Overlay (Hidden by default) -->
+<div class="hidden absolute inset-0 z-40 bg-green-500/90 backdrop-blur-sm flex flex-col items-center justify-center text-white p-margin-mobile" id="feedback-granted">
+<div class="status-popup flex flex-col items-center text-center">
+<div class="w-24 h-24 rounded-full bg-white flex items-center justify-center mb-stack-lg shadow-2xl">
+<span class="material-symbols-outlined text-green-500 text-5xl font-bold">check_circle</span>
+</div>
+<h2 class="font-display-lg text-display-lg mb-base">Access Granted</h2>
+<p class="font-title-lg text-title-lg opacity-90 mb-stack-lg">Tunde Adekunle • Premium Pass</p>
+<div class="bg-black/20 rounded-xl p-4 w-full max-w-xs">
+<div class="flex justify-between mb-2">
+<span class="text-white/60 text-sm">Zone</span>
+<span class="font-bold">Main Stage / VIP Lounge</span>
+</div>
+<div class="flex justify-between">
+<span class="text-white/60 text-sm">Ticket ID</span>
+<span class="font-mono">#CT-8832-1A</span>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden absolute inset-0 z-40 bg-error/95 backdrop-blur-sm flex flex-col items-center justify-center text-white p-margin-mobile" id="feedback-invalid">
+<div class="status-popup flex flex-col items-center text-center">
+<div class="w-24 h-24 rounded-full bg-white flex items-center justify-center mb-stack-lg shadow-2xl">
+<span class="material-symbols-outlined text-error text-5xl font-bold">cancel</span>
+</div>
+<h2 class="font-display-lg text-display-lg mb-base">Invalid Ticket</h2>
+<p class="font-title-lg text-title-lg opacity-90 mb-stack-lg">This credential has already been used.</p>
+<button class="bg-white text-error font-bold px-10 py-4 rounded-full shadow-lg active:scale-95 transition-all" onclick="hideFeedback()">
+                    TRY AGAIN
+                </button>
+</div>
+</div>
+</main>
+<!-- Bottom Controls -->
+<div class="fixed bottom-0 left-0 w-full z-50 p-margin-mobile flex flex-col gap-stack-md">
+<!-- Floating Hints -->
+<div class="bg-surface/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-fixed">light_mode</span>
+<p class="text-white font-body-md text-body-md">Ensure face is well lit</p>
+</div>
+<div class="flex gap-2">
+<button class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center active:scale-90" title="Toggle Flash">
+<span class="material-symbols-outlined text-white">flashlight_on</span>
+</button>
+<button class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center active:scale-90" title="Switch Camera">
+<span class="material-symbols-outlined text-white">cameraswitch</span>
+</button>
+</div>
+</div>
+<!-- Primary Actions -->
+<div class="grid grid-cols-2 gap-stack-md">
+<button class="h-16 bg-primary text-on-primary rounded-2xl font-bold flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-transform" onclick="simulateScan('success')">
+<span class="material-symbols-outlined">scan</span>
+                AUTO SCAN
+            </button>
+<button class="h-16 bg-white/10 text-white border border-white/20 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform backdrop-blur-md" onclick="simulateScan('error')">
+<span class="material-symbols-outlined">keyboard</span>
+                MANUAL ID
+            </button>
+</div>
+</div>
+<!-- Secondary Navigation (The Anchor Drawer Logic) -->
+<aside class="fixed top-0 left-0 h-full w-80 z-[60] bg-surface-container-low transition-transform -translate-x-full shadow-2xl rounded-r-3xl" id="nav-drawer">
+<div class="flex flex-col h-full py-stack-lg gap-base">
+<div class="px-margin-mobile mb-stack-lg flex items-center justify-between">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">ComfyTag</h3>
+<p class="font-label-md text-label-md text-on-surface-variant">Scanner v2.4.0</p>
+</div>
+<button class="w-10 h-10 rounded-full hover:bg-surface-variant flex items-center justify-center" onclick="toggleDrawer()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Profile Section from JSON -->
+<div class="px-margin-mobile flex items-center gap-4 mb-stack-lg">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-primary-fixed">
+<img class="w-full h-full object-cover" alt="Close up professional headshot of a female security supervisor wearing a neat black uniform and a subtle 'ComfyTag Organizer' lanyard. She has a confident, welcoming expression, set against a clean minimalist studio background with soft warm lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBOhAhoZtijDPlf5Yzr30EbJmg1nfUxH3G0GhFdVtm5YwLNqildoNcLnYn1bo9daiPRQVooLuxNTXhz0ynyRC_ZU5zeIXUlf2wNTIrNuqItSmQBkZlOM0T_JRwjMIeALy2XHBNsojjfcslbkDnKVLG2CqaP7yHQR6x_e6LqAYjG6assfRq7Yg44evyCIKa6PmKWTLlhA8MZYRldjJyq_ZlV5j8fwHHkypU1iC8cqXHik46JDiLbo0NiA">
+</div>
+<div>
+<p class="font-title-lg text-title-lg text-on-surface leading-tight">ComfyTag Organizer</p>
+<p class="text-sm text-on-surface-variant">Premium Events Ltd</p>
+<span class="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">Verified Organizer</span>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-4 mx-2 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-lg text-body-lg">Event Dashboard</span>
+</a>
+<a class="flex items-center gap-4 mx-2 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg" href="#">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+<span class="font-body-lg text-body-lg">Staff Scanner</span>
+</a>
+<a class="flex items-center gap-4 mx-2 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-lg text-body-lg">Attendee List</span>
+</a>
+<a class="flex items-center gap-4 mx-2 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-lg text-body-lg">Analytics</span>
+</a>
+<div class="border-t border-outline-variant/30 my-4 mx-6"></div>
+<a class="flex items-center gap-4 mx-2 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-lg text-body-lg">Settings</span>
+</a>
+</nav>
+<div class="px-margin-mobile mt-auto">
+<button class="w-full flex items-center justify-center gap-2 py-3 border border-error/30 text-error rounded-xl hover:bg-error/5">
+<span class="material-symbols-outlined">logout</span>
+                    Sign Out
+                </button>
+</div>
+</div>
+</aside>
+<!-- Drawer Overlay -->
+<div class="fixed inset-0 bg-black/50 z-50 hidden opacity-0 transition-opacity" id="drawer-overlay" onclick="toggleDrawer()"></div>
+<script>
+        const successModal = document.getElementById('feedback-granted');
+        const errorModal = document.getElementById('feedback-invalid');
+        const countDisplay = document.getElementById('checkin-count');
+        const drawer = document.getElementById('nav-drawer');
+        const overlay = document.getElementById('drawer-overlay');
+        let currentCount = 1248;
+
+        function simulateScan(type) {
+            if (type === 'success') {
+                successModal.classList.remove('hidden');
+                currentCount++;
+                countDisplay.innerText = currentCount.toLocaleString() + ' Checked In';
+                
+                // Play success haptic feel via timeout
+                setTimeout(() => {
+                    hideFeedback();
+                }, 3000);
+            } else {
+                errorModal.classList.remove('hidden');
+            }
+        }
+
+        function hideFeedback() {
+            successModal.classList.add('hidden');
+            errorModal.classList.add('hidden');
+        }
+
+        function toggleDrawer() {
+            if (drawer.classList.contains('-translate-x-full')) {
+                drawer.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.add('opacity-100'), 10);
+            } else {
+                drawer.classList.add('-translate-x-full');
+                overlay.classList.remove('opacity-100');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // Add event listener for the menu button
+        document.querySelector('header button').onclick = toggleDrawer;
+
+        // Micro-interaction: Keyboard shortcut simulation for testing
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 's') simulateScan('success');
+            if (e.key === 'e') simulateScan('error');
+            if (e.key === 'Escape') hideFeedback();
+        });
+    </script>
+</body></html>

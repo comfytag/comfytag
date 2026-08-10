@@ -10,7 +10,6 @@ import type {
   ApiResponse,
   PaginatedResponse,
   MarqueeItem,
-  Category,
 } from '@comfytag/types'
 
 // ─── Event browse ──────────────────────────────────────────────────────────────
@@ -69,11 +68,14 @@ export function useRelatedEvents(category: string, excludeSlug: string) {
   })
 }
 
+// Distinct published-event category names — plain strings, not full Category
+// documents (that's a separate admin-managed model; this endpoint is just
+// `Event.distinct('category', ...)` on the backend).
 export function useCategories() {
   return useQuery({
     queryKey: eventKeys.categories,
     queryFn: () =>
-      get<ApiResponse<Category[]>>('/events/categories').then(
+      get<ApiResponse<string[]>>('/events/categories').then(
         (r) => r.data.data ?? []
       ),
     staleTime: 600_000,
@@ -104,11 +106,14 @@ export function useMarquee() {
 
 // ─── Event comments ────────────────────────────────────────────────────────────
 
+// Matches the flattened shape apps/api/controllers/social.js actually
+// returns (userName/userAvatar/isPinned) — not a nested `user` object.
 interface Comment {
   _id: string
-  user: { _id: string; name: string; image?: string }
+  userName: string
+  userAvatar?: string
   text: string
-  pinned?: boolean
+  isPinned?: boolean
   createdAt: string
 }
 
@@ -166,11 +171,17 @@ export function useLikeEvent() {
   })
 }
 
+// "Save" and "like" are the same action server-side — there's one EventLike
+// collection, one toggle route (apps/api/controllers/social.js toggleLike),
+// and GET /events/saved just reads that same collection back. This hook
+// exists separately from useLikeEvent purely because it invalidates the
+// Saved-list caches instead of the event-detail cache; POST /events/:id/save
+// never existed as its own route.
 export function useSaveEvent() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ eventId }: { eventId: string }) =>
-      post(`/events/${eventId}/save`).then((r) => r.data),
+      post(`/events/${eventId}/like`).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: eventKeys.saved })
       qc.invalidateQueries({ queryKey: profileKeys.saved })

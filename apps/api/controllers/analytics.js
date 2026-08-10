@@ -4,49 +4,63 @@ import Withdraw from '../models/Withdraw.js'
 import Follow from '../models/Follow.js'
 import { createError } from '../utils/error.js'
 
+// Shared balance calculation, reused by getPartnerRevenue and withdrawal validation.
+export const computeAvailableBalance = async (userId) => {
+  // Get all events for this partner
+  const events = await Event.find({ planner_id: userId })
+  const eventIds = events.map(e => e._id)
+
+  // Get all tickets sold for these events
+  const tickets = await Audience.find({
+    event_id: { $in: eventIds },
+    status: { $in: ['active', 'used', 'transferred'] },
+  })
+
+  // Calculate total revenue
+  const totalRevenue = tickets.reduce((sum, t) => sum + (t.amount || 0), 0)
+  const totalTicketsSold = tickets.length
+
+  // Get withdrawal stats
+  const withdrawals = await Withdraw.find({ user_id: userId })
+  const pendingWithdrawals = withdrawals
+    .filter(w => w.status === 'pending')
+    .reduce((sum, w) => sum + w.amount, 0)
+  const approvedWithdrawals = withdrawals
+    .filter(w => w.status === 'approved')
+    .reduce((sum, w) => sum + w.amount, 0)
+  const sentWithdrawals = withdrawals
+    .filter(w => w.status === 'sent')
+    .reduce((sum, w) => sum + w.amount, 0)
+
+  const availableBalance = totalRevenue - (pendingWithdrawals + approvedWithdrawals + sentWithdrawals)
+
+  return {
+    totalRevenue,
+    totalTicketsSold,
+    totalEvents: events.length,
+    pendingWithdrawals,
+    approvedWithdrawals,
+    sentWithdrawals,
+    availableBalance: Math.max(0, availableBalance),
+  }
+}
+
 // GET /partner/:userId/revenue
 // Get real partner balance: total revenue - withdrawals
 export const getPartnerRevenue = async (req, res, next) => {
   try {
     const userId = req.params.userId
 
-    // Get all events for this partner
-    const events = await Event.find({ planner_id: userId })
-    const eventIds = events.map(e => e._id)
+    if (!req.user.isAdmin) {
+      const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+      if (requesterId !== userId) return next(createError(403, "Not authorized to view this partner's data"))
+    }
 
-    // Get all tickets sold for these events
-    const tickets = await Audience.find({
-      event_id: { $in: eventIds },
-      status: { $in: ['active', 'used', 'transferred'] },
-    })
-
-    // Calculate total revenue
-    const totalRevenue = tickets.reduce((sum, t) => sum + (t.amount || 0), 0)
-    const totalTicketsSold = tickets.length
-
-    // Get withdrawal stats
-    const withdrawals = await Withdraw.find({ user_id: userId })
-    const pendingWithdrawals = withdrawals
-      .filter(w => w.status === 'pending')
-      .reduce((sum, w) => sum + w.amount, 0)
-    const approvedWithdrawals = withdrawals
-      .filter(w => w.status === 'approved')
-      .reduce((sum, w) => sum + w.amount, 0)
-    const sentWithdrawals = withdrawals
-      .filter(w => w.status === 'sent')
-      .reduce((sum, w) => sum + w.amount, 0)
-
-    const availableBalance = totalRevenue - (pendingWithdrawals + approvedWithdrawals + sentWithdrawals)
+    const balance = await computeAvailableBalance(userId)
 
     res.status(200).json({
       userId,
-      totalRevenue,
-      totalTicketsSold,
-      totalEvents: events.length,
-      pendingWithdrawals,
-      approvedWithdrawals,
-      sentWithdrawals,
-      availableBalance: Math.max(0, availableBalance),
+      ...balance,
     })
   } catch (err) {
     next(err)
@@ -61,6 +75,11 @@ export const getEventAnalytics = async (req, res, next) => {
 
     const event = await Event.findById(eventId)
     if (!event) return next(createError(404, 'Event not found'))
+
+    if (!req.user.isAdmin) {
+      const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+      if (event.planner_id?.toString() !== requesterId) return next(createError(403, 'Not authorized to view analytics for this event'))
+    }
 
     // Get all tickets for this event
     const tickets = await Audience.find({ event_id: eventId })
@@ -125,6 +144,11 @@ export const getEventAnalytics = async (req, res, next) => {
 export const getPartnerAnalytics = async (req, res, next) => {
   try {
     const userId = req.params.userId
+
+    if (!req.user.isAdmin) {
+      const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+      if (requesterId !== userId) return next(createError(403, "Not authorized to view this partner's data"))
+    }
 
     // Get all events for this partner
     const events = await Event.find({ planner_id: userId })
@@ -220,6 +244,11 @@ export const getCheckInStats = async (req, res, next) => {
 
     const event = await Event.findById(eventId)
     if (!event) return next(createError(404, 'Event not found'))
+
+    if (!req.user.isAdmin) {
+      const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+      if (event.planner_id?.toString() !== requesterId) return next(createError(403, 'Not authorized to view analytics for this event'))
+    }
 
     const tickets = await Audience.find({ event_id: eventId })
 

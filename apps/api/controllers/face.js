@@ -52,66 +52,84 @@ export const enrollFace = async (req, res, next) => {
   }
 }
 
+// Compares a freshly captured face template against a stored one.
+// TODO: Replace with a real KBY-AI biometric distance calculation when
+// the SDK license arrives. This mock stand-in is NOT a security boundary —
+// it exists only so the 1:N identification flow below has something to
+// call until real matching is wired in.
+const compareFaceTemplates = (captured, stored) => {
+  return Boolean(captured) && Boolean(stored)
+}
+
 // POST /face/verify
-// Matches a face template against a ticket owner
-// Called by organizer check-in screen
+// Identifies which (if any) face-enrolled attendee at this event matches
+// a captured face — no ticket lookup needed beforehand. Called by the
+// organizer's Face Check-In screen: point the camera at anyone, and the
+// server searches every active, face-linked ticket for the event to find
+// the match. This is what "your face is your ticket" actually means —
+// contrast with QR/manual check-in, which already knows who it's for.
 export const verifyFace = async (req, res, next) => {
   try {
-    const { faceTemplate, ticketId } = req.body
+    const { faceTemplate, eventId } = req.body
 
-    if (!faceTemplate || !ticketId) {
+    if (!faceTemplate || !eventId) {
       return next(createError(400,
-        'faceTemplate and ticketId are required'))
+        'faceTemplate and eventId are required'))
     }
 
-    // Get ticket and its face owner
-    const ticket = await Audience.findById(ticketId)
-    if (!ticket) return next(createError(404, 'Ticket not found'))
-    if (ticket.status !== 'active') {
-      return next(createError(400,
-        `Ticket is ${ticket.status} — entry not permitted`))
-    }
-    if (!ticket.faceOwner) {
-      return next(createError(400,
-        'No face linked to this ticket'))
-    }
+    // Every active ticket for this event with a face linked to it
+    const tickets = await Audience.find({
+      event_id: eventId,
+      status: 'active',
+      faceOwner: { $ne: null },
+    })
 
-    // Get the face template of the ticket owner
-    const owner = await User.findById(ticket.faceOwner)
-      .select('+faceTemplate')
-    if (!owner || !owner.faceEnrolled) {
-      return next(createError(400,
-        'Ticket owner has no enrolled face'))
-    }
-
-    // NOTE: Actual face comparison is done on-device
-    // by the KBY-AI SDK before this endpoint is called.
-    // This endpoint records the check-in result and
-    // updates the ticket — it does NOT perform the
-    // biometric comparison itself.
-    const { matchResult, matchScore } = req.body
-
-    if (matchResult === true) {
-      // Mark ticket as used / checked in
-      await Audience.findByIdAndUpdate(ticketId, {
-        checkedIn: true,
-        checkedInAt: new Date(),
-        checkedInMethod: 'face',
-        status: 'used',
-      })
-
-      return res.status(200).json({
-        success: true,
-        message: 'Face matched — entry granted',
-        attendeeName: owner.name,
-        ticketType: ticket.type,
-      })
-    } else {
+    if (tickets.length === 0) {
       return res.status(200).json({
         success: false,
-        message: 'Face did not match — entry denied',
+        message: 'No face-enrolled attendees found for this event',
       })
     }
+
+    const ownerIds = [...new Set(tickets.map((t) => t.faceOwner))]
+    const owners = await User.find({
+      _id: { $in: ownerIds },
+      faceEnrolled: true,
+    }).select('+faceTemplate')
+    const ownersById = new Map(owners.map((o) => [o._id.toString(), o]))
+
+    let matchedTicket = null
+    let matchedOwner = null
+    for (const ticket of tickets) {
+      const owner = ownersById.get(ticket.faceOwner)
+      if (!owner) continue
+      if (compareFaceTemplates(faceTemplate, owner.faceTemplate)) {
+        matchedTicket = ticket
+        matchedOwner = owner
+        break
+      }
+    }
+
+    if (!matchedTicket) {
+      return res.status(200).json({
+        success: false,
+        message: 'Face did not match any enrolled attendee — entry denied',
+      })
+    }
+
+    await Audience.findByIdAndUpdate(matchedTicket._id, {
+      checkedIn: true,
+      checkedInAt: new Date(),
+      checkedInMethod: 'face',
+      status: 'used',
+    })
+
+    return res.status(200).json({
+      success: true,
+      message: 'Face matched — entry granted',
+      attendeeName: matchedOwner.name,
+      ticketType: matchedTicket.type,
+    })
   } catch (err) {
     next(err)
   }

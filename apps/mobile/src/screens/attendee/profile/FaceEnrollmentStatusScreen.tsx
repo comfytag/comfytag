@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
+  Animated,
   ScrollView,
   StyleSheet,
   Text,
@@ -32,7 +33,7 @@ function ScreenHeader({ onBack }: ScreenHeaderProps): React.ReactElement {
   return (
     <View style={styles.header}>
       <AnimatedPressable style={styles.backButton} onPress={onBack} hapticStyle="light">
-        <ChevronLeft size={24} color={colors.mobile.textPrimary} strokeWidth={2} />
+        <ChevronLeft size={24} color={colors.textPublic.primary} strokeWidth={2} />
       </AnimatedPressable>
       <Text style={styles.headerTitle}>Face Entry</Text>
       <View style={styles.headerSpacer} />
@@ -48,6 +49,27 @@ export default function FaceEnrollmentStatusScreen({ navigation }: Props): React
 
   const [screenState, setScreenState] = useState<ScreenState>('loading')
   const [sdkStatus, setSdkStatus] = useState<FaceSDKStatus | null>(null)
+
+  const pulseScale = useRef(new Animated.Value(0.85)).current
+  const pulseOpacity = useRef(new Animated.Value(0.5)).current
+
+  useEffect(() => {
+    if (!faceEnrolled) return
+    const loop = Animated.loop(
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(pulseScale, { toValue: 1.15, duration: 1000, useNativeDriver: true }),
+          Animated.timing(pulseScale, { toValue: 0.85, duration: 1000, useNativeDriver: true }),
+        ]),
+        Animated.sequence([
+          Animated.timing(pulseOpacity, { toValue: 0.2, duration: 1000, useNativeDriver: true }),
+          Animated.timing(pulseOpacity, { toValue: 0.5, duration: 1000, useNativeDriver: true }),
+        ]),
+      ])
+    )
+    loop.start()
+    return () => loop.stop()
+  }, [faceEnrolled, pulseScale, pulseOpacity])
 
   // ─── Load SDK status on mount ──────────────────────────────────────────
 
@@ -120,15 +142,23 @@ export default function FaceEnrollmentStatusScreen({ navigation }: Props): React
         <View style={[styles.card, styles.statusCard]}>
           {/* Icon circle */}
           <View style={styles.iconWrapper}>
+            {faceEnrolled && (
+              <Animated.View
+                style={[
+                  styles.pulseRing,
+                  { transform: [{ scale: pulseScale }], opacity: pulseOpacity },
+                ]}
+              />
+            )}
             <View
               style={[
                 styles.iconCircle,
-                { backgroundColor: faceEnrolled ? colors.brand.DEFAULT : colors.mobile.surfaceRaised },
+                { backgroundColor: faceEnrolled ? colors.brand.DEFAULT : colors.public.surfaceAlt },
               ]}
             >
               <Scan
                 size={36}
-                color={faceEnrolled ? colors.mobile.textPrimary : colors.mobile.textMuted}
+                color={faceEnrolled ? '#FFFFFF' : colors.textPublic.muted}
                 strokeWidth={1.5}
               />
             </View>
@@ -217,7 +247,7 @@ export default function FaceEnrollmentStatusScreen({ navigation }: Props): React
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
 
   // ── Header ────────────────────────────────────────────────────────────────
@@ -227,7 +257,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: sp[4],
     paddingTop: sp[2],
     paddingBottom: sp[3],
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   backButton: {
     width: 44,
@@ -239,7 +269,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
   },
   headerSpacer: {
@@ -260,11 +290,11 @@ const styles = StyleSheet.create({
   // ── Status card ───────────────────────────────────────────────────────────
   card: {
     width: '100%',
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     padding: sp[5],
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
   },
   statusCard: {
     marginBottom: sp[6],
@@ -276,6 +306,17 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: sp[6],
     position: 'relative',
+    width: 80,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pulseRing: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: rd.full,
+    backgroundColor: colors.brand.DEFAULT,
   },
   iconCircle: {
     width: 80,
@@ -295,7 +336,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: colors.mobile.surface,
+    borderColor: colors.public.surface,
   },
   enrolledBadgeText: {
     fontSize: fs.xs,
@@ -315,21 +356,21 @@ const styles = StyleSheet.create({
   },
   rowDivider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.mobile.border,
+    backgroundColor: colors.public.border,
   },
   infoLabel: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   infoValue: {
     fontSize: fs.sm,
     fontWeight: '500',
   },
   infoValueActive: {
-    color: colors.mobile.success,
+    color: colors.success.DEFAULT,
   },
   infoValueUnavailable: {
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
 
   // ── Badges ────────────────────────────────────────────────────────────────
@@ -346,7 +387,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(16,185,129,0.15)',
   },
   badgeTextGreen: {
-    color: colors.mobile.success,
+    color: colors.success.DEFAULT,
   },
   badgeAmber: {
     backgroundColor: 'rgba(245,158,11,0.15)',
@@ -358,12 +399,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: sp[3],
     paddingVertical: 4,
     borderRadius: rd.full,
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
   },
   badgeTextGrey: {
     fontSize: fs.xs,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
 
   // ── CTA section ───────────────────────────────────────────────────────────
@@ -376,12 +417,12 @@ const styles = StyleSheet.create({
   ctaHeading: {
     fontSize: fs.lg,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
   },
   ctaSubtext: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: sp[2],
@@ -399,7 +440,7 @@ const styles = StyleSheet.create({
   filledButtonText: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textPrimary,
+    color: '#FFFFFF',
   },
   outlinedButton: {
     height: 48,
@@ -421,7 +462,7 @@ const styles = StyleSheet.create({
   // ── Trust footer ──────────────────────────────────────────────────────────
   trustFooter: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
     paddingHorizontal: sp[4],
     marginTop: sp[2],
@@ -436,7 +477,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: fs.base,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textAlign: 'center',
   },
   retryPressable: {

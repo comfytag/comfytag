@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag - Bank Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #F5F5F4 25%, #E7E5E4 50%, #F5F5F4 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .form-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-secondary-fixed": "#1e1b19",
+                    "secondary": "#625d5b",
+                    "surface-bright": "#f9f9f8",
+                    "outline": "#7b7487",
+                    "on-secondary-container": "#686361",
+                    "tertiary-fixed": "#e2e2e2",
+                    "on-primary-fixed": "#25005a",
+                    "tertiary": "#4d4f4e",
+                    "inverse-primary": "#d2bbff",
+                    "surface-dim": "#dadad9",
+                    "on-error": "#ffffff",
+                    "secondary-fixed": "#e9e1dd",
+                    "on-primary-container": "#ede0ff",
+                    "tertiary-fixed-dim": "#c6c7c6",
+                    "outline-variant": "#ccc3d8",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "primary-fixed-dim": "#d2bbff",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-surface-variant": "#4a4455",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#630ed4",
+                    "tertiary-container": "#656766",
+                    "primary-fixed": "#eaddff",
+                    "background": "#f9f9f8",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "on-background": "#1a1c1c",
+                    "primary-container": "#7c3aed",
+                    "surface-tint": "#732ee4",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-low": "#f3f4f3",
+                    "inverse-surface": "#2f3130",
+                    "secondary-fixed-dim": "#ccc5c2",
+                    "surface": "#f9f9f8",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary-container": "#e9e1dd",
+                    "surface-variant": "#e2e2e2",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "surface-container-high": "#e8e8e7",
+                    "on-secondary-fixed-variant": "#4a4643",
+                    "on-tertiary-container": "#e6e6e5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "gutter": "16px",
+                    "stack-gap": "16px",
+                    "section-gap": "32px",
+                    "container-padding": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-rg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-rg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-rg">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-gutter h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<button class="hover:opacity-80 transition-opacity duration-200">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">ComfyTag</h1>
+</div>
+<button class="hover:opacity-80 transition-opacity duration-200">
+<span class="material-symbols-outlined text-primary">account_circle</span>
+</button>
+</header>
+<main class="pt-24 pb-32 px-container-padding max-w-[1200px] mx-auto">
+<!-- Header Section -->
+<div class="mb-section-gap">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Bank Accounts</h2>
+<p class="text-on-surface-variant font-body-rg">Manage your linked accounts for secure, biometric-authorized transfers.</p>
+</div>
+<!-- Bento Grid Container -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Left: Linked Accounts List -->
+<div class="md:col-span-8 space-y-stack-gap">
+<!-- Account Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex items-center justify-between hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed-variant">account_balance</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">GTBank Savings</h3>
+<p class="text-body-sm text-on-surface-variant">Alex Morgan • •••• 8829</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors p-2">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<!-- Account Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex items-center justify-between hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-fixed-variant">savings</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Access Bank</h3>
+<p class="text-body-sm text-on-surface-variant">Alex Morgan • •••• 1042</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors p-2">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<!-- Loading Skeleton Row -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex items-center justify-between opacity-60">
+<div class="flex items-center gap-4 w-full">
+<div class="w-12 h-12 rounded-full skeleton shrink-0"></div>
+<div class="space-y-2 w-1/2">
+<div class="h-5 w-3/4 skeleton rounded-md"></div>
+<div class="h-4 w-1/2 skeleton rounded-md"></div>
+</div>
+</div>
+<div class="w-8 h-8 skeleton rounded-full"></div>
+</div>
+<!-- Add Bank Account Section -->
+<div class="mt-section-gap" id="add-bank-container">
+<button class="w-full border-2 border-dashed border-outline-variant rounded-xl py-6 flex flex-col items-center justify-center text-on-surface-variant hover:border-primary hover:text-primary transition-all group" id="add-bank-btn" onclick="toggleAddForm()">
+<span class="material-symbols-outlined text-3xl mb-2 group-hover:scale-110 transition-transform">add_circle</span>
+<span class="font-title-md text-title-md">Add Bank Account</span>
+</button>
+<!-- Add Bank Inline Form (Hidden Initially) -->
+<div class="hidden form-transition bg-surface-container-low border border-primary rounded-xl p-6 mt-4" id="add-bank-form">
+<h4 class="font-title-md text-title-md text-primary mb-4">Link New Account</h4>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-gap">
+<div class="space-y-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Bank Name</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary-container outline-none transition-all" placeholder="e.g. GTBank" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Account Holder</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary-container outline-none transition-all" placeholder="Legal Name" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Account Number</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 focus:border-primary focus:ring-2 focus:ring-primary-container outline-none transition-all" placeholder="•••• •••• ••••" type="password"/>
+</div>
+</div>
+<div class="mt-6 flex justify-end gap-stack-gap">
+<button class="px-6 py-2 text-on-surface-variant font-title-md hover:bg-surface-container-highest rounded-lg transition-colors" onclick="toggleAddForm()">Cancel</button>
+<button class="px-8 py-2 bg-primary text-on-primary font-title-md rounded-lg shadow-sm hover:opacity-90 transition-opacity">Link Account</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Account Summary / Empty State Demonstration -->
+<div class="md:col-span-4 space-y-stack-gap">
+<div class="bg-surface-container border border-outline-variant rounded-xl p-6 h-full flex flex-col">
+<div class="mb-6">
+<h3 class="font-title-md text-title-md text-on-surface mb-4">Security Insights</h3>
+<div class="p-4 bg-primary-fixed-dim rounded-lg border border-primary-container/20">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<p class="text-body-sm text-on-primary-fixed">Biometric verification is active for all transfers from linked accounts.</p>
+</div>
+</div>
+</div>
+<!-- Example of an Empty State in a sub-section -->
+<div class="flex-grow flex flex-col items-center justify-center py-12 px-4 text-center">
+<div class="w-20 h-20 mb-4 flex items-center justify-center">
+<img class="w-full h-full object-contain opacity-40" alt="A clean, minimalist 3D illustration of a simple wallet icon in soft grey and lavender tones, floating in a bright airy studio space with professional soft lighting. The visual style is premium tech, conveying a sense of emptiness without being stark, and fits perfectly into a modern white and violet user interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeKZTkS8ql-xbgMYLQOOipRpdxI1prUQez88ttCXtrMywv52qVQ65DR0ahcJnp3m8uCt8PHBqzb8FFIT8_cbE2Q0qa9QVWb1sctZtSMdQ5b7Jr0gBmOUcQ2lA7t6ewG9hMPupdCCjHoXcFdKVDgOs1VbPl6lslsYqzmGjA3WUovjNY_McL2zyvfdeT7XiQSk2HeKYzH5EwbqPr_p8UVCmrHLhyPF4qzszvMJoaO-FNCg9g6NyZdVU6aA"/>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface mb-2">No Recent Activity</h4>
+<p class="text-body-sm text-on-surface-variant max-w-[200px]">Once you make a transaction, your history will appear here.</p>
+</div>
+<button class="mt-6 w-full py-3 border border-outline-variant rounded-lg font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors">
+                        VIEW LIMITS
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant">
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high rounded-xl transition-transform active:scale-95 duration-150">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high rounded-xl transition-transform active:scale-95 duration-150">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-caps text-label-caps">Explore</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high rounded-xl transition-transform active:scale-95 duration-150">
+<span class="material-symbols-outlined">confirmation_number</span>
+<span class="font-label-caps text-label-caps">Tickets</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 transition-transform active:scale-95 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high rounded-xl transition-transform active:scale-95 duration-150">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-caps text-label-caps">Profile</span>
+</button>
+</nav>
+<script>
+        function toggleAddForm() {
+            const btn = document.getElementById('add-bank-btn');
+            const form = document.getElementById('add-bank-form');
+            
+            if (form.classList.contains('hidden')) {
+                form.classList.remove('hidden');
+                btn.classList.add('hidden');
+                // Scroll into view
+                setTimeout(() => {
+                    form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                form.classList.add('hidden');
+                btn.classList.remove('hidden');
+            }
+        }
+    </script>
+</body></html>

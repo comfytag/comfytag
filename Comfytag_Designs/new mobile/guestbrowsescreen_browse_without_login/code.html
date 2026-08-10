@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag - Guest Browse</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-secondary-fixed": "#1e1b19",
+                    "secondary": "#625d5b",
+                    "surface-bright": "#f9f9f8",
+                    "outline": "#7b7487",
+                    "on-secondary-container": "#686361",
+                    "tertiary-fixed": "#e2e2e2",
+                    "on-primary-fixed": "#25005a",
+                    "tertiary": "#4d4f4e",
+                    "inverse-primary": "#d2bbff",
+                    "surface-dim": "#dadad9",
+                    "on-error": "#ffffff",
+                    "secondary-fixed": "#e9e1dd",
+                    "on-primary-container": "#ede0ff",
+                    "tertiary-fixed-dim": "#c6c7c6",
+                    "outline-variant": "#ccc3d8",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "primary-fixed-dim": "#d2bbff",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "on-surface-variant": "#4a4455",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#630ed4",
+                    "tertiary-container": "#656766",
+                    "primary-fixed": "#eaddff",
+                    "background": "#f9f9f8",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "on-background": "#1a1c1c",
+                    "primary-container": "#7c3aed",
+                    "surface-tint": "#732ee4",
+                    "on-error-container": "#93000a",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-low": "#f3f4f3",
+                    "inverse-surface": "#2f3130",
+                    "secondary-fixed-dim": "#ccc5c2",
+                    "surface": "#f9f9f8",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary-container": "#e9e1dd",
+                    "surface-variant": "#e2e2e2",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "surface-container-high": "#e8e8e7",
+                    "on-secondary-fixed-variant": "#4a4643",
+                    "on-tertiary-container": "#e6e6e5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "gutter": "16px",
+                    "stack-gap": "16px",
+                    "section-gap": "32px",
+                    "container-padding": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-rg": ["Inter"],
+                    "title-md": ["Inter"],
+                    "label-caps": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-rg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9f8;
+            color: #1a1c1c;
+            margin: 0;
+            padding: 0;
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #F5F5F4 25%, #E7E5E4 50%, #F5F5F4 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background">
+<!-- Top Navigation Bar (Shared Component: TopAppBar) -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-gutter h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary cursor-pointer" data-icon="arrow_back">arrow_back</span>
+</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">
+            ComfyTag
+        </div>
+<div class="flex items-center gap-2">
+<button class="bg-primary text-on-primary px-4 py-2 rounded-full font-label-caps text-label-caps transition-all hover:opacity-90">LOG IN</button>
+</div>
+</header>
+<main class="pt-20 pb-24 px-4 max-w-[1200px] mx-auto min-h-screen">
+<!-- Hero Branding Section -->
+<section class="mb-section-gap pt-4">
+<h1 class="font-headline-lg text-headline-lg text-on-background mb-1">ComfyTag</h1>
+<p class="font-title-md text-title-md text-secondary mb-8">Live events, trusted check-in.</p>
+<!-- Category Quick Filters (Bento Style Suggestion) -->
+<div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+<button class="bg-primary text-on-primary px-4 py-2 rounded-full font-label-caps text-label-caps flex-shrink-0 transition-all hover:opacity-90">ALL EVENTS</button>
+<button class="bg-surface-container-high text-on-surface-variant px-4 py-2 rounded-full font-label-caps text-label-caps flex-shrink-0 transition-all hover:bg-surface-container-highest">CONCERTS</button>
+<button class="bg-surface-container-high text-on-surface-variant px-4 py-2 rounded-full font-label-caps text-label-caps flex-shrink-0 transition-all hover:bg-surface-container-highest">FESTIVALS</button>
+<button class="bg-surface-container-high text-on-surface-variant px-4 py-2 rounded-full font-label-caps text-label-caps flex-shrink-0 transition-all hover:bg-surface-container-highest">SPORTS</button>
+<button class="bg-surface-container-high text-on-surface-variant px-4 py-2 rounded-full font-label-caps text-label-caps flex-shrink-0 transition-all hover:bg-surface-container-highest">THEATRE</button>
+</div>
+</section>
+<!-- Main Content: 2-Column Grid -->
+<div class="grid grid-cols-2 gap-4" id="event-grid">
+<!-- Skeleton States (Visible initially) -->
+<div class="skeleton-card flex flex-col gap-3">
+<div class="w-full aspect-[4/5] skeleton rounded-xl"></div>
+<div class="h-6 w-3/4 skeleton rounded-md"></div>
+<div class="h-4 w-1/2 skeleton rounded-md"></div>
+<div class="h-5 w-1/3 skeleton rounded-md mt-1"></div>
+</div>
+<div class="skeleton-card flex flex-col gap-3">
+<div class="w-full aspect-[4/5] skeleton rounded-xl"></div>
+<div class="h-6 w-3/4 skeleton rounded-md"></div>
+<div class="h-4 w-1/2 skeleton rounded-md"></div>
+<div class="h-5 w-1/3 skeleton rounded-md mt-1"></div>
+</div>
+<div class="skeleton-card flex flex-col gap-3">
+<div class="w-full aspect-[4/5] skeleton rounded-xl"></div>
+<div class="h-6 w-3/4 skeleton rounded-md"></div>
+<div class="h-4 w-1/2 skeleton rounded-md"></div>
+<div class="h-5 w-1/3 skeleton rounded-md mt-1"></div>
+</div>
+<div class="skeleton-card flex flex-col gap-3">
+<div class="w-full aspect-[4/5] skeleton rounded-xl"></div>
+<div class="h-6 w-3/4 skeleton rounded-md"></div>
+<div class="h-4 w-1/2 skeleton rounded-md"></div>
+<div class="h-5 w-1/3 skeleton rounded-md mt-1"></div>
+</div>
+</div>
+<!-- Real Content Container (Hidden until "loaded") -->
+<div class="hidden grid grid-cols-2 gap-x-4 gap-y-8" id="real-content">
+<!-- Card 1 -->
+<div class="flex flex-col group cursor-pointer">
+<div class="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-3 border border-outline-variant transition-transform duration-300 group-hover:scale-[1.02]">
+<img class="w-full h-full object-cover" alt="A high-energy electronic music festival with vibrant purple and violet stage lighting, neon lasers cutting through a soft haze, and a crowd of people with their hands up in silhouettes. The atmosphere is electric and futuristic, following a premium minimalist tech aesthetic with clean lines and deep shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZJFqHnGRpuxZ_6zp9i3pncu0qfcprDyj8AFZwIoyaqK-GFUWCaJqJtaNImBv-NSNS_HVNo0L96c1OqGvZvi5Z-GqPCYvMCb1IOE2ncw3ViHT6vWMXtydkGrpz5EJUAilGUR33PS_yQk8Tqz5K1DESwRX3mUy4mMgo58BUocLNzccHxmWiBf1cCt34bwUgSJ4srmd-Tk4lWmwD9VkvqTHWYMZMKuNZodQ3yGuDOxhv9r-TcnDivxG-wg"/>
+<div class="absolute top-2 right-2 bg-primary/90 text-on-primary text-[10px] px-2 py-1 rounded-lg font-bold backdrop-blur-md">
+                        FROM ₦8,900
+                    </div>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface leading-tight">Neon Pulse Festival</h3>
+<p class="font-body-sm text-body-sm text-secondary mt-1">Grand Plaza, Central</p>
+<div class="flex items-center gap-1 mt-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-caps text-label-caps">OCT 24, 2023</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="flex flex-col group cursor-pointer">
+<div class="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-3 border border-outline-variant transition-transform duration-300 group-hover:scale-[1.02]">
+<img class="w-full h-full object-cover" alt="A sophisticated indoor jazz lounge with warm, low-key lighting, featuring a grand piano and a double bass on a small stage. The scene is elegant and intimate, with deep stone-colored walls and soft violet spotlighting on the performers. The mood is calm, upscale, and focuses on high-end digital comfort." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA-dCNUV66I_FT2q01gjWxMN-WeSx65b21jSkgpr_RLwIMN1qAlQtYiiZnOv1AiNgE4zFmGrewS9grdcCGziYh9OJwMTSXZopafZ57ufXd0L__tuU4p3ynPKNJHmOrHPAvraUtQIrKEUOhAyRrwe7grUJWKlxuILpLq1lgFlgRwJT3fZdiRAoUIopGWqK6nx8uijq5lMK8jqN7mJNa8O13vOfoJqRfE__bZ1fZA3Koe1M6J0HdUixAcA"/>
+<div class="absolute top-2 right-2 bg-primary/90 text-on-primary text-[10px] px-2 py-1 rounded-lg font-bold backdrop-blur-md">
+                        FROM ₦4,500
+                    </div>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface leading-tight">Midnight Jazz Sessions</h3>
+<p class="font-body-sm text-body-sm text-secondary mt-1">The Blue Note</p>
+<div class="flex items-center gap-1 mt-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-caps text-label-caps">OCT 28, 2023</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="flex flex-col group cursor-pointer">
+<div class="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-3 border border-outline-variant transition-transform duration-300 group-hover:scale-[1.02]">
+<img class="w-full h-full object-cover" alt="A modern tech conference keynote stage with a massive high-definition LED screen displaying abstract violet geometric patterns. The room is dark with sleek architectural lines and ambient white floor lighting. Professional and high-tech atmosphere reflecting institutional trust and agility." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkGVI6lwH8LkbUWuVhoFjAED9Nbr7LLM2qahev9z9OfhNNU9GRNf-WoRV_6BHUwmGHuBTwmSaTMJp4yBUS5XGCmcjtv-MLDPMDtUeG0EFPFkTOX6HgMvZl0f0ifTf_OT89oDPrFSTI_hAVpwSuBsrGaOF6wMuvCQ4aMc2XgxRj_Uho9fJzBI3xscE94kJn81Hz1Qdimz_rac-tCvr_iljIJ-G0AAX8dP7E_-4iAx7uSJhkV00txx9x8w"/>
+<div class="absolute top-2 right-2 bg-primary/90 text-on-primary text-[10px] px-2 py-1 rounded-lg font-bold backdrop-blur-md">
+                        FREE
+                    </div>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface leading-tight">BioIdentity Summit</h3>
+<p class="font-body-sm text-body-sm text-secondary mt-1">Tech Hub Arena</p>
+<div class="flex items-center gap-1 mt-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-caps text-label-caps">NOV 02, 2023</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="flex flex-col group cursor-pointer">
+<div class="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-3 border border-outline-variant transition-transform duration-300 group-hover:scale-[1.02]">
+<img class="w-full h-full object-cover" alt="A futuristic rooftop bar at dusk with a view of a sprawling modern city skyline. The lighting is a blend of natural twilight and deep violet neon accents. Minimalist furniture and glass railings create an airy, expansive feel, emphasizing digital comfort and safety in a premium setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBIganGDQF2zqVY-bq6NMWO58aLfDG-Y0JyTIz_G5oAsJwz6e4vRSjAcSsAl3z4H6D52hXcv9D3lCNcZnKgeFz_TmN5sffmT4Pw8-pVbbSQUYDReSoqTgnZjIZSK2UEEnHTOyPBkXzUTSFdKcQxB0sa4o-Bd0HkiV0-jCP8t-HdsDq2VAzSnURKhV3ZExR9WKpsDIVky7lVkca-fvfwHsXlteOQZnZq-EgmnaCKxC5xYgxCSMSGF1hMg"/>
+<div class="absolute top-2 right-2 bg-primary/90 text-on-primary text-[10px] px-2 py-1 rounded-lg font-bold backdrop-blur-md">
+                        FROM ₦12,000
+                    </div>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface leading-tight">Skyline Lounge Eve</h3>
+<p class="font-body-sm text-body-sm text-secondary mt-1">Vertex Tower</p>
+<div class="flex items-center gap-1 mt-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-caps text-label-caps">NOV 15, 2023</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Shared Component: BottomNavBar) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant">
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-caps text-label-caps mt-1">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 Active: scale-95 transition-transform duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-caps text-label-caps mt-1">Explore</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="confirmation_number">confirmation_number</span>
+<span class="font-label-caps text-label-caps mt-1">Tickets</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="font-label-caps text-label-caps mt-1">Alerts</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:bg-surface-container-high transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps mt-1">Profile</span>
+</div>
+</nav>
+<script>
+        // Simulate loading state for demonstration
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const skeleton = document.getElementById('event-grid');
+                const realContent = document.getElementById('real-content');
+                
+                if (skeleton && realContent) {
+                    skeleton.classList.add('hidden');
+                    realContent.classList.remove('hidden');
+                }
+            }, 1800); // 1.8s delay to show skeletons
+        });
+
+        // Simple interaction for the filter buttons
+        const filterButtons = document.querySelectorAll('button.font-label-caps');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => {
+                    b.classList.remove('bg-primary', 'text-on-primary');
+                    b.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                });
+                btn.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+                btn.classList.add('bg-primary', 'text-on-primary');
+            });
+        });
+    </script>
+</body></html>

@@ -319,7 +319,13 @@ export const login = async (req,res,next) =>{
 	try {
 		const { email, password, otp } = req.body;
 
-		const user = await User.findOne({ email: email.toLowerCase() }).select('+totpSecret');
+		// `email` doubles as a login identifier — clients (mobile especially)
+		// let people sign in with their username too, so we try both fields
+		// rather than assuming it's always an email address.
+		const identifier = email.toLowerCase().trim();
+		const user = await User.findOne({
+			$or: [{ email: identifier }, { username: identifier }],
+		}).select('+totpSecret');
 		if (!user)
 			return res.status(401).json({ error: 'User not found', message: "Invalid username or Password" });
 

@@ -476,159 +476,164 @@ describe.skip('POST /face/enroll/:userId', () => {
   })
 })
 
-describe.skip('POST /face/verify', () => {
-  it('should verify face and mark ticket as used', async () => {
-    const user = await createTestUser({ faceEnrolled: true })
+describe('POST /face/verify', () => {
+  it('should identify and check in the matching attendee among an event\'s enrolled tickets', async () => {
+    const user = await createTestUser({ name: 'Victim', faceEnrolled: true })
     const event = await createTestEvent(user._id)
     const ticket = await createTestTicket(user._id, event._id)
 
-    // Enroll face for user
     await User.findByIdAndUpdate(user._id, {
       faceTemplate: 'enrolled-template',
       faceEnrolled: true,
     })
 
-    const organizer = await createTestUser()
+    const organizer = await createTestUser({ referralCode: `ref_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` })
     const token = signTestToken(organizer._id)
 
     const res = await request(app)
       .post('/face/verify')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        ticketId: ticket._id.toString(),
+        eventId: event._id.toString(),
         faceTemplate: 'scanned-template',
-        matchResult: true,
-        matchScore: 0.95,
       })
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
-    expect(res.body.message).toContain('matched')
+    expect(res.body.attendeeName).toBe(user.name)
+    expect(res.body.ticketType).toBe(ticket.type)
 
-    // Verify ticket marked as used
     const updatedTicket = await Audience.findById(ticket._id)
     expect(updatedTicket?.status).toBe('used')
     expect(updatedTicket?.checkedIn).toBe(true)
     expect(updatedTicket?.checkedInMethod).toBe('face')
   })
 
-  it('should reject face when no match', async () => {
-    const user = await createTestUser({ faceEnrolled: true })
+  it('should return no match when no attendees are face-enrolled for the event', async () => {
+    const user = await createTestUser({ faceEnrolled: false })
     const event = await createTestEvent(user._id)
-    const ticket = await createTestTicket(user._id, event._id)
+    await createTestTicket(user._id, event._id)
 
-    const organizer = await createTestUser()
+    const organizer = await createTestUser({ referralCode: `ref_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` })
     const token = signTestToken(organizer._id)
 
     const res = await request(app)
       .post('/face/verify')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        ticketId: ticket._id.toString(),
+        eventId: event._id.toString(),
         faceTemplate: 'scanned-template',
-        matchResult: false,
       })
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(false)
-
-    // Verify ticket NOT marked as used
-    const updatedTicket = await Audience.findById(ticket._id)
-    expect(updatedTicket?.status).toBe('active')
-    expect(updatedTicket?.checkedIn).toBe(false)
   })
 
-  it('should reject verification for used ticket', async () => {
+  it('should not check in an already-used ticket', async () => {
     const user = await createTestUser({ faceEnrolled: true })
     const event = await createTestEvent(user._id)
     const ticket = await createTestTicket(user._id, event._id)
-
-    // Mark ticket as used
+    await User.findByIdAndUpdate(user._id, {
+      faceTemplate: 'enrolled-template',
+      faceEnrolled: true,
+    })
     await Audience.findByIdAndUpdate(ticket._id, { status: 'used' })
 
-    const organizer = await createTestUser()
+    const organizer = await createTestUser({ referralCode: `ref_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` })
     const token = signTestToken(organizer._id)
 
     const res = await request(app)
       .post('/face/verify')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        ticketId: ticket._id.toString(),
+        eventId: event._id.toString(),
         faceTemplate: 'scanned-template',
-        matchResult: true,
       })
 
-    expect(res.status).toBe(400)
-    expect(res.body.message).toContain('used')
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(false)
   })
 
-  it('should reject verification when ticket owner has no face enrolled', async () => {
-    const user = await createTestUser({ faceEnrolled: false })
-    const event = await createTestEvent(user._id)
-    const ticket = await createTestTicket(user._id, event._id)
+  it('should only match tickets scoped to the requested event', async () => {
+    const user = await createTestUser({ faceEnrolled: true })
+    const eventA = await createTestEvent(user._id)
+    const eventB = await createTestEvent(user._id)
+    await createTestTicket(user._id, eventA._id)
+    await User.findByIdAndUpdate(user._id, {
+      faceTemplate: 'enrolled-template',
+      faceEnrolled: true,
+    })
 
-    const organizer = await createTestUser()
+    const organizer = await createTestUser({ referralCode: `ref_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` })
+    const token = signTestToken(organizer._id)
+
+    // User is only enrolled/ticketed for eventA — a scan at eventB must not match
+    const res = await request(app)
+      .post('/face/verify')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        eventId: eventB._id.toString(),
+        faceTemplate: 'scanned-template',
+      })
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(false)
+  })
+
+  it('should require both faceTemplate and eventId', async () => {
+    const organizer = await createTestUser({ referralCode: `ref_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` })
     const token = signTestToken(organizer._id)
 
     const res = await request(app)
       .post('/face/verify')
       .set('Authorization', `Bearer ${token}`)
-      .send({
-        ticketId: ticket._id.toString(),
-        faceTemplate: 'scanned-template',
-        matchResult: true,
-      })
+      .send({ faceTemplate: 'scanned-template' })
 
     expect(res.status).toBe(400)
-    expect(res.body.message).toContain('no enrolled face')
   })
 
-  // SECURITY VULNERABILITY TEST
-  it.skip('SECURITY BUG: Server trusts client matchResult without server-side verification', async () => {
-    // This test documents the security vulnerability:
-    // The server accepts any matchResult=true from the client without
-    // performing server-side biometric verification.
-    // An attacker could send { matchResult: true } to gain entry.
-    //
-    // VULNERABILITY: lines 79-86 in apps/api/controllers/face.js
-    // The endpoint should NOT trust client-side matchResult.
-    // KBY-AI SDK comparison MUST happen server-side, then server
-    // returns the verified result.
-    //
-    // WORKAROUND: Front-end performs KBY-AI check, then sends
-    // only the reference to the enrolled template, not the result.
-    // Server re-verifies server-side before accepting.
-    //
-    // FIX REQUIRED: Refactor to use server-side face comparison library,
-    // not client-side trust model.
-
-    const attacker = await createTestUser({ name: 'Attacker', faceEnrolled: false })
+  // SECURITY REGRESSION TEST
+  // Previously the endpoint trusted a client-supplied matchResult/matchScore
+  // instead of independently verifying the face server-side — an attacker
+  // could send { matchResult: true } to gain entry regardless of whose face
+  // was actually captured. The server must now decide the match itself and
+  // ignore these fields entirely.
+  it('SECURITY: ignores client-supplied matchResult/matchScore — the server decides the match independently', async () => {
     const victim = await createTestUser({ name: 'Victim', faceEnrolled: true })
     const event = await createTestEvent(victim._id)
-    const victimTicket = await createTestTicket(victim._id, event._id)
-
-    // Enroll victim's face
+    const ticket = await createTestTicket(victim._id, event._id)
     await User.findByIdAndUpdate(victim._id, {
       faceTemplate: 'victim-template',
       faceEnrolled: true,
     })
 
+    const attacker = await createTestUser({
+      name: 'Attacker',
+      faceEnrolled: false,
+      referralCode: `ref_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    })
     const attackerToken = signTestToken(attacker._id)
 
-    // Attacker sends fake matchResult=true (has no real face template)
+    // Attacker explicitly claims matchResult: false / matchScore: 0 — the
+    // opposite of what the old vulnerable code needed to fake a match.
+    // If the server still read these fields, this request would report
+    // no match. It doesn't, proving the decision is now fully server-side.
     const res = await request(app)
       .post('/face/verify')
       .set('Authorization', `Bearer ${attackerToken}`)
       .send({
-        ticketId: victimTicket._id.toString(),
-        faceTemplate: 'attacker-fake-template',
-        matchResult: true, // EXPLOITABLE: server trusts this
+        eventId: event._id.toString(),
+        faceTemplate: 'some-captured-template',
+        matchResult: false,
+        matchScore: 0,
       })
 
-    // BUG: This succeeds when it should fail
-    // Attacker gains entry without matching victim's face
     expect(res.status).toBe(200)
-    expect(res.body.success).toBe(false) // Should fail, but currently succeeds
+    expect(res.body.success).toBe(true)
+    expect(res.body.attendeeName).toBe(victim.name)
+
+    const updatedTicket = await Audience.findById(ticket._id)
+    expect(updatedTicket?.checkedIn).toBe(true)
   })
 })
 
