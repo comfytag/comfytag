@@ -81,7 +81,21 @@ jobs:
           } > apps/partner/.env.production
           echo "NEXT_PUBLIC_API_URL=https://api.comfytag.com" > apps/admin/.env.production
       - name: 🔨 Build Docker images
-        run: docker compose -f docker-compose.prod.yml build
+        run: |
+          # Building all 4 images in one `docker compose build` keeps every
+          # app's deps+builder-stage cache (full node_modules + source) on
+          # disk simultaneously, which reliably exhausts the runner's disk
+          # partway through the 4th image. Build one app at a time and prune
+          # the build cache between each — the final tagged images are kept,
+          # only the intermediate layers are discarded.
+          df -h /
+          for app in api web partner admin; do
+            echo "::group::Building $app"
+            docker compose -f docker-compose.prod.yml build "$app"
+            echo "::endgroup::"
+            docker builder prune -af
+            df -h /
+          done
       - name: 🏷️ Tag Images for GHCR
         run: |
           REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
