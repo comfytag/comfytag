@@ -33,16 +33,6 @@ export function FaceEnrollmentBanner({ user, onDismiss, title, body }: FaceEnrol
 
   return (
     <div className="p-6 bg-linear-to-br from-violet-600 to-indigo-600 text-white rounded-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 mb-2">
-      {/* Decorative ambient glows */}
-      <div
-        aria-hidden="true"
-        className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/10 blur-3xl pointer-events-none"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute -bottom-10 left-1/3 w-36 h-36 rounded-full bg-indigo-400/20 blur-2xl pointer-events-none"
-      />
-
       {/* ── Left: conversion copy ── */}
       <div className="flex-1 min-w-0 relative z-10">
         <span className="inline-block text-[10px] font-semibold uppercase tracking-widest bg-white/20 text-white/90 px-3 py-1 rounded-full mb-3">

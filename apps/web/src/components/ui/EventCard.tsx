@@ -83,7 +83,7 @@ export function EventCard({
 
       {/* Top-left status badge */}
       {topBadgeLabel && (
-        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur text-zinc-900 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+        <div className="absolute top-4 left-4 bg-white text-zinc-900 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
           {topBadgeLabel}
         </div>
       )}
@@ -99,7 +99,7 @@ export function EventCard({
             e.stopPropagation()
             void onLike(event._id)
           }}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 flex items-center justify-center text-white"
         >
           <Heart
             className="w-4 h-4"
@@ -137,7 +137,7 @@ export function EventCard({
             <span className="text-md font-bold text-white">{formatNaira(lowestPrice)}</span>
           )}
 
-          <span className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/10 text-white px-5 py-2.5 rounded-full text-sm font-bold transition-colors">
+          <span className="bg-white/25 hover:bg-white/35 border border-white/10 text-white px-5 py-2.5 rounded-full text-sm font-bold transition-colors">
             {isPast ? 'View Recap' : 'Get Tickets'}
           </span>
         </div>

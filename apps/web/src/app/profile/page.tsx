@@ -88,7 +88,7 @@ export default function ProfilePage() {
     return (
       <>
         <Navbar />
-        <div className="flex justify-center pt-20 px-6">
+        <div className="flex justify-center pt-8 px-6">
           <LoadingSpinner size="lg" centered />
         </div>
       </>
@@ -116,7 +116,7 @@ export default function ProfilePage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-zinc-50/30 pt-28 pb-32 px-4 flex flex-col items-center">
+      <main className="min-h-screen bg-zinc-50/30 pt-8 pb-32 px-4 flex flex-col items-center">
         <div className="w-full max-w-2xl space-y-6">
 
           {/* Avatar Section */}

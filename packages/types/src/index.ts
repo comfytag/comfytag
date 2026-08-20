@@ -125,6 +125,7 @@ export interface Ticket {
   eventEndTime?: string             // Event end time (HH:MM format); may cross midnight
   eventVenue?: string               // Event venue name
   eventSlug?: string                // Event slug for routing
+  eventImage?: string | null        // Event cover image URL
 }
 
 // ─── Bank & Payouts ────────────────────────────────────

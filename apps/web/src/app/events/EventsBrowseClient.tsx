@@ -3,27 +3,24 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { SearchX, ChevronDown, Check, Flame } from 'lucide-react'
-import { EventCard } from '@/components/ui/EventCard'
-import { MapView } from '@/components/search/MapView'
-import { ViewToggle } from '@/components/ui/ViewToggle'
+import { useSearchParams } from 'next/navigation'
+import { SearchX, ChevronDown, Check, Calendar, MapPin, MapPinned, SlidersHorizontal, X } from 'lucide-react'
 import { LoadingSpinner, Skeleton } from '@comfytag/ui'
 import type { Event } from '@comfytag/types'
 import { formatDate, formatTime, formatNaira } from '@comfytag/utils'
 import { api } from '@/lib/api'
 
 export interface EventsBrowseClientProps {
-  initialEvents: Event[]
+  initialUpcoming: Event[]
+  initialPast: Event[]
   eventTypes: string[]
   states: string[]
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ViewMode = 'list' | 'map'
 type TimeFrame = 'upcoming' | 'past'
-type SortOption = 'date-earliest' | 'date-latest' | 'price-low-to-high' | 'price-high-to-low' | 'name-a-z'
+type SortOption = 'newest' | 'price-low-to-high' | 'price-high-to-low' | 'popularity'
 
 interface Filters {
   searchQuery: string
@@ -31,246 +28,422 @@ interface Filters {
   state: string
   minPrice: string
   maxPrice: string
-  date: '' | 'today' | 'tomorrow' | 'weekend'
+  dateFrom: string
+  dateTo: string
 }
 
-interface SortOptionItem {
-  value: SortOption
-  label: string
+const EMPTY_FILTERS: Filters = {
+  searchQuery: '',
+  types: [],
+  state: '',
+  minPrice: '',
+  maxPrice: '',
+  dateFrom: '',
+  dateTo: '',
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const DESKTOP_PAGE_SIZE = 12
-const MOBILE_PAGE_SIZE = 8
-const SKELETON_COUNT = 12
+const PAGE_SIZE = 12
+const SKELETON_COUNT = 6
 const QUICK_TYPES = ['Music', 'Comedy', 'Tech', 'Sports', 'Art']
+const PRICE_SLIDER_MAX = 200_000
+const PRICE_SLIDER_STEP = 5_000
 
-const SORT_OPTIONS: SortOptionItem[] = [
-  { value: 'date-earliest', label: 'Date: Soonest first' },
-  { value: 'date-latest', label: 'Date: Latest first' },
-  { value: 'price-low-to-high', label: 'Price: Low to high' },
-  { value: 'price-high-to-low', label: 'Price: High to low' },
-  { value: 'name-a-z', label: 'Name: A–Z' },
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'newest', label: 'Newest' },
+  { value: 'price-low-to-high', label: 'Price: Low to High' },
+  { value: 'price-high-to-low', label: 'Price: High to Low' },
+  { value: 'popularity', label: 'Popularity' },
 ]
 
-const filterBtnBase =
-  'px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors border'
-const filterBtnIdle = 'border-zinc-200 text-zinc-700 bg-white hover:bg-zinc-50'
-const filterBtnActive = 'border-violet-400 text-violet-700 bg-violet-50 hover:bg-violet-100'
+const CTA_LABEL_BY_CATEGORY: Record<string, string> = {
+  music: 'View Tickets',
+  tech: 'Reserve Spot',
+  'tech conferences': 'Reserve Spot',
+  art: 'View Tickets',
+  'art exhibits': 'View Tickets',
+  workshop: 'Book Session',
+  workshops: 'Book Session',
+  social: 'Join List',
+  food: 'Get Pass',
+}
 
-// ─── Pure helpers (no hooks) ──────────────────────────────────────────────────
+function ctaLabel(category: string): string {
+  return CTA_LABEL_BY_CATEGORY[category.toLowerCase()] ?? 'View Tickets'
+}
 
 function getMinPrice(event: Event): number {
   if (event.ticketType.length === 0) return 0
   return Math.min(...event.ticketType.map((t) => t.price))
 }
 
-function isLowTickets(event: Event): boolean {
-  const totalCapacity = event.ticketType.reduce((sum, t) => sum + (t.capacity ?? 0), 0)
-  const totalSold = event.ticketType.reduce((sum, t) => sum + (t.sold ?? 0), 0)
-  return totalCapacity > 0 && totalSold / totalCapacity > 0.75
-}
+// ─── Discovery card — matches Comfytag_Designs/web_comfytag/event_discovery_attendee_web_app ──
 
-function isTrending(event: Event): boolean {
-  const totalCapacity = event.ticketType.reduce((sum, t) => sum + (t.capacity ?? 0), 0)
-  const totalSold = event.ticketType.reduce((sum, t) => sum + (t.sold ?? 0), 0)
-  return (totalCapacity > 0 && totalSold / totalCapacity >= 0.5) || event.sold >= 50
-}
-
-// ─── Skeleton placeholders ────────────────────────────────────────────────────
-
-function EventCardSkeleton() {
-  return (
-    <div style={{ borderRadius: '16px', overflow: 'hidden' }}>
-      <Skeleton height="240px" borderRadius="16px" />
-    </div>
-  )
-}
-
-function MobileEventRowSkeleton() {
-  return (
-    <div className="flex bg-white rounded-2xl border border-zinc-100 p-3 gap-3 items-center">
-      <div className="w-24 h-24 rounded-xl bg-zinc-100 animate-pulse shrink-0" />
-      <div className="flex-1 flex flex-col gap-2 min-w-0">
-        <div className="h-2.5 w-20 bg-zinc-100 animate-pulse rounded" />
-        <div className="h-4 w-full bg-zinc-100 animate-pulse rounded" />
-        <div className="h-3 w-3/4 bg-zinc-100 animate-pulse rounded" />
-        <div className="h-5 w-14 bg-zinc-100 animate-pulse rounded-full" />
-      </div>
-    </div>
-  )
-}
-
-// ─── FeaturedCarousel ─────────────────────────────────────────────────────────
-
-function FeaturedCarousel({ events }: { events: Event[] }) {
-  if (events.length === 0) return null
-  return (
-    <section className="mb-8" aria-label="Featured Experiences">
-      <div className="flex items-center gap-3 mb-6">
-        <h2 className="text-2xl font-bold tracking-tight text-zinc-900">
-          ✦ Featured Experiences
-        </h2>
-        <span className="text-[11px] font-semibold bg-violet-100 text-violet-700 px-2.5 py-0.5 rounded-full">
-          {events.length} curated
-        </span>
-      </div>
-      <div className="flex overflow-x-auto gap-4 pb-3 scrollbar-hide snap-x snap-mandatory scroll-smooth -mx-1 px-1">
-        {events.map((event) => (
-          <div
-            key={event._id}
-            className="shrink-0 w-[260px] snap-start rounded-2xl ring-1 ring-violet-400/50 overflow-hidden"
-          >
-            <EventCard event={event} href={`/events/${event.slug ?? event._id}`} />
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-// ─── TrendingCarousel ─────────────────────────────────────────────────────────
-
-function TrendingCarousel({ events }: { events: Event[] }) {
-  if (events.length === 0) return null
-  return (
-    <section className="mb-8" aria-label="Trending Near You">
-      <div className="flex items-center gap-3 mb-6">
-        <h2 className="text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
-          <Flame className="h-5 w-5 text-amber-500" aria-hidden="true" />
-          Trending Near You
-        </h2>
-        <span className="text-[11px] font-semibold bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full animate-pulse">
-          Selling Fast
-        </span>
-      </div>
-      <div className="flex overflow-x-auto gap-4 pb-3 scrollbar-hide snap-x snap-mandatory scroll-smooth -mx-1 px-1">
-        {events.map((event) => (
-          <div key={event._id} className="shrink-0 w-[260px] snap-start relative rounded-2xl overflow-hidden">
-            <EventCard event={event} href={`/events/${event.slug ?? event._id}`} />
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-// ─── MobileEventRow ───────────────────────────────────────────────────────────
-
-interface MobileEventRowProps {
-  event: Event
-  href: string
-  showLowTickets: boolean
-}
-
-function MobileEventRow({ event, href, showLowTickets }: MobileEventRowProps) {
+function DiscoveryEventCard({ event }: { event: Event }) {
+  const price = getMinPrice(event)
+  const priceLabel = price === 0 ? 'Free' : formatNaira(price)
   const imageSrc = event.coverImage ?? event.images[0] ?? '/placeholder.svg'
-  const lowestPrice = event.ticketType.length > 0
-    ? Math.min(...event.ticketType.map((t) => t.price))
-    : 0
-  const dateKicker = `${formatDate(event.date)} • ${formatTime(event.startTime)}`
+  const href = `/events/${event.slug ?? event._id}`
 
   return (
-    <Link
-      href={href}
-      className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
-    >
-      <div className="flex bg-white rounded-2xl overflow-hidden border border-zinc-200 hover:border-zinc-300 p-3 gap-3 items-center transition-colors active:scale-[0.99]">
-        <div className="relative w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-zinc-100">
-          <Image
-            src={imageSrc}
-            alt={event.name}
-            fill
-            className="object-cover"
-            sizes="96px"
-          />
-          {showLowTickets && (
-            <span className="absolute bottom-1.5 left-1.5 bg-amber-500 text-black text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider leading-none">
-              Low
-            </span>
-          )}
+    <article className="group bg-(--color-surface) border border-(--color-border) rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <Link href={href} className="block relative h-48 overflow-hidden">
+        <Image
+          src={imageSrc}
+          alt={event.name}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        <div className="absolute top-4 left-4 bg-white/90 px-3 py-1 rounded-full text-xs font-semibold text-brand capitalize">
+          {event.category}
         </div>
-        <div className="flex flex-col flex-1 min-w-0">
-          <p className="text-[10px] font-bold text-violet-600 uppercase tracking-wider mb-0.5 truncate">
-            {dateKicker}
-          </p>
-          <h3 className="text-sm font-bold text-zinc-900 leading-tight line-clamp-2 capitalize mb-1">
+        <div className="absolute bottom-4 right-4 bg-brand text-white px-3 py-1 rounded-lg text-sm font-semibold">
+          {priceLabel}
+        </div>
+      </Link>
+      <div className="p-5 flex flex-col gap-3">
+        <Link href={href}>
+          <h3 className="text-lg font-bold text-(--color-text) line-clamp-1 capitalize hover:text-brand transition-colors">
             {event.name}
           </h3>
-          <p className="text-xs text-zinc-400 line-clamp-1 capitalize mb-2">
-            {event.venue}
-          </p>
-          {lowestPrice === 0 ? (
-            <span className="self-start px-2.5 py-0.5 bg-emerald-100 text-emerald-700 font-bold text-xs rounded-full">
-              Free
+        </Link>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-(--color-text-muted) text-sm">
+            <Calendar className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span>{formatDate(event.date)}{event.startTime ? ` • ${formatTime(event.startTime)}` : ''}</span>
+          </div>
+          <div className="flex items-center gap-2 text-(--color-text-muted) text-sm">
+            <MapPin className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span className="truncate">{event.venue}</span>
+          </div>
+        </div>
+        <Link
+          href={href}
+          className="mt-2 w-full py-2.5 rounded-lg border-[1.5px] border-brand text-brand text-sm font-semibold text-center hover:bg-brand hover:text-white transition-colors"
+        >
+          {ctaLabel(event.category)}
+        </Link>
+      </div>
+    </article>
+  )
+}
+
+function DiscoveryCardSkeleton() {
+  return <Skeleton height="320px" borderRadius="12px" />
+}
+
+// ─── Per-timeframe fetch/paginate hook ─────────────────────────────────────────
+
+function useEventSection(
+  filters: Filters,
+  sortOption: SortOption,
+  timeFrame: TimeFrame,
+  initial: Event[]
+) {
+  const [events, setEvents] = useState<Event[]>(initial)
+  const [total, setTotal] = useState(initial.length)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(initial.length === PAGE_SIZE)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const hasHydrated = useRef(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const buildQuery = useCallback((f: Filters, p: number) => {
+    const params = new URLSearchParams()
+    params.set('limit', String(PAGE_SIZE))
+    params.set('page', String(p))
+    if (timeFrame === 'past') params.set('showPast', 'true')
+    if (f.searchQuery.trim()) params.set('q', f.searchQuery.trim())
+    if (f.types.length > 0) params.set('category', f.types.join(','))
+    if (f.state) params.set('state', f.state)
+    if (f.minPrice) params.set('priceMin', f.minPrice)
+    if (f.maxPrice) params.set('priceMax', f.maxPrice)
+    if (f.dateFrom) params.set('dateFrom', f.dateFrom)
+    if (f.dateTo) params.set('dateTo', f.dateTo)
+    return params.toString()
+  }, [timeFrame])
+
+  const fetchPage = useCallback(
+    async (f: Filters, p: number, append: boolean) => {
+      if (append) setIsLoadingMore(true)
+      else setIsLoading(true)
+
+      try {
+        const res = await api.get(`/events/search?${buildQuery(f, p)}`)
+        const data = res.data as Record<string, unknown>
+        const list = (Array.isArray(data) ? data : (data?.data ?? [])) as Event[]
+
+        setEvents((prev) => (append ? [...prev, ...list] : list))
+        setTotal((data.total as number) ?? list.length)
+        setHasMore((data.hasMore as boolean) ?? list.length === PAGE_SIZE)
+        setPage(p)
+      } catch {
+        if (!append) setEvents([])
+      } finally {
+        if (append) setIsLoadingMore(false)
+        else setIsLoading(false)
+      }
+    },
+    [buildQuery]
+  )
+
+  useEffect(() => {
+    if (!hasHydrated.current) {
+      hasHydrated.current = true
+      if (initial.length > 0) return
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => { void fetchPage(filters, 1, false) }, 300)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, timeFrame])
+
+  const sorted = useMemo(() => {
+    return [...events].sort((a, b) => {
+      switch (sortOption) {
+        case 'price-low-to-high': return getMinPrice(a) - getMinPrice(b)
+        case 'price-high-to-low': return getMinPrice(b) - getMinPrice(a)
+        case 'popularity': return (b.sold ?? 0) - (a.sold ?? 0)
+        default: return timeFrame === 'past'
+          ? new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()
+          : new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime()
+      }
+    })
+  }, [events, sortOption, timeFrame])
+
+  function loadMore() {
+    void fetchPage(filters, page + 1, true)
+  }
+
+  return { events: sorted, total, isLoading, isLoadingMore, hasMore, loadMore }
+}
+
+// ─── Filter fields — shared between the desktop sidebar and the mobile modal ──
+
+interface FilterFieldsProps {
+  draft: Filters
+  setDraft: React.Dispatch<React.SetStateAction<Filters>>
+  states: string[]
+  categories: string[]
+}
+
+function FilterFields({ draft, setDraft, states, categories }: FilterFieldsProps) {
+  const sliderValue = draft.maxPrice ? Number(draft.maxPrice) : PRICE_SLIDER_MAX
+
+  return (
+    <>
+        {/* Location */}
+        <div className="flex flex-col gap-3">
+          <label htmlFor="filter-location" className="text-xs font-semibold text-(--color-text-muted) uppercase tracking-wider">
+            Location
+          </label>
+          <div className="relative">
+            <MapPinned className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--color-text-muted) pointer-events-none" aria-hidden="true" />
+            <select
+              id="filter-location"
+              value={draft.state}
+              onChange={(e) => setDraft((p) => ({ ...p, state: e.target.value }))}
+              className="w-full bg-(--color-surface) border border-(--color-border) rounded-lg py-2 pl-9 pr-4 text-sm text-(--color-text) focus:ring-2 focus:ring-brand focus:border-brand appearance-none cursor-pointer"
+            >
+              <option value="">All Cities</option>
+              {states.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Date Range */}
+        <div className="flex flex-col gap-3">
+          <label className="text-xs font-semibold text-(--color-text-muted) uppercase tracking-wider">
+            Date Range
+          </label>
+          <div className="flex flex-col gap-2">
+            <input
+              type="date"
+              aria-label="From date"
+              value={draft.dateFrom}
+              onChange={(e) => setDraft((p) => ({ ...p, dateFrom: e.target.value }))}
+              className="w-full bg-(--color-surface) border border-(--color-border) rounded-lg py-2 px-3 text-sm text-(--color-text) focus:ring-2 focus:ring-brand focus:border-brand"
+            />
+            <input
+              type="date"
+              aria-label="To date"
+              value={draft.dateTo}
+              onChange={(e) => setDraft((p) => ({ ...p, dateTo: e.target.value }))}
+              className="w-full bg-(--color-surface) border border-(--color-border) rounded-lg py-2 px-3 text-sm text-(--color-text) focus:ring-2 focus:ring-brand focus:border-brand"
+            />
+          </div>
+        </div>
+
+        {/* Price Range */}
+        <div className="flex flex-col gap-3">
+          <div className="flex justify-between items-center">
+            <label htmlFor="filter-price" className="text-xs font-semibold text-(--color-text-muted) uppercase tracking-wider">
+              Price Range
+            </label>
+            <span className="text-xs font-semibold text-brand">
+              ₦0 – {sliderValue >= PRICE_SLIDER_MAX ? 'Any' : formatNaira(sliderValue)}
             </span>
-          ) : (
-            <span className="text-sm font-bold text-zinc-900">
-              {formatNaira(lowestPrice)}
-            </span>
-          )}
+          </div>
+          <input
+            id="filter-price"
+            type="range"
+            min={0}
+            max={PRICE_SLIDER_MAX}
+            step={PRICE_SLIDER_STEP}
+            value={sliderValue}
+            onChange={(e) => {
+              const v = Number(e.target.value)
+              setDraft((p) => ({ ...p, minPrice: '', maxPrice: v >= PRICE_SLIDER_MAX ? '' : String(v) }))
+            }}
+            className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-brand bg-(--color-border)"
+          />
+        </div>
+
+        {/* Categories */}
+        <div className="flex flex-col gap-3">
+          <label className="text-xs font-semibold text-(--color-text-muted) uppercase tracking-wider">
+            Categories
+          </label>
+          <div className="flex flex-col gap-2">
+            {categories.map((cat) => {
+              const checked = draft.types.includes(cat)
+              return (
+                <label key={cat} className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() =>
+                      setDraft((p) => ({
+                        ...p,
+                        types: checked ? p.types.filter((t) => t !== cat) : [...p.types, cat],
+                      }))
+                    }
+                    className="w-5 h-5 rounded border-(--color-border) text-brand focus:ring-brand accent-brand"
+                  />
+                  <span className="text-sm text-(--color-text-muted) group-hover:text-brand transition-colors capitalize">
+                    {cat}
+                  </span>
+                </label>
+              )
+            })}
+          </div>
+        </div>
+    </>
+  )
+}
+
+// ─── Filter sidebar (desktop, matches mockup) ──────────────────────────────────
+
+interface FilterPanelProps extends FilterFieldsProps {
+  onApply: () => void
+  isDirty: boolean
+}
+
+function FilterSidebar(props: FilterPanelProps) {
+  return (
+    <aside className="hidden xl:block w-60 fixed left-0 top-[73px] bottom-0 overflow-y-auto bg-(--color-surface-2)/50 border-r border-(--color-border) p-6">
+      <div className="flex flex-col gap-8">
+        <h2 className="text-xl font-bold text-(--color-text)">Filters</h2>
+        <FilterFields {...props} />
+        <button
+          type="button"
+          onClick={props.onApply}
+          disabled={!props.isDirty}
+          className="mt-2 bg-brand text-white py-3 rounded-xl text-sm font-semibold hover:bg-brand-dark active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Apply Filters
+        </button>
+        {!props.isDirty && (
+          <p className="text-xs text-(--color-text-muted) -mt-4">Filters are up to date.</p>
+        )}
+      </div>
+    </aside>
+  )
+}
+
+// ─── Filter modal (mobile) — same fields, opened via the icon next to Sort ────
+
+interface FilterModalProps extends FilterPanelProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+function FilterModal({ isOpen, onClose, onApply, isDirty, ...fieldProps }: FilterModalProps) {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-[200] xl:hidden flex items-end sm:items-center justify-center">
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div className="relative w-full sm:max-w-md max-h-[85vh] bg-(--color-surface) rounded-t-2xl sm:rounded-2xl overflow-y-auto">
+        <div className="sticky top-0 bg-(--color-surface) flex items-center justify-between px-6 py-4 border-b border-(--color-border)">
+          <h2 className="text-lg font-bold text-(--color-text)">Filters</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close filters"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-(--color-text-muted) hover:bg-(--color-surface-2) transition-colors"
+          >
+            <X className="w-5 h-5" aria-hidden="true" />
+          </button>
+        </div>
+        <div
+          className="flex flex-col gap-8 p-6"
+          style={{ paddingBottom: 'calc(24px + 64px + env(safe-area-inset-bottom))' }}
+        >
+          <FilterFields {...fieldProps} />
+          <button
+            type="button"
+            onClick={() => { onApply(); onClose() }}
+            className="bg-brand text-white py-3 rounded-xl text-sm font-semibold hover:bg-brand-dark active:scale-95 transition-all"
+          >
+            Apply Filters
+          </button>
         </div>
       </div>
-    </Link>
+    </div>
   )
 }
 
 // ─── SortDropdown ─────────────────────────────────────────────────────────────
 
-interface SortDropdownProps {
-  value: SortOption
-  onChange: (value: SortOption) => void
-}
-
-function SortDropdown({ value, onChange }: SortDropdownProps) {
+function SortDropdown({ value, onChange }: { value: SortOption; onChange: (v: SortOption) => void }) {
   const [isOpen, setIsOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLDivElement>(null)
   const activeLabel = SORT_OPTIONS.find((o) => o.value === value)?.label ?? 'Sort'
 
   useEffect(() => {
     if (!isOpen) return
-    function onClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setIsOpen(false)
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false)
     }
-    function onEscape(e: KeyboardEvent) {
-      if (e.key === 'Escape') setIsOpen(false)
-    }
-    document.addEventListener('mousedown', onClickOutside)
-    document.addEventListener('keydown', onEscape)
-    return () => {
-      document.removeEventListener('mousedown', onClickOutside)
-      document.removeEventListener('keydown', onEscape)
-    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
   }, [isOpen])
 
   return (
-    <div ref={dropdownRef} style={{ position: 'relative' }}>
+    <div ref={ref} className="relative">
       <button
         type="button"
         onClick={() => setIsOpen((o) => !o)}
-        className={`${filterBtnBase} ${filterBtnIdle}`}
         aria-expanded={isOpen}
+        className="flex items-center gap-2 bg-(--color-surface) border border-(--color-border) rounded-full py-2 pl-4 pr-3 text-sm font-medium text-brand shadow-sm cursor-pointer"
       >
         <span>{activeLabel}</span>
-        <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
+        <ChevronDown className="h-3.5 w-3.5 opacity-70" aria-hidden="true" />
       </button>
-
       {isOpen && (
         <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            right: 0,
-            width: '220px',
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-md)',
-            zIndex: 50,
-            overflow: 'hidden',
-          }}
           role="listbox"
-          aria-label="Sort options"
+          className="absolute top-[calc(100%+6px)] right-0 w-52 bg-(--color-surface) border border-(--color-border) rounded-lg z-50 overflow-hidden"
         >
           {SORT_OPTIONS.map((option, i) => {
             const isActive = option.value === value
@@ -278,34 +451,15 @@ function SortDropdown({ value, onChange }: SortDropdownProps) {
               <button
                 key={option.value}
                 type="button"
-                onClick={() => { onChange(option.value); setIsOpen(false) }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                  padding: '10px 14px',
-                  background: isActive ? 'var(--color-surface-2)' : 'transparent',
-                  border: 'none',
-                  borderBottom: i < SORT_OPTIONS.length - 1 ? '1px solid var(--color-border)' : 'none',
-                  color: isActive ? 'var(--color-brand)' : 'var(--color-text)',
-                  fontSize: '13px',
-                  fontWeight: isActive ? 600 : 400,
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  transition: 'background 100ms ease',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-surface-2)'
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
-                }}
                 role="option"
                 aria-selected={isActive}
+                onClick={() => { onChange(option.value); setIsOpen(false) }}
+                className={`flex items-center justify-between w-full px-3.5 py-2.5 text-sm text-left cursor-pointer ${
+                  isActive ? 'bg-(--color-surface-2) text-brand font-semibold' : 'text-(--color-text) hover:bg-(--color-surface-2)'
+                } ${i < SORT_OPTIONS.length - 1 ? 'border-b border-(--color-border)' : ''}`}
               >
                 <span>{option.label}</span>
-                {isActive && <Check className="h-3.5 w-3.5 shrink-0" />}
+                {isActive && <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />}
               </button>
             )
           })}
@@ -315,978 +469,247 @@ function SortDropdown({ value, onChange }: SortDropdownProps) {
   )
 }
 
-// ─── StateFilterDropdown ──────────────────────────────────────────────────────
+// ─── One timeframe section (upcoming or past) — identical structure for both ──
 
-interface StateFilterDropdownProps {
-  value: string
-  states: string[]
-  onChange: (state: string) => void
+interface EventsSectionProps {
+  title: string
+  subtitle: string
+  section: ReturnType<typeof useEventSection>
+  emptyMessage: string
 }
 
-function StateFilterDropdown({ value, states, onChange }: StateFilterDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [searchInput, setSearchInput] = useState('')
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  const filteredStates = searchInput.trim()
-    ? states.filter((s) => s.toLowerCase().includes(searchInput.toLowerCase()))
-    : states
-
-  useEffect(() => {
-    if (!isOpen) return
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) setIsOpen(false)
-    }
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') setIsOpen(false)
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleEscape)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [isOpen])
+function EventsSection({ title, subtitle, section, emptyMessage }: EventsSectionProps) {
+  const { events, isLoading, isLoadingMore, hasMore, loadMore, total } = section
 
   return (
-    <div ref={dropdownRef} style={{ position: 'relative' }}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`${filterBtnBase} w-full justify-between ${value ? filterBtnActive : filterBtnIdle}`}
-        aria-expanded={isOpen}
-      >
-        <span>{value || 'State'}</span>
-        <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
-      </button>
+    <section className="mb-16">
+      <div className="flex items-end justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-(--color-text)">{title}</h2>
+          <p className="text-sm text-(--color-text-muted) mt-1">{subtitle}</p>
+        </div>
+        {!isLoading && <span className="text-sm text-(--color-text-muted)">{total} event{total !== 1 ? 's' : ''}</span>}
+      </div>
 
-      {isOpen && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            left: 0,
-            right: 0,
-            minWidth: '180px',
-            maxHeight: '280px',
-            overflowY: 'auto',
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-md)',
-            zIndex: 50,
-          }}
-          role="listbox"
-          aria-label="State options"
-        >
-          <input
-            type="text"
-            placeholder="Search states..."
-            aria-label="Search states"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '8px 12px',
-              border: 'none',
-              borderBottom: '1px solid var(--color-border)',
-              background: 'var(--color-surface)',
-              fontSize: '13px',
-              color: 'var(--color-text)',
-              boxSizing: 'border-box',
-              outline: 'none',
-            }}
-            onFocus={(e) => (e.currentTarget.style.borderBottomColor = 'var(--color-brand)')}
-            onBlur={(e) => (e.currentTarget.style.borderBottomColor = 'var(--color-border)')}
-          />
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: SKELETON_COUNT }).map((_, i) => <DiscoveryCardSkeleton key={i} />)}
+        </div>
+      ) : events.length === 0 ? (
+        <div className="py-16 border border-dashed border-(--color-border) rounded-2xl bg-(--color-surface-2)/50 flex flex-col items-center justify-center text-center px-6">
+          <SearchX className="h-10 w-10 text-(--color-text-muted) mb-4" aria-hidden="true" />
+          <p className="text-(--color-text) font-semibold mb-1">{emptyMessage}</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map((event) => <DiscoveryEventCard key={event._id} event={event} />)}
+          </div>
 
-          <button
-            type="button"
-            onClick={() => { onChange(''); setIsOpen(false); setSearchInput('') }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-              padding: '10px 12px',
-              background: value === '' ? 'var(--color-surface-2)' : 'none',
-              border: 'none',
-              borderBottom: '1px solid var(--color-border)',
-              color: value === '' ? 'var(--color-brand)' : 'var(--color-text)',
-              fontSize: '13px',
-              fontWeight: value === '' ? 600 : 500,
-              textAlign: 'left',
-              cursor: 'pointer',
-            }}
-            role="option"
-            aria-selected={value === ''}
-          >
-            <span>All states</span>
-            {value === '' && <Check className="h-3.5 w-3.5 shrink-0" />}
-          </button>
-
-          {filteredStates.map((state) => (
-            <button
-              key={state}
-              type="button"
-              onClick={() => { onChange(state); setIsOpen(false); setSearchInput('') }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                width: '100%',
-                padding: '10px 12px',
-                background: value === state ? 'var(--color-surface-2)' : 'none',
-                border: 'none',
-                borderBottom: '1px solid var(--color-border)',
-                color: value === state ? 'var(--color-brand)' : 'var(--color-text)',
-                fontSize: '13px',
-                fontWeight: value === state ? 600 : 400,
-                textAlign: 'left',
-                cursor: 'pointer',
-                transition: 'background 100ms ease',
-              }}
-              onMouseEnter={(e) => {
-                if (value !== state) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-surface-2)'
-              }}
-              onMouseLeave={(e) => {
-                if (value !== state) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
-              }}
-              role="option"
-              aria-selected={value === state}
-            >
-              <span>{state}</span>
-              {value === state && <Check className="h-3.5 w-3.5 shrink-0" />}
-            </button>
-          ))}
-
-          {filteredStates.length === 0 && (
-            <div style={{ padding: '10px 12px', color: 'var(--color-text-muted)', fontSize: '13px' }}>
-              No states found
+          {hasMore && (
+            <div className="mt-10 flex justify-center">
+              <button
+                type="button"
+                onClick={loadMore}
+                disabled={isLoadingMore}
+                className="flex items-center gap-2 bg-(--color-surface-2) text-(--color-text) px-8 py-3 rounded-full text-sm font-semibold hover:bg-(--color-border)/60 transition-all disabled:opacity-60"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <LoadingSpinner size="sm" />
+                    <span>Loading…</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Load More Events</span>
+                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                  </>
+                )}
+              </button>
             </div>
           )}
-        </div>
+        </>
       )}
-    </div>
-  )
-}
-
-// ─── PriceDropdown ────────────────────────────────────────────────────────────
-
-interface PricePreset {
-  label: string
-  minPrice: string
-  maxPrice: string
-  requiresFree?: boolean
-  requiresPaid?: boolean
-}
-
-interface PriceDropdownProps {
-  minPrice: string
-  maxPrice: string
-  hasFreeEvents: boolean
-  hasPaidEvents: boolean
-  onChange: (minPrice: string, maxPrice: string) => void
-}
-
-function PriceDropdown({ minPrice, maxPrice, hasFreeEvents, hasPaidEvents, onChange }: PriceDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  const allPresets: PricePreset[] = [
-    { label: 'Any price', minPrice: '', maxPrice: '' },
-    { label: 'Free', minPrice: '0', maxPrice: '0', requiresFree: true },
-    { label: 'Under ₦5,000', minPrice: '', maxPrice: '5000', requiresPaid: true },
-    { label: '₦5k – ₦20k', minPrice: '5000', maxPrice: '20000', requiresPaid: true },
-    { label: '₦20k+', minPrice: '20000', maxPrice: '', requiresPaid: true },
-  ]
-
-  const presets = allPresets.filter((p) => {
-    if (p.requiresFree && !hasFreeEvents) return false
-    if (p.requiresPaid && !hasPaidEvents) return false
-    return true
-  })
-
-  const activePreset = presets.find((p) => p.minPrice === minPrice && p.maxPrice === maxPrice)
-  const hasActivePrice = !!(activePreset && activePreset.label !== 'Any price')
-
-  useEffect(() => {
-    if (!isOpen) return
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) setIsOpen(false)
-    }
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') setIsOpen(false)
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleEscape)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [isOpen])
-
-  return (
-    <div ref={dropdownRef} style={{ position: 'relative' }}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={`${filterBtnBase} w-full justify-between ${hasActivePrice ? filterBtnActive : filterBtnIdle}`}
-        aria-expanded={isOpen}
-      >
-        <span>{hasActivePrice ? activePreset!.label : 'Price'}</span>
-        <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
-      </button>
-
-      {isOpen && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 6px)',
-            left: 0,
-            right: 0,
-            minWidth: '180px',
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--radius-md)',
-            zIndex: 50,
-            overflow: 'hidden',
-          }}
-          role="listbox"
-          aria-label="Price range options"
-        >
-          {presets.map((preset, i) => {
-            const isActive = activePreset?.label === preset.label
-            return (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => { onChange(preset.minPrice, preset.maxPrice); setIsOpen(false) }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                  padding: '10px 12px',
-                  background: isActive ? 'var(--color-surface-2)' : 'none',
-                  border: 'none',
-                  borderBottom: i < presets.length - 1 ? '1px solid var(--color-border)' : 'none',
-                  color: isActive ? 'var(--color-brand)' : 'var(--color-text)',
-                  fontSize: '13px',
-                  fontWeight: isActive ? 600 : 400,
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  transition: 'background 100ms ease',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--color-surface-2)'
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
-                }}
-                role="option"
-                aria-selected={isActive}
-              >
-                <span>{preset.label}</span>
-                {isActive && <Check className="h-3.5 w-3.5 shrink-0" />}
-              </button>
-            )
-          })}
-        </div>
-      )}
-    </div>
+    </section>
   )
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function EventsBrowseClient({
-  initialEvents,
+  initialUpcoming,
+  initialPast,
   eventTypes,
+  states,
 }: EventsBrowseClientProps) {
-  const router = useRouter()
   const searchParams = useSearchParams()
-
-  const [events, setEvents] = useState<Event[]>(initialEvents)
-  const [heroEvents] = useState<Event[]>(() =>
-    initialEvents.filter((e) => !e.date || new Date(e.date) >= new Date())
-  )
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(initialEvents.length === 12)
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
-  const [timeFrame, setTimeFrame] = useState<TimeFrame>('upcoming')
-  const [sortOption, setSortOption] = useState<SortOption>('date-earliest')
   const rawCategory = searchParams.get('category')
   const normalizedCategory = rawCategory
     ? QUICK_TYPES.find((t) => t.toLowerCase() === rawCategory.toLowerCase()) ?? rawCategory
     : null
 
-  const [filters, setFilters] = useState<Filters>({
+  const initialFilters: Filters = {
+    ...EMPTY_FILTERS,
     searchQuery: searchParams.get('q') ?? '',
     types: normalizedCategory ? [normalizedCategory] : [],
     state: searchParams.get('state') ?? '',
-    minPrice: '',
-    maxPrice: '',
-    date: (searchParams.get('date') as Filters['date']) ?? '',
-  })
-  const [dateMenuOpen, setDateMenuOpen] = useState(false)
-  const dateRef = useRef<HTMLDivElement>(null)
-
-  // ─── Pagination state ────────────────────────────────────────────────────────
-  const [isMobileView, setIsMobileView] = useState(false)
-  const [visibleCount, setVisibleCount] = useState(DESKTOP_PAGE_SIZE)
-
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  // Flips to true after the first effect run so the SSR bail-out only applies once.
-  const hasHydrated = useRef(false)
-  const hasSyncedUrl = useRef(false)
-
-  // Detect mobile viewport and sync visibleCount
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)')
-    const sync = () => {
-      const mobile = mq.matches
-      setIsMobileView(mobile)
-      setVisibleCount(mobile ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE)
-    }
-    sync()
-    mq.addEventListener('change', sync)
-    return () => mq.removeEventListener('change', sync)
-  }, [])
-
-  // Reset visible count when timeFrame changes
-  useEffect(() => {
-    setVisibleCount(isMobileView ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeFrame])
-
-  // ─── Dynamic filter options from current events ───────────────────────────
-
-  const availableStates = useMemo(
-    () => Array.from(new Set(events.map((e) => e.state).filter(Boolean))).sort() as string[],
-    [events]
-  )
-
-  const hasFreeEvents = useMemo(
-    () => events.some((e) => e.ticketType.length === 0 || e.ticketType.every((t) => t.price === 0)),
-    [events]
-  )
-
-  const hasPaidEvents = useMemo(
-    () => events.some((e) => e.ticketType.some((t) => t.price > 0)),
-    [events]
-  )
-
-  // ─── API fetch ────────────────────────────────────────────────────────────
-
-  const buildParams = useCallback((f: Filters, p: number, tf: TimeFrame) => {
-    const params = new URLSearchParams()
-    params.set('limit', '12')
-    params.set('page', String(p))
-    if (tf === 'past') params.set('showPast', 'true')
-    if (f.searchQuery.trim()) params.set('q', f.searchQuery.trim())
-    if (f.types.length > 0) params.set('category', f.types.join(','))
-    if (f.state) params.set('state', f.state)
-    if (f.minPrice) params.set('priceMin', f.minPrice)
-    if (f.maxPrice) params.set('priceMax', f.maxPrice)
-    if (f.date) params.set('date', f.date)
-    return params.toString()
-  }, [])
-
-  const fetchEvents = useCallback(
-    async (f: Filters, p: number, tf: TimeFrame, append = false) => {
-      const fresh = p === 1 && !append
-      if (fresh) setIsLoading(true)
-      else setIsLoadingMore(true)
-
-      try {
-        const needsSearch = !!f.searchQuery.trim() || !!f.date
-        const endpoint = needsSearch ? '/events/search' : '/events'
-        const response = await api.get(`${endpoint}?${buildParams(f, p, tf)}`)
-        const data = response.data as Record<string, unknown>
-        const list: Event[] = Array.isArray(data)
-          ? (data as Event[])
-          : ((data?.data ?? data?.events ?? []) as Event[])
-
-        if (fresh) setEvents(list)
-        else setEvents((prev) => [...prev, ...list])
-
-        setHasMore((data.hasMore as boolean) ?? list.length === 12)
-        setPage(p)
-      } catch {
-        if (fresh) setEvents([])
-      } finally {
-        if (fresh) setIsLoading(false)
-        else setIsLoadingMore(false)
-      }
-    },
-    [buildParams]
-  )
-
-  useEffect(() => {
-    // First mount: server already delivered matching events — bail immediately
-    // so SSR content stays visible with no debounce or events-array clear.
-    if (!hasHydrated.current) {
-      hasHydrated.current = true
-      if (initialEvents.length > 0) return
-    }
-
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    // Reset pagination on new filter query; reads current isMobileView (in deps).
-    setVisibleCount(isMobileView ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE)
-    debounceRef.current = setTimeout(() => { void fetchEvents(filters, 1, timeFrame) }, 300)
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, isMobileView, timeFrame])
-
-  // ─── Handlers ──────────────────────────────────────────────────────────────
-
-  function toggleType(type: string) {
-    setFilters((prev) => ({
-      ...prev,
-      types: prev.types.includes(type) ? [] : [type],
-    }))
   }
 
-  function toggleAll() {
-    setFilters((prev) => ({ ...prev, types: [] }))
-  }
+  const [filters, setFilters] = useState<Filters>(initialFilters)
+  const [draft, setDraft] = useState<Filters>(initialFilters)
+  const [sortOption, setSortOption] = useState<SortOption>('newest')
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
 
-  function handleClear() {
-    setFilters({ searchQuery: '', types: [], state: '', minPrice: '', maxPrice: '', date: '' })
-    setSortOption('date-earliest')
-  }
+  // Keep the sidebar draft in sync whenever filters change from outside the
+  // sidebar itself (mobile quick pills, URL params) so it never goes stale.
+  useEffect(() => { setDraft(filters) }, [filters])
 
-  useEffect(() => {
-    if (!dateMenuOpen) return
-    const handler = (e: MouseEvent) => {
-      if (dateRef.current && !dateRef.current.contains(e.target as Node)) setDateMenuOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [dateMenuOpen])
+  const isDirty = JSON.stringify(draft) !== JSON.stringify(filters)
 
-  // Sync active filters back to the URL so links are shareable
-  useEffect(() => {
-    if (!hasSyncedUrl.current) {
-      hasSyncedUrl.current = true
-      return
-    }
-    const params = new URLSearchParams()
-    if (filters.searchQuery) params.set('q', filters.searchQuery)
-    if (filters.types.length > 0) params.set('category', filters.types[0].toLowerCase())
-    if (filters.state) params.set('state', filters.state)
-    if (filters.date) params.set('date', filters.date)
-    const qs = params.toString()
-    router.replace(`/events${qs ? `?${qs}` : ''}`, { scroll: false })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters])
-
-  function handleLoadMore() {
-    const chunk = isMobileView ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE
-    const newCount = visibleCount + chunk
-    setVisibleCount(newCount)
-    // Trigger API fetch if we've exhausted locally cached events
-    if (newCount > filteredEvents.length && hasMore) {
-      void fetchEvents(filters, page + 1, timeFrame, true)
-    }
-  }
-
-  function handleEventSelect(id: string) {
-    const event = events.find((e) => e._id === id)
-    if (event) router.push(`/events/${event.slug ?? event._id}`)
-  }
-
-  // ─── Derived state ─────────────────────────────────────────────────────────
-
-  const now = new Date()
-
-  const upcomingEvents = useMemo(
-    () => events.filter((e) => !e.date || new Date(e.date) >= now),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [events]
-  )
-
-  const pastEvents = useMemo(
-    () => events.filter((e) => !!e.date && new Date(e.date) < now),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [events]
-  )
-
-  // Curated editorial arrays — pinned to initial SSR data, unaffected by active filters
-  const featuredEvents = useMemo(
-    () => heroEvents.filter((e) => e.featured),
-    [heroEvents]
-  )
-
-  const trendingEvents = useMemo(
-    () => heroEvents.filter((e) => isTrending(e)),
-    [heroEvents]
-  )
-
-  const filteredEvents = useMemo(() => {
-    const base = timeFrame === 'upcoming' ? upcomingEvents : pastEvents
-    return [...base].sort((a, b) => {
-      switch (sortOption) {
-        case 'price-low-to-high':
-          return getMinPrice(a) - getMinPrice(b)
-        case 'price-high-to-low':
-          return getMinPrice(b) - getMinPrice(a)
-        case 'date-latest':
-          return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()
-        case 'name-a-z':
-          return a.name.localeCompare(b.name)
-        default:
-          return new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime()
-      }
-    })
-  }, [upcomingEvents, pastEvents, timeFrame, sortOption])
-
-  // Paginated slice for the main catalog
-  const visibleEvents = useMemo(
-    () => filteredEvents.slice(0, visibleCount),
-    [filteredEvents, visibleCount]
-  )
-
-  const canLoadMore = visibleCount < filteredEvents.length || hasMore
-
-  const hasActive =
-    !!filters.searchQuery ||
-    filters.types.length > 0 ||
-    !!filters.state ||
-    !!filters.minPrice ||
-    !!filters.maxPrice ||
-    !!filters.date
-
-  const pillTypes = useMemo(
-    () => Array.from(new Set([...QUICK_TYPES, ...eventTypes])).slice(0, 8),
+  const categories = useMemo(
+    () => Array.from(new Set([...QUICK_TYPES, ...eventTypes])),
     [eventTypes]
   )
 
-  const dateLabelMap: Record<string, string> = {
-    today: 'Today',
-    tomorrow: 'Tomorrow',
-    weekend: 'This Weekend',
+  const upcoming = useEventSection(filters, sortOption, 'upcoming', initialUpcoming)
+  const past = useEventSection(filters, sortOption, 'past', initialPast)
+
+  const hasActive =
+    filters.types.length > 0 || !!filters.state || !!filters.minPrice ||
+    !!filters.maxPrice || !!filters.dateFrom || !!filters.dateTo
+
+  function handleClear() {
+    setFilters(EMPTY_FILTERS)
+    setSortOption('newest')
   }
 
-  // ─── Render ────────────────────────────────────────────────────────────────
+  function toggleMobileType(type: string) {
+    setFilters((prev) => ({
+      ...prev,
+      types: prev.types.includes(type) ? prev.types.filter((t) => t !== type) : [type],
+    }))
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-zinc-900 pb-24 font-sans pt-24">
-      <div className="max-w-[1400px] mx-auto px-4 md:px-8">
+    <div className="min-h-screen bg-(--color-bg) text-(--color-text) pb-24 pt-6">
+      <FilterSidebar
+        draft={draft}
+        setDraft={setDraft}
+        states={states}
+        categories={categories}
+        onApply={() => setFilters(draft)}
+        isDirty={isDirty}
+      />
 
-        {/* ── Page Header ── */}
-        <div className="border-b border-zinc-100 pb-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900">
-              Discover Experiences
-            </h1>
-            <p className="text-zinc-500 text-sm mt-1">
-              {isLoading
-                ? 'Loading events…'
-                : `${filteredEvents.length} events matching your vibe`}
-            </p>
+      <FilterModal
+        isOpen={mobileFilterOpen}
+        onClose={() => setMobileFilterOpen(false)}
+        draft={draft}
+        setDraft={setDraft}
+        states={states}
+        categories={categories}
+        onApply={() => setFilters(draft)}
+        isDirty={isDirty}
+      />
+
+      <div className="xl:ml-60">
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-10 py-6 lg:py-10">
+
+          {/* Header & Sort */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-(--color-text) mb-2">
+                Discover Events
+              </h1>
+              <p className="text-lg text-(--color-text-muted)">Find experiences that match your vibe.</p>
+            </div>
+            <div className="flex items-center justify-between md:justify-start gap-3 w-full md:w-auto">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-(--color-text-muted)">Sort by:</span>
+                <SortDropdown value={sortOption} onChange={setSortOption} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileFilterOpen(true)}
+                aria-label="Open filters"
+                className="xl:hidden relative flex items-center justify-center w-10 h-10 rounded-full bg-(--color-surface) border border-(--color-border) text-(--color-text) shrink-0"
+              >
+                <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
+                {hasActive && (
+                  <span
+                    className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-brand border border-(--color-surface)"
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
+            </div>
           </div>
-          <ViewToggle view={viewMode} onChange={setViewMode} />
-        </div>
 
-        {/* ── Two-Column Split ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start mt-8">
+          {/* Mobile-only quick filters (sidebar is xl:block only) */}
+          <div className="flex xl:hidden overflow-x-auto gap-2 pb-4 scrollbar-hide -mx-4 px-4">
+            <button
+              type="button"
+              onClick={() => setFilters((p) => ({ ...p, types: [] }))}
+              className={`shrink-0 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors ${
+                filters.types.length === 0 ? 'bg-brand text-white' : 'bg-(--color-surface-2) text-(--color-text-muted)'
+              }`}
+            >
+              All Events
+            </button>
+            {categories.map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => toggleMobileType(type)}
+                className={`shrink-0 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors capitalize ${
+                  filters.types.includes(type) ? 'bg-brand text-white' : 'bg-(--color-surface-2) text-(--color-text-muted)'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
 
-          {/* ── Block A: Left Sticky Filter Rail (desktop only) ── */}
-          <aside className="hidden lg:block sticky top-28 bg-white border border-zinc-200 rounded-2xl p-6">
-
-            <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">
-              Categories
-            </h3>
-            <nav className="flex flex-col">
+          {hasActive && (
+            <div className="flex xl:hidden mb-6">
               <button
                 type="button"
-                onClick={toggleAll}
-                className={
-                  filters.types.length === 0
-                    ? 'w-full text-left bg-linear-to-r from-violet-600 to-indigo-600 text-white font-semibold rounded-xl px-4 py-2.5 mb-2 transition-all block'
-                    : 'w-full text-left text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 rounded-xl px-4 py-2.5 mb-2 transition-colors block'
-                }
+                onClick={handleClear}
+                className="text-xs font-medium text-(--color-text-muted) hover:text-(--color-text) transition-colors"
               >
-                All
+                Clear all filters ×
               </button>
-              {pillTypes.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => toggleType(type)}
-                  className={
-                    filters.types.includes(type)
-                      ? 'w-full text-left bg-linear-to-r from-violet-600 to-indigo-600 text-white font-semibold rounded-xl px-4 py-2.5 mb-2 transition-all block'
-                      : 'w-full text-left text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 rounded-xl px-4 py-2.5 mb-2 transition-colors block'
-                  }
-                >
-                  {type}
-                </button>
-              ))}
-            </nav>
-
-            <div className="space-y-4 pt-4 border-t border-zinc-100 mt-6">
-              <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest">
-                Filters
-              </h3>
-
-              {/* Date */}
-              <div ref={dateRef} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setDateMenuOpen((o) => !o)}
-                  className={`${filterBtnBase} w-full justify-between ${filters.date ? filterBtnActive : filterBtnIdle}`}
-                >
-                  <span>{filters.date ? dateLabelMap[filters.date] : 'Date'}</span>
-                  <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
-                </button>
-                {dateMenuOpen && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 'calc(100% + 6px)',
-                      left: 0,
-                      right: 0,
-                      background: 'var(--color-surface)',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: 'var(--radius-md)',
-                      zIndex: 50,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {(['', 'today', 'tomorrow', 'weekend'] as const).map((val, i, arr) => {
-                      const isActive = filters.date === val
-                      return (
-                        <button
-                          key={val || 'any'}
-                          type="button"
-                          onClick={() => { setFilters((p) => ({ ...p, date: val })); setDateMenuOpen(false) }}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            width: '100%',
-                            textAlign: 'left',
-                            padding: '10px 14px',
-                            fontSize: '13px',
-                            fontWeight: isActive ? 600 : 500,
-                            background: isActive ? 'var(--color-surface-2)' : 'transparent',
-                            color: isActive ? 'var(--color-brand)' : 'var(--color-text)',
-                            border: 'none',
-                            cursor: 'pointer',
-                            borderBottom: i < arr.length - 1 ? '1px solid var(--color-border)' : 'none',
-                          }}
-                        >
-                          <span>{val === '' ? 'Any date' : dateLabelMap[val]}</span>
-                          {isActive && <Check className="h-3.5 w-3.5 shrink-0" />}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <StateFilterDropdown
-                value={filters.state}
-                states={availableStates}
-                onChange={(state) => setFilters((prev) => ({ ...prev, state }))}
-              />
-
-              <PriceDropdown
-                minPrice={filters.minPrice}
-                maxPrice={filters.maxPrice}
-                hasFreeEvents={hasFreeEvents}
-                hasPaidEvents={hasPaidEvents}
-                onChange={(minPrice, maxPrice) => setFilters((prev) => ({ ...prev, minPrice, maxPrice }))}
-              />
-
-              {hasActive && (
-                <button
-                  type="button"
-                  onClick={handleClear}
-                  className="text-xs font-medium text-zinc-400 hover:text-zinc-600 transition-colors text-left"
-                >
-                  Clear all filters ×
-                </button>
-              )}
             </div>
+          )}
 
-            {/* ── Sidebar Value Banner ── */}
-            <div className="mt-8 p-5 bg-linear-to-br from-zinc-900 to-zinc-950 rounded-2xl border border-zinc-800 relative overflow-hidden group">
-              <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-violet-600/20 blur-2xl group-hover:bg-violet-600/30 transition-all duration-500" />
-              <span className="inline-block text-[10px] font-semibold text-violet-400 border border-violet-500/40 rounded-full px-2.5 py-0.5 mb-3 tracking-wide">
-                Coming Soon
-              </span>
-              <p className="text-sm font-bold text-white leading-snug mb-2">
-                Go Biometric
-              </p>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Tired of hunting for QR codes? Safe, encrypted face verification passes are coming soon to the ComfyTag ecosystem.
+          {/* ── Upcoming, then Past — same card grid structure for both ── */}
+          <EventsSection
+            title="Upcoming Events"
+            subtitle="What's coming up next"
+            section={upcoming}
+            emptyMessage="No upcoming events match your filters."
+          />
+          <EventsSection
+            title="Past Events"
+            subtitle="Recaps from what you missed"
+            section={past}
+            emptyMessage="No past events match your filters."
+          />
+
+          {/* ── Escape hatch ── */}
+          <div className="p-6 bg-(--color-surface) border border-(--color-border) rounded-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-center md:text-left">
+            <div>
+              <h3 className="text-xl font-bold text-(--color-text)">Can&apos;t find your vibe?</h3>
+              <p className="text-(--color-text-muted) text-sm mt-1">
+                Host your own live experience on ComfyTag and launch ticketing in less than 5 minutes.
               </p>
             </div>
-          </aside>
-
-          {/* ── Block B: Right-Hand Discovery Canvas ── */}
-          <div className="lg:col-span-3">
-
-            {/* Mobile category pill track */}
-            <div className="flex lg:hidden overflow-x-auto gap-2 pb-4 scrollbar-hide mb-2">
-              <button
-                type="button"
-                onClick={toggleAll}
-                className={
-                  filters.types.length === 0
-                    ? 'shrink-0 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors bg-zinc-900 text-white'
-                    : 'shrink-0 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-                }
-              >
-                All
-              </button>
-              {pillTypes.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => toggleType(type)}
-                  className={
-                    filters.types.includes(type)
-                      ? 'shrink-0 px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors bg-zinc-900 text-white'
-                      : 'shrink-0 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-                  }
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-
-            {/* Mobile filter + sort bar */}
-            <div className="flex lg:hidden overflow-x-auto gap-2 pb-3 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 mb-4">
-              {(['today', 'tomorrow', 'weekend'] as const).map((val) => (
-                <button
-                  key={val}
-                  type="button"
-                  onClick={() => setFilters((p) => ({ ...p, date: p.date === val ? '' : val }))}
-                  className={`shrink-0 ${filterBtnBase} ${filters.date === val ? filterBtnActive : filterBtnIdle}`}
-                >
-                  {dateLabelMap[val]}
-                </button>
-              ))}
-              <div className="shrink-0 min-w-[88px]">
-                <StateFilterDropdown
-                  value={filters.state}
-                  states={availableStates}
-                  onChange={(state) => setFilters((prev) => ({ ...prev, state }))}
-                />
-              </div>
-              <div className="shrink-0 min-w-[72px]">
-                <PriceDropdown
-                  minPrice={filters.minPrice}
-                  maxPrice={filters.maxPrice}
-                  hasFreeEvents={hasFreeEvents}
-                  hasPaidEvents={hasPaidEvents}
-                  onChange={(minPrice, maxPrice) => setFilters((prev) => ({ ...prev, minPrice, maxPrice }))}
-                />
-              </div>
-              <div className="shrink-0">
-                <SortDropdown value={sortOption} onChange={setSortOption} />
-              </div>
-              {hasActive && (
-                <button
-                  type="button"
-                  onClick={handleClear}
-                  className="shrink-0 px-3 py-2 rounded-xl text-xs font-medium text-zinc-400 hover:text-zinc-600 border border-transparent hover:border-zinc-200 transition-colors whitespace-nowrap"
-                >
-                  Clear ×
-                </button>
-              )}
-            </div>
-
-            {/* ── Block 1: Dynamic Featured Carousel ── */}
-            <FeaturedCarousel events={featuredEvents} />
-
-            {/* ── Block 2: Dynamic Trending FOMO Carousel ── */}
-            <TrendingCarousel events={trendingEvents} />
-
-            {/* ── Block 3: Main Event Catalog Track ── */}
-
-            {/* Tab switcher + sort */}
-            <div className="flex items-end justify-between mb-8">
-              <div className="flex border-b border-zinc-200 w-fit gap-4 sm:gap-6">
-                <button
-                  type="button"
-                  onClick={() => setTimeFrame('upcoming')}
-                  className={
-                    timeFrame === 'upcoming'
-                      ? 'border-b-2 border-violet-600 pb-3 px-1 text-sm font-bold text-zinc-900 transition-all'
-                      : 'border-b-2 border-transparent pb-3 px-1 text-sm font-medium text-zinc-400 hover:text-zinc-600 transition-all'
-                  }
-                >
-                  Upcoming Events
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTimeFrame('past')}
-                  className={
-                    timeFrame === 'past'
-                      ? 'border-b-2 border-violet-600 pb-3 px-1 text-sm font-bold text-zinc-900 transition-all'
-                      : 'border-b-2 border-transparent pb-3 px-1 text-sm font-medium text-zinc-400 hover:text-zinc-600 transition-all'
-                  }
-                >
-                  Past Recaps
-                </button>
-              </div>
-
-              <div className="hidden lg:block">
-                <SortDropdown value={sortOption} onChange={setSortOption} />
-              </div>
-            </div>
-
-            {/* Content area */}
-            {isLoading ? (
-              <>
-                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-                    <EventCardSkeleton key={i} />
-                  ))}
-                </div>
-                <div className="flex md:hidden flex-col gap-3">
-                  {Array.from({ length: MOBILE_PAGE_SIZE }).map((_, i) => (
-                    <MobileEventRowSkeleton key={i} />
-                  ))}
-                </div>
-              </>
-
-            ) : viewMode === 'map' ? (
-              <div className="h-[600px] rounded-2xl overflow-hidden border border-zinc-200">
-                <MapView
-                  events={events}
-                  onEventSelect={handleEventSelect}
-                  onClose={() => setViewMode('list')}
-                  selectedState={filters.state}
-                />
-              </div>
-
-            ) : filteredEvents.length === 0 ? (
-              timeFrame === 'upcoming' ? (
-                <div className="py-16 border border-dashed border-zinc-200 rounded-2xl bg-zinc-50/50 flex flex-col items-center justify-center p-6 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-5">
-                    <SearchX className="h-7 w-7 text-zinc-400" />
-                  </div>
-                  <p className="text-zinc-800 font-bold text-lg mb-2">No upcoming events yet</p>
-                  <p className="text-sm text-zinc-500 max-w-sm mb-6">
-                    No upcoming events scheduled in this category yet. Check out the{' '}
-                    <span className="font-semibold text-zinc-700">Past Recaps</span> tab to see what you missed!
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setTimeFrame('past')}
-                      className="text-sm font-semibold text-white bg-zinc-900 hover:bg-zinc-800 px-5 py-2.5 rounded-xl transition-colors"
-                    >
-                      View Past Recaps →
-                    </button>
-                    {hasActive && (
-                      <button
-                        type="button"
-                        onClick={handleClear}
-                        className="text-sm font-medium text-zinc-500 hover:text-zinc-700 transition-colors"
-                      >
-                        Clear filters
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-24 text-center">
-                  <SearchX className="h-12 w-12 text-zinc-300 mb-4" />
-                  <p className="text-zinc-700 font-semibold mb-1">No past events found</p>
-                  <p className="text-sm text-zinc-400 max-w-xs mb-6">
-                    {hasActive
-                      ? 'Try adjusting your filters to see more results.'
-                      : 'Past events will appear here once they wrap up.'}
-                  </p>
-                  {hasActive && (
-                    <button
-                      type="button"
-                      onClick={handleClear}
-                      className="text-sm font-semibold text-violet-600 hover:text-violet-700 transition-colors"
-                    >
-                      Clear filters
-                    </button>
-                  )}
-                </div>
-              )
-
-            ) : (
-              <>
-                {/* Desktop grid — capped to visibleCount */}
-                <div className="hidden md:grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
-                  {visibleEvents.map((event) => (
-                    <div key={event._id} className="relative">
-                      <EventCard
-                        event={event}
-                        href={`/events/${event.slug ?? event._id}`}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Mobile row list — capped to visibleCount */}
-                <div className="flex md:hidden flex-col gap-3 mb-6">
-                  {visibleEvents.map((event) => (
-                    <MobileEventRow
-                      key={event._id}
-                      event={event}
-                      href={`/events/${event.slug ?? event._id}`}
-                      showLowTickets={timeFrame === 'upcoming' && isLowTickets(event)}
-                    />
-                  ))}
-                </div>
-
-                {/* ── Block 4: Tactical Pagination Control ── */}
-                {canLoadMore && (
-                  <div className="flex justify-center mt-10 mb-4">
-                    <button
-                      type="button"
-                      onClick={handleLoadMore}
-                      disabled={isLoadingMore}
-                      className="mx-auto mt-0 px-8 py-3 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-sm rounded-xl transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-wait"
-                    >
-                      {isLoadingMore ? (
-                        <>
-                          <LoadingSpinner size="sm" />
-                          <span>Loading more…</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>Load More Events</span>
-                          <ChevronDown className="h-4 w-4 opacity-70" />
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-
-                {/* ── Escape Hatch ── */}
-                <div className="mt-12 p-6 bg-white border border-zinc-200 rounded-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-center md:text-left">
-                  <div>
-                    <h3 className="text-xl font-bold text-zinc-900">Can't find your vibe?</h3>
-                    <p className="text-zinc-500 text-sm mt-1">
-                      Host your own live experience on ComfyTag and launch ticketing in less than 5 minutes.
-                    </p>
-                  </div>
-                  <a
-                    href="https://partner.comfytag.com"
-                    className="px-6 py-3 bg-zinc-900 text-white font-semibold rounded-xl hover:bg-zinc-800 transition-colors text-sm whitespace-nowrap mx-auto md:mx-0"
-                  >
-                    Create an Event
-                  </a>
-                </div>
-              </>
-            )}
+            <a
+              href={process.env.NEXT_PUBLIC_PARTNER_URL ?? 'http://localhost:3001'}
+              className="px-6 py-3 bg-(--color-text) text-(--color-bg) font-semibold rounded-xl hover:opacity-90 transition-opacity text-sm whitespace-nowrap mx-auto md:mx-0"
+            >
+              Create an Event
+            </a>
           </div>
         </div>
       </div>

@@ -47,9 +47,9 @@ export function EventMediaGallery({ event, isOrganizer, onUpload }: EventMediaGa
   if (media.length === 0) {
     return (
       <div style={{ marginTop: '48px' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px', color: 'var(--color-text)' }}>
+        <h2 className="text-xl font-bold text-(--color-text) border-l-4 border-brand pl-4 mb-5">
           Event Media
-        </h3>
+        </h2>
         {isOrganizer ? (
           <div
             style={{
@@ -122,9 +122,9 @@ export function EventMediaGallery({ event, isOrganizer, onUpload }: EventMediaGa
           marginBottom: '20px',
         }}
       >
-        <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text)' }}>
+        <h2 className="text-xl font-bold text-(--color-text) border-l-4 border-brand pl-4">
           Event Media
-        </h3>
+        </h2>
         {isOrganizer && (
           <button
             type="button"

@@ -101,7 +101,7 @@ export default function TicketDetailPage() {
   return (
     <>
       <Navbar />
-      <main className="w-full min-h-screen bg-zinc-50 pt-28 pb-16 px-4 flex flex-col items-center">
+      <main className="w-full min-h-screen bg-zinc-50 pt-8 pb-16 px-4 flex flex-col items-center">
         {/* Back link */}
         <Link
           href="/tickets"

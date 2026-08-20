@@ -6,11 +6,9 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { EventInteractiveSection } from '@/components/event/EventInteractiveSection'
 import { EventLineup } from '@/components/event/EventLineup'
-import { EventLocation } from '@/components/event/EventLocation'
 import { EventMediaGallery } from '@/components/event/EventMediaGallery'
 import { EventRelatedSection } from '@/components/event/EventRelatedSection'
-import { OrganizerCard } from '@/components/ui/OrganizerCard'
-import { Divider } from '@/components/events/EventIcons'
+import { EventOrganizerSection } from '@/components/event/EventOrganizerSection'
 import { JsonLd } from '@/components/seo/JsonLd'
 import type { Event as EventType, User } from '@comfytag/types'
 import type { Comment } from '@/components/event/CommentSection'
@@ -202,62 +200,27 @@ export default async function EventDetailPage({
       relatedEvents={relatedEvents}
       initialComments={comments}
       initialHasMore={hasMore}
-      organizer={organizer ? { _id: organizer._id, name: organizer.name, image: organizer.avatar, username: organizer.username } : null}
     >
       <EventLineup performers={event.performers ?? []} />
-      <Divider />
       {event.description ? (
         <div>
-          <p className="text-base font-bold text-zinc-900 mb-3">About this event</p>
-          <p className="text-[15px] text-zinc-600 leading-[1.7] whitespace-pre-wrap">
+          <h2 className="text-xl font-bold text-(--color-text) border-l-4 border-brand pl-4 mb-4">
+            About this Event
+          </h2>
+          <p className="text-[15px] text-(--color-text-muted) leading-[1.7] whitespace-pre-wrap">
             {event.description}
           </p>
         </div>
       ) : null}
       <EventMediaGallery event={event} />
-      <EventLocation event={event} />
 
       {/* Organizer Profile */}
-      {event.planner_id && (
-        <>
-          <Divider />
-          <div className="mb-6">
-            <h3 className="text-base font-bold text-zinc-900 mb-4">About the Organizer</h3>
-            {organizer ? (
-              <>
-                <OrganizerCard
-                  organizer={{
-                    _id: organizer._id,
-                    name: organizer.name,
-                    image: organizer.avatar,
-                    isPartner: organizer.isPartner || false,
-                    isVerify: organizer.isVerify || { email: false },
-                    kycStatus: organizer.kycStatus,
-                  }}
-                  followerCount={organizerStats?.followers ?? 0}
-                  upcomingEventCount={organizerStats?.upcomingEvents ?? 0}
-                />
-                <div className="mt-4">
-                  <a
-                    href={`/organizer/${organizer.username && !organizer.username.includes('@') ? organizer.username : organizer._id}`}
-                    className="block w-full rounded-md bg-brand px-4 py-3 text-center text-sm font-semibold text-(--color-text-on-brand) no-underline transition-colors duration-(--duration-fast) ease-(--ease-standard) hover:bg-brand-dark"
-                  >
-                    View Profile
-                  </a>
-                </div>
-              </>
-            ) : (
-              <div className="rounded-lg border border-(--color-border) bg-(--color-surface) p-4 text-center transition-colors duration-(--duration-micro) ease-(--ease-standard) hover:border-brand">
-                <p className="m-0 text-(--color-text-muted)">Organizer profile</p>
-                {organizerStats && (
-                  <p className="mt-2 font-semibold text-(--color-text)">
-                    {organizerStats.followers} followers • {organizerStats.upcomingEvents} upcoming events
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        </>
+      {event.planner_id && organizer && (
+        <EventOrganizerSection
+          organizer={{ _id: organizer._id, name: organizer.name, image: organizer.avatar }}
+          organizerSlug={organizer.username && !organizer.username.includes('@') ? organizer.username : organizer._id}
+          followerCount={organizerStats?.followers ?? 0}
+        />
       )}
 
       <EventRelatedSection events={relatedEvents} />

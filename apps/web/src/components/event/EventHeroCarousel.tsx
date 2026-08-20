@@ -9,6 +9,9 @@ export interface EventHeroCarouselProps {
   currentIndex?: number
   onIndexChange?: (index: number) => void
   containerClassName?: string
+  /** Position the dot pagination as an absolute overlay near the bottom of the
+   * image instead of stacking it below in normal flow — for full-bleed heroes. */
+  dotsOverlay?: boolean
 }
 
 const AUTO_ADVANCE_MS = 5000
@@ -75,6 +78,7 @@ export function EventHeroCarousel({
   currentIndex,
   onIndexChange,
   containerClassName,
+  dotsOverlay,
 }: EventHeroCarouselProps) {
   const slides = images.length > 0 ? images : ['/placeholder.svg']
   const total = slides.length
@@ -196,7 +200,16 @@ export function EventHeroCarousel({
         <div
           role="group"
           aria-label="Slide navigation"
-          style={{
+          style={dotsOverlay ? {
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: '16px',
+            zIndex: 6,
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '6px',
+          } : {
             display: 'flex',
             justifyContent: 'center',
             gap: '6px',
@@ -218,7 +231,7 @@ export function EventHeroCarousel({
                 background:
                   idx === current
                     ? 'var(--color-brand)'
-                    : 'var(--color-border)',
+                    : dotsOverlay ? 'rgba(255,255,255,0.5)' : 'var(--color-border)',
                 cursor: 'pointer',
                 padding: 0,
                 transition: 'width 200ms ease, background 200ms ease',
