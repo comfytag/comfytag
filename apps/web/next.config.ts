@@ -26,7 +26,7 @@ const withPWA = withPWAInit({
   dest: 'public',
   register: true,
   workboxOptions: { skipWaiting: true },
-  customWorkerSrc: 'worker/index.ts',
+  customWorkerSrc: 'worker',
 })
 
 const nextConfig: NextConfig = {
