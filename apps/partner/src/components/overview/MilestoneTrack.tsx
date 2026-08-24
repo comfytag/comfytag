@@ -28,7 +28,7 @@ export function MilestoneTrack({ ticketsSold, totalCapacity }: MilestoneTrackPro
     <div className="px-2">
       <div className="relative pt-4 pb-10">
         {/* Track background */}
-        <div className="absolute top-[17px] left-[16px] right-[16px] h-0.5 bg-zinc-200 rounded-full" />
+        <div className="absolute top-[17px] left-[16px] right-[16px] h-0.5 bg-zinc-800 rounded-full" />
 
         {/* Track fill */}
         <div
@@ -55,8 +55,8 @@ export function MilestoneTrack({ ticketsSold, totalCapacity }: MilestoneTrackPro
                       completed
                         ? 'bg-amber-400 border-amber-400'
                         : isNext
-                        ? 'bg-white border-violet-500'
-                        : 'bg-zinc-200 border-zinc-300',
+                        ? 'bg-(--color-surface) border-violet-500'
+                        : 'bg-zinc-800 border-zinc-700',
                     ].join(' ')}
                   >
                     {completed && (
@@ -96,8 +96,8 @@ export function MilestoneTrack({ ticketsSold, totalCapacity }: MilestoneTrackPro
                       completed
                         ? 'text-amber-400'
                         : isNext
-                        ? 'text-zinc-700'
-                        : 'text-zinc-400',
+                        ? 'text-zinc-300'
+                        : 'text-zinc-500',
                     ].join(' ')}
                   >
                     {milestone.label}

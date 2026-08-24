@@ -28,10 +28,12 @@ import {
 const GOLD = '#D97706'
 
 const STATUS: Record<WithdrawRequest['status'], { color: string; label: string }> = {
-  pending:  { color: '#F59E0B',                label: 'Pending'  },
-  approved: { color: colors.mobile.success,    label: 'Approved' },
-  rejected: { color: '#EF4444',                label: 'Rejected' },
-  sent:     { color: GOLD,                     label: 'Paid Out' },
+  pending:    { color: '#F59E0B',             label: 'Pending'    },
+  approved:   { color: colors.success.DEFAULT, label: 'Approved'   },
+  processing: { color: colors.success.DEFAULT, label: 'Processing' },
+  rejected:   { color: '#EF4444',             label: 'Rejected'   },
+  failed:     { color: '#EF4444',             label: 'Failed'     },
+  sent:       { color: GOLD,                  label: 'Paid Out'   },
 }
 
 // ─── SkeletonPulse ────────────────────────────────────────────────────────────
@@ -258,7 +260,7 @@ export default function PayoutsScreen() {
               </View>
               <View style={styles.statDivider} />
               <View style={styles.stat}>
-                <Text style={[styles.statValue, { color: colors.mobile.textMuted }]}>
+                <Text style={[styles.statValue, { color: colors.textPublic.muted }]}>
                   {formatNaira(sentTotal)}
                 </Text>
                 <Text style={styles.statLabel}>Paid Out</Text>
@@ -299,7 +301,7 @@ export default function PayoutsScreen() {
                 value={amount}
                 onChangeText={(v) => { setAmount(v); setFormError('') }}
                 placeholder="Amount (₦)"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
                 keyboardType="decimal-pad"
               />
 
@@ -365,7 +367,7 @@ export default function PayoutsScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
 
   // Header
@@ -377,12 +379,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     letterSpacing: -0.3,
   },
   headerSubtitle: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: sp[1],
   },
 
@@ -395,10 +397,10 @@ const styles = StyleSheet.create({
   balanceCard: {
     marginHorizontal: sp[5],
     marginBottom: sp[4],
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     padding: sp[5],
   },
   balanceLabelRow: {
@@ -409,7 +411,7 @@ const styles = StyleSheet.create({
   },
   balanceLabelText: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   balanceAmount: {
     fontSize: 34,
@@ -433,13 +435,13 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: 2,
   },
   statDivider: {
     width: 1,
     height: 28,
-    backgroundColor: colors.mobile.border,
+    backgroundColor: colors.public.border,
   },
   withdrawBtn: {
     flexDirection: 'row',
@@ -460,16 +462,16 @@ const styles = StyleSheet.create({
   formCard: {
     marginHorizontal: sp[5],
     marginBottom: sp[4],
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     padding: sp[5],
   },
   formTitle: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     marginBottom: sp[3],
   },
   bankChip: {
@@ -492,14 +494,14 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   formInput: {
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     borderRadius: rd.lg,
     height: 48,
     paddingHorizontal: sp[4],
     fontSize: fs.sm,
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     marginBottom: sp[3],
   },
   formError: {
@@ -514,7 +516,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     flex: 1,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     borderRadius: rd.lg,
     height: 44,
     alignItems: 'center',
@@ -523,7 +525,7 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     fontSize: fs.sm,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   submitBtn: {
     flex: 1,
@@ -546,7 +548,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: fs.sm,
     fontWeight: '700',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     paddingHorizontal: sp[5],
     marginBottom: sp[3],
     textTransform: 'uppercase',
@@ -554,10 +556,10 @@ const styles = StyleSheet.create({
   },
   historyList: {
     marginHorizontal: sp[5],
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     overflow: 'hidden',
   },
   withdrawRow: {
@@ -573,11 +575,11 @@ const styles = StyleSheet.create({
   withdrawEventName: {
     fontSize: fs.sm,
     fontWeight: '600',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   withdrawDate: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: 2,
   },
   withdrawRowRight: {
@@ -601,7 +603,7 @@ const styles = StyleSheet.create({
   },
   rowDivider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.mobile.border,
+    backgroundColor: colors.public.border,
     marginHorizontal: sp[4],
   },
 
@@ -614,11 +616,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   emptySubText: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
     marginTop: sp[2],
     lineHeight: 20,
@@ -629,7 +631,7 @@ const styles = StyleSheet.create({
     height: 220,
     marginHorizontal: sp[5],
     marginBottom: sp[4],
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
   },
   skeletonSection: {
@@ -638,7 +640,7 @@ const styles = StyleSheet.create({
   },
   skeletonRow: {
     height: 56,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
   },
 
@@ -651,7 +653,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: fs.base,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   retryBtn: {
     paddingHorizontal: sp[6],

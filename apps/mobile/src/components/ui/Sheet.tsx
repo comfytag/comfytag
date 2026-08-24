@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderTopLeftRadius: rd['2xl'],
     borderTopRightRadius: rd['2xl'],
     overflow: 'hidden',
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: colors.mobile.border,
+    backgroundColor: colors.public.border,
     borderRadius: rd.full,
     alignSelf: 'center',
     marginTop: sp[3],
@@ -167,16 +167,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: sp[5],
     paddingVertical: sp[3],
     borderBottomWidth: 1,
-    borderBottomColor: colors.mobile.border,
+    borderBottomColor: colors.public.border,
   },
   title: {
     fontSize: fs.lg,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   closeText: {
     fontSize: fs.lg,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   content: {
     padding: sp[5],

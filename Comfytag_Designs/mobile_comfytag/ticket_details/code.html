@@ -1,0 +1,292 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Ticket Details - ComfyTag</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e2e2e2",
+                    "primary-fixed": "#eaddff",
+                    "on-primary-fixed": "#25005a",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-secondary-container": "#fffbff",
+                    "surface": "#f9f9f8",
+                    "on-primary-container": "#ede0ff",
+                    "primary": "#630ed4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary": "#704500",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#d2bbff",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary": "#6e3aca",
+                    "on-secondary-fixed-variant": "#581db3",
+                    "outline": "#7b7487",
+                    "inverse-surface": "#2f3130",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-error-container": "#93000a",
+                    "background": "#f9f9f8",
+                    "primary-container": "#7c3aed",
+                    "on-tertiary-fixed": "#2a1700",
+                    "surface-dim": "#dadad9",
+                    "secondary-fixed": "#ebddff",
+                    "outline-variant": "#ccc3d8",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "inverse-primary": "#d2bbff",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "on-tertiary-container": "#ffe1c0",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "surface-bright": "#f9f9f8",
+                    "surface-container-high": "#e8e8e7",
+                    "on-surface-variant": "#4a4455",
+                    "on-background": "#1a1c1c",
+                    "secondary-container": "#8856e5",
+                    "on-secondary-fixed": "#250059",
+                    "surface-container-low": "#f3f4f3",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#ffddb8",
+                    "surface-tint": "#732ee4",
+                    "secondary-fixed-dim": "#d3bbff",
+                    "tertiary-container": "#905b00",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "40px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "stack-lg": "24px",
+                    "stack-md": "16px",
+                    "margin-tablet": "32px",
+                    "gutter": "16px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .ticket-clip-path {
+            background-color: white;
+            position: relative;
+            mask-image: radial-gradient(circle at 0 70%, transparent 12px, black 13px),
+                        radial-gradient(circle at 100% 70%, transparent 12px, black 13px);
+            mask-composite: intersect;
+            -webkit-mask-image: radial-gradient(circle at 0 70%, transparent 12px, black 13px),
+                                radial-gradient(circle at 100% 70%, transparent 12px, black 13px);
+            -webkit-mask-composite: source-in;
+        }
+        .mesh-gradient-bg {
+            background-color: #630ed4;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(263,93%,54%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(275,85%,62%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(25,100%,50%,1) 0, transparent 50%);
+        }
+        .blur-backdrop {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface">
+<!-- Top AppBar (from Shared Components) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl shadow-sm flex justify-between items-center px-margin-mobile h-16">
+<div class="flex items-center gap-base">
+<button class="material-symbols-outlined text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">arrow_back</button>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed tracking-tight">ComfyTag</span>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" alt="A clean professional studio headshot of a smiling person against a soft lavender backdrop, matching the premium modernist aesthetic of the app. The lighting is soft and even, highlighting a friendly and trustworthy expression, with the person wearing professional but modern attire." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJT0Ml5DolN24deOhEGRN12yXQrr0rTvrWzlP7OxzBikEqUx40dKYQqfoIIfjj_PgpB7urmT3CJo9KCMp_J0sVz3tjWaspE6OQAi0aridTgvbRqndlzFJzY45amTA0bS9qE5YJSJ0vO4CmmEW1ZAAXGevukk3KOPaVwq9TGUg_YoqSib8gOj5ha4-V3TSfxODhsKovj6FSHBx-OXUnPNjfNv3S9wBDeidqvt98FPRcErY_NnSvCYWh0w">
+</div>
+</header>
+<main class="pt-24 pb-32 px-margin-mobile max-w-2xl mx-auto space-y-section-gap">
+<!-- Status Indicator Section -->
+<section class="text-center space-y-stack-sm">
+<div class="inline-flex items-center gap-base px-stack-md py-stack-sm bg-green-100 text-green-800 rounded-full animate-pulse">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-md text-label-md uppercase tracking-widest">Verified Status</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Confirmed &amp; Ready</h1>
+<p class="text-on-surface-variant max-w-xs mx-auto">Your digital entry identity is active for the upcoming event.</p>
+</section>
+<!-- The Ticket Component (Asymmetric/Clipped) -->
+<div class="relative group">
+<!-- Background glow -->
+<div class="absolute -inset-2 bg-primary/10 blur-2xl rounded-[32px] group-hover:bg-primary/20 transition-colors duration-500"></div>
+<div class="ticket-clip-path shadow-xl rounded-2xl overflow-hidden relative border border-outline-variant/10">
+<!-- Top Section: Visual & Event Info -->
+<div class="relative h-48">
+<img class="w-full h-full object-cover" alt="A vibrant, high-energy concert scene in Lagos at night with purple and amber stage lights reflecting off a cheering crowd. The atmosphere is cinematic and high-contrast, focusing on the rhythmic excitement of the Nigerian music scene. The image has a professional, airy modernist quality with shallow depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEsgDOFhOP8J7KZZrGCA0rM-2h_RzfM1XxdoEVA-E3wCmOSRyAE9i3dxuV__P1u4sac-rX0IYSg6b7sTUa-F69IswitisYcueTI-EQnI33n9SYcJrOpmGpDITIpJEpihBOFV_SkvRRq9-xUFp8eHCY_LMRmKOglFVnmR4QXQ5DGhUNt8SZsgyDo_RKHXwk9mqhkYaWzxwD0AVOK-iGX9A4Qym7hHso37hAh5G8e6DP7pZRV8nClpC03Q">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-stack-md left-stack-md text-white">
+<span class="text-secondary-fixed text-label-md font-bold uppercase tracking-widest">Main Event</span>
+<h2 class="text-title-lg font-title-lg">Vibrant Pulse Lagos '24</h2>
+</div>
+<!-- Face Entry Only Badge -->
+<div class="absolute top-stack-md right-stack-md flex flex-col items-center gap-1 bg-surface/90 backdrop-blur-md p-stack-sm rounded-xl border border-primary/20">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">face</span>
+<span class="font-label-md text-[10px] text-primary font-bold">FACE ONLY</span>
+</div>
+</div>
+<!-- Middle Section: Detailed Info -->
+<div class="p-stack-lg space-y-stack-md">
+<div class="grid grid-cols-2 gap-stack-md border-b border-dashed border-outline-variant/30 pb-stack-md">
+<div>
+<p class="text-on-surface-variant text-label-md uppercase">Date</p>
+<p class="font-title-lg text-title-lg text-on-surface">Dec 15, 2023</p>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant text-label-md uppercase">Time</p>
+<p class="font-title-lg text-title-lg text-on-surface">19:00 WAT</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-stack-md">
+<div>
+<p class="text-on-surface-variant text-label-md uppercase">Venue</p>
+<p class="font-body-lg text-body-lg text-on-surface">Eko Convention Center</p>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant text-label-md uppercase">Seat/Section</p>
+<p class="font-body-lg text-body-lg text-on-surface">VIP Lounge • A42</p>
+</div>
+</div>
+</div>
+<!-- Bottom Section: Face ID Prompt (Post-Clipped Area) -->
+<div class="bg-surface-container-low p-stack-lg mt-4 flex flex-col items-center gap-stack-md border-t border-dashed border-outline-variant/30">
+<div class="w-24 h-24 rounded-full border-4 border-primary/20 p-1 relative">
+<div class="w-full h-full rounded-full overflow-hidden">
+<img class="w-full h-full object-cover grayscale" alt="A highly detailed close-up portrait of a young adult looking directly at the camera with a neutral, professional expression for a biometric face scan. The lighting is crisp and frontal, casting soft shadows, perfectly suited for high-trust security technology visuals. The background is a clean, solid light-grey." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbi_86Lw7cVToB4jQaHHkiYncg88xITgzPOL6AC9CJAot-WEQGhsuzRU1w578aKLDUstgAdDWm7Yj_sUt49fNgCaHdqixqCV8p7AdtLfGyY8LwIJpoYg71CFZe2RPXmPcvGuuNJwVXmMmNVMTpJkHAT2Tu1oJ7QLJ4qys5zlRv8fGiTyROzbtYKXY_lwYttXIkaDUg-Sf_njPvyhhLZGUos1Sg4UmpJlqBWK3nMrUvKqiNwU8MPFnSOw">
+</div>
+<div class="absolute inset-0 border-2 border-primary rounded-full animate-[ping_3s_infinite] opacity-30"></div>
+</div>
+<div class="text-center">
+<p class="font-label-md text-label-md text-primary font-bold uppercase tracking-tighter">Biometric Identity Linked</p>
+<p class="text-on-surface-variant text-body-md mt-1">No barcode needed. Simply walk to the scanner.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- High-Trust Emphasis Card -->
+<div class="bg-primary/5 border border-primary/10 p-stack-lg rounded-2xl flex gap-stack-md items-start">
+<span class="material-symbols-outlined text-primary text-headline-md">verified_user</span>
+<div class="space-y-1">
+<h3 class="font-title-lg text-title-lg text-on-surface">Zero-Contact Face Entry</h3>
+<p class="text-on-surface-variant text-body-md leading-relaxed">
+                    ComfyTag uses secure, encrypted facial mapping to grant you entry. Your data never leaves the local scanner device and is purged 24 hours after the event. 
+                    <span class="text-primary font-bold">100% Privacy Guaranteed.</span>
+</p>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-stack-md">
+<button class="w-full h-14 bg-primary text-on-primary rounded-xl font-bold text-body-lg flex items-center justify-center gap-base shadow-lg active:scale-[0.98] transition-transform duration-200">
+<span class="material-symbols-outlined">help_center</span>
+                How to Use Face Check-in
+            </button>
+<div class="grid grid-cols-2 gap-stack-md">
+<button class="h-14 bg-surface-container-highest text-on-surface rounded-xl font-bold text-body-md flex items-center justify-center gap-base active:scale-[0.98] transition-transform duration-200 border border-outline-variant/20">
+<span class="material-symbols-outlined text-[20px]">share</span>
+                    Share
+                </button>
+<button class="h-14 bg-surface-container-highest text-on-surface rounded-xl font-bold text-body-md flex items-center justify-center gap-base active:scale-[0.98] transition-transform duration-200 border border-outline-variant/20">
+<span class="material-symbols-outlined text-[20px]">file_download</span>
+                    Save PDF
+                </button>
+</div>
+</div>
+<!-- Map Snippet (Content-First Context) -->
+<div class="space-y-stack-md">
+<div class="flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-on-surface">Arrival Directions</h3>
+<button class="text-primary font-bold text-label-md uppercase">Open Maps</button>
+</div>
+<div class="h-40 rounded-2xl overflow-hidden relative border border-outline-variant/20">
+<img class="w-full h-full object-cover" data-location="Lagos, Nigeria" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHVb5oJK6GxT9xDVgVy30Jpse-EDqPNizPoIxL3_Ku209MQfxg1aW-hzFNAhc_In6mgzt9belgpSe4nJ4JhTNldUCE5F7Hrkii6mTQFLdZQjdSoGV8b1rxL1vnrGWYg_h4uloLAZSIDg--FA3Aik5PtAydVhSKkdWTEZsiILN-648cjsr7ecpUI-NF2KMYjTnKB-Jkb2F4cPhIb4iGc1tXT0qsfrDYn9qD4xs1NuU6gPIxeH8Bmgwkaw">
+<div class="absolute inset-0 bg-primary/10 pointer-events-none"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="bg-primary p-base rounded-full shadow-lg">
+<span class="material-symbols-outlined text-white">location_on</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (from Shared Components) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-stack-sm px-margin-mobile bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl shadow-lg border-t border-outline-variant/20 z-50 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-md text-label-md">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-md text-label-md">Search</span>
+</a>
+<!-- Active Tab: Tickets -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed bg-primary-fixed/30 rounded-full px-4 py-1 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">confirmation_number</span>
+<span class="font-label-md text-label-md">Tickets</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for the ticket element
+        const ticket = document.querySelector('.ticket-clip-path');
+        ticket.addEventListener('mousemove', (e) => {
+            const { left, top, width, height } = ticket.getBoundingClientRect();
+            const x = (e.clientX - left) / width;
+            const y = (e.clientY - top) / height;
+            
+            const moveX = (x - 0.5) * 10;
+            const moveY = (y - 0.5) * 10;
+            
+            ticket.style.transform = `perspective(1000px) rotateY(${moveX}deg) rotateX(${-moveY}deg)`;
+        });
+        
+        ticket.addEventListener('mouseleave', () => {
+            ticket.style.transform = `perspective(1000px) rotateY(0deg) rotateX(0deg)`;
+        });
+    </script>
+</body></html>

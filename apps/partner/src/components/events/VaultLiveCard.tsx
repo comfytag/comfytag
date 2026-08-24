@@ -42,7 +42,7 @@ export function VaultLiveCard({
 
   return (
     <div className="max-w-3xl w-full">
-      <div className="bg-white border border-red-200 rounded-xl overflow-hidden transition-colors duration-300 hover:border-red-300">
+      <div className="bg-(--color-surface) border border-red-900/50 rounded-xl overflow-hidden transition-colors duration-300 hover:border-red-800">
         <div className="flex h-40 sm:h-48">
           {/* Cover image */}
           <div className="relative w-36 sm:w-52 shrink-0">
@@ -66,7 +66,7 @@ export function VaultLiveCard({
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
                 </span>
-                <span className="text-xs font-bold text-red-600 uppercase tracking-widest">
+                <span className="text-xs font-bold text-red-400 uppercase tracking-widest">
                   Live Now
                 </span>
               </div>
@@ -83,7 +83,7 @@ export function VaultLiveCard({
                     e.stopPropagation()
                     setMenuOpen((p) => !p)
                   }}
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <circle cx="5" cy="12" r="2" />
@@ -95,13 +95,13 @@ export function VaultLiveCard({
                 {menuOpen && (
                   <div
                     role="menu"
-                    className="absolute right-0 top-8 bg-white border border-zinc-200 rounded-lg z-20 min-w-[148px] overflow-hidden py-1"
+                    className="absolute right-0 top-8 bg-(--color-surface) border border-(--color-border) rounded-lg z-20 min-w-[148px] overflow-hidden py-1"
                   >
                     <button
                       role="menuitem"
                       type="button"
                       onClick={() => { setMenuOpen(false); onEdit() }}
-                      className="w-full text-left px-4 py-2.5 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors"
+                      className="w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
                     >
                       Edit
                     </button>
@@ -110,16 +110,16 @@ export function VaultLiveCard({
                       type="button"
                       disabled={isDuplicating}
                       onClick={() => { setMenuOpen(false); onDuplicate() }}
-                      className="w-full text-left px-4 py-2.5 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isDuplicating ? 'Duplicating…' : 'Duplicate'}
                     </button>
-                    <div className="my-1 border-t border-zinc-100" />
+                    <div className="my-1 border-t border-(--color-border)" />
                     <button
                       role="menuitem"
                       type="button"
                       onClick={() => { setMenuOpen(false); onDelete() }}
-                      className="w-full text-left px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                      className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-950/40 transition-colors"
                     >
                       Delete
                     </button>
@@ -134,11 +134,11 @@ export function VaultLiveCard({
                 href={`/events/${event._id}`}
                 className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded"
               >
-                <h2 className="font-black text-zinc-900 text-lg sm:text-xl leading-tight hover:text-violet-700 transition-colors line-clamp-2">
+                <h2 className="font-black text-(--color-text) text-lg sm:text-xl leading-tight hover:text-violet-400 transition-colors line-clamp-2">
                   {event.name}
                 </h2>
               </Link>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-(--color-text-muted) mt-1">
                 {event.venue}
                 {event.date && ` · ${formatDate(event.date)}`}
               </p>
@@ -147,20 +147,20 @@ export function VaultLiveCard({
             {/* Live stats */}
             <div className="flex items-center gap-4">
               <div>
-                <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Sold</p>
-                <p className="text-sm font-bold text-zinc-900">
+                <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Sold</p>
+                <p className="text-sm font-bold text-(--color-text)">
                   {event.sold.toLocaleString('en-NG')}
                   {totalCapacity > 0 && (
-                    <span className="font-normal text-zinc-400"> / {totalCapacity.toLocaleString('en-NG')}</span>
+                    <span className="font-normal text-zinc-500"> / {totalCapacity.toLocaleString('en-NG')}</span>
                   )}
                 </p>
               </div>
               {revenue > 0 && (
                 <>
-                  <div className="w-px h-6 bg-zinc-200" />
+                  <div className="w-px h-6 bg-zinc-800" />
                   <div>
-                    <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Revenue</p>
-                    <p className="text-sm font-bold text-zinc-900">{formatNaira(revenue)}</p>
+                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Revenue</p>
+                    <p className="text-sm font-bold text-(--color-text)">{formatNaira(revenue)}</p>
                   </div>
                 </>
               )}
@@ -169,7 +169,7 @@ export function VaultLiveCard({
         </div>
 
         {/* Live capacity progress bar */}
-        <div className="h-1 bg-zinc-100">
+        <div className="h-1 bg-zinc-800">
           <div
             className="h-full bg-gradient-to-r from-red-500 to-rose-400 transition-all duration-700"
             style={{ width: `${soldPct}%` }}

@@ -31,10 +31,10 @@ interface ReceiptRollProps {
 }
 
 const STATUS_PILL: Record<string, string> = {
-  pending: 'bg-amber-50 text-amber-600',
-  approved: 'bg-violet-50 text-violet-600',
-  sent: 'bg-emerald-50 text-emerald-600',
-  rejected: 'bg-red-50 text-red-500',
+  pending: 'bg-amber-950/40 text-amber-400',
+  approved: 'bg-violet-950/40 text-violet-400',
+  sent: 'bg-emerald-950/40 text-emerald-400',
+  rejected: 'bg-red-950/40 text-red-400',
 }
 
 function dateKey(iso: string): string {
@@ -55,7 +55,7 @@ function dateLabel(iso: string): string {
 
 function TicketIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600" aria-hidden="true">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400" aria-hidden="true">
       <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
       <path d="M13 5v2" />
       <path d="M13 17v2" />
@@ -121,7 +121,7 @@ export function ReceiptRoll({ transactions, withdrawals }: ReceiptRollProps) {
 
   if (groups.size === 0) {
     return (
-      <div className="bg-white border border-zinc-200 rounded-2xl p-10">
+      <div className="bg-(--color-surface) border border-(--color-border) rounded-2xl p-10">
         <EmptyState
           title="No transactions yet"
           subtitle="Your earnings and withdrawals will appear here"
@@ -131,11 +131,11 @@ export function ReceiptRoll({ transactions, withdrawals }: ReceiptRollProps) {
   }
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden">
+    <div className="bg-(--color-surface) border border-(--color-border) rounded-2xl overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-zinc-100">
-        <h3 className="text-base font-bold text-zinc-900">Transaction History</h3>
-        <p className="text-xs text-zinc-500 mt-0.5">All earnings and withdrawals</p>
+      <div className="px-6 py-5 border-b border-zinc-800">
+        <h3 className="text-base font-bold text-(--color-text)">Transaction History</h3>
+        <p className="text-xs text-(--color-text-muted) mt-0.5">All earnings and withdrawals</p>
       </div>
 
       {/* Ledger */}
@@ -143,8 +143,8 @@ export function ReceiptRoll({ transactions, withdrawals }: ReceiptRollProps) {
         {Array.from(groups.entries()).map(([key, group]) => (
           <div key={key}>
             {/* Date group divider */}
-            <div className="px-6 py-2 bg-zinc-50 border-y border-zinc-100 first:border-t-0">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+            <div className="px-6 py-2 bg-zinc-900 border-y border-zinc-800 first:border-t-0">
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
                 {group.label}
               </span>
             </div>
@@ -153,16 +153,16 @@ export function ReceiptRoll({ transactions, withdrawals }: ReceiptRollProps) {
             {group.entries.map((entry) => (
               <div
                 key={entry.id}
-                className="flex items-center gap-4 px-6 py-4 border-b border-zinc-50 last:border-b-0 hover:bg-zinc-50/60 transition-colors"
+                className="flex items-center gap-4 px-6 py-4 border-b border-zinc-800 last:border-b-0 hover:bg-zinc-800/60 transition-colors"
               >
                 {/* Icon pill */}
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
                     entry.kind === 'sale'
-                      ? 'bg-emerald-50'
+                      ? 'bg-emerald-950/40'
                       : entry.kind === 'withdrawal'
-                        ? 'bg-zinc-100'
-                        : 'bg-red-50'
+                        ? 'bg-zinc-800'
+                        : 'bg-red-950/40'
                   }`}
                 >
                   {entry.kind === 'sale' ? (
@@ -176,10 +176,10 @@ export function ReceiptRoll({ transactions, withdrawals }: ReceiptRollProps) {
 
                 {/* Label + status */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-zinc-800 truncate">{entry.label}</p>
+                  <p className="text-sm font-medium text-zinc-200 truncate">{entry.label}</p>
                   {entry.status != null && (
                     <span
-                      className={`mt-0.5 inline-block text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${STATUS_PILL[entry.status] ?? 'bg-zinc-100 text-zinc-500'}`}
+                      className={`mt-0.5 inline-block text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${STATUS_PILL[entry.status] ?? 'bg-zinc-800 text-zinc-400'}`}
                     >
                       {entry.status}
                     </span>
@@ -189,7 +189,7 @@ export function ReceiptRoll({ transactions, withdrawals }: ReceiptRollProps) {
                 {/* Amount — right-aligned */}
                 <p
                   className={`text-sm tabular-nums shrink-0 ${
-                    entry.positive ? 'text-zinc-900 font-bold' : 'text-zinc-500 font-medium'
+                    entry.positive ? 'text-(--color-text) font-bold' : 'text-zinc-500 font-medium'
                   }`}
                 >
                   {entry.positive ? '+' : '−'}

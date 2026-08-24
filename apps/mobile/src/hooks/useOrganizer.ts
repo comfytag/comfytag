@@ -21,9 +21,9 @@ export function usePartnerRevenue() {
   return useQuery({
     queryKey: partnerKeys.revenue,
     queryFn: () =>
-      get<ApiResponse<PartnerRevenue>>(
+      get<PartnerRevenue>(
         `/partner/${user!._id}/revenue`
-      ).then((r) => r.data.data),
+      ).then((r) => r.data),
     staleTime: 60_000,
     enabled: !!user,
   })
@@ -34,9 +34,9 @@ export function usePartnerAnalytics() {
   return useQuery({
     queryKey: partnerKeys.analytics,
     queryFn: () =>
-      get<ApiResponse<PartnerAnalytics>>(
+      get<PartnerAnalytics>(
         `/partner/${user!._id}/analytics`
-      ).then((r) => r.data.data),
+      ).then((r) => r.data),
     staleTime: 300_000,
     enabled: !!user,
   })
@@ -153,6 +153,23 @@ export function useCreateEvent() {
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: partnerEventKeys.list() })
+    },
+  })
+}
+
+// Uploads to the shared Cloudinary-backed /upload endpoint (folder:
+// comfytag/events) and returns the hosted URL to store as the event's cover.
+export function useUploadEventImage() {
+  return useMutation({
+    mutationFn: (file: { uri: string; name: string; type: string }) => {
+      const formData = new FormData()
+      // React Native's FormData expects this file-descriptor shape, not a Blob.
+      formData.append('file', file as unknown as Blob)
+      return post<{ success: boolean; url: string; publicId: string }>(
+        '/upload',
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      ).then((r) => r.data)
     },
   })
 }

@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useBecomePartner } from '@/hooks/useProfile'
 
 interface PaymentSuccessViewProps {
   eventId: string
@@ -28,6 +28,7 @@ export function PaymentSuccessView({
   const router = useRouter()
   const { data: session } = useSession()
   const isPartner = session?.user?.isPartner ?? true
+  const { mutate: becomePartner, isPending: isBecomingPartner } = useBecomePartner()
 
   const shareUrl =
     typeof window !== 'undefined'
@@ -145,12 +146,14 @@ export function PaymentSuccessView({
         {!isPartner && (
           <p className="mt-8 text-xs text-muted-foreground text-center">
             Thinking about hosting your own event?{' '}
-            <Link
-              href="/profile"
-              className="text-violet-400 hover:text-violet-600 font-medium transition-colors"
+            <button
+              type="button"
+              onClick={() => becomePartner()}
+              disabled={isBecomingPartner}
+              className="font-bold text-violet-600 hover:text-violet-700 underline bg-transparent border-none p-0 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Become a Partner →
-            </Link>
+              {isBecomingPartner ? 'Setting up your dashboard…' : 'Become a Partner'}
+            </button>
           </p>
         )}
       </div>

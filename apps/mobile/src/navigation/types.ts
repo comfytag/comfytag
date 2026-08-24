@@ -4,7 +4,7 @@ import type { TicketTier } from '@comfytag/types'
 export type GuestStackParamList = {
   Splash: undefined
   Welcome: undefined
-  GuestBrowse: undefined
+  GuestHome: undefined
   Login: undefined
   Register: undefined
   ForgotPassword: undefined
@@ -13,7 +13,9 @@ export type GuestStackParamList = {
 export type AttendeeTabParamList = {
   Discover: undefined
   Search: undefined
-  Tickets: undefined
+  // Nested-navigator params — lets InboxScreen deep-link a notification tap
+  // straight to e.g. Tickets > IncomingTransfer instead of just the tab root.
+  Tickets: NavigatorScreenParams<TicketsStackParamList> | undefined
   Inbox: undefined
   Profile: undefined
 }
@@ -71,6 +73,7 @@ export type DiscoverStackParamList = {
 }
 
 export type SearchStackParamList = {
+  ExploreMain: undefined
   SearchMain: undefined
   EventDetail: { slug: string }
 }
@@ -78,11 +81,13 @@ export type SearchStackParamList = {
 export type TicketsStackParamList = {
   TicketsList: undefined
   TicketDetail: { ticketId: string }
+  FaceCheckIn: { ticketId: string }
   TransferTicket: { ticketId: string; eventName: string; ticketType: string }
+  IncomingTransfer: { ticketId: string; transferToken: string; senderName?: string }
 }
 
 export type ProfileStackParamList = {
-  Profile: undefined
+  ProfileMain: undefined
   EditProfile: undefined
   Following: undefined
   FaceEnrollmentStatus: undefined

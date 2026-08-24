@@ -36,7 +36,7 @@ export default function ProfileStackNavigator() {
         }),
       }}
     >
-      <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="ProfileMain" component={ProfileScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Following" component={FollowingScreen} />
       <Stack.Screen name="FaceEnrollmentStatus" component={FaceEnrollmentStatusScreen} />

@@ -54,18 +54,18 @@ export function PrivacySection({ settings }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-zinc-900">Privacy</h2>
-        {saved && <span className="text-sm font-medium text-emerald-600">✓ Saved</span>}
+        <h2 className="text-xl font-bold text-(--color-text)">Privacy</h2>
+        {saved && <span className="text-sm font-medium text-emerald-400">✓ Saved</span>}
       </div>
 
       <div className="space-y-3">
         {ROWS.map(({ key, label, desc }) => (
           <label
             key={key}
-            className="flex items-center justify-between p-4 bg-zinc-50 border border-zinc-200 rounded-xl cursor-pointer hover:bg-zinc-100 transition-all"
+            className="flex items-center justify-between p-4 bg-zinc-800 border border-(--color-border) rounded-xl cursor-pointer hover:bg-zinc-700 transition-all"
           >
             <div>
-              <p className="text-sm font-semibold text-zinc-900">{label}</p>
+              <p className="text-sm font-semibold text-(--color-text)">{label}</p>
               <p className="text-xs text-zinc-400 mt-0.5">{desc}</p>
             </div>
             <input
@@ -83,7 +83,7 @@ export function PrivacySection({ settings }: Props) {
         <button
           onClick={handleSave}
           disabled={isSaving || saved}
-          className="bg-zinc-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-zinc-800 transition-all active:scale-95 w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
+          className="bg-violet-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-violet-700 transition-all active:scale-95 w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isSaving ? 'Saving...' : 'Save Preferences'}
         </button>

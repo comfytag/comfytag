@@ -15,3 +15,4 @@ export type {
 export * from './utils'
 export { connectSocket, disconnectSocket, getSocket, SOCKET_EVENTS } from './socket'
 export { get, post, put, del } from './api'
+export { FEATURES } from './features'

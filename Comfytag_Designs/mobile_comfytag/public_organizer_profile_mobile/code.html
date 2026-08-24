@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Organizer Profile - ComfyTag</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom Ticket Clip Effect */
+        .ticket-clip {
+            position: relative;
+            background: #ffffff;
+            mask-image: radial-gradient(circle at 0 50%, transparent 8px, black 8px), 
+                        radial-gradient(circle at 100% 50%, transparent 8px, black 8px);
+            mask-composite: intersect;
+            -webkit-mask-image: radial-gradient(circle at 0 50%, transparent 8px, black 8px), 
+                                radial-gradient(circle at 100% 50%, transparent 8px, black 8px);
+        }
+        /* Glassmorphism for Navs */
+        .glass-nav {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#905b00",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#25005a",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-low": "#f3f4f3",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#8856e5",
+                        "on-primary-container": "#ede0ff",
+                        "secondary-fixed": "#ebddff",
+                        "outline": "#7b7487",
+                        "surface-container-highest": "#e2e2e2",
+                        "on-secondary-fixed-variant": "#581db3",
+                        "on-secondary-container": "#fffbff",
+                        "secondary": "#6e3aca",
+                        "outline-variant": "#ccc3d8",
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "on-background": "#1a1c1c",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-high": "#e8e8e7",
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#eaddff",
+                        "background": "#f9f9f8",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface": "#f9f9f8",
+                        "surface-tint": "#732ee4",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f1f1f0",
+                        "on-surface-variant": "#4a4455",
+                        "surface-container": "#eeeeed",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed": "#2a1700",
+                        "inverse-primary": "#d2bbff",
+                        "on-tertiary-container": "#ffe1c0",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d2bbff",
+                        "tertiary": "#704500",
+                        "on-secondary-fixed": "#250059",
+                        "secondary-fixed-dim": "#d3bbff",
+                        "primary-container": "#7c3aed",
+                        "inverse-surface": "#2f3130",
+                        "primary": "#630ed4",
+                        "surface-dim": "#dadad9",
+                        "surface-bright": "#f9f9f8",
+                        "surface-variant": "#e2e2e2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "section-gap": "40px",
+                        "margin-tablet": "32px",
+                        "stack-lg": "24px",
+                        "base": "4px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "20px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "title-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-lg overflow-x-hidden pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl shadow-sm flex justify-between items-center px-margin-mobile h-16">
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">ComfyTag</h1>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-fixed shadow-sm">
+<img class="w-full h-full object-cover" alt="A professional close-up studio portrait of a woman with a friendly, confident expression. She has warm skin tones and is wearing a stylish violet blazer. The background is a clean, out-of-focus modern office space with soft daylight, maintaining a high-trust premium aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNUzp_1AqbNQEEzzktkgNJZ6_Z_3D9IyY3ZsColZb-Qndfs9T-pPFfDBw2iDuEGBrNGaTWjEMU0S3AZO3DwHo4NtMwJMZQ5SbpYya4cjYafWs78pdHjcbO3RVzAnH3zW45AyRgIOCGX4t2I902PXTL6Hcxmc-od79MCNc3niIjop9IQSEuY18Y3T6cicAGXSKAFDwNl3iG01uscO0wSiNIE6MFfPQ7wX1MlSRKfuFrva00jBbNhQV2Aw"/>
+</div>
+</header>
+<main class="pt-20 px-margin-mobile">
+<!-- Hero Section -->
+<section class="flex flex-col items-center text-center mt-stack-lg">
+<div class="relative mb-stack-md">
+<div class="w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden">
+<img class="w-full h-full object-cover" alt="A centered portrait of Elena Vance, a premium event organizer. She is a woman in her late 20s with a warm and approachable smile, looking directly at the camera. The lighting is soft and professional, emphasizing a premium and minimalist aesthetic with a soft lavender background glow." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiD5iyrCF44iBanAK_Vo7IwsP46MRcawpauQ90iUO5QLdQg2_2jyGBVfyaQdzAaohXMQsImvTs5VT9_Un7cfv7AQL7-zyeVq2fuFS_5dZx3a4GXR077SeWd0WLtQNxok1nTUQaA-0BFa0j7deQ4Tsku4tB_D9ng2Vn01qk7Y2N-sYHi32d9ocJXpe3Be6tqBVnNThTTAo2gMPvnkLc7nHHrV9uAdIyl9PbDH3bLs6-hVDS5txdI1Np5w"/>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary-container text-on-primary-container rounded-full p-1 border-2 border-white">
+<span class="material-symbols-outlined filled-icon text-[16px]" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Elena Vance</h2>
+<p class="text-on-surface-variant font-body-md mt-base max-w-[280px]">Curating the most vibrant cultural experiences across Lagos and Abuja. Specializing in tech, arts, and late-night vibes.</p>
+<!-- Actions -->
+<div class="w-full mt-stack-lg flex flex-col gap-stack-sm">
+<button class="w-full h-[56px] bg-primary text-on-primary font-title-lg rounded-xl shadow-md active:scale-[0.98] transition-transform duration-200">
+                    Follow
+                </button>
+<div class="flex justify-center gap-gutter mt-stack-sm">
+<button class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="language">language</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="alternate_email">alternate_email</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Stats Section -->
+<section class="mt-section-gap">
+<div class="grid grid-cols-3 gap-base bg-surface-container-low rounded-2xl p-stack-md shadow-sm border border-outline-variant/10">
+<div class="flex flex-col items-center">
+<span class="font-headline-md text-primary">24</span>
+<span class="font-label-md text-on-surface-variant uppercase tracking-widest text-[10px]">Events</span>
+</div>
+<div class="flex flex-col items-center border-x border-outline-variant/30">
+<span class="font-headline-md text-primary">85K+</span>
+<span class="font-label-md text-on-surface-variant uppercase tracking-widest text-[10px]">Attendees</span>
+</div>
+<div class="flex flex-col items-center">
+<div class="flex items-center gap-1">
+<span class="font-headline-md text-primary">4.9</span>
+<span class="material-symbols-outlined filled-icon text-tertiary-container text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="font-label-md text-on-surface-variant uppercase tracking-widest text-[10px]">Rating</span>
+</div>
+</div>
+</section>
+<!-- Upcoming Events -->
+<section class="mt-section-gap">
+<div class="flex justify-between items-end mb-stack-md">
+<h3 class="font-title-lg text-title-lg text-on-surface">Upcoming Events</h3>
+<span class="font-label-md text-primary">See All</span>
+</div>
+<div class="space-y-stack-md">
+<!-- Event Card 1 -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant/10 overflow-hidden flex flex-col active:scale-[0.99] transition-transform">
+<div class="h-44 w-full relative">
+<img class="w-full h-full object-cover" alt="A high-energy afrobeats concert in a modern Lagos arena. Bright amber and purple stage lights illuminate a massive crowd. The photo captures the excitement and movement of the audience with a premium cinematic quality, featuring a shallow depth of field on the performer's silhouette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl25-Uvkx1yHBtRviNpwsjRU_6iLwK58QAtx1SqCqcWfRU3aS94iWaPLTdqEjXwy_e4SriJbJ2mw_BZVSghzxPDyoxJjtSrH3mrJCQCQDl--ASqjj3d5Rr5LxmMwpcKIbZoDmG0IgA-ieUToFHPQSrorlR0SrFIGgrgA1VKNYfdyTA_ZtY0jeEFVQ2MaLtzNxwHZsXVKjZNrHceQEQjQoDmQdSLBw_qZQEjdRlCNammImwMZvQplAADQ"/>
+<div class="absolute top-4 left-4 bg-surface/90 backdrop-blur-md rounded-lg p-2 text-center min-w-[50px]">
+<span class="block font-bold text-primary leading-none">28</span>
+<span class="font-label-md text-on-surface-variant text-[10px]">OCT</span>
+</div>
+</div>
+<div class="p-stack-md">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-title-lg text-on-surface leading-tight">Lagos Sound Expo 2024</h4>
+<p class="text-on-surface-variant font-body-md flex items-center mt-base">
+<span class="material-symbols-outlined text-[16px] mr-1" data-icon="location_on">location_on</span> Eko Hotel, Lagos
+                                </p>
+</div>
+<div class="text-right">
+<span class="font-headline-md text-tertiary-container block">₦15,000</span>
+<span class="font-label-md text-on-surface-variant">Regular</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Event Card 2 -->
+<div class="bg-surface rounded-xl shadow-sm border border-outline-variant/10 overflow-hidden flex flex-col active:scale-[0.99] transition-transform">
+<div class="h-44 w-full relative">
+<img class="w-full h-full object-cover" alt="An exclusive rooftop tech networking event during sunset in Abuja. Modern minimalist furniture, string lights, and glass balconies. Young professionals are seen in silhouette against a warm orange and violet sky. The atmosphere is sophisticated and calm, emphasizing a high-end modernist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnmaqQsNfL_WEma4u54m5tGPzbJayuWnFBn5pVp3UuCb_t9mVveuGX8xuQyhT1SaQ1e4u931nzCNO59Pk2mkSBADkveXWWa1-A3HKHnRU0nLPns22rViDyWgqIOwmVYj_A7oMBedQt7AH2LRvzxKfgDQch7w1j3x30cTlhOhzCmr3BCMbz38zmL3EEf9CNk5g_JR86nzhKa2YJ6v577Q4vhXLRt0vDIID4Xfyn5UGpPBIf7J5TaWgDqA"/>
+<div class="absolute top-4 left-4 bg-surface/90 backdrop-blur-md rounded-lg p-2 text-center min-w-[50px]">
+<span class="block font-bold text-primary leading-none">12</span>
+<span class="font-label-md text-on-surface-variant text-[10px]">NOV</span>
+</div>
+</div>
+<div class="p-stack-md">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-title-lg text-on-surface leading-tight">Digital Frontier Mixer</h4>
+<p class="text-on-surface-variant font-body-md flex items-center mt-base">
+<span class="material-symbols-outlined text-[16px] mr-1" data-icon="location_on">location_on</span> Transcorp Hilton, Abuja
+                                </p>
+</div>
+<div class="text-right">
+<span class="font-headline-md text-tertiary-container block">₦25,000</span>
+<span class="font-label-md text-on-surface-variant">VIP Only</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Past Events Gallery -->
+<section class="mt-section-gap mb-10">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-stack-md">Past Highlights</h3>
+<div class="grid grid-cols-2 gap-stack-sm">
+<div class="aspect-square rounded-xl overflow-hidden relative group">
+<img class="w-full h-full object-cover" alt="A close-up of a diverse crowd at a fashion gala, shot with a professional lens. The lighting is moody and dramatic with golden highlights. The scene is elegant and high-fashion, capturing the premium essence of a luxury Nigerian event." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy60EiTikasm2_yLFq9p5v_v_hYbUBaw7X4m6EETGxb7CiOUnfJY9JuQZStw3OZm8AWYk8ZJfo28IJgtDz-F5Fo6KOstaXLK0JuoyKjfhVSmbBeinjqVb2ECYNknXwge89mJ8zHBdaZl2iLPGJimqOnLwbcrhwAPnf2QYWGId8yrrLM1IWyjWRQMiRvDpOlB3Y_pOGPHrfSazO5gem8amfISTU15VMvxFBZ5ZxibK6GjGW4dXa-Zjhvw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-base">
+<span class="text-white text-[10px] font-label-md">Style Week '23</span>
+</div>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden relative group">
+<img class="w-full h-full object-cover" alt="Vibrant street festival in Lagos with colorful textiles and energetic dancing. The image is bright and sunny, filled with life and movement. Professional street photography style with high contrast and saturated colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-3TcT3dQbTpP6wYWVEVwfszLNYi2IbkZKduhFJgSI6dv-_vcooFqyUilvlQ8hVE1dBL6jvCLzgVqSV_HCclD81GXfGgc1lY5fK-PjEuX7bycwOWP8Q8gBAiTY3nhXKt6rxpJoES_5y9vVwJjny0YU9r6T8ZNquC1Q3n4TFUX3ASOGyQR-9XWItCmM5TORNx26o74GemsTBmnthfAEOe-gHhr3LI2J6bijiyGEpRRT-BUlbmm5MnlJSg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-base">
+<span class="text-white text-[10px] font-label-md">Urban Carnival</span>
+</div>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden relative group">
+<img class="w-full h-full object-cover" alt="A minimalist art exhibition featuring large canvas works and glowing light installations. Clean white walls and polished floors. The composition is geometric and balanced, reflecting an airy modern luxury feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7ADpHtEWzHw6_4R3YbEGR0NFzLDilRIX9XUmCUNnZHd9GD1K81g7-ggoWEIVQKoxJ4TujP2jEcb2HJuroGBRgK_O_a23Jyx8vFNf0Q1jBmnnB5fV6mX1vcRxeOrFOZ1legqbehLHaG26LwSNqOxzOhsqZvjheTkp4c8CXoagdv0CqciQbxS3Lq4nmIZRKvMpYX8kqoAX0RpkUBvxsKvaSNYLzFlny4_wo3Vcop9ACPF1C0_2_DALnFw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-base">
+<span class="text-white text-[10px] font-label-md">Canvas Nights</span>
+</div>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden relative group">
+<img class="w-full h-full object-cover" alt="A dynamic shot of a food festival with chef stalls and glowing signage. Steam rising from local delicacies. Warm evening lighting with a focus on artisanal presentation and culinary culture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfSQf0_uuAy5Ime-CpSat1ETYinJlZvwTsTdczzOd2KY2XjLnbRIZQn4yxIK57bkJhrgYGyyD4TUsrhLJJj-aVtQEeiOSXyRVnLrEwWtdxOUwxOCQrQHejCnb0yWENql6gn1vEcT93IEE_xcpOHVxWVozk6ArHmnZySXwvkkaYk6pE-lKPQsb6XdF01m1qOLmY8q4LbhA0rhvQXs6NZ_HeSRg5rtYBEpTyrqbpKgCyBUkuYHUfIlIy3A"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-base">
+<span class="text-white text-[10px] font-label-md">Taste of Lagos</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-stack-sm px-margin-mobile bg-surface/80 backdrop-blur-xl shadow-lg border-t border-outline-variant/20 z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-label-md text-label-md mt-1">Discover</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="font-label-md text-label-md mt-1">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="confirmation_number">confirmation_number</span>
+<span class="font-label-md text-label-md mt-1">Tickets</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="font-label-md text-label-md mt-1">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-primary-fixed/30 rounded-full px-4 py-1 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined filled-icon" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-label-md mt-1">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple Micro-interaction for Follow Button
+        const followBtn = document.querySelector('button.bg-primary');
+        if(followBtn) {
+            followBtn.addEventListener('click', function() {
+                if(this.innerText === 'Follow') {
+                    this.innerText = 'Following';
+                    this.classList.remove('bg-primary');
+                    this.classList.add('bg-secondary-container', 'text-on-secondary-container');
+                } else {
+                    this.innerText = 'Follow';
+                    this.classList.add('bg-primary');
+                    this.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+                }
+            });
+        }
+
+        // Parallax effect for header on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 10) {
+                header.classList.add('shadow-md');
+            } else {
+                header.classList.remove('shadow-md');
+            }
+        });
+    </script>
+</body></html>

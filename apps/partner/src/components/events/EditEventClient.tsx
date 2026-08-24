@@ -21,9 +21,9 @@ import type { CreateEventFormData, TierInput } from '@/hooks/useCreateEventWizar
 const fieldLabel =
   'block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2'
 const inputCls =
-  'w-full bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none transition-colors'
+  'w-full bg-zinc-800 border-2 border-(--color-border) focus:border-violet-500 rounded-xl px-4 py-3.5 text-sm text-(--color-text) placeholder:text-zinc-500 focus:outline-none focus-visible:outline-none transition-colors'
 const selectCls =
-  'w-full appearance-none bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3.5 pr-10 text-sm text-zinc-900 focus:outline-none focus-visible:outline-none transition-colors cursor-pointer'
+  'w-full appearance-none bg-zinc-800 border-2 border-(--color-border) focus:border-violet-500 rounded-xl px-4 py-3.5 pr-10 text-sm text-(--color-text) focus:outline-none focus-visible:outline-none transition-colors cursor-pointer'
 
 const VIBES = [
   { key: 'Hype',         label: '🔥 Hype' },
@@ -411,7 +411,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
     return (
       <div className="text-center py-16 space-y-3">
         <p className="text-sm text-red-500 font-medium">Failed to load event. Please try again.</p>
-        <Link href="/events" className="text-sm text-violet-600 hover:underline">
+        <Link href="/events" className="text-sm text-violet-400 hover:underline">
           Back to Events
         </Link>
       </div>
@@ -433,8 +433,8 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
             Event
           </Link>
           <div className="flex-1">
-            <h1 className="text-2xl font-black text-zinc-900 tracking-tight">Edit Event</h1>
-            <p className="text-sm text-zinc-500 mt-0.5">Update your event details</p>
+            <h1 className="text-2xl font-black text-(--color-text) tracking-tight">Edit Event</h1>
+            <p className="text-sm text-(--color-text-muted) mt-0.5">Update your event details</p>
           </div>
         </div>
 
@@ -445,10 +445,10 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
           <div className="lg:col-span-7 space-y-4">
 
             {/* ── 1 · Basic Info ────────────────────────────────────── */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-6 space-y-5">
+            <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-6 space-y-5">
               <div>
-                <h2 className="text-xl font-black text-zinc-900">Basic Info</h2>
-                <p className="text-sm text-zinc-500 mt-0.5">Name, category, date, and location</p>
+                <h2 className="text-xl font-black text-(--color-text)">Basic Info</h2>
+                <p className="text-sm text-(--color-text-muted) mt-0.5">Name, category, date, and location</p>
               </div>
 
               {/* Event name */}
@@ -481,7 +481,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                       disabled={isHeadlineGenerating || headlineAiUsesLeft === 0}
                       aria-expanded={isHeadlineVibeOpen}
                       aria-haspopup="dialog"
-                      className="text-xs font-bold text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full hover:bg-violet-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                      className="text-xs font-bold text-violet-400 bg-violet-950/40 px-2.5 py-1 rounded-full hover:bg-violet-900/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                     >
                       {isHeadlineGenerating ? '…' : '✨ Enhance'}
                     </button>
@@ -489,13 +489,13 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                       <div
                         role="dialog"
                         aria-label="Choose a vibe for AI headline"
-                        className="absolute top-full right-0 mt-2 w-64 bg-white border border-zinc-200 rounded-lg p-4 z-50"
+                        className="absolute top-full right-0 mt-2 w-64 bg-(--color-surface) border border-(--color-border) rounded-lg p-4 z-50"
                       >
                         <div className="flex items-start justify-between mb-1">
-                          <p className="text-xs font-black text-zinc-900">Choose a vibe</p>
+                          <p className="text-xs font-black text-(--color-text)">Choose a vibe</p>
                           <span
                             className={`text-[10px] font-bold tabular-nums whitespace-nowrap ${
-                              headlineAiUsesLeft > 0 ? 'text-violet-600' : 'text-zinc-400'
+                              headlineAiUsesLeft > 0 ? 'text-violet-400' : 'text-zinc-500'
                             }`}
                           >
                             {headlineAiUsesLeft > 0 ? `✨ ${headlineAiUsesLeft} uses remaining` : 'Limit reached'}
@@ -511,7 +511,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                               type="button"
                               onClick={() => handleHeadlineVibeSelect(vibe.key)}
                               disabled={headlineAiUsesLeft === 0}
-                              className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-50 hover:bg-violet-50 border border-zinc-200 hover:border-violet-300 rounded-xl text-xs font-semibold text-zinc-700 hover:text-violet-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                              className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-800 hover:bg-violet-950/40 border border-(--color-border) hover:border-violet-700 rounded-xl text-xs font-semibold text-zinc-300 hover:text-violet-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                             >
                               {vibe.label}
                             </button>
@@ -520,7 +520,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                         {/* Popover arrow */}
                         <div className="absolute top-0 right-6 -translate-y-full rotate-180">
                           <div className="w-3 h-1.5 overflow-hidden">
-                            <div className="w-3 h-3 bg-white border border-zinc-200 rotate-45 -translate-y-1.5" />
+                            <div className="w-3 h-3 bg-(--color-surface) border border-(--color-border) rotate-45 -translate-y-1.5" />
                           </div>
                         </div>
                       </div>
@@ -678,10 +678,10 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
             </div>
 
             {/* ── 2 · Images ────────────────────────────────────────── */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-6 space-y-4">
+            <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-6 space-y-4">
               <div>
-                <h2 className="text-xl font-black text-zinc-900">Event Images</h2>
-                <p className="text-sm text-zinc-500 mt-0.5">
+                <h2 className="text-xl font-black text-(--color-text)">Event Images</h2>
+                <p className="text-sm text-(--color-text-muted) mt-0.5">
                   First image is your cover. Up to 10 images (16:9 recommended).
                 </p>
               </div>
@@ -700,7 +700,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                       <img
                         src={url}
                         alt={`Event image ${i + 1}`}
-                        className="w-28 h-20 object-cover rounded-xl border-2 border-zinc-200 group-hover:border-violet-400 transition-colors"
+                        className="w-28 h-20 object-cover rounded-xl border-2 border-(--color-border) group-hover:border-violet-400 transition-colors"
                       />
                       <button
                         type="button"
@@ -735,7 +735,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                 {uploading ? (
                   <>
                     <div className="w-6 h-6 border-2 border-violet-600 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm font-semibold text-violet-600">Uploading…</span>
+                    <span className="text-sm font-semibold text-violet-400">Uploading…</span>
                   </>
                 ) : (
                   <>
@@ -754,16 +754,16 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
             </div>
 
             {/* ── 3 · Ticket Tiers ──────────────────────────────────── */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-6 space-y-5">
+            <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-black text-zinc-900">Ticket Tiers</h2>
-                  <p className="text-sm text-zinc-500 mt-0.5">Set prices, names, and capacities</p>
+                  <h2 className="text-xl font-black text-(--color-text)">Ticket Tiers</h2>
+                  <p className="text-sm text-(--color-text-muted) mt-0.5">Set prices, names, and capacities</p>
                 </div>
                 <button
                   type="button"
                   onClick={openAddTierModal}
-                  className="flex items-center gap-1.5 text-sm font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 border border-violet-200 px-4 py-2 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                  className="flex items-center gap-1.5 text-sm font-bold text-violet-400 bg-violet-950/40 hover:bg-violet-900/50 border border-violet-900/50 px-4 py-2 rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                 >
                   <Plus size={14} aria-hidden="true" />
                   Add Tier
@@ -771,8 +771,8 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
               </div>
 
               {tiers.length === 0 ? (
-                <div className="border-2 border-dashed border-zinc-200 rounded-2xl p-8 text-center">
-                  <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center mx-auto mb-3">
+                <div className="border-2 border-dashed border-zinc-700 rounded-2xl p-8 text-center">
+                  <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-3">
                     <Plus size={18} className="text-zinc-400" aria-hidden="true" />
                   </div>
                   <p className="text-sm font-semibold text-zinc-500">No tiers yet</p>
@@ -794,8 +794,8 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
               )}
 
               {tiers.length > 0 && (
-                <div className="bg-violet-50 border border-violet-200 rounded-xl px-4 py-3 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-violet-700">
+                <div className="bg-violet-950/40 border border-violet-900/50 rounded-xl px-4 py-3 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-violet-400">
                     {tiers.length} tier{tiers.length > 1 ? 's' : ''} configured
                   </span>
                   <span className="text-xs text-violet-500">
@@ -809,10 +809,10 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
             </div>
 
             {/* ── 4 · Description & Details ─────────────────────────── */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-6 space-y-5">
+            <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-6 space-y-5">
               <div>
-                <h2 className="text-xl font-black text-zinc-900">Details</h2>
-                <p className="text-sm text-zinc-500 mt-0.5">Description, lineup, and visibility</p>
+                <h2 className="text-xl font-black text-(--color-text)">Details</h2>
+                <p className="text-sm text-(--color-text-muted) mt-0.5">Description, lineup, and visibility</p>
               </div>
 
               {/* Description + ✨ Enhance */}
@@ -827,13 +827,13 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                     <div
                       role="dialog"
                       aria-label="Choose a vibe for AI enhancement"
-                      className="absolute bottom-full right-0 mb-2.5 w-64 bg-white border border-zinc-200 rounded-lg p-4 z-50"
+                      className="absolute bottom-full right-0 mb-2.5 w-64 bg-(--color-surface) border border-(--color-border) rounded-lg p-4 z-50"
                     >
                       <div className="flex items-start justify-between mb-1">
-                        <p className="text-xs font-black text-zinc-900">Choose a vibe</p>
+                        <p className="text-xs font-black text-(--color-text)">Choose a vibe</p>
                         <span
                           className={`text-[10px] font-bold tabular-nums whitespace-nowrap ${
-                            aiUsesLeft > 0 ? 'text-violet-600' : 'text-zinc-400'
+                            aiUsesLeft > 0 ? 'text-violet-400' : 'text-zinc-500'
                           }`}
                         >
                           {aiUsesLeft > 0 ? `✨ ${aiUsesLeft} uses remaining` : 'Limit reached'}
@@ -849,7 +849,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                             type="button"
                             onClick={() => handleVibeSelect(vibe.key)}
                             disabled={aiUsesLeft === 0}
-                            className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-50 hover:bg-violet-50 border border-zinc-200 hover:border-violet-300 rounded-xl text-xs font-semibold text-zinc-700 hover:text-violet-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                            className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-800 hover:bg-violet-950/40 border border-(--color-border) hover:border-violet-700 rounded-xl text-xs font-semibold text-zinc-300 hover:text-violet-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                           >
                             {vibe.label}
                           </button>
@@ -858,7 +858,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                       {/* Popover arrow */}
                       <div className="absolute bottom-0 right-6 translate-y-full">
                         <div className="w-3 h-1.5 overflow-hidden">
-                          <div className="w-3 h-3 bg-white border border-zinc-200 rotate-45 -translate-y-1.5" />
+                          <div className="w-3 h-3 bg-(--color-surface) border border-(--color-border) rotate-45 -translate-y-1.5" />
                         </div>
                       </div>
                     </div>
@@ -930,7 +930,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                       }
                     }}
                     placeholder="Add performer and press Enter"
-                    className="flex-1 bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none transition-colors"
+                    className="flex-1 bg-zinc-800 border-2 border-(--color-border) focus:border-violet-500 rounded-xl px-4 py-3.5 text-sm text-(--color-text) placeholder:text-zinc-500 focus:outline-none transition-colors"
                   />
                   <button
                     type="button"
@@ -939,7 +939,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                       if (name) { setPerformers(p => [...p, name]); setPerformerInput('') }
                     }}
                     aria-label="Add performer"
-                    className="w-12 h-12 flex items-center justify-center bg-violet-50 border-2 border-violet-200 hover:bg-violet-100 rounded-xl text-violet-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 shrink-0 mt-0.5"
+                    className="w-12 h-12 flex items-center justify-center bg-violet-950/40 border-2 border-violet-900/50 hover:bg-violet-900/50 rounded-xl text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 shrink-0 mt-0.5"
                   >
                     <Plus size={16} aria-hidden="true" />
                   </button>
@@ -985,11 +985,11 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
                       className="sr-only peer"
                       id="edit-is-public"
                     />
-                    <div className="w-10 h-6 bg-zinc-200 peer-checked:bg-violet-600 rounded-full transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-violet-500 peer-focus-visible:ring-offset-2" />
+                    <div className="w-10 h-6 bg-zinc-700 peer-checked:bg-violet-600 rounded-full transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-violet-500 peer-focus-visible:ring-offset-2" />
                     <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900">
+                    <p className="text-sm font-semibold text-(--color-text)">
                       {isPublic ? 'Public' : 'Private'}
                     </p>
                     <p className="text-xs text-zinc-500 mt-0.5">
@@ -1012,7 +1012,7 @@ export function EditEventClient({ eventId }: EditEventClientProps) {
             <div className="flex gap-3 pb-8">
               <Link
                 href={`/events/${eventId}`}
-                className="flex-1 text-center py-4 border-2 border-zinc-200 text-zinc-700 text-sm font-bold rounded-2xl hover:bg-zinc-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+                className="flex-1 text-center py-4 border-2 border-(--color-border) text-zinc-300 text-sm font-bold rounded-2xl hover:bg-zinc-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
               >
                 Cancel
               </Link>

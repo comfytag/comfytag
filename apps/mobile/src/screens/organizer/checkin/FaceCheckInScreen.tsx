@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   // ── Dark centered layout (permissions, error, verifying) ───────────────────
   darkCentered: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: sp[8],
@@ -534,16 +534,16 @@ const styles = StyleSheet.create({
   // (see ResultFlash) that fades/scales in rather than an instant swap.
   resultScreen: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   resultOverlay: {
     ...StyleSheet.absoluteFillObject,
   },
   matchedOverlay: {
-    backgroundColor: colors.mobile.success,
+    backgroundColor: colors.success.DEFAULT,
   },
   noMatchOverlay: {
-    backgroundColor: colors.mobile.error,
+    backgroundColor: colors.error.DEFAULT,
   },
   resultInner: {
     flex: 1,
@@ -564,12 +564,12 @@ const styles = StyleSheet.create({
   matchedIconText: {
     fontSize: fs['2xl'],
     fontWeight: '700',
-    color: colors.mobile.success,
+    color: colors.success.DEFAULT,
   },
   noMatchIconText: {
     fontSize: fs['2xl'],
     fontWeight: '700',
-    color: colors.mobile.error,
+    color: colors.error.DEFAULT,
   },
   resultHeading: {
     fontSize: fs['2xl'],
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
   nextAttendeeButtonText: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.success,
+    color: colors.success.DEFAULT,
   },
 
   // ── Try Again button (noMatch state) ──────────────────────────────────────
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
   tryAgainButtonText: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.error,
+    color: colors.error.DEFAULT,
   },
 
   brandButton: {
@@ -642,13 +642,13 @@ const styles = StyleSheet.create({
   permissionTitle: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
     marginBottom: sp[3],
   },
   permissionSubtext: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textAlign: 'center',
     marginBottom: sp[8],
     lineHeight: 20,

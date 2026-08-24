@@ -112,7 +112,12 @@ export const authOptions: NextAuthOptions = {
         if (!data.user) return null
 
         if (!data.user.isPartner && !data.user.isAdmin) {
-          throw new Error('This account does not have partner access. Please register at /register.')
+          // Distinct code, not a full sentence — the credentials/password and
+          // credentials/otp are valid, this account just isn't an organizer
+          // yet. LoginForm.tsx maps this to guidance pointing at the actual
+          // fix (upgrade from the attendee app), not a dead-end "register
+          // again" loop that just 409s since the account already exists.
+          throw new Error('NOT_PARTNER')
         }
 
         return {

@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { api } from '@/lib/api'
-import { calculatePlatformFee, calculatePaystackFee } from '@comfytag/utils'
+import { calculateTicketCharge } from '@comfytag/utils'
 import type { Event, TicketTier, ApiResponse, PromoCode } from '@comfytag/types'
 
 export type CheckoutStatus = 'loading' | 'ready' | 'processing' | 'success' | 'failed'
@@ -25,8 +25,7 @@ export interface CheckoutHookResult {
   fees: {
     subtotal: number
     discountedSubtotal: number
-    platformFee: number
-    paystackFee: number
+    processingFee: number
     total: number
   }
   promoApplied: PromoCodeDiscount | null
@@ -84,12 +83,19 @@ export function useCheckout(
     }
   }, [eventLoading, eventError, event, tier, eventId, tierId])
 
-  // Calculate fees
+  // Calculate fees. NOTE: the backend has no awareness of promo codes today
+  // (a separate, pre-existing gap) — it always verifies the charge against
+  // the full, undiscounted tier price. So `total` here is deliberately based
+  // on the undiscounted subtotal, not `discountedSubtotal`: it's what
+  // actually gets charged via Paystack and is the only figure the backend
+  // will accept. `discountedSubtotal` remains purely a display line.
   const subtotal = tier ? tier.price * quantity : 0
   const discountedSubtotal = applyPromoDiscount(subtotal, promoApplied)
-  const platformFee = calculatePlatformFee(discountedSubtotal, 4)
-  const paystackFee = calculatePaystackFee(discountedSubtotal)
-  const total = discountedSubtotal + platformFee + paystackFee
+  const charge = tier
+    ? calculateTicketCharge(tier.price, quantity)
+    : { subtotal: 0, buyerFee: 0, organizerFee: 0, totalCharge: 0, organizerNet: 0 }
+  const processingFee = charge.buyerFee
+  const total = charge.totalCharge
 
   function applyPromoDiscount(base: number, promo: PromoCodeDiscount | null): number {
     if (!promo) return base
@@ -174,8 +180,7 @@ export function useCheckout(
     fees: {
       subtotal,
       discountedSubtotal,
-      platformFee,
-      paystackFee,
+      processingFee,
       total,
     },
     promoApplied,

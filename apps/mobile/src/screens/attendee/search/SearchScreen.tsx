@@ -9,66 +9,24 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Search, X } from 'lucide-react-native'
+import { Search, X, ChevronLeft } from 'lucide-react-native'
 import type { StackNavigationProp } from '@react-navigation/stack'
 import { useNavigation } from '@react-navigation/native'
 import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
 import { post } from '../../../lib/api'
 import { AnimatedPressable } from '../../../components/ui/AnimatedPressable'
-import { EventCard, EventCardSkeleton } from '../../../components/ui/EventCard'
-import { useSearchEvents, useTrendingSearch, useCategories } from '../../../hooks'
+import { FilterPill } from '../../../components/ui/FilterPill'
+import { EventListCard } from '../../../components/explore/EventListCard'
+import { useSearchEvents, useTrendingSearch, useCategories, useRecentSearches } from '../../../hooks'
+import { applyEventFilters, type DateFilter, type PriceFilter } from '../../../lib/eventFilters'
 import type { SearchStackParamList } from '../../../navigation/types'
-import type { Event, Category } from '@comfytag/types'
+import type { Event } from '@comfytag/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type SearchNav = StackNavigationProp<SearchStackParamList, 'SearchMain'>
-type DateFilter = 'today' | 'week' | 'month' | null
-type PriceFilter = 'free' | null
 
 const SCREEN_WIDTH = Dimensions.get('window').width
-
-// ─── Filter helpers ───────────────────────────────────────────────────────────
-
-function applyFilters(
-  events: Event[],
-  dateFilter: DateFilter,
-  priceFilter: PriceFilter
-): Event[] {
-  const now = new Date()
-  let filtered = events
-
-  if (dateFilter === 'today') {
-    filtered = filtered.filter((e) => {
-      const d = new Date(e.date)
-      d.setHours(0, 0, 0, 0)
-      const t = new Date(now)
-      t.setHours(0, 0, 0, 0)
-      return d.getTime() === t.getTime()
-    })
-  } else if (dateFilter === 'week') {
-    const weekEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-    filtered = filtered.filter(
-      (e) => new Date(e.date) <= weekEnd && new Date(e.date) >= now
-    )
-  } else if (dateFilter === 'month') {
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-    filtered = filtered.filter((e) => {
-      const d = new Date(e.date)
-      return d >= now && d <= monthEnd
-    })
-  }
-
-  if (priceFilter === 'free') {
-    filtered = filtered.filter(
-      (e) =>
-        e.ticketType.length === 0 ||
-        Math.min(...e.ticketType.map((t) => t.price)) === 0
-    )
-  }
-
-  return filtered
-}
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 
@@ -91,7 +49,7 @@ function TrendingPill({ label, onPress }: TrendingPillProps) {
 }
 
 interface CategoryCardProps {
-  category: Category
+  category: string
   onPress: () => void
 }
 
@@ -103,11 +61,7 @@ function CategoryCard({ category, onPress }: CategoryCardProps) {
       scaleDown={0.96}
       style={styles.categoryCard}
     >
-      <Text style={styles.categoryCardText}>
-        {category.icon !== undefined && category.icon.length > 0
-          ? `${category.icon} ${category.title}`
-          : category.title}
-      </Text>
+      <Text style={styles.categoryCardText}>{category}</Text>
     </AnimatedPressable>
   )
 }
@@ -116,23 +70,29 @@ function CategoryCardSkeleton() {
   return <View style={[styles.categoryCard, styles.skeletonBg]} />
 }
 
-interface FilterPillProps {
+interface RecentSearchChipProps {
   label: string
-  active: boolean
   onPress: () => void
+  onRemove: () => void
 }
 
-function FilterPill({ label, active, onPress }: FilterPillProps) {
+function RecentSearchChip({ label, onPress, onRemove }: RecentSearchChipProps) {
   return (
     <AnimatedPressable
       onPress={onPress}
       hapticStyle="light"
-      scaleDown={0.95}
-      style={[styles.filterPill, active && styles.filterPillActive]}
+      scaleDown={0.97}
+      style={styles.recentChip}
     >
-      <Text style={[styles.filterPillText, active && styles.filterPillTextActive]}>
-        {label}
-      </Text>
+      <Text style={styles.recentChipText} numberOfLines={1}>{label}</Text>
+      <AnimatedPressable
+        onPress={onRemove}
+        hapticStyle="light"
+        scaleDown={0.85}
+        style={styles.recentChipRemove}
+      >
+        <X size={12} color={colors.textPublic.muted} strokeWidth={2.5} />
+      </AnimatedPressable>
     </AnimatedPressable>
   )
 }
@@ -155,6 +115,9 @@ export default function SearchScreen() {
   const [notifySuccess, setNotifySuccess] = useState(false)
   const [notifyPending, setNotifyPending] = useState(false)
 
+  // ── Recent searches ───────────────────────────────────────────────────────
+  const { recentSearches, addRecentSearch, removeRecentSearch, clearRecentSearches } = useRecentSearches()
+
   // ── Data hooks ────────────────────────────────────────────────────────────
   const { data: trendingTerms = [], isLoading: trendingLoading } = useTrendingSearch()
   const { data: categories = [], isLoading: categoriesLoading } = useCategories()
@@ -172,6 +135,14 @@ export default function SearchScreen() {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
   }, [])
+
+  // ── Record committed searches for the "Recent searches" list ─────────────
+  useEffect(() => {
+    if (debouncedQuery.trim().length > 0) {
+      addRecentSearch(debouncedQuery)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQuery])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -228,15 +199,13 @@ export default function SearchScreen() {
   // ── Derived ───────────────────────────────────────────────────────────────
 
   const results: Event[] = searchData?.data ?? []
-  const displayedResults = applyFilters(results, dateFilter, priceFilter)
+  const displayedResults = applyEventFilters(results, dateFilter, priceFilter)
 
   // Trending chips: server-side terms first, fall back to category names
   const trendingChips =
     trendingTerms.length > 0
       ? trendingTerms.slice(0, 8)
-      : (categories as Category[]).slice(0, 8).map((c) => c.title)
-
-  const cardWidth = (SCREEN_WIDTH - sp[4] * 2 - sp[3]) / 2
+      : categories.slice(0, 8)
 
   // ── View logic ────────────────────────────────────────────────────────────
 
@@ -252,33 +221,42 @@ export default function SearchScreen() {
     <SafeAreaView style={styles.root} edges={['top']}>
       {/* Search bar */}
       <View style={styles.searchBarWrapper}>
-        <View style={styles.searchBar}>
-          <View style={styles.searchIconWrapper}>
-            <Search size={18} color={colors.mobile.textMuted} />
+        <View style={styles.searchTopRow}>
+          <AnimatedPressable
+            onPress={() => navigation.goBack()}
+            hapticStyle="light"
+            style={styles.backButton}
+          >
+            <ChevronLeft size={22} color={colors.textPublic.primary} strokeWidth={2} />
+          </AnimatedPressable>
+          <View style={[styles.searchBar, styles.searchBarFlex]}>
+            <View style={styles.searchIconWrapper}>
+              <Search size={18} color={colors.textPublic.muted} />
+            </View>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search events, venues, artists..."
+              placeholderTextColor={colors.textPublic.muted}
+              value={query}
+              onChangeText={handleQueryChange}
+              autoFocus={false}
+              returnKeyType="search"
+              onSubmitEditing={() => {
+                if (debounceRef.current) clearTimeout(debounceRef.current)
+                if (query.trim().length > 0) setDebouncedQuery(query.trim())
+              }}
+            />
+            {query.length > 0 && (
+              <AnimatedPressable
+                onPress={handleClearQuery}
+                hapticStyle="light"
+                scaleDown={0.9}
+                style={styles.clearButton}
+              >
+                <X size={16} color={colors.textPublic.muted} />
+              </AnimatedPressable>
+            )}
           </View>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search events, venues, artists..."
-            placeholderTextColor={colors.mobile.textMuted}
-            value={query}
-            onChangeText={handleQueryChange}
-            autoFocus={false}
-            returnKeyType="search"
-            onSubmitEditing={() => {
-              if (debounceRef.current) clearTimeout(debounceRef.current)
-              if (query.trim().length > 0) setDebouncedQuery(query.trim())
-            }}
-          />
-          {query.length > 0 && (
-            <AnimatedPressable
-              onPress={handleClearQuery}
-              hapticStyle="light"
-              scaleDown={0.9}
-              style={styles.clearButton}
-            >
-              <X size={16} color={colors.mobile.textMuted} />
-            </AnimatedPressable>
-          )}
         </View>
       </View>
 
@@ -288,6 +266,27 @@ export default function SearchScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
+          {recentSearches.length > 0 && (
+            <>
+              <View style={styles.recentHeader}>
+                <Text style={styles.sectionLabelLarge}>Recent searches</Text>
+                <AnimatedPressable onPress={clearRecentSearches} hapticStyle="light">
+                  <Text style={styles.clearAllText}>Clear all</Text>
+                </AnimatedPressable>
+              </View>
+              <View style={styles.recentChipsWrap}>
+                {recentSearches.map((term) => (
+                  <RecentSearchChip
+                    key={term}
+                    label={term}
+                    onPress={() => handleTagPress(term)}
+                    onRemove={() => removeRecentSearch(term)}
+                  />
+                ))}
+              </View>
+            </>
+          )}
+
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionLabel}>Trending</Text>
           </View>
@@ -317,11 +316,11 @@ export default function SearchScreen() {
               ? Array.from({ length: 6 }).map((_, i) => (
                   <CategoryCardSkeleton key={i} />
                 ))
-              : (categories as Category[]).map((cat) => (
+              : categories.map((cat) => (
                   <CategoryCard
-                    key={cat._id}
+                    key={cat}
                     category={cat}
-                    onPress={() => handleTagPress(cat.title)}
+                    onPress={() => handleTagPress(cat)}
                   />
                 ))}
           </View>
@@ -399,7 +398,7 @@ export default function SearchScreen() {
                   disabled={notifyPending}
                 >
                   {notifyPending ? (
-                    <ActivityIndicator size="small" color={colors.mobile.textPrimary} />
+                    <ActivityIndicator size="small" color="#FFFFFF" />
                   ) : (
                     <Text style={styles.notifyButtonText}>
                       Notify me when events match
@@ -409,17 +408,17 @@ export default function SearchScreen() {
               )}
 
               {/* Category chips below empty message */}
-              {(categories as Category[]).length > 0 && (
+              {categories.length > 0 && (
                 <>
                   <View style={[styles.sectionHeader, styles.sectionHeaderSpaced]}>
                     <Text style={styles.sectionLabelLarge}>Browse by Category</Text>
                   </View>
                   <View style={styles.categoryGridInline}>
-                    {(categories as Category[]).slice(0, 6).map((cat) => (
+                    {categories.slice(0, 6).map((cat) => (
                       <CategoryCard
-                        key={cat._id}
+                        key={cat}
                         category={cat}
-                        onPress={() => handleTagPress(cat.title)}
+                        onPress={() => handleTagPress(cat)}
                       />
                     ))}
                   </View>
@@ -427,17 +426,14 @@ export default function SearchScreen() {
               )}
             </View>
           ) : (
-            <View style={styles.eventGrid}>
+            <View style={styles.eventList}>
               {displayedResults.map((event) => (
-                <View key={event._id} style={{ width: cardWidth }}>
-                  <EventCard
-                    event={event}
-                    variant="grid"
-                    onPress={() =>
-                      navigation.navigate('EventDetail', { slug: event.slug })
-                    }
-                  />
-                </View>
+                <EventListCard
+                  key={event._id}
+                  event={event}
+                  onPress={() => navigation.navigate('EventDetail', { slug: event.slug })}
+                  onGetTicket={() => navigation.navigate('EventDetail', { slug: event.slug })}
+                />
               ))}
             </View>
           )}
@@ -452,7 +448,7 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
 
   // ── Search bar ─────────────────────────────────────────────────────────────
@@ -461,13 +457,27 @@ const styles = StyleSheet.create({
     paddingTop: sp[3],
     paddingBottom: sp[3],
   },
+  searchTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sp[2],
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.md,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
+  },
+  searchBarFlex: {
+    flex: 1,
   },
   searchIconWrapper: {
     marginLeft: sp[3],
@@ -476,7 +486,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     fontSize: fs.sm,
     paddingVertical: sp[3],
     paddingHorizontal: sp[2],
@@ -506,14 +516,14 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: fs.sm,
     fontWeight: '700',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   sectionLabelLarge: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
 
   // ── Trending pills ────────────────────────────────────────────────────────
@@ -524,7 +534,7 @@ const styles = StyleSheet.create({
   trendingPill: {
     paddingHorizontal: sp[3],
     paddingVertical: sp[2],
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surfaceAlt,
     borderRadius: rd.full,
     marginRight: sp[2],
     minHeight: 44,
@@ -532,7 +542,7 @@ const styles = StyleSheet.create({
   },
   trendingPillText: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
 
   // ── Category grid ─────────────────────────────────────────────────────────
@@ -550,7 +560,7 @@ const styles = StyleSheet.create({
     marginTop: sp[3],
   },
   categoryCard: {
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
     borderRadius: rd.lg,
     padding: sp[4],
     height: 80,
@@ -560,7 +570,7 @@ const styles = StyleSheet.create({
   categoryCardText: {
     fontSize: fs.sm,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
 
   // ── Searching ─────────────────────────────────────────────────────────────
@@ -571,7 +581,7 @@ const styles = StyleSheet.create({
   },
   searchingText: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: sp[3],
   },
 
@@ -582,7 +592,7 @@ const styles = StyleSheet.create({
   },
   resultsHeaderText: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
 
   // ── Filter row ────────────────────────────────────────────────────────────
@@ -591,30 +601,6 @@ const styles = StyleSheet.create({
     gap: sp[2],
     marginBottom: sp[3],
   },
-  filterPill: {
-    paddingHorizontal: sp[3],
-    paddingVertical: sp[2],
-    backgroundColor: colors.mobile.surface,
-    borderRadius: rd.full,
-    borderWidth: 1,
-    borderColor: colors.mobile.border,
-    marginRight: sp[2],
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  filterPillActive: {
-    backgroundColor: colors.brand.DEFAULT,
-    borderColor: colors.brand.DEFAULT,
-  },
-  filterPillText: {
-    fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
-  },
-  filterPillTextActive: {
-    color: colors.mobile.textPrimary,
-    fontWeight: '700',
-  },
-
   // ── Empty state ───────────────────────────────────────────────────────────
   emptyContainer: {
     alignItems: 'center',
@@ -623,12 +609,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: fs.lg,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textAlign: 'center',
     marginTop: sp[2],
   },
@@ -643,28 +629,70 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   notifyButtonText: {
-    color: colors.mobile.textPrimary,
+    color: '#FFFFFF',
     fontWeight: '700',
     fontSize: fs.sm,
   },
   notifySuccessText: {
     fontSize: fs.base,
-    color: colors.mobile.success,
+    color: colors.success.DEFAULT,
     fontWeight: '700',
     marginTop: sp[6],
   },
 
-  // ── Event grid ────────────────────────────────────────────────────────────
-  eventGrid: {
+  // ── Event list ────────────────────────────────────────────────────────────
+  eventList: {
     paddingHorizontal: sp[4],
+    gap: sp[3],
+  },
+
+  // ── Recent searches ───────────────────────────────────────────────────────
+  recentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: sp[4],
+    marginTop: sp[2],
+    marginBottom: sp[3],
+  },
+  clearAllText: {
+    fontSize: fs.sm,
+    color: colors.brand.DEFAULT,
+    fontWeight: '600',
+  },
+  recentChipsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: sp[3],
+    gap: sp[2],
+    paddingHorizontal: sp[4],
+    marginBottom: sp[2],
+  },
+  recentChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sp[2],
+    backgroundColor: colors.public.surfaceAlt,
+    borderRadius: rd.md,
+    paddingLeft: sp[3],
+    paddingRight: sp[2],
+    paddingVertical: sp[2],
+    maxWidth: SCREEN_WIDTH - sp[8],
+  },
+  recentChipText: {
+    fontSize: fs.sm,
+    color: colors.textPublic.secondary,
+    flexShrink: 1,
+  },
+  recentChipRemove: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // ── Shared ────────────────────────────────────────────────────────────────
   skeletonBg: {
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
     opacity: 0.5,
   },
 })

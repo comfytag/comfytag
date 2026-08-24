@@ -367,6 +367,14 @@ pnpm playwright test
 pnpm playwright test tests/e2e/01-public-pages.spec.ts
 ```
 
+**Run mobile E2E tests (Maestro — the mobile equivalent of Playwright):**
+```bash
+pnpm --filter mobile test:e2e
+```
+
+Requires the Maestro CLI (WSL2 on Windows) and Expo running (`pnpm start` in
+`apps/mobile`). See `docs/MOBILE_E2E_TESTING.md`.
+
 ### Build & Deploy
 
 **Build all apps (production):**
@@ -412,6 +420,7 @@ Related docs:
 | `project-session.md` | Session state + kanban (SOURCE OF TRUTH) | Project Builder |
 | `system_overview.md` | Auto-generated audit | Audit Skill |
 | `discussion/` | Council decisions + role notes | All Roles |
+| `docs/MOBILE_E2E_TESTING.md` | Maestro E2E setup (mobile app's Playwright equivalent) | Mobile Engineer |
 
 ---
 

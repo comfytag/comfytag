@@ -1,0 +1,274 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Payment Successful - ComfyTag</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e2e2e2",
+                        "primary-fixed": "#eaddff",
+                        "on-primary-fixed": "#25005a",
+                        "inverse-on-surface": "#f1f1f0",
+                        "on-secondary-container": "#fffbff",
+                        "surface": "#f9f9f8",
+                        "on-primary-container": "#ede0ff",
+                        "primary": "#630ed4",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary": "#704500",
+                        "on-error": "#ffffff",
+                        "primary-fixed-dim": "#d2bbff",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary": "#6e3aca",
+                        "on-secondary-fixed-variant": "#581db3",
+                        "outline": "#7b7487",
+                        "inverse-surface": "#2f3130",
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "on-error-container": "#93000a",
+                        "background": "#f9f9f8",
+                        "primary-container": "#7c3aed",
+                        "on-tertiary-fixed": "#2a1700",
+                        "surface-dim": "#dadad9",
+                        "secondary-fixed": "#ebddff",
+                        "outline-variant": "#ccc3d8",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#eeeeed",
+                        "inverse-primary": "#d2bbff",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-tertiary-container": "#ffe1c0",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-bright": "#f9f9f8",
+                        "surface-container-high": "#e8e8e7",
+                        "on-surface-variant": "#4a4455",
+                        "on-background": "#1a1c1c",
+                        "secondary-container": "#8856e5",
+                        "on-secondary-fixed": "#250059",
+                        "surface-container-low": "#f3f4f3",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-tint": "#732ee4",
+                        "secondary-fixed-dim": "#d3bbff",
+                        "tertiary-container": "#905b00",
+                        "surface-container-lowest": "#ffffff",
+                        "success": "#059669",
+                        "success-container": "#dcfce7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "40px",
+                        "base": "4px",
+                        "stack-sm": "8px",
+                        "stack-lg": "24px",
+                        "stack-md": "16px",
+                        "margin-tablet": "32px",
+                        "gutter": "16px",
+                        "margin-mobile": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9f8; overflow-x: hidden; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        
+        .ticket-clip {
+            position: relative;
+            background: white;
+            mask-image: radial-gradient(circle at 0 75%, transparent 12px, black 13px),
+                        radial-gradient(circle at 100% 75%, transparent 12px, black 13px);
+            -webkit-mask-image: radial-gradient(circle at 0 75%, transparent 12px, black 13px),
+                                radial-gradient(circle at 100% 75%, transparent 12px, black 13px);
+        }
+        
+        .success-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(.33); opacity: 0.8; }
+            80%, 100% { transform: scale(1.1); opacity: 0; }
+        }
+
+        .confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen items-center justify-center bg-surface">
+<!-- Confetti Canvas -->
+<canvas class="confetti-canvas" id="confetti"></canvas>
+<!-- Content Wrapper -->
+<main class="relative z-20 w-full max-w-md px-margin-mobile flex flex-col items-center animate-in fade-in slide-in-from-bottom-8 duration-700">
+<!-- Large Success Icon Section -->
+<div class="relative mb-stack-lg">
+<div class="absolute inset-0 bg-success/20 rounded-full success-pulse"></div>
+<div class="relative w-24 h-24 bg-success-container text-success rounded-full flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined !text-[48px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Headline -->
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface text-center mb-base">
+            Payment Successful
+        </h1>
+<p class="font-body-md text-body-md text-on-surface-variant text-center mb-section-gap max-w-[280px]">
+            Your ticket is ready! We've also sent a confirmation to your email address.
+        </p>
+<!-- Ticket Summary Card (Clipped Design) -->
+<div class="ticket-clip w-full shadow-sm rounded-xl overflow-hidden mb-section-gap border border-outline-variant/10">
+<div class="p-stack-md flex gap-stack-md">
+<div class="w-20 h-20 rounded-lg bg-cover bg-center shrink-0" data-alt="A vibrant and atmospheric close-up of a live jazz performance in a dimly lit, high-end Nigerian lounge. Soft purple and amber lighting reflects off a polished saxophone. The scene is elegant, modern, and exudes a sense of premium celebration and rhythmic energy." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD2iYY86ckh3k5BQVn3DosAOOriVZ9qoajZRDfP4L7escNnyWOVG6fWPoyY8xbAbMqXXahSQB-YXmil_gBsbPayoSLpJvKdhRnPhp0y3pIeDW8Lz3YTa2zWEr9Y5NuTcCUUr-VFdVvet_f73FD6mMFoAUachs0EHLruJ-7Nf8XS2LgDQppVmY5UZvlpm5-ufCdqhlrP-n1YrlQScaE_25khzi1UjOfN8TnggPOK8-B6ZvLpN7zujWoUtw')">
+</div>
+<div class="flex flex-col justify-center">
+<span class="font-label-md text-label-md text-tertiary uppercase tracking-widest mb-1">Live Concert</span>
+<h2 class="font-title-lg text-title-lg text-on-surface leading-tight">Lagos Jazz Nights 2024</h2>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined !text-[16px]">calendar_today</span>
+                        Dec 15 • 7:00 PM
+                    </p>
+</div>
+</div>
+<div class="px-stack-md py-stack-sm flex items-center justify-between border-t border-dashed border-outline-variant/30 mt-4 bg-surface-container-low">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">Order ID</p>
+<p class="font-body-md text-body-md font-bold text-on-surface">#CT-889210</p>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface-variant">Amount Paid</p>
+<p class="font-title-lg text-title-lg text-primary">₦25,000</p>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="w-full flex flex-col gap-stack-md">
+<button class="w-full h-[56px] bg-primary text-on-primary font-title-lg text-title-lg rounded-xl flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all" onclick="window.location.reload()">
+                View Ticket
+                <span class="material-symbols-outlined">confirmation_number</span>
+</button>
+<button class="w-full h-[56px] bg-transparent text-primary font-body-lg text-body-lg rounded-xl flex items-center justify-center hover:bg-primary/5 active:scale-95 transition-all">
+                Back to Home
+            </button>
+</div>
+<!-- Support Text -->
+<p class="mt-section-gap font-body-md text-body-md text-on-surface-variant text-center opacity-60">
+            Need help? Contact <span class="text-primary font-semibold">ComfyTag Support</span>
+</p>
+</main>
+<script>
+        // Simple micro-confetti effect
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.x = window.innerWidth / 2;
+                this.y = window.innerHeight / 2 - 50;
+                this.size = Math.random() * 8 + 4;
+                this.speedX = Math.random() * 10 - 5;
+                this.speedY = Math.random() * -15 - 5;
+                this.gravity = 0.3;
+                this.color = ['#630ed4', '#eaddff', '#059669', '#ffb95f'][Math.floor(Math.random() * 4)];
+                this.angle = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 10 - 5;
+                this.life = 1;
+            }
+            update() {
+                this.speedY += this.gravity;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.angle += this.rotationSpeed;
+                this.life -= 0.01;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle * Math.PI / 180);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life;
+                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                ctx.restore();
+            }
+        }
+
+        function initConfetti() {
+            for (let i = 0; i < 60; i++) {
+                setTimeout(() => {
+                    particles.push(new Particle());
+                }, i * 20);
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles = particles.filter(p => p.life > 0);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        animate();
+        
+        // Trigger celebration after a tiny delay for visual impact
+        setTimeout(initConfetti, 400);
+
+        // Micro-interaction for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                btn.style.filter = 'brightness(1.1)';
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.filter = 'brightness(1)';
+            });
+        });
+    </script>
+</body></html>

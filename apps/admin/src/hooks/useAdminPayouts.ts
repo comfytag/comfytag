@@ -38,14 +38,16 @@ export function useAdminPayoutDetail(id: string) {
   })
 }
 
-// ─── Mutation: Process (mark as sent) ────────────────────────────────────────
+// ─── Mutation: Process (initiate Paystack transfer) ───────────────────────────
 
 interface ProcessPayoutPayload {
   withdrawId: string
 }
 
 /**
- * Marks a withdrawal as sent via POST /api/admin/payouts/process.
+ * Initiates a real Paystack transfer via POST /api/admin/payouts/process.
+ * This only starts the transfer — status becomes 'processing', not 'sent'.
+ * It's confirmed 'sent' asynchronously by the transfer.success webhook.
  * Invalidates the pending list and the specific payout detail on success.
  */
 export function useProcessPayout() {

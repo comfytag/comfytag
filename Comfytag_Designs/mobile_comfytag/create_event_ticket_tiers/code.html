@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag - Create Event: Ticket Tiers</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#ccc3d8",
+                    "secondary-fixed-dim": "#d3bbff",
+                    "on-secondary-fixed": "#250059",
+                    "outline": "#7b7487",
+                    "inverse-on-surface": "#f1f1f0",
+                    "tertiary-container": "#905b00",
+                    "tertiary": "#704500",
+                    "on-tertiary-container": "#ffe1c0",
+                    "on-background": "#1a1c1c",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed": "#2a1700",
+                    "on-surface": "#1a1c1c",
+                    "surface-container": "#eeeeed",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e2e2e2",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-error-container": "#93000a",
+                    "surface": "#f9f9f8",
+                    "on-secondary-container": "#fffbff",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "secondary": "#6e3aca",
+                    "on-primary-fixed": "#25005a",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#eaddff",
+                    "inverse-surface": "#2f3130",
+                    "primary": "#630ed4",
+                    "background": "#f9f9f8",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "secondary-container": "#8856e5",
+                    "on-secondary-fixed-variant": "#581db3",
+                    "inverse-primary": "#d2bbff",
+                    "primary-container": "#7c3aed",
+                    "tertiary-fixed": "#ffddb8",
+                    "on-primary-container": "#ede0ff",
+                    "primary-fixed-dim": "#d2bbff",
+                    "secondary-fixed": "#ebddff",
+                    "surface-dim": "#dadad9",
+                    "surface-tint": "#732ee4",
+                    "surface-container-low": "#f3f4f3",
+                    "surface-container-high": "#e8e8e7",
+                    "surface-bright": "#f9f9f8",
+                    "on-surface-variant": "#4a4455"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "40px",
+                    "margin-mobile": "20px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "stack-lg": "24px",
+                    "margin-tablet": "32px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ticket-clipped {
+            position: relative;
+            background: white;
+        }
+        .ticket-clipped::before, .ticket-clipped::after {
+            content: '';
+            position: absolute;
+            left: -10px;
+            width: 20px;
+            height: 20px;
+            background-color: #f9f9f8; /* background color */
+            border-radius: 50%;
+            z-index: 10;
+        }
+        .ticket-clipped::before { top: calc(50% - 10px); left: -12px; }
+        .ticket-clipped::after { top: calc(50% - 10px); right: -12px; }
+
+        .glass-nav {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-lg min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 w-full z-50 glass-nav bg-surface/80 shadow-sm">
+<div class="flex justify-between items-center px-margin-mobile h-16 w-full max-w-full">
+<div class="flex items-center gap-4">
+<button class="text-primary active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">ComfyTag</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" alt="A professional headshot of a Nigerian event organizer, smiling warmly. The lighting is soft and studio-quality with a clean, blurred office background. The aesthetic is modern and high-trust, using a natural color palette that complements the premium modernist UI of ComfyTag." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDybORqIIqX6IT_KrAixE3MPWjgMBaHbgSHa4pRNHgqrMg6YqnykQD95OhoIhi127_o26NcNLyAYl-cbZKambfhfm0phL6FQLpgbIDBvvNHZXa2N55x-4eX--2IXznjAAHz-H617ri6pnk014E0yDTpiNu8BozprxBquMl1E_Tm7Pum1Lc8zeQNn2TJdrj4tGV3nIFMu-YsYjTYw-SClFCAEt_dACzX2Cp7auFHVz_cIg0qx3W-2Ua2QQ"/>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-margin-mobile max-w-2xl mx-auto">
+<!-- Progress Stepper -->
+<div class="mb-section-gap">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Step 2 of 3</span>
+<span class="font-label-md text-label-md text-primary font-bold">66% Complete</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/3 transition-all duration-700 ease-out"></div>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile mt-stack-lg text-on-surface">Ticket Tiers</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Define how attendees will experience your event.</p>
+</div>
+<div class="space-y-stack-lg">
+<!-- Regular Access Card -->
+<div class="ticket-clipped p-stack-lg rounded-xl shadow-[0px_4px_20px_rgba(26,28,28,0.04)] border border-outline-variant/20 group hover:shadow-[0px_8px_30px_rgba(26,28,28,0.08)] transition-all duration-300">
+<div class="flex justify-between items-start mb-stack-md">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Regular Access</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">General entry to the main event space.</p>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-stack-md">
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Price (₦)</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary text-on-surface font-title-lg h-14 pl-4" type="text" value="5,000"/>
+</div>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Capacity</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary text-on-surface font-title-lg h-14 px-4" type="number" value="500"/>
+</div>
+</div>
+</div>
+<!-- VIP Experience Card -->
+<div class="ticket-clipped p-stack-lg rounded-xl shadow-[0px_8px_30px_rgba(26,28,28,0.08)] border-2 border-primary-container/30 bg-white relative overflow-hidden">
+<div class="absolute top-0 right-0">
+<div class="bg-tertiary text-on-tertiary font-label-md px-3 py-1 rounded-bl-lg">POPULAR</div>
+</div>
+<div class="flex justify-between items-start mb-stack-md">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">VIP Experience</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Front row, lounge access &amp; refreshments.</p>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-stack-md">
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Price (₦)</label>
+<div class="relative">
+<input class="w-full bg-tertiary-fixed/10 border-none rounded-lg focus:ring-2 focus:ring-primary text-tertiary font-title-lg h-14 pl-4" type="text" value="25,000"/>
+</div>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Capacity</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-primary text-on-surface font-title-lg h-14 px-4" type="number" value="50"/>
+</div>
+</div>
+<div class="mt-stack-md pt-stack-md border-t border-outline-variant/20">
+<button class="flex items-center gap-2 text-primary font-label-md">
+<span class="material-symbols-outlined text-sm">settings</span>
+                        ADVANCED PERKS
+                    </button>
+</div>
+</div>
+<!-- Add Ticket Tier Button -->
+<button class="w-full py-stack-lg border-2 border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center text-on-surface-variant hover:border-primary hover:text-primary hover:bg-primary/5 transition-all group">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary/10 mb-2 transition-colors">
+<span class="material-symbols-outlined">add</span>
+</div>
+<span class="font-title-lg text-title-lg">Add Ticket Tier</span>
+</button>
+</div>
+<!-- Promo Section (Bento Style) -->
+<div class="mt-section-gap grid grid-cols-1 gap-gutter">
+<div class="bg-secondary-container rounded-2xl p-stack-lg text-on-secondary-container flex items-center justify-between">
+<div class="flex-1">
+<h4 class="font-title-lg text-title-lg mb-1">Set Early Bird Pricing?</h4>
+<p class="font-body-md text-body-md opacity-90">Events with early-bird discounts sell 40% faster on average.</p>
+</div>
+<div class="ml-4">
+<div class="w-14 h-8 bg-on-secondary-container/20 rounded-full relative flex items-center px-1 cursor-pointer">
+<div class="w-6 h-6 bg-on-secondary-container rounded-full shadow-md transform translate-x-6"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Action Bar -->
+<footer class="fixed bottom-0 w-full bg-surface/80 glass-nav px-margin-mobile py-stack-md z-50">
+<div class="max-w-2xl mx-auto flex gap-4">
+<button class="flex-1 h-14 border border-outline-variant rounded-xl font-title-lg text-on-surface active:scale-95 transition-transform">
+                Back
+            </button>
+<button class="flex-[2] h-14 bg-secondary text-on-secondary rounded-xl font-title-lg shadow-lg shadow-secondary/20 active:scale-95 transition-transform flex items-center justify-center gap-2">
+                Next: Review &amp; Publish
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</footer>
+<!-- Bottom Navigation Shell (Filter Logic: Suppressed for Transactional flow but structure remains for desktop/global) -->
+<!-- On mobile create flow, we hide global nav to focus the user -->
+<script>
+        // Micro-interactions
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Haptic simulation
+                if (window.navigator && window.navigator.vibrate) {
+                    window.navigator.vibrate(5);
+                }
+            });
+        });
+
+        // Simple Toggle Logic for Early Bird
+        const toggle = document.querySelector('.bg-on-secondary-container\\/20');
+        if (toggle) {
+            toggle.addEventListener('click', () => {
+                const knob = toggle.querySelector('div');
+                knob.classList.toggle('translate-x-6');
+                knob.classList.toggle('translate-x-0');
+            });
+        }
+    </script>
+</body></html>

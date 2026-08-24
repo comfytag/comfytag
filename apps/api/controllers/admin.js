@@ -3,9 +3,11 @@ import User from '../models/User.js'
 import Withdraw from '../models/Withdraw.js'
 import Event from '../models/Event.js'
 import SiteConfig from '../models/SiteConfig.js'
+import Bank from '../models/Bank.js'
 import { createError } from '../utils/error.js'
 import { createNotification } from './notification.js'
 import { generateReferralCode, generateFallbackCode } from '../utils/referralCode.js'
+import { initiateTransfer, PaystackApiError } from '../utils/paystack.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // KYC Management  (full implementation)
@@ -347,38 +349,47 @@ export const createAdminUser = async (req, res, next) => {
 
 // POST /api/admin/payouts/process
 // Body: { withdrawId: string }
+// Initiates a real Paystack transfer. Accepting the transfer request is not
+// the same as the money having moved — status becomes 'processing' here, and
+// only the transfer.success webhook (handlePaystackWebhook) flips it to 'sent'.
 export const processPayout = async (req, res, next) => {
     try {
         const { withdrawId } = req.body
         if (!withdrawId) return next(createError(400, 'withdrawId is required.'))
 
-        const withdrawal = await Withdraw.findByIdAndUpdate(
-            withdrawId,
-            { $set: { status: 'sent' } },
-            { new: true }
-        )
+        const withdrawal = await Withdraw.findById(withdrawId)
         if (!withdrawal) return next(createError(404, 'Withdrawal request not found.'))
 
-        const io = req.app.locals.io
-        const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+        const bank = withdrawal.bankId ? await Bank.findById(withdrawal.bankId) : null
+        if (!bank?.recipientCode) {
+            return next(createError(400, 'This organizer\'s bank account is not fully verified for payouts yet. Ask them to re-add it under Bank Settings, or contact support.'))
+        }
 
-        await createNotification({
-            userId: withdrawal.user_id,
-            type: 'payout_approved',
-            title: 'Payout sent ✓',
-            message: `₦${withdrawal.amount.toLocaleString()} has been sent to your ${withdrawal.bankName} account`,
-            data: {
-                amount: withdrawal.amount,
-                bankName: withdrawal.bankName,
-                acctName: withdrawal.acctName,
-                withdrawId,
-            },
-            io,
-        }).catch(err => console.error('[Admin Payout] Notification error:', err.message))
+        const transferReference = `WD_${withdrawId}_${Date.now()}`
+
+        let transfer
+        try {
+            transfer = await initiateTransfer({
+                amount: withdrawal.amount * 100,
+                recipient: bank.recipientCode,
+                reason: `Payout for ${withdrawal.eventName}`,
+                reference: transferReference,
+            })
+        } catch (err) {
+            const message = err instanceof PaystackApiError
+                ? err.message
+                : 'Could not reach Paystack to initiate this transfer.'
+            return next(createError(502, message))
+        }
+
+        withdrawal.status = 'processing'
+        withdrawal.transferCode = transfer.data?.transfer_code || null
+        withdrawal.transferReference = transferReference
+        await withdrawal.save()
 
         return res.status(200).json({
             success: true,
-            message: 'Payout marked as sent.',
+            message: 'Transfer initiated, awaiting confirmation from Paystack.',
             data: withdrawal,
         })
     } catch (err) {

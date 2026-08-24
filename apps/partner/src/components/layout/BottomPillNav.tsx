@@ -15,7 +15,7 @@ interface NavTab {
 
 const TABS: NavTab[] = [
   {
-    label: 'Studio',
+    label: 'Overview',
     href: '/overview',
     ariaLabel: 'Dashboard overview',
     icon: (
@@ -103,7 +103,7 @@ export default function BottomPillNav() {
   return (
     <nav
       aria-label="Partner mobile navigation"
-      className="md:hidden fixed left-4 right-4 z-50 backdrop-blur-xl bg-white/80 border border-zinc-200/60 p-2 rounded-full flex justify-around items-center"
+      className="md:hidden fixed left-4 right-4 z-50 bg-(--color-surface) border border-(--color-border) p-2 rounded-full flex justify-around items-center"
       style={{ bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
     >
       {/* Standard link tabs */}
@@ -117,7 +117,7 @@ export default function BottomPillNav() {
             aria-current={active ? 'page' : undefined}
             className={[
               TAB_BASE,
-              active ? 'text-violet-600' : 'text-zinc-400 hover:text-zinc-500',
+              active ? 'text-(--color-brand)' : 'text-(--color-text-muted) hover:text-(--color-text)',
             ].join(' ')}
           >
             <span
@@ -160,7 +160,7 @@ export default function BottomPillNav() {
                 : 'scale-100 transition-transform duration-200'
             }
           >
-            <span className="w-5 h-5 rounded-full bg-violet-600 text-white text-[9px] font-bold flex items-center justify-center overflow-hidden">
+            <span className="w-5 h-5 rounded-full bg-(--color-brand) text-white text-[9px] font-bold flex items-center justify-center overflow-hidden">
               {avatarSrc ? (
                 <img src={avatarSrc} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -180,24 +180,24 @@ export default function BottomPillNav() {
 
         {/* Upward dropdown */}
         {menuOpen && (
-          <div className="absolute bottom-full right-0 mb-3 w-48 bg-white border border-zinc-200 rounded-lg overflow-hidden z-[60]">
+          <div className="absolute bottom-full right-0 mb-3 w-48 bg-(--color-surface) border border-(--color-border) rounded-lg overflow-hidden z-[60]">
             {MENU_ITEMS.map(({ label, href }, i) => (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setMenuOpen(false)}
                 className={[
-                  'block px-4 py-3 text-sm text-zinc-700 hover:bg-zinc-50 transition-colors',
-                  i > 0 ? 'border-t border-zinc-100' : '',
+                  'block px-4 py-3 text-sm text-(--color-text) hover:bg-(--color-bg) transition-colors',
+                  i > 0 ? 'border-t border-(--color-border)' : '',
                 ].join(' ')}
               >
                 {label}
               </Link>
             ))}
-            <div className="border-t border-zinc-100">
+            <div className="border-t border-(--color-border)">
               <button
                 onClick={() => void signOut({ callbackUrl: '/login' })}
-                className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-zinc-50 transition-colors"
+                className="w-full text-left px-4 py-3 text-sm text-(--color-error) hover:bg-(--color-bg) transition-colors"
               >
                 Log Out
               </button>

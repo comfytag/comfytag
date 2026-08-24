@@ -4,35 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ComfyTag Ticket — {{eventName}}</title>
+  <!--[if !mso]><!-->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <!--<![endif]-->
 </head>
-<body style="margin: 0; padding: 0; background-color: #F5F3FF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+<body style="margin: 0; padding: 0; background-color: #FAFAF9; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased;">
 
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background-color: #F5F3FF; padding: 24px 16px;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background-color: #FAFAF9; padding: 24px 16px;">
     <tr>
       <td align="center">
 
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="max-width: 560px; background-color: #FFFFFF; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 32px rgba(124, 58, 237, 0.12);">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="max-width: 560px; background-color: #FFFFFF; border-radius: 10px; overflow: hidden; border: 1px solid #E7E5E4;">
 
           <!-- HEADER -->
           <tr>
-            <td style="background: linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%); padding: 28px 32px 24px; text-align: center;">
+            <td style="background-color: #7C3AED; padding: 28px 32px 24px; text-align: center;">
               <p style="margin: 0 0 4px; font-size: 24px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px; line-height: 1;">ComfyTag</p>
-              <p style="margin: 0; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.65); letter-spacing: 2px; text-transform: uppercase;">Your face is your ticket</p>
+              <p style="margin: 0; font-family: 'Space Grotesk', 'Inter', -apple-system, sans-serif; font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.7); letter-spacing: 2px; text-transform: uppercase;">Your face is your ticket</p>
             </td>
           </tr>
 
           <!-- HERO -->
           <tr>
-            <td style="padding: 32px 32px 24px; text-align: center; border-bottom: 1px solid #F3F0FF;">
+            <td style="padding: 32px 32px 24px; text-align: center; border-bottom: 1px solid #F5F5F4;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
                 <tr>
                   <td align="center" style="padding-bottom: 16px;">
-                    <span style="display: inline-block; background-color: #EDE9FE; color: #7C3AED; font-size: 11px; font-weight: 700; padding: 5px 14px; border-radius: 20px; letter-spacing: 0.8px; text-transform: uppercase;">Ticket Confirmed ✓</span>
+                    <span style="display: inline-block; background-color: #EDE9FE; color: #7C3AED; font-family: 'Space Grotesk', 'Inter', -apple-system, sans-serif; font-size: 11px; font-weight: 700; padding: 5px 14px; border-radius: 9999px; letter-spacing: 0.8px; text-transform: uppercase;">Ticket Confirmed ✓</span>
                   </td>
                 </tr>
                 <tr>
                   <td>
-                    <p style="margin: 0 0 10px; font-size: 28px; font-weight: 800; color: #1C1917; line-height: 1.15; letter-spacing: -0.5px;">ComfyTag Ticket</p>
+                    <p style="margin: 0 0 10px; font-size: 26px; font-weight: 800; color: #1C1917; line-height: 1.15; letter-spacing: -0.5px;">ComfyTag Ticket</p>
                     <p style="margin: 0; font-size: 17px; font-weight: 600; color: #7C3AED; line-height: 1.5;">{{eventName}}</p>
                   </td>
                 </tr>
@@ -50,14 +53,14 @@
               {{else}}
               <p style="margin: 0 0 6px; font-size: 16px; font-weight: 700; color: #1C1917;">Hi there,</p>
               {{/if}}
-              <p style="margin: 0 0 28px; font-size: 15px; color: #78716C; line-height: 1.65;">Your ticket for <strong style="color: #1C1917; font-weight: 600;">{{eventName}}</strong> is confirmed. Keep this email — you'll scan the QR code below to get in.</p>
+              <p style="margin: 0 0 28px; font-size: 15px; color: #78716C; line-height: 1.65;">Your ticket for <strong style="color: #1C1917; font-weight: 600;">{{eventName}}</strong> is confirmed. Keep this email — you'll scan the QR code below to get in. It's also attached to this email as an image, in case remote images don't load.</p>
 
               {{!-- QR CODE --}}
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 24px;">
                 <tr>
-                  <td style="background-color: #FAFAF9; border: 2px dashed #C4B5FD; border-radius: 16px; padding: 28px 20px; text-align: center;">
-                    <p style="margin: 0 0 16px; font-size: 11px; font-weight: 700; color: #7C3AED; letter-spacing: 1.5px; text-transform: uppercase;">Scan at the Gate</p>
-                    <img src="{{qrCodeUrl}}" alt="Your QR Code" width="200" height="200" style="display: block; margin: 0 auto; border-radius: 10px; border: 4px solid #FFFFFF; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+                  <td style="background-color: #FAFAF9; border: 1.5px dashed #C4B5FD; border-radius: 10px; padding: 28px 20px; text-align: center;">
+                    <p style="margin: 0 0 16px; font-family: 'Space Grotesk', 'Inter', -apple-system, sans-serif; font-size: 11px; font-weight: 700; color: #7C3AED; letter-spacing: 1.5px; text-transform: uppercase;">Scan at the Gate</p>
+                    <img src="{{qrCodeUrl}}" alt="Your QR Code" width="200" height="200" style="display: block; margin: 0 auto; border-radius: 6px; border: 1px solid #E7E5E4;">
                     <p style="margin: 16px 0 0; font-size: 14px; color: #78716C; line-height: 1;">
                       <strong style="color: #1C1917; font-weight: 700;">{{qty}}×</strong> {{ticketTier}} {{ticketLabel}}
                     </p>
@@ -66,10 +69,10 @@
               </table>
 
               {{!-- EVENT DETAILS --}}
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 20px; border-radius: 14px; overflow: hidden; border: 1.5px solid #EDE9FE;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid #EDE9FE;">
                 <tr>
                   <td style="background-color: #EDE9FE; padding: 11px 20px; border-bottom: 1px solid #DDD6FE;">
-                    <p style="margin: 0; font-size: 11px; font-weight: 700; color: #7C3AED; letter-spacing: 1px; text-transform: uppercase;">Event Details</p>
+                    <p style="margin: 0; font-family: 'Space Grotesk', 'Inter', -apple-system, sans-serif; font-size: 11px; font-weight: 700; color: #7C3AED; letter-spacing: 1px; text-transform: uppercase;">Event Details</p>
                   </td>
                 </tr>
                 <tr>
@@ -110,10 +113,10 @@
                     {{/if}}
 
                     {{#if eventDescription}}
-                    <p style="margin: 14px 0 0; padding-top: 14px; border-top: 1px solid #F3F0FF; font-size: 13px; color: #78716C; line-height: 1.65;">{{eventDescription}}</p>
+                    <p style="margin: 14px 0 0; padding-top: 14px; border-top: 1px solid #F5F5F4; font-size: 13px; color: #78716C; line-height: 1.65;">{{eventDescription}}</p>
                     {{/if}}
 
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-top: 18px; padding-top: 16px; border-top: 1.5px solid #E7E5E4;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-top: 18px; padding-top: 16px; border-top: 1px solid #E7E5E4;">
                       <tr>
                         <td style="font-size: 13px; color: #78716C; font-weight: 500;">Total Paid</td>
                         <td align="right" style="font-size: 20px; font-weight: 800; color: #7C3AED; line-height: 1;">{{totalPrice}}</td>
@@ -127,7 +130,7 @@
               {{!-- FACE CHECK-IN COMING SOON --}}
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 20px;">
                 <tr>
-                  <td style="background: linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 100%); border-left: 4px solid #7C3AED; border-radius: 0 10px 10px 0; padding: 14px 18px;">
+                  <td style="background-color: #F5F3FF; border-left: 4px solid #7C3AED; border-radius: 0 8px 8px 0; padding: 14px 18px;">
                     <p style="margin: 0 0 3px; font-size: 13px; font-weight: 700; color: #7C3AED;">⚡ Face Check-In — Coming Soon</p>
                     <p style="margin: 0; font-size: 13px; color: #6D28D9; line-height: 1.55;">Skip the queue entirely — your face is your ticket. No QR, no hassle. Launching soon on the ComfyTag app.</p>
                   </td>
@@ -137,10 +140,10 @@
               {{!-- SHARE & EARN --}}
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 28px;">
                 <tr>
-                  <td style="background-color: #FAFAF9; border: 1.5px solid #E7E5E4; border-radius: 12px; padding: 20px; text-align: center;">
+                  <td style="background-color: #FAFAF9; border: 1px solid #E7E5E4; border-radius: 8px; padding: 20px; text-align: center;">
                     <p style="margin: 0 0 4px; font-size: 15px; font-weight: 700; color: #1C1917;">Share &amp; Earn</p>
                     <p style="margin: 0 0 18px; font-size: 13px; color: #78716C; line-height: 1.6;">Know someone who should be at <strong style="color: #1C1917;">{{eventName}}</strong>? Share and earn rewards when they grab a ticket.</p>
-                    <a href="{{shareLink}}" style="display: inline-block; background-color: #7C3AED; color: #FFFFFF; padding: 13px 32px; border-radius: 9px; text-decoration: none; font-weight: 700; font-size: 14px; letter-spacing: 0.2px;">Share This Event</a>
+                    <a href="{{shareLink}}" style="display: inline-block; background-color: #7C3AED; color: #FFFFFF; padding: 13px 32px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 14px; letter-spacing: 0.2px;">Share This Event</a>
                   </td>
                 </tr>
               </table>
@@ -161,7 +164,7 @@
 
           <!-- FOOTER -->
           <tr>
-            <td style="background-color: #F5F5F4; border-top: 1px solid #E7E5E4; padding: 20px 32px; text-align: center;">
+            <td style="background-color: #FAFAF9; border-top: 1px solid #E7E5E4; padding: 20px 32px; text-align: center;">
               <p style="margin: 0 0 6px; font-size: 12px; color: #A8A29E; line-height: 1.5;">© {{year}} ComfyTag. All rights reserved.</p>
               <p style="margin: 0; font-size: 12px; line-height: 1.5;">
                 <a href="{{unsubscribeUrl}}" style="color: #A8A29E; text-decoration: none;">Unsubscribe</a>

@@ -7,8 +7,7 @@ import Image from 'next/image'
 import { Navbar } from '@/components/layout/Navbar'
 import { LoadingSpinner, EmptyState, ErrorMessage } from '@comfytag/ui'
 import { formatDate } from '@comfytag/utils'
-import { api } from '@/lib/api'
-import { useProfile, useUpdateProfile } from '@/hooks/useProfile'
+import { useProfile, useUpdateProfile, useBecomePartner } from '@/hooks/useProfile'
 
 function toTitleCase(str: string): string {
   return str.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -19,12 +18,11 @@ export default function ProfilePage() {
   const router = useRouter()
   const { data: user } = useProfile()
   const { mutate: updateProfile, isPending: isSaving } = useUpdateProfile()
+  const { mutate: becomePartner, isPending: isBecomingPartner, error: becomePartnerError } = useBecomePartner()
   const [name, setName] = useState(session?.user?.name ?? '')
   const [username, setUsername] = useState('')
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
-  const [isUpgrading, setIsUpgrading] = useState(false)
-  const [upgradeError, setUpgradeError] = useState<string | null>(null)
   const [copiedReferral, setCopiedReferral] = useState(false)
 
   useEffect(() => {
@@ -48,24 +46,6 @@ export default function ProfilePage() {
       })
     } catch {
       setSaveError('Failed to save. Please try again.')
-    }
-  }
-
-  async function handleBecomePartner() {
-    setIsUpgrading(true)
-    setUpgradeError(null)
-    try {
-      const res = await api.put(
-        `/auth/register-organizer/${session?.user?.id}`,
-        {},
-        { headers: { Authorization: `Bearer ${session?.user?.token}` } },
-      )
-      const { token } = res.data
-      const partnerUrl = process.env.NEXT_PUBLIC_PARTNER_URL ?? 'http://localhost:3001'
-      window.location.href = `${partnerUrl}/handoff?t=${token}`
-    } catch {
-      setUpgradeError('Failed to upgrade. Please try again.')
-      setIsUpgrading(false)
     }
   }
 
@@ -210,7 +190,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Referral Link Card */}
-          {referralLink && (
+          {/* {referralLink && (
             <div className="w-full bg-white border border-zinc-200 rounded-2xl p-6 sm:p-8 flex flex-col">
               <h2 className="text-lg font-bold text-zinc-900 mb-6">Your Referral Link</h2>
               <p className="text-sm text-zinc-500 mb-2">Share this link to earn rewards</p>
@@ -226,7 +206,7 @@ export default function ProfilePage() {
                 </button>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Account Card */}
           <div className="w-full bg-white border border-zinc-200 rounded-2xl p-6 sm:p-8 flex flex-col">
@@ -259,16 +239,17 @@ export default function ProfilePage() {
             ) : (
               <>
                 <button
-                  onClick={handleBecomePartner}
-                  disabled={isUpgrading}
-                  className="w-full py-4 border-2 border-zinc-200 hover:border-violet-600 hover:text-violet-700 text-zinc-900 font-bold rounded-xl transition-all mb-4 disabled:opacity-60"
+                  type="button"
+                  onClick={() => becomePartner()}
+                  disabled={isBecomingPartner}
+                  className="w-full py-4 border-2 border-violet-200 text-violet-700 font-bold rounded-xl mb-4 hover:bg-violet-50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {isUpgrading ? 'Upgrading…' : 'Become a Partner'}
+                  {isBecomingPartner ? 'Setting up your dashboard…' : 'Become a Partner'}
                 </button>
-                {upgradeError && (
-                  <div className="mb-4">
-                    <ErrorMessage message={upgradeError} />
-                  </div>
+                {becomePartnerError && (
+                  <p className="text-xs text-red-600 -mt-2 mb-4">
+                    Something went wrong. Please try again.
+                  </p>
                 )}
               </>
             )}

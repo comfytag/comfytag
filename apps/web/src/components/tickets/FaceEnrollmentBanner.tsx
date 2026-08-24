@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import type { User } from '@comfytag/types'
 
 export interface FaceEnrollmentBannerProps {
@@ -11,9 +10,9 @@ export interface FaceEnrollmentBannerProps {
   body?: string
 }
 
-const DEFAULT_TITLE = 'Your face is your entry pass.'
+const DEFAULT_TITLE = 'Face check-in is coming soon.'
 const DEFAULT_BODY  =
-  'Tired of scrambling for emails at the door? Link your biometric pass now to step cleanly through gate check-ins automatically.'
+  "We're building frictionless, biometric gate check-in — no more scrambling for emails at the door. For now, your QR ticket gets you in."
 
 export function FaceEnrollmentBanner({ user, onDismiss, title, body }: FaceEnrollmentBannerProps) {
   const [isVisible, setIsVisible] = useState(true)
@@ -36,7 +35,7 @@ export function FaceEnrollmentBanner({ user, onDismiss, title, body }: FaceEnrol
       {/* ── Left: conversion copy ── */}
       <div className="flex-1 min-w-0 relative z-10">
         <span className="inline-block text-[10px] font-semibold uppercase tracking-widest bg-white/20 text-white/90 px-3 py-1 rounded-full mb-3">
-          Exclusive Upgrade
+          Coming Soon
         </span>
         <h2 className="text-xl font-bold tracking-tight mb-2 leading-snug">
           {title ?? DEFAULT_TITLE}
@@ -46,14 +45,8 @@ export function FaceEnrollmentBanner({ user, onDismiss, title, body }: FaceEnrol
         </p>
       </div>
 
-      {/* ── Right: CTA + dismiss ── */}
+      {/* ── Right: dismiss ── */}
       <div className="flex items-center gap-3 shrink-0 relative z-10">
-        <Link
-          href="/enroll"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-violet-700 text-sm font-semibold rounded-xl hover:bg-violet-50 transition-colors whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-violet-600"
-        >
-          Enroll Face Pass
-        </Link>
         <button
           type="button"
           onClick={handleDismiss}

@@ -53,19 +53,19 @@ interface StatusConfig {
 const STATUS_CONFIG: Record<EventStatus, StatusConfig> = {
   published: {
     label: 'LIVE',
-    pill: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
+    pill: 'bg-emerald-950/40 text-emerald-400 border border-emerald-900/50',
   },
   draft: {
     label: 'DRAFT',
-    pill: 'bg-zinc-100 text-zinc-500 border border-zinc-200',
+    pill: 'bg-zinc-800 text-zinc-400 border border-zinc-700',
   },
   cancelled: {
     label: 'CANCELLED',
-    pill: 'bg-red-100 text-red-600 border border-red-200',
+    pill: 'bg-red-950/40 text-red-400 border border-red-900/50',
   },
   ended: {
     label: 'ENDED',
-    pill: 'bg-zinc-100 text-zinc-500 border border-zinc-200',
+    pill: 'bg-zinc-800 text-zinc-400 border border-zinc-700',
   },
 }
 
@@ -89,11 +89,11 @@ function timeAgo(iso: string): string {
 
 // Shared premium field styles used inside both Sheet forms
 const sheetLabel =
-  'block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5'
+  'block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1.5'
 const sheetInput =
-  'w-full bg-white border-2 border-zinc-200 focus:border-violet-600 rounded-xl px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none transition-colors'
+  'w-full bg-(--color-surface) border-2 border-(--color-border) focus:border-violet-600 rounded-xl px-4 py-3 text-sm text-(--color-text) placeholder:text-zinc-500 focus:outline-none transition-colors'
 const sheetSelect =
-  'w-full appearance-none bg-white border-2 border-zinc-200 focus:border-violet-600 rounded-xl px-4 py-3 pr-10 text-sm text-zinc-900 focus:outline-none transition-colors cursor-pointer'
+  'w-full appearance-none bg-(--color-surface) border-2 border-(--color-border) focus:border-violet-600 rounded-xl px-4 py-3 pr-10 text-sm text-(--color-text) focus:outline-none transition-colors cursor-pointer'
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
@@ -143,20 +143,20 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
   const coverImage = event.coverImage ?? event.images?.[0]
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-8 pb-24 px-4 sm:px-6 lg:px-8 space-y-8 max-w-5xl mx-auto">
+    <div className="min-h-screen pt-8 pb-24 px-4 sm:px-6 lg:px-8 space-y-8 max-w-5xl mx-auto">
 
       {/* ── Top Bar ──────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/events"
-          className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-800 transition-colors w-fit"
+          className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-(--color-text) transition-colors w-fit"
         >
           <ArrowLeft size={15} />
           Back to Events
         </Link>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-3xl font-black text-zinc-900 leading-tight">
+          <h1 className="text-3xl font-black text-(--color-text) leading-tight">
             {liveEvent.name || 'Untitled Event'}
           </h1>
           <span
@@ -176,7 +176,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
 
         {/* ── Digital Ticket Object (left · 7 cols) ────────────────── */}
         <div className="lg:col-span-7">
-          <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden">
+          <div className="bg-(--color-surface) border border-(--color-border) rounded-xl overflow-hidden">
 
             {/* TOP HALF — Event Details (click to edit) */}
             <div
@@ -184,7 +184,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
               tabIndex={0}
               onClick={() => setIsDetailsSheetOpen(true)}
               onKeyDown={e => e.key === 'Enter' && setIsDetailsSheetOpen(true)}
-              className="group relative hover:bg-zinc-50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+              className="group relative hover:bg-zinc-800/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
             >
               {/* Hover glow ring */}
               <div className="absolute inset-0 rounded-t-3xl ring-0 group-hover:ring-2 group-hover:ring-violet-400/30 transition-all pointer-events-none" />
@@ -213,8 +213,8 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
                   )}
                 </div>
               ) : (
-                <div className="w-full h-56 bg-gradient-to-br from-violet-100 to-violet-50 flex items-center justify-center select-none">
-                  <span className="text-8xl font-black text-violet-200">
+                <div className="w-full h-56 bg-gradient-to-br from-violet-950/60 to-zinc-900 flex items-center justify-center select-none">
+                  <span className="text-8xl font-black text-violet-900">
                     {liveEvent.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -224,13 +224,13 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
               <div className="px-7 pt-5 pb-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <h2 className="text-xl font-black text-zinc-900">{liveEvent.name}</h2>
-                    <p className="text-sm text-zinc-500">
+                    <h2 className="text-xl font-black text-(--color-text)">{liveEvent.name}</h2>
+                    <p className="text-sm text-zinc-400">
                       {liveEvent.date ? formatDate(liveEvent.date) : 'Date TBA'}
                       {' · '}
                       {liveEvent.startTime || '—'} – {liveEvent.endTime || '—'}
                     </p>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-zinc-400">
                       {liveEvent.venue || 'Venue TBA'}
                       {liveEvent.address ? `, ${liveEvent.address}` : ''}
                       {liveEvent.state ? `, ${liveEvent.state}` : ''}
@@ -246,9 +246,9 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
 
             {/* PERFORATED TEAR-LINE DIVIDER */}
             <div className="relative px-4">
-              <div className="border-b-2 border-dashed border-zinc-200" />
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-slate-50 border border-zinc-200" />
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-full bg-slate-50 border border-zinc-200" />
+              <div className="border-b-2 border-dashed border-zinc-700" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-(--color-bg) border border-(--color-border)" />
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-full bg-(--color-bg) border border-(--color-border)" />
             </div>
 
             {/* BOTTOM HALF — Ticket Tiers (click to manage) */}
@@ -257,10 +257,10 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
               tabIndex={0}
               onClick={() => setIsTiersSheetOpen(true)}
               onKeyDown={e => e.key === 'Enter' && setIsTiersSheetOpen(true)}
-              className="group hover:bg-zinc-50 transition-colors cursor-pointer px-7 pt-5 pb-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+              className="group hover:bg-zinc-800/50 transition-colors cursor-pointer px-7 pt-5 pb-7 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
             >
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
+                <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">
                   Ticket Tiers
                 </span>
                 <div className="flex items-center gap-1 text-xs text-violet-500 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
@@ -336,21 +336,21 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
             />
             <QuickAction
               href={`/events/${eventId}/promos`}
-              icon={<Tag className="w-5 h-5 text-violet-600 shrink-0" strokeWidth={2.4} />}
+              icon={<Tag className="w-5 h-5 text-violet-400 shrink-0" strokeWidth={2.4} />}
               label="Create Promo"
             />
           </div>
 
           {/* Status Controls */}
           {currentStatus !== 'cancelled' && currentStatus !== 'ended' && (
-            <div className="bg-white border border-zinc-200/60 rounded-xl p-5 sm:p-6">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-400 mb-4 block">
+            <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-5 sm:p-6">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-500 mb-4 block">
                 STATUS CONTROLS
               </span>
               <div className="flex flex-col gap-3">
                 <Link
                   href={`/events/${eventId}/edit`}
-                  className="w-full bg-zinc-900 text-white font-bold py-3 rounded-full hover:bg-zinc-800 active:scale-95 transition-all text-[13px] sm:text-sm flex justify-center items-center gap-2 mb-3"
+                  className="w-full bg-violet-600 text-white font-bold py-3 rounded-full hover:bg-violet-700 active:scale-95 transition-all text-[13px] sm:text-sm flex justify-center items-center gap-2 mb-3"
                 >
                   <Pencil className="w-4 h-4" strokeWidth={2.4} />
                   Edit Event
@@ -359,7 +359,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
                   <button
                     disabled={statusMutation.isPending}
                     onClick={() => statusMutation.mutate('published')}
-                    className="w-full bg-zinc-100 text-zinc-800 font-bold py-3 rounded-full hover:bg-zinc-200 transition-all text-[13px] sm:text-sm flex justify-center disabled:opacity-50 cursor-pointer"
+                    className="w-full bg-zinc-800 text-zinc-200 font-bold py-3 rounded-full hover:bg-zinc-700 transition-all text-[13px] sm:text-sm flex justify-center disabled:opacity-50 cursor-pointer"
                   >
                     {statusMutation.isPending ? 'Publishing…' : 'Publish Event'}
                   </button>
@@ -368,7 +368,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
                   <button
                     disabled={statusMutation.isPending}
                     onClick={() => statusMutation.mutate('draft')}
-                    className="w-full bg-zinc-100 text-zinc-800 font-bold py-3 rounded-full hover:bg-zinc-200 transition-all text-[13px] sm:text-sm flex justify-center disabled:opacity-50 cursor-pointer"
+                    className="w-full bg-zinc-800 text-zinc-200 font-bold py-3 rounded-full hover:bg-zinc-700 transition-all text-[13px] sm:text-sm flex justify-center disabled:opacity-50 cursor-pointer"
                   >
                     {statusMutation.isPending ? 'Updating…' : 'Move to Draft'}
                   </button>
@@ -376,7 +376,7 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
                 <button
                   disabled={statusMutation.isPending}
                   onClick={() => statusMutation.mutate('cancelled')}
-                  className="w-full bg-red-50 text-red-600 font-bold py-3 rounded-full border border-red-100 hover:bg-red-100 transition-all text-[13px] sm:text-sm flex justify-center disabled:opacity-50 cursor-pointer"
+                  className="w-full bg-red-950/40 text-red-400 font-bold py-3 rounded-full border border-red-900/50 hover:bg-red-950/60 transition-all text-[13px] sm:text-sm flex justify-center disabled:opacity-50 cursor-pointer"
                 >
                   {statusMutation.isPending ? 'Cancelling…' : 'Cancel Event'}
                 </button>
@@ -385,12 +385,12 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
           )}
 
           {/* Live Activity Feed */}
-          <div className="bg-white border border-zinc-200 rounded-xl p-6">
+          <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-6">
             <div className="flex items-center justify-between mb-5">
-              <span className="text-xs font-black text-zinc-400 uppercase tracking-widest">
+              <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">
                 Live Activity
               </span>
-              <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
+              <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 Live
               </span>
@@ -401,26 +401,26 @@ export function EventDetailClient({ event, eventId, tierStats }: EventDetailClie
                   <div key={item.id} className="flex items-center gap-3">
                     <div
                       className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                        item.type === 'purchase' ? 'bg-violet-50' : 'bg-emerald-50'
+                        item.type === 'purchase' ? 'bg-violet-950/40' : 'bg-emerald-950/40'
                       }`}
                     >
                       {item.type === 'purchase' ? (
-                        <User size={14} className="text-violet-600" />
+                        <User size={14} className="text-violet-400" />
                       ) : (
-                        <CheckCircle2 size={14} className="text-emerald-600" />
+                        <CheckCircle2 size={14} className="text-emerald-400" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-zinc-800 truncate">
+                      <p className="text-sm text-zinc-200 truncate">
                         <span className="font-semibold">{item.user}</span>{' '}
-                        <span className="text-zinc-500">{item.action}</span>
+                        <span className="text-zinc-400">{item.action}</span>
                       </p>
                     </div>
-                    <span className="text-xs text-zinc-400 shrink-0">{timeAgo(item.timestamp)}</span>
+                    <span className="text-xs text-zinc-500 shrink-0">{timeAgo(item.timestamp)}</span>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-zinc-400 text-center py-4">No activity yet</p>
+                <p className="text-sm text-zinc-500 text-center py-4">No activity yet</p>
               )}
             </div>
           </div>
@@ -469,12 +469,12 @@ function TierRow({ name, sold, capacity, price, pct }: TierRowProps) {
   return (
     <div>
       <div className="flex justify-between items-baseline mb-1.5">
-        <span className="text-sm font-semibold text-zinc-800">{name}</span>
-        <span className="text-xs text-zinc-400">
+        <span className="text-sm font-semibold text-zinc-200">{name}</span>
+        <span className="text-xs text-zinc-500">
           {sold}/{capacity} · {formatNaira(price)}
         </span>
       </div>
-      <div className="h-2 bg-zinc-100 rounded-full overflow-hidden">
+      <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
         <div
           className="h-full bg-violet-600 rounded-full transition-[width] duration-500"
           style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
@@ -496,14 +496,14 @@ interface QuickActionProps {
 function QuickAction({ icon, label, href, disabled = false }: QuickActionProps) {
   const inner = (
     <div
-      className={`flex flex-row items-center justify-start gap-3 bg-white border border-zinc-200/60 rounded-xl p-4 sm:p-5 transition-all
+      className={`flex flex-row items-center justify-start gap-3 bg-(--color-surface) border border-(--color-border) rounded-xl p-4 sm:p-5 transition-all
         ${disabled
           ? 'opacity-40 grayscale pointer-events-none'
-          : 'hover:border-zinc-300 active:scale-95 cursor-pointer'
+          : 'hover:border-zinc-700 active:scale-95 cursor-pointer'
         }`}
     >
       {icon}
-      <span className="text-[13px] sm:text-sm font-bold text-zinc-800 leading-none">
+      <span className="text-[13px] sm:text-sm font-bold text-zinc-200 leading-none">
         {label}
       </span>
     </div>
@@ -653,7 +653,7 @@ function EditDetailsForm({ event, eventId, onClose }: EditDetailsFormProps) {
           <button
             type="button"
             onClick={() => console.log('AI enhance headline')}
-            className="text-xs font-bold text-violet-600 bg-violet-50 px-2 py-1 rounded-full hover:bg-violet-100 transition-colors cursor-pointer"
+            className="text-xs font-bold text-violet-400 bg-violet-950/40 px-2 py-1 rounded-full hover:bg-violet-900/50 transition-colors cursor-pointer"
           >
             ✨ Enhance
           </button>
@@ -805,7 +805,7 @@ function EditDetailsForm({ event, eventId, onClose }: EditDetailsFormProps) {
             {performers.map((p, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-violet-200"
+                className="inline-flex items-center gap-1.5 bg-violet-950/40 text-violet-400 text-xs font-semibold px-3 py-1.5 rounded-full border border-violet-900/50"
               >
                 {p}
                 <button
@@ -840,7 +840,7 @@ function EditDetailsForm({ event, eventId, onClose }: EditDetailsFormProps) {
                 <img
                   src={url}
                   alt={`Event image ${i + 1}`}
-                  className="w-24 h-16 object-cover rounded-lg border-2 border-zinc-200 group-hover:border-violet-400 transition-colors"
+                  className="w-24 h-16 object-cover rounded-lg border-2 border-(--color-border) group-hover:border-violet-400 transition-colors"
                 />
                 <button
                   type="button"
@@ -870,7 +870,7 @@ function EditDetailsForm({ event, eventId, onClose }: EditDetailsFormProps) {
           type="button"
           disabled={uploading || images.length >= 10}
           onClick={() => fileInputRef.current?.click()}
-          className="w-full border-2 border-dashed border-zinc-300 hover:border-violet-400 rounded-xl py-5 flex items-center justify-center gap-2 text-sm font-semibold text-zinc-500 hover:text-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          className="w-full border-2 border-dashed border-zinc-700 hover:border-violet-400 rounded-xl py-5 flex items-center justify-center gap-2 text-sm font-semibold text-zinc-400 hover:text-violet-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
         >
           {uploading ? (
             <>
@@ -896,7 +896,7 @@ function EditDetailsForm({ event, eventId, onClose }: EditDetailsFormProps) {
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 py-3 px-4 border-2 border-zinc-200 text-zinc-700 text-sm font-bold rounded-2xl hover:bg-zinc-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+          className="flex-1 py-3 px-4 border-2 border-(--color-border) text-zinc-300 text-sm font-bold rounded-2xl hover:bg-zinc-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
         >
           Cancel
         </button>
@@ -1024,7 +1024,7 @@ function EditTiersForm({ event, eventId }: EditTiersFormProps) {
   return (
     <div className="space-y-4">
       {tiers.length === 0 && !addingNew && (
-        <p className="text-sm text-zinc-400 text-center py-8">
+        <p className="text-sm text-zinc-500 text-center py-8">
           No tiers yet. Add one below.
         </p>
       )}
@@ -1033,10 +1033,10 @@ function EditTiersForm({ event, eventId }: EditTiersFormProps) {
       {tiers.map(tier => (
         <div
           key={tier._id}
-          className="bg-zinc-50 border-2 border-zinc-200 rounded-2xl p-4 space-y-3"
+          className="bg-zinc-800 border-2 border-(--color-border) rounded-2xl p-4 space-y-3"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
               Tier
             </span>
             <button
@@ -1044,7 +1044,7 @@ function EditTiersForm({ event, eventId }: EditTiersFormProps) {
               onClick={() => handleDeleteTier(tier._id)}
               disabled={deleteTierMutation.isPending}
               aria-label={`Delete ${tier.name}`}
-              className="text-zinc-300 hover:text-red-500 transition-colors disabled:opacity-40 focus-visible:outline-none"
+              className="text-zinc-500 hover:text-red-400 transition-colors disabled:opacity-40 focus-visible:outline-none"
             >
               <Trash2 size={14} />
             </button>
@@ -1097,7 +1097,7 @@ function EditTiersForm({ event, eventId }: EditTiersFormProps) {
               {updateTierMutation.isPending ? 'Saving…' : 'Save Changes'}
             </button>
           ) : (
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
               <CheckCircle2 size={12} />
               Saved
             </div>
@@ -1107,8 +1107,8 @@ function EditTiersForm({ event, eventId }: EditTiersFormProps) {
 
       {/* New tier inline form */}
       {addingNew ? (
-        <div className="bg-violet-50 border-2 border-violet-200 rounded-2xl p-4 space-y-3">
-          <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest">
+        <div className="bg-violet-950/40 border-2 border-violet-900/50 rounded-2xl p-4 space-y-3">
+          <span className="text-[10px] font-black text-violet-400 uppercase tracking-widest">
             New Tier
           </span>
 
@@ -1161,7 +1161,7 @@ function EditTiersForm({ event, eventId }: EditTiersFormProps) {
                 setAddError('')
                 setNewTier({ name: '', price: '', capacity: '' })
               }}
-              className="flex-1 py-2.5 border-2 border-violet-200 text-violet-600 text-sm font-bold rounded-xl hover:bg-white transition-colors focus-visible:outline-none"
+              className="flex-1 py-2.5 border-2 border-violet-900/50 text-violet-400 text-sm font-bold rounded-xl hover:bg-violet-950/40 transition-colors focus-visible:outline-none"
             >
               Cancel
             </button>
@@ -1179,7 +1179,7 @@ function EditTiersForm({ event, eventId }: EditTiersFormProps) {
         <button
           type="button"
           onClick={() => setAddingNew(true)}
-          className="w-full py-3.5 border-2 border-dashed border-zinc-300 hover:border-violet-400 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-zinc-500 hover:text-violet-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          className="w-full py-3.5 border-2 border-dashed border-zinc-700 hover:border-violet-400 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-zinc-400 hover:text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
         >
           <Plus size={16} />
           Add New Tier

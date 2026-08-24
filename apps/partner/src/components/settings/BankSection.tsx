@@ -2,15 +2,15 @@
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Plus, Edit2, Trash2 } from 'lucide-react'
-import { ErrorMessage } from '@comfytag/ui'
+import { Plus, Trash2 } from 'lucide-react'
+import { ErrorMessage, Select, SelectItem } from '@comfytag/ui'
 import { api } from '@/lib/api'
 import { payoutKeys } from '@/hooks/queryKeys'
+import { useBankList } from '@/hooks/usePayouts'
 import type { BankAccount } from '@comfytag/types'
 
 interface BankFormData {
-  bankName: string
-  acctName: string
+  bankCode: string
   acctNumber: string
 }
 
@@ -19,58 +19,45 @@ interface Props {
 }
 
 const INPUT_CLASS =
-  'w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none disabled:opacity-50'
+  'w-full bg-zinc-800 border border-(--color-border) rounded-xl px-4 py-3 text-(--color-text) text-sm focus:bg-(--color-surface) focus:border-violet-500 transition-all placeholder:text-zinc-500 focus:outline-none focus-visible:outline-none disabled:opacity-50'
 const LABEL_CLASS =
-  'block text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider mb-2'
+  'block text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider mb-2'
 
 export function BankSection({ banks: initialBanks }: Props) {
   const { data: session } = useSession()
   const qc = useQueryClient()
+  const { data: bankList = [], isLoading: isBankListLoading } = useBankList()
   const [banks, setBanks] = useState<BankAccount[]>(initialBanks)
-  const [mode, setMode] = useState<'view' | 'add' | 'edit'>('view')
-  const [editingBank, setEditingBank] = useState<BankAccount | null>(null)
-  const [form, setForm] = useState<BankFormData>({ bankName: '', acctName: '', acctNumber: '' })
+  const [mode, setMode] = useState<'view' | 'add'>('view')
+  const [form, setForm] = useState<BankFormData>({ bankCode: '', acctNumber: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleAdd = () => {
-    setForm({ bankName: '', acctName: '', acctNumber: '' })
-    setEditingBank(null)
+    setForm({ bankCode: '', acctNumber: '' })
     setMode('add')
-    setError(null)
-  }
-
-  const handleEdit = (bank: BankAccount) => {
-    setForm({ bankName: bank.bankName, acctName: bank.acctName, acctNumber: bank.acctNumber })
-    setEditingBank(bank)
-    setMode('edit')
     setError(null)
   }
 
   const handleSave = async () => {
     if (!session?.user?.id || !session?.user?.token) return
+    if (!form.bankCode || !form.acctNumber) {
+      setError('Select a bank and enter the account number.')
+      return
+    }
     setIsSubmitting(true)
     setError(null)
 
     try {
-      if (mode === 'add') {
-        const res = await api.post(
-          `/bank/${session.user.id}`,
-          form
-        )
-        setBanks(prev => [...prev, res.data.data ?? res.data])
-        qc.invalidateQueries({ queryKey: payoutKeys.bank })
-      } else if (mode === 'edit' && editingBank) {
-        const res = await api.put(
-          `/bank/edit/${editingBank._id}`,
-          form
-        )
-        setBanks(prev => prev.map(b => b._id === editingBank._id ? (res.data.data ?? res.data) : b))
-        qc.invalidateQueries({ queryKey: payoutKeys.bank })
-      }
+      // The backend resolves this account number against Paystack and returns
+      // the verified account holder name — that's what gets saved as acctName,
+      // never whatever a client might send.
+      const res = await api.post(`/bank/${session.user.id}`, form)
+      setBanks(prev => [...prev, res.data.data ?? res.data])
+      qc.invalidateQueries({ queryKey: payoutKeys.bank })
       setMode('view')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save bank account')
+      setError(err instanceof Error ? err.message : 'Could not verify this bank account. Double-check the details and try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -90,7 +77,7 @@ export function BankSection({ banks: initialBanks }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-zinc-900">Bank Details</h2>
+        <h2 className="text-xl font-bold text-(--color-text)">Bank Details</h2>
         {mode === 'view' && (
           <button
             onClick={handleAdd}
@@ -107,33 +94,31 @@ export function BankSection({ banks: initialBanks }: Props) {
       {mode === 'view' ? (
         <div className="space-y-3">
           {banks.length === 0 ? (
-            <div className="text-center py-12 text-zinc-400 text-sm">
+            <div className="text-center py-12 text-zinc-500 text-sm">
               No bank accounts added yet
             </div>
           ) : (
             banks.map(bank => (
               <div
                 key={bank._id}
-                className="flex items-center justify-between p-4 bg-zinc-50 border border-zinc-200 rounded-xl"
+                className="flex items-center justify-between p-4 bg-zinc-800 border border-(--color-border) rounded-xl"
               >
                 <div>
-                  <p className="text-sm font-semibold text-zinc-900">{bank.bankName}</p>
-                  <p className="text-xs text-zinc-500 mt-0.5">
+                  <p className="text-sm font-semibold text-(--color-text)">{bank.bankName}</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">
                     {bank.acctName} · ****{bank.acctNumber.slice(-4)}
                   </p>
+                  {!bank.recipientCode && (
+                    <p className="text-xs text-amber-500 mt-1">
+                      Payouts not yet enabled for this account — delete and re-add to retry.
+                    </p>
+                  )}
                 </div>
                 <div className="flex gap-1.5">
                   <button
-                    onClick={() => handleEdit(bank)}
-                    aria-label="Edit bank account"
-                    className="p-2 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200 transition-all"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
                     onClick={() => handleDelete(bank._id)}
                     aria-label="Delete bank account"
-                    className="p-2 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                    className="p-2 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-950/40 transition-all"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -144,33 +129,36 @@ export function BankSection({ banks: initialBanks }: Props) {
         </div>
       ) : (
         <div className="space-y-6">
+          <p className="text-xs text-zinc-400 -mt-2">
+            We verify the account with your bank before saving — the account holder's
+            name is confirmed automatically, not typed in.
+          </p>
           <div>
-            <label className={LABEL_CLASS}>Bank Name</label>
-            <input
-              className={INPUT_CLASS}
-              value={form.bankName}
-              onChange={(e) => setForm(p => ({ ...p, bankName: e.target.value }))}
-              placeholder="e.g. GTBank, First Bank"
-              disabled={isSubmitting}
-            />
-          </div>
-          <div>
-            <label className={LABEL_CLASS}>Account Name</label>
-            <input
-              className={INPUT_CLASS}
-              value={form.acctName}
-              onChange={(e) => setForm(p => ({ ...p, acctName: e.target.value }))}
-              placeholder="Name on account"
-              disabled={isSubmitting}
-            />
+            <label className={LABEL_CLASS}>Bank</label>
+            <Select
+              value={form.bankCode}
+              onChange={(e) => setForm(p => ({ ...p, bankCode: e.target.value }))}
+              disabled={isSubmitting || isBankListLoading}
+            >
+              <SelectItem value="">
+                {isBankListLoading ? 'Loading banks…' : 'Select your bank'}
+              </SelectItem>
+              {bankList.map(b => (
+                <SelectItem key={b.code} value={b.code}>
+                  {b.name}
+                </SelectItem>
+              ))}
+            </Select>
           </div>
           <div>
             <label className={LABEL_CLASS}>Account Number</label>
             <input
               className={INPUT_CLASS}
               value={form.acctNumber}
-              onChange={(e) => setForm(p => ({ ...p, acctNumber: e.target.value }))}
+              onChange={(e) => setForm(p => ({ ...p, acctNumber: e.target.value.replace(/\D/g, '') }))}
               placeholder="10-digit NUBAN"
+              inputMode="numeric"
+              maxLength={10}
               disabled={isSubmitting}
             />
           </div>
@@ -178,16 +166,16 @@ export function BankSection({ banks: initialBanks }: Props) {
             <button
               onClick={() => setMode('view')}
               disabled={isSubmitting}
-              className="text-sm font-medium text-zinc-500 hover:text-zinc-900 py-3 px-5 rounded-xl hover:bg-zinc-100 transition-all border border-zinc-200 disabled:opacity-50"
+              className="text-sm font-medium text-zinc-400 hover:text-(--color-text) py-3 px-5 rounded-xl hover:bg-zinc-800 transition-all border border-(--color-border) disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={isSubmitting}
-              className="bg-zinc-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-zinc-800 transition-all active:scale-95 w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
+              className="bg-violet-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-violet-700 transition-all active:scale-95 w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Saving...' : mode === 'add' ? 'Add Account' : 'Save Changes'}
+              {isSubmitting ? 'Verifying...' : 'Verify & Add Account'}
             </button>
           </div>
         </div>

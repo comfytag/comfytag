@@ -63,7 +63,7 @@ function BarChart({
               x={x + barW / 2}
               y={height - 4}
               textAnchor="middle"
-              fill={colors.mobile.textMuted}
+              fill={colors.textPublic.muted}
               fontSize="10"
             >
               {d.label.slice(0, 3)}
@@ -199,11 +199,11 @@ export function ChartCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     padding: sp[5],
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
   },
   header: {
     flexDirection: 'row',
@@ -214,11 +214,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   total: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     fontWeight: '600',
   },
   empty: {
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     fontSize: fs.sm,
   },
 })

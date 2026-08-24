@@ -12,7 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import type { StackNavigationProp } from '@react-navigation/stack'
 import * as Haptics from 'expo-haptics'
-import { Mail } from 'lucide-react-native'
+import { Eye, EyeOff, Mail, ArrowRight, ChevronLeft } from 'lucide-react-native'
 import { colors, spacing, rd } from '@comfytag/ui/tokens'
 import { post } from '../../lib/api'
 import { AnimatedPressable } from '../../components/ui/AnimatedPressable'
@@ -31,7 +31,15 @@ const RegisterScreen = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
+
+  const primaryBackground = colors.public.bg
+  const surfaceBackground = colors.public.surface
+  const surfaceBorder = colors.public.border
+  const textPrimary = colors.textPublic.primary
+  const textSecondary = colors.textPublic.secondary
 
   const validate = () => {
     if (!name.trim()) {
@@ -48,6 +56,10 @@ const RegisterScreen = () => {
     }
     if (password.length < 8) {
       setError('Password must be at least 8 characters')
+      return false
+    }
+    if (!confirmPassword.trim()) {
+      setError('Please confirm your password')
       return false
     }
     if (password !== confirmPassword) {
@@ -67,6 +79,7 @@ const RegisterScreen = () => {
         username: username.trim().toLowerCase(),
         email: email.toLowerCase(),
         password,
+        confirm_password: confirmPassword,
       })
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
@@ -81,22 +94,37 @@ const RegisterScreen = () => {
     }
   }
 
+  const header = (
+    <View style={styles.header}>
+      <AnimatedPressable
+        onPress={() => navigation.goBack()}
+        style={styles.headerBack}
+        hapticStyle="light"
+      >
+        <ChevronLeft size={24} color={colors.brand.DEFAULT} strokeWidth={2} />
+      </AnimatedPressable>
+      <Text style={styles.headerBrand}>ComfyTag</Text>
+      <View style={styles.headerSpacer} />
+    </View>
+  )
+
   if (state === 'success') {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: primaryBackground }]}>
+        {header}
         <View style={styles.successContent}>
           <Mail size={64} color={colors.brand.DEFAULT} strokeWidth={2} />
-          <Text style={styles.successTitle}>Check your email</Text>
-          <Text style={styles.successText}>
-            We sent a verification link to{'\n'}
-            {email}
+          <Text style={[styles.successTitle, { color: textPrimary }]}>Check your email</Text>
+          <Text style={[styles.successText, { color: textSecondary }]}>
+            We've sent a verification link to{'\n'}{email}. Please follow the instructions to
+            activate your account.
           </Text>
           <AnimatedPressable
             onPress={() => navigation.navigate('Login')}
-            style={styles.button}
+            style={styles.primaryButton}
             hapticStyle="light"
           >
-            <Text style={styles.buttonText}>Back to Login</Text>
+            <Text style={[styles.primaryButtonText, { color: colors.textPublic.onBrand }]}>Got it</Text>
           </AnimatedPressable>
         </View>
       </SafeAreaView>
@@ -104,83 +132,125 @@ const RegisterScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.header}>Create account</Text>
-          <Text style={styles.subtitle}>Join ComfyTag today</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: primaryBackground }]}>
+      {header}
+      <KeyboardAvoidingView behavior="padding" style={styles.avoidKeyboard}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <Text style={[styles.pageHeader, { color: textPrimary }]}>Create account</Text>
+          <Text style={[styles.subtitle, { color: textSecondary }]}>
+            Join our premium biometric ecosystem for secure, seamless interactions.
+          </Text>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Full Name"
-            placeholderTextColor={colors.mobile.textMuted}
-            value={name}
-            onChangeText={setName}
-            editable={state === 'form'}
-          />
+          <View style={[styles.card, { backgroundColor: surfaceBackground, borderColor: surfaceBorder }]}>
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>Full name</Text>
+            <TextInput
+              style={[styles.plainInput, { color: textPrimary, borderColor: surfaceBorder }]}
+              placeholder="Enter your full name"
+              placeholderTextColor={colors.textPublic.secondary}
+              value={name}
+              onChangeText={setName}
+              editable={state === 'form'}
+              returnKeyType="next"
+            />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Username"
-            placeholderTextColor={colors.mobile.textMuted}
-            value={username}
-            onChangeText={setUsername}
-            autoCapitalize="none"
-            editable={state === 'form'}
-          />
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>Username</Text>
+            <TextInput
+              style={[styles.plainInput, { color: textPrimary, borderColor: surfaceBorder }]}
+              placeholder="Choose a username"
+              placeholderTextColor={colors.textPublic.secondary}
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              editable={state === 'form'}
+              returnKeyType="next"
+            />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor={colors.mobile.textMuted}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            editable={state === 'form'}
-          />
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>Email</Text>
+            <TextInput
+              style={[styles.plainInput, { color: textPrimary, borderColor: surfaceBorder }]}
+              placeholder="example@domain.com"
+              placeholderTextColor={colors.textPublic.secondary}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              editable={state === 'form'}
+              returnKeyType="next"
+            />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Password (min 8 characters)"
-            placeholderTextColor={colors.mobile.textMuted}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            editable={state === 'form'}
-          />
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>Password</Text>
+            <View style={[styles.passwordFieldContainer, { borderColor: surfaceBorder }]}>
+              <TextInput
+                style={[styles.passwordFieldInput, { color: textPrimary }]}
+                placeholder="Min. 8 characters"
+                placeholderTextColor={colors.textPublic.secondary}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                editable={state === 'form'}
+                returnKeyType="next"
+                textContentType="oneTimeCode"
+                autoComplete="off"
+                autoCorrect={false}
+                spellCheck={false}
+              />
+              <AnimatedPressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
+                {showPassword ? (
+                  <EyeOff size={18} color={colors.textPublic.secondary} strokeWidth={2} />
+                ) : (
+                  <Eye size={18} color={colors.textPublic.secondary} strokeWidth={2} />
+                )}
+              </AnimatedPressable>
+            </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm Password"
-            placeholderTextColor={colors.mobile.textMuted}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-            editable={state === 'form'}
-          />
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>Confirm Password</Text>
+            <View style={[styles.passwordFieldContainer, { borderColor: surfaceBorder }]}>
+              <TextInput
+                style={[styles.passwordFieldInput, { color: textPrimary }]}
+                placeholder="Repeat your password"
+                placeholderTextColor={colors.textPublic.secondary}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showConfirmPassword}
+                editable={state === 'form'}
+                returnKeyType="done"
+                textContentType="oneTimeCode"
+                autoComplete="off"
+                autoCorrect={false}
+                spellCheck={false}
+              />
+              <AnimatedPressable onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeButton}>
+                {showConfirmPassword ? (
+                  <EyeOff size={18} color={colors.textPublic.secondary} strokeWidth={2} />
+                ) : (
+                  <Eye size={18} color={colors.textPublic.secondary} strokeWidth={2} />
+                )}
+              </AnimatedPressable>
+            </View>
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <Text style={[styles.error, { color: colors.error.DEFAULT }]}>{error}</Text> : null}
 
-          <AnimatedPressable
-            onPress={handleRegister}
-            style={[styles.button, state === 'loading' && styles.disabled]}
-            disabled={state === 'loading'}
-            hapticStyle="light"
-          >
-            {state === 'loading' ? (
-              <ActivityIndicator color={colors.mobile.btnPrimaryText} />
-            ) : (
-              <Text style={styles.buttonText}>Create Account</Text>
-            )}
-          </AnimatedPressable>
+            <AnimatedPressable
+              onPress={handleRegister}
+              style={[styles.primaryButton, state === 'loading' && styles.disabled]}
+              disabled={state === 'loading'}
+              hapticStyle="light"
+            >
+              {state === 'loading' ? (
+                <ActivityIndicator color={colors.textPublic.onBrand} />
+              ) : (
+                <View style={styles.primaryButtonContent}>
+                  <Text style={[styles.primaryButtonText, { color: colors.textPublic.onBrand }]}>Create account</Text>
+                  <ArrowRight size={18} color={colors.textPublic.onBrand} strokeWidth={2} />
+                </View>
+              )}
+            </AnimatedPressable>
+          </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
-            <AnimatedPressable
-              onPress={() => navigation.navigate('Login')}
-            >
-              <Text style={styles.footerLink}>Sign In</Text>
+            <Text style={[styles.footerText, { color: textSecondary }]}>Already have an account?</Text>
+            <AnimatedPressable onPress={() => navigation.navigate('Login')}>
+              <Text style={[styles.footerLink, { color: colors.brand.DEFAULT }]}>Sign in</Text>
             </AnimatedPressable>
           </View>
         </ScrollView>
@@ -192,52 +262,111 @@ const RegisterScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: parseInt(spacing[4]),
+    paddingVertical: parseInt(spacing[3]),
+  },
+  headerBack: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerBrand: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: '800',
+    color: colors.brand.DEFAULT,
+  },
+  headerSpacer: {
+    width: 44,
+  },
+  avoidKeyboard: {
+    flex: 1,
   },
   content: {
     padding: parseInt(spacing[6]),
+    gap: parseInt(spacing[4]),
   },
-  header: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: colors.mobile.textPrimary,
-    marginBottom: parseInt(spacing[2]),
+  pageHeader: {
+    fontSize: 30,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    marginBottom: parseInt(spacing[1]),
   },
   subtitle: {
-    fontSize: 14,
-    color: colors.mobile.textSecondary,
+    fontSize: 15,
+    lineHeight: 22,
     marginBottom: parseInt(spacing[6]),
   },
-  input: {
-    backgroundColor: colors.mobile.surface,
+  card: {
+    width: '100%',
+    borderRadius: rd['2xl'],
     borderWidth: 1,
-    borderColor: colors.mobile.border,
-    borderRadius: rd.md,
+    padding: parseInt(spacing[5]),
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 12 },
+    shadowRadius: 24,
+    elevation: 4,
+  },
+  fieldLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: parseInt(spacing[2]),
+  },
+  plainInput: {
+    borderRadius: rd.lg,
     paddingHorizontal: parseInt(spacing[4]),
-    paddingVertical: parseInt(spacing[3]),
-    color: colors.mobile.textPrimary,
-    fontSize: 14,
+    height: 48,
+    borderWidth: 1,
+    fontSize: 16,
     marginBottom: parseInt(spacing[4]),
   },
-  error: {
-    color: colors.mobile.error,
-    fontSize: 12,
-    marginBottom: parseInt(spacing[3]),
-  },
-  button: {
-    backgroundColor: colors.mobile.btnPrimaryBg,
-    paddingVertical: parseInt(spacing[3]),
-    borderRadius: rd.md,
+  passwordFieldContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: parseInt(spacing[6]),
+    borderRadius: rd.lg,
+    borderWidth: 1,
+    paddingHorizontal: parseInt(spacing[4]),
+    height: 48,
+    marginBottom: parseInt(spacing[4]),
+  },
+  passwordFieldInput: {
+    flex: 1,
+    fontSize: 16,
+    height: '100%',
+  },
+  eyeButton: {
+    padding: parseInt(spacing[2]),
+  },
+  error: {
+    fontSize: 13,
+    marginBottom: parseInt(spacing[4]),
+  },
+  primaryButton: {
+    marginTop: parseInt(spacing[4]),
+    backgroundColor: colors.brand.DEFAULT,
+    borderRadius: rd.md,
+    paddingVertical: parseInt(spacing[4]),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: parseInt(spacing[2]),
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
   },
   disabled: {
     opacity: 0.6,
-  },
-  buttonText: {
-    color: colors.mobile.btnPrimaryText,
-    fontWeight: '600',
-    fontSize: 16,
   },
   successContent: {
     flex: 1,
@@ -248,29 +377,27 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
     marginTop: parseInt(spacing[6]),
     marginBottom: parseInt(spacing[3]),
   },
   successText: {
-    fontSize: 14,
-    color: colors.mobile.textSecondary,
+    fontSize: 15,
     textAlign: 'center',
-    marginBottom: parseInt(spacing[8]),
     lineHeight: 22,
+    marginBottom: parseInt(spacing[8]),
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: parseInt(spacing[8]),
+    gap: parseInt(spacing[2]),
+    marginTop: parseInt(spacing[4]),
   },
   footerText: {
-    color: colors.mobile.textSecondary,
     fontSize: 14,
   },
   footerLink: {
-    color: colors.brand.DEFAULT,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
   },
 })
 

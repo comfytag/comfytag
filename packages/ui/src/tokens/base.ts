@@ -84,6 +84,9 @@ export const colors = {
     pending:     { bg: '#FEF3C7', text: '#92400E' },
     rejected:    { bg: '#FEE2E2', text: '#991B1B' },
     approved:    { bg: '#D1FAE5', text: '#065F46' },
+    processing:  { bg: '#FEF3C7', text: '#92400E' },
+    sent:        { bg: '#D1FAE5', text: '#065F46' },
+    failed:      { bg: '#FEE2E2', text: '#991B1B' },
   },
 
   // Mobile dark theme (Dice.fm-inspired) — React Native only

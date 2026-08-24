@@ -32,29 +32,29 @@ export default function CreateEventPage() {
   const wizard = useCreateEventWizard()
 
   return (
-    <div className="min-h-screen bg-slate-50 text-zinc-900 pb-44 md:pb-8">
+    <div className="min-h-screen pb-44 md:pb-8">
       {/* Page header */}
       <div className="flex items-center gap-4">
         <Link
           href="/events"
-          className="flex items-center gap-1.5 text-sm font-semibold text-zinc-500 hover:text-zinc-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded-lg"
+          className="flex items-center gap-1.5 text-sm font-semibold text-zinc-400 hover:text-zinc-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded-lg"
         >
           <BackArrowIcon />
           Events
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Launch Wizard</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">Build your event in 5 steps</p>
+          <h1 className="text-2xl font-bold text-(--color-text) tracking-tight">Launch Wizard</h1>
+          <p className="text-sm text-(--color-text-muted) mt-0.5">Build your event in 5 steps</p>
         </div>
       </div>
 
       {/* Draft restore banner */}
       {wizard.hasDraft && wizard.step === 1 && (
-        <div className="flex items-center justify-between gap-4 bg-violet-50 border border-violet-200 rounded-2xl px-4 py-3 mt-4 text-sm">
-          <span className="text-violet-800 font-medium">You have an unsaved draft. Resume where you left off?</span>
+        <div className="flex items-center justify-between gap-4 bg-violet-950/40 border border-violet-900/50 rounded-2xl px-4 py-3 mt-4 text-sm">
+          <span className="text-violet-300 font-medium">You have an unsaved draft. Resume where you left off?</span>
           <button
             onClick={wizard.discardDraft}
-            className="text-violet-500 hover:text-violet-700 font-semibold shrink-0 transition-colors"
+            className="text-violet-400 hover:text-violet-300 font-semibold shrink-0 transition-colors"
           >
             Discard
           </button>

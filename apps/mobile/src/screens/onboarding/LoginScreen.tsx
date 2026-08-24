@@ -11,13 +11,13 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
 import type { StackNavigationProp } from '@react-navigation/stack'
-import { Eye, EyeOff } from 'lucide-react-native'
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { colors, spacing, rd } from '@comfytag/ui/tokens'
 import { useAuthStore, useModeStore } from '../../store'
 import { post } from '../../lib/api'
 import { AnimatedPressable } from '../../components/ui/AnimatedPressable'
-import { STORAGE_KEYS, isValidEmail } from '@comfytag/utils'
+import { STORAGE_KEYS } from '@comfytag/utils'
 import type { GuestStackParamList } from '../../navigation/types'
 import type { User, AuthResponse } from '@comfytag/types'
 
@@ -38,7 +38,9 @@ const LoginScreen = () => {
   const setMode = useModeStore((s) => s.setMode)
 
   const handleLogin = async () => {
-    if (!isValidEmail(email) || password.length < 6) {
+    // Accepts a username as well as an email — the backend now looks up
+    // whichever was entered, so don't gate submission on email format.
+    if (email.trim().length === 0 || password.length < 6) {
       setError('Invalid email or password')
       return
     }
@@ -97,119 +99,144 @@ const LoginScreen = () => {
     setState('credentials')
   }
 
+  const navigateRegister = () => navigation.navigate('Register')
+
+  const navigateForgotPassword = () => navigation.navigate('ForgotPassword')
+
+  const primaryBackground = colors.public.bg
+  const surfaceBackground = colors.public.surface
+  const surfaceBorder = colors.public.border
+  const textPrimary = colors.textPublic.primary
+  const textSecondary = colors.textPublic.secondary
+
   if (state === 'otp') {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: primaryBackground }]}> 
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.header}>Enter 2FA Code</Text>
-          <Text style={styles.subtitle}>
-            We sent a code to {email}
-          </Text>
+          <View style={[styles.card, styles.formCard]}>
+            <Text style={[styles.header, { color: textPrimary }]}>Enter 2FA Code</Text>
+            <Text style={[styles.subtitle, { color: textSecondary }]}>We sent a code to {email}</Text>
 
-          <TextInput
-            style={styles.otpInput}
-            placeholder="000000"
-            placeholderTextColor={colors.mobile.textMuted}
-            value={otp}
-            onChangeText={setOtp}
-            keyboardType="number-pad"
-            maxLength={6}
-            editable={!isOtpLoading}
-          />
+            <TextInput
+              style={[styles.input, styles.otpInput]}
+              placeholder="000000"
+              placeholderTextColor={colors.textPublic.muted}
+              value={otp}
+              onChangeText={setOtp}
+              keyboardType="number-pad"
+              maxLength={6}
+              editable={!isOtpLoading}
+            />
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          <AnimatedPressable
-            onPress={handleOtpSubmit}
-            style={[styles.button, isOtpLoading && styles.disabled]}
-            disabled={isOtpLoading}
-          >
-            {isOtpLoading ? (
-              <ActivityIndicator color={colors.mobile.btnPrimaryText} />
-            ) : (
-              <Text style={styles.buttonText}>Verify</Text>
-            )}
-          </AnimatedPressable>
+            <AnimatedPressable
+              onPress={handleOtpSubmit}
+              style={[styles.button, { backgroundColor: colors.brand.DEFAULT }, isOtpLoading && styles.disabled]}
+              disabled={isOtpLoading}
+            >
+              {isOtpLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={[styles.buttonText, { color: colors.textPublic.onBrand }]}>Verify</Text>
+              )}
+            </AnimatedPressable>
 
-          <AnimatedPressable onPress={() => setState('credentials')}>
-            <Text style={styles.link}>Back</Text>
-          </AnimatedPressable>
+            <AnimatedPressable onPress={() => setState('credentials')} style={styles.textButton}>
+              <Text style={[styles.textButtonText, { color: colors.brand.DEFAULT }]}>Back</Text>
+            </AnimatedPressable>
+          </View>
         </ScrollView>
       </SafeAreaView>
     )
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: primaryBackground }]}> 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.header}>Welcome back</Text>
-        <Text style={styles.subtitle}>Sign in to your account</Text>
+        <Text style={[styles.pageHeader, { color: colors.brand.DEFAULT }]}>ComfyTag</Text>
+        <View style={[styles.card, styles.formCard, { borderColor: surfaceBorder, backgroundColor: surfaceBackground }]}> 
+          <Text style={[styles.header, { color: textPrimary }]}>Welcome back</Text>
+          <Text style={[styles.subtitle, { color: textSecondary }]}>Enter your details to access your tickets.</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor={colors.mobile.textMuted}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          editable={state !== 'loading'}
-        />
+          <Text style={[styles.fieldLabel, { color: textSecondary }]}>Email or Username</Text>
+          <View style={[styles.fieldContainer, { backgroundColor: colors.public.surfaceAlt, borderColor: 'transparent' }]}>
+            <Mail size={18} color={colors.textPublic.secondary} strokeWidth={2} />
+            <TextInput
+              style={styles.inputField}
+              placeholder="name@example.com or username"
+              placeholderTextColor={colors.textPublic.secondary}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={state !== 'loading'}
+              returnKeyType="next"
+            />
+          </View>
 
-        <View style={styles.passwordWrapper}>
-          <TextInput
-            style={styles.passwordInput}
-            placeholder="Password"
-            placeholderTextColor={colors.mobile.textMuted}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showPassword}
-            editable={state !== 'loading'}
-          />
+          <View style={styles.fieldLabelRow}>
+            <Text style={[styles.fieldLabel, { color: textSecondary }]}>Password</Text>
+            <AnimatedPressable onPress={navigateForgotPassword}>
+              <Text style={[styles.forgotLink, { color: colors.brand.DEFAULT }]}>Forgot?</Text>
+            </AnimatedPressable>
+          </View>
+          <View style={[styles.fieldContainer, { backgroundColor: colors.public.surfaceAlt, borderColor: 'transparent' }]}>
+            <Lock size={18} color={colors.textPublic.secondary} strokeWidth={2} />
+            <TextInput
+              style={styles.inputField}
+              placeholder="••••••••"
+              placeholderTextColor={colors.textPublic.secondary}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              editable={state !== 'loading'}
+              returnKeyType="done"
+            />
+            <AnimatedPressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
+              {showPassword ? (
+                <EyeOff size={18} color={colors.textPublic.secondary} strokeWidth={2} />
+              ) : (
+                <Eye size={18} color={colors.textPublic.secondary} strokeWidth={2} />
+              )}
+            </AnimatedPressable>
+          </View>
+
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+
           <AnimatedPressable
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.eyeButton}
+            onPress={handleLogin}
+            style={[styles.button, { backgroundColor: colors.brand.DEFAULT }, state === 'loading' && styles.disabled]}
+            disabled={state === 'loading'}
+            hapticStyle="light"
           >
-            {showPassword ? (
-              <EyeOff
-                size={20}
-                color={colors.mobile.textMuted}
-                strokeWidth={2}
-              />
+            {state === 'loading' ? (
+              <ActivityIndicator color={colors.textPublic.onBrand} />
             ) : (
-              <Eye
-                size={20}
-                color={colors.mobile.textMuted}
-                strokeWidth={2}
-              />
+              <View style={styles.buttonContent}>
+                <Text style={[styles.buttonText, { color: colors.textPublic.onBrand }]}>Continue</Text>
+                <ArrowRight size={18} color={colors.textPublic.onBrand} strokeWidth={2} />
+              </View>
             )}
           </AnimatedPressable>
+
+          <View style={styles.footer}>
+            <Text style={[styles.footerText, { color: textSecondary }]}>New to ComfyTag?</Text>
+            <AnimatedPressable onPress={navigateRegister}>
+              <Text style={[styles.footerLink, { color: colors.brand.DEFAULT }]}>Create account</Text>
+            </AnimatedPressable>
+          </View>
         </View>
 
-        <AnimatedPressable onPress={() => navigation.navigate('ForgotPassword')}>
-          <Text style={styles.forgotLink}>Forgot password?</Text>
-        </AnimatedPressable>
-
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-
-        <AnimatedPressable
-          onPress={handleLogin}
-          style={[styles.button, state === 'loading' && styles.disabled]}
-          disabled={state === 'loading'}
-          hapticStyle="light"
-        >
-          {state === 'loading' ? (
-            <ActivityIndicator color={colors.mobile.btnPrimaryText} />
-          ) : (
-            <Text style={styles.buttonText}>Sign In</Text>
-          )}
-        </AnimatedPressable>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
-          <AnimatedPressable onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.footerLink}>Register</Text>
-          </AnimatedPressable>
+        <View style={styles.trustMarkers}>
+          <View style={styles.trustItem}>
+            <Text style={[styles.trustIcon, { color: colors.textPublic.secondary }]}>✓</Text>
+            <Text style={[styles.trustText, { color: textSecondary }]}>Secure Encryption</Text>
+          </View>
+          <View style={styles.trustItem}>
+            <Text style={[styles.trustIcon, { color: colors.textPublic.secondary }]}>✓</Text>
+            <Text style={[styles.trustText, { color: textSecondary }]}>PCI-DSS Compliant</Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -219,108 +246,148 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
   },
   content: {
     padding: parseInt(spacing[6]),
+    alignItems: 'center',
+    gap: parseInt(spacing[6]),
+  },
+  pageHeader: {
+    fontSize: 26,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    marginBottom: parseInt(spacing[2]),
+  },
+  card: {
+    width: '100%',
+    borderRadius: rd.xl,
+    borderWidth: 1,
+    padding: parseInt(spacing[6]),
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 24,
+    elevation: 4,
+  },
+  formCard: {
+    backgroundColor: colors.public.surface,
   },
   header: {
     fontSize: 28,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
     marginBottom: parseInt(spacing[2]),
   },
   subtitle: {
-    fontSize: 14,
-    color: colors.mobile.textSecondary,
+    fontSize: 15,
+    lineHeight: 22,
     marginBottom: parseInt(spacing[6]),
   },
-  input: {
-    backgroundColor: colors.mobile.surface,
-    borderWidth: 1,
-    borderColor: colors.mobile.border,
-    borderRadius: rd.md,
-    paddingHorizontal: parseInt(spacing[4]),
-    paddingVertical: parseInt(spacing[3]),
-    color: colors.mobile.textPrimary,
-    fontSize: 14,
-    marginBottom: parseInt(spacing[4]),
-  },
-  passwordWrapper: {
+  fieldLabelRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.mobile.surface,
-    borderWidth: 1,
-    borderColor: colors.mobile.border,
-    borderRadius: rd.md,
     marginBottom: parseInt(spacing[2]),
   },
-  passwordInput: {
-    flex: 1,
+  fieldLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: parseInt(spacing[2]),
+  },
+  fieldContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: rd.md,
     paddingHorizontal: parseInt(spacing[4]),
     paddingVertical: parseInt(spacing[3]),
-    color: colors.mobile.textPrimary,
-    fontSize: 14,
-  },
-  eyeButton: {
-    paddingHorizontal: parseInt(spacing[3]),
-    paddingVertical: parseInt(spacing[3]),
-  },
-  forgotLink: {
-    color: colors.brand.DEFAULT,
-    fontSize: 12,
+    borderWidth: 1,
+    borderColor: colors.public.border,
+    gap: parseInt(spacing[3]),
     marginBottom: parseInt(spacing[4]),
   },
+  input: {
+    flex: 1,
+    color: colors.textPublic.primary,
+    fontSize: 16,
+  },
+  otpInput: {
+    textAlign: 'center',
+    letterSpacing: 6,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  inputField: {
+    flex: 1,
+    color: colors.textPublic.primary,
+    fontSize: 16,
+  },
+  eyeButton: {
+    padding: parseInt(spacing[2]),
+  },
+  forgotLink: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
   button: {
-    backgroundColor: colors.mobile.btnPrimaryBg,
-    paddingVertical: parseInt(spacing[3]),
     borderRadius: rd.md,
+    paddingVertical: parseInt(spacing[4]),
     alignItems: 'center',
-    marginTop: parseInt(spacing[6]),
+    justifyContent: 'center',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: parseInt(spacing[2]),
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '700',
   },
   disabled: {
     opacity: 0.6,
   },
-  buttonText: {
-    color: colors.mobile.btnPrimaryText,
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  otpInput: {
-    backgroundColor: colors.mobile.surface,
-    borderWidth: 2,
-    borderColor: colors.brand.DEFAULT,
-    borderRadius: rd.md,
-    paddingHorizontal: parseInt(spacing[4]),
-    paddingVertical: parseInt(spacing[3]),
-    color: colors.mobile.textPrimary,
-    fontSize: 24,
-    textAlign: 'center',
-    letterSpacing: 4,
-    marginVertical: parseInt(spacing[6]),
-  },
-  error: {
-    color: colors.mobile.error,
-    fontSize: 12,
-    marginVertical: parseInt(spacing[2]),
-  },
-  link: {
-    color: colors.brand.DEFAULT,
-    textAlign: 'center',
-    marginTop: parseInt(spacing[4]),
-  },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: parseInt(spacing[8]),
+    gap: parseInt(spacing[2]),
+    marginTop: parseInt(spacing[4]),
   },
   footerText: {
-    color: colors.mobile.textSecondary,
     fontSize: 14,
   },
   footerLink: {
-    color: colors.brand.DEFAULT,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  error: {
+    color: colors.error.DEFAULT,
+    fontSize: 13,
+    marginTop: parseInt(spacing[2]),
+    marginBottom: parseInt(spacing[2]),
+  },
+  textButton: {
+    marginTop: parseInt(spacing[4]),
+  },
+  textButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  trustMarkers: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: parseInt(spacing[2]),
+    marginTop: parseInt(spacing[4]),
+  },
+  trustItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: parseInt(spacing[2]),
+  },
+  trustIcon: {
+    fontSize: 16,
+  },
+  trustText: {
+    fontSize: 12,
   },
 })
 

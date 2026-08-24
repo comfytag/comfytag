@@ -48,6 +48,9 @@ test_*.log
 # Project documentation (local/generated)
 deployment.md
 project-session.md
+
+# DB exports (contain PII, local use only)
+exports/
 system_overview.md
 discussion/
 test-results/

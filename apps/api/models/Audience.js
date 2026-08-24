@@ -22,6 +22,19 @@ const AudienceSchema = new Schema({
         type: Number,
         require: true,
     },
+    // What the organizer actually nets from this ticket at payout time —
+    // subtotal minus the fee the organizer absorbs (see utils/ticketFees.js).
+    // Distinct from `amount`, which is the full amount the buyer paid.
+    //
+    // Default is null, NOT 0 — this must stay distinguishable from a real
+    // computed value of 0. Tickets created before this field existed have no
+    // organizerNet stored, so Mongoose hydrates them with this default;
+    // computeAvailableBalance uses that null to fall back to `amount` for
+    // historical tickets rather than treating their earnings as zero.
+    organizerNet: {
+        type: Number,
+        default: null,
+    },
     isFreeTicket:{
         type: Boolean,
         default: false, // true if amount is 0 (free event ticket)
@@ -63,6 +76,16 @@ const AudienceSchema = new Schema({
         type: String,
         enum: ['active', 'used', 'transferred', 'refunded', 'ended', 'escrow', 'cancelled'],
         default: 'active',
+    },
+
+    // ─── Referral Redemption ────────────────────────
+    referralRedeemed: {
+        type: Boolean,
+        default: false,
+    },
+    referralCreditedAt: {
+        type: Date,
+        default: null,
     },
 
     // ─── Split Ticket Lineage ───────────────────────

@@ -31,7 +31,7 @@ function CrossIcon() {
 
 function StatusDot({ label, verified }: { label: string; verified: boolean }) {
   return (
-    <div className={`flex items-center gap-1.5 text-xs font-semibold ${verified ? 'text-emerald-600' : 'text-zinc-400'}`}>
+    <div className={`flex items-center gap-1.5 text-xs font-semibold ${verified ? 'text-emerald-400' : 'text-zinc-500'}`}>
       {verified ? <CheckIcon /> : <CrossIcon />}
       {label}
     </div>
@@ -51,9 +51,9 @@ export function CrewIdentityCard({
   const emailVerified = !!isVerify?.email
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-xl p-6 flex items-center gap-5">
+    <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-6 flex items-center gap-5">
       {/* Avatar */}
-      <div className="w-16 h-16 rounded-full bg-violet-600 flex items-center justify-center text-white text-2xl font-black shrink-0 overflow-hidden ring-4 ring-violet-100">
+      <div className="w-16 h-16 rounded-full bg-violet-600 flex items-center justify-center text-white text-2xl font-black shrink-0 overflow-hidden ring-4 ring-violet-950/50">
         {avatar ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={avatar} alt={name} className="w-full h-full object-cover" />
@@ -65,12 +65,12 @@ export function CrewIdentityCard({
       {/* Identity */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <h2 className="text-lg font-black text-zinc-900 leading-tight">{name}</h2>
-          <span className="text-[11px] font-bold bg-violet-100 text-violet-700 px-2.5 py-0.5 rounded-full tracking-wide">
+          <h2 className="text-lg font-black text-(--color-text) leading-tight">{name}</h2>
+          <span className="text-[11px] font-bold bg-violet-950/40 text-violet-400 px-2.5 py-0.5 rounded-full tracking-wide">
             Owner
           </span>
         </div>
-        <p className="text-sm text-zinc-500 mt-0.5">@{username}</p>
+        <p className="text-sm text-(--color-text-muted) mt-0.5">@{username}</p>
 
         {/* Status dots */}
         <div className="flex items-center gap-4 mt-3 flex-wrap">

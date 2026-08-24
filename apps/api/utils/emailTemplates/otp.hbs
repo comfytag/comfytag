@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your ComfyTag Password Reset Code</title>
+  <title>{{heading}} — ComfyTag</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #F5F3FF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased;">
 
@@ -25,20 +25,20 @@
           <tr>
             <td style="padding: 36px 32px 0;">
 
-              <h1 style="margin: 0 0 12px; font-size: 24px; font-weight: 800; color: #1C1917; line-height: 1.2; letter-spacing: -0.3px;">Reset Your Password</h1>
-              <p style="margin: 0 0 28px; font-size: 15px; color: #78716C; line-height: 1.65;">Use the one-time code below to reset your ComfyTag password. Do not share this code with anyone.</p>
+              <h1 style="margin: 0 0 12px; font-size: 24px; font-weight: 800; color: #1C1917; line-height: 1.2; letter-spacing: -0.3px;">{{heading}}</h1>
+              <p style="margin: 0 0 28px; font-size: 15px; color: #78716C; line-height: 1.65;">{{intro}}</p>
 
               <!-- OTP CODE BOX -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin-bottom: 24px;">
                 <tr>
                   <td style="background-color: #FAFAF9; border: 2px solid #EDE9FE; border-radius: 16px; padding: 32px 24px; text-align: center;">
-                    <p style="margin: 0 0 20px; font-size: 11px; font-weight: 700; color: #A8A29E; letter-spacing: 2px; text-transform: uppercase;">Your Reset Code</p>
+                    <p style="margin: 0 0 20px; font-size: 11px; font-weight: 700; color: #A8A29E; letter-spacing: 2px; text-transform: uppercase;">{{codeLabel}}</p>
                     <p style="margin: 0 0 20px; font-size: 44px; font-weight: 800; color: #7C3AED; letter-spacing: 12px; font-family: 'Courier New', 'Lucida Console', monospace; line-height: 1;">{{otp}}</p>
                     <!-- Expiry -->
                     <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin: 0 auto;">
                       <tr>
                         <td style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-radius: 20px; padding: 5px 14px;">
-                          <p style="margin: 0; font-size: 12px; font-weight: 600; color: #92400E;">⏱ Expires in 1 hour</p>
+                          <p style="margin: 0; font-size: 12px; font-weight: 600; color: #92400E;">⏱ Expires in {{expiryText}}</p>
                         </td>
                       </tr>
                     </table>
@@ -55,7 +55,7 @@
                         <td width="24" valign="top" style="padding-top: 1px; font-size: 15px; line-height: 1;">🔒</td>
                         <td style="padding-left: 8px;">
                           <p style="margin: 0 0 2px; font-size: 13px; font-weight: 700; color: #1C1917;">Security Notice</p>
-                          <p style="margin: 0; font-size: 13px; color: #78716C; line-height: 1.55;">If you didn't request a password reset, you can safely ignore this email. Your account is not at risk and no changes have been made.</p>
+                          <p style="margin: 0; font-size: 13px; color: #78716C; line-height: 1.55;">{{securityNotice}}</p>
                         </td>
                       </tr>
                     </table>

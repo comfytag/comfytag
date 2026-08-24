@@ -1,0 +1,265 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Welcome to ComfyTag</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e2e2e2",
+                    "primary-fixed": "#eaddff",
+                    "on-primary-fixed": "#25005a",
+                    "inverse-on-surface": "#f1f1f0",
+                    "on-secondary-container": "#fffbff",
+                    "surface": "#f9f9f8",
+                    "on-primary-container": "#ede0ff",
+                    "primary": "#630ed4",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary": "#704500",
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#d2bbff",
+                    "on-surface": "#1a1c1c",
+                    "surface-container-highest": "#e2e2e2",
+                    "secondary": "#6e3aca",
+                    "on-secondary-fixed-variant": "#581db3",
+                    "outline": "#7b7487",
+                    "inverse-surface": "#2f3130",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-error-container": "#93000a",
+                    "background": "#f9f9f8",
+                    "primary-container": "#7c3aed",
+                    "on-tertiary-fixed": "#2a1700",
+                    "surface-dim": "#dadad9",
+                    "secondary-fixed": "#ebddff",
+                    "outline-variant": "#ccc3d8",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#eeeeed",
+                    "inverse-primary": "#d2bbff",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "on-tertiary-container": "#ffe1c0",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "surface-bright": "#f9f9f8",
+                    "surface-container-high": "#e8e8e7",
+                    "on-surface-variant": "#4a4455",
+                    "on-background": "#1a1c1c",
+                    "secondary-container": "#8856e5",
+                    "on-secondary-fixed": "#250059",
+                    "surface-container-low": "#f3f4f3",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#ffddb8",
+                    "surface-tint": "#732ee4",
+                    "secondary-fixed-dim": "#d3bbff",
+                    "tertiary-container": "#905b00",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "40px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "stack-lg": "24px",
+                    "stack-md": "16px",
+                    "margin-tablet": "32px",
+                    "gutter": "16px",
+                    "margin-mobile": "20px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .onboarding-slider {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-nav {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .step-card {
+            box-shadow: 0px 4px 20px rgba(26, 28, 28, 0.04);
+        }
+        .dot-active {
+            width: 24px;
+            background-color: #630ed4;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed overflow-hidden">
+<!-- Top App Bar (Suppressed but logically consistent with brand anchors) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 glass-nav h-16 flex items-center justify-between px-margin-mobile">
+<div class="font-headline-md text-headline-md font-bold text-primary tracking-tight">ComfyTag</div>
+<button class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider hover:opacity-80 transition-opacity" onclick="skipOnboarding()">Skip</button>
+</header>
+<main class="relative w-full h-screen flex flex-col justify-center items-center pt-16">
+<!-- Onboarding Container -->
+<div class="w-full max-w-md px-margin-mobile overflow-hidden relative h-[600px]">
+<div class="onboarding-slider h-full" id="slider">
+<!-- Step 1: Discover Events -->
+<div class="min-w-full flex flex-col items-center justify-center p-base h-full">
+<div class="step-card bg-surface-container-lowest rounded-[16px] w-full p-stack-lg flex flex-col items-center text-center">
+<div class="w-full aspect-[4/3] rounded-xl overflow-hidden mb-stack-lg relative">
+<img class="w-full h-full object-cover" alt="A vibrant and energetic crowd at a modern Nigerian music festival, featuring warm golden hour lighting and high-quality photography. People are dancing with joyful expressions under a wash of purple and amber stage lights. The aesthetic is premium, clean, and captures the luxury of high-end event experiences." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBo4ubxZeubg_3VWd_DjdOzITHXywEnIUqd3asZBDffRx4tUN5_1oYML7EM6yvqDib2ZG1O4YiVi9t8dK2lp3dfbKUzUsmvD8rdeEggNho0rBfiNnYjVV8ujb_uwGf2iO_PrurHXWXUCj9DJ7teYsdOlJYC4S3duV2VxdycM8V-w5QMRX9oYSLns2qkcd4tFwT0jDtextP77S1xQEgimQOCzTJnDFws_D-MtclZI52m4cXO6x7tTa7zBQ">
+<div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-stack-sm">Discover events</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant px-stack-sm">
+                            Uncover the most exclusive concerts, festivals, and business summits happening across the city.
+                        </p>
+</div>
+</div>
+<!-- Step 2: Buy Tickets Quickly -->
+<div class="min-w-full flex flex-col items-center justify-center p-base h-full">
+<div class="step-card bg-surface-container-lowest rounded-[16px] w-full p-stack-lg flex flex-col items-center text-center">
+<div class="w-full aspect-[4/3] rounded-xl overflow-hidden mb-stack-lg flex items-center justify-center bg-primary-fixed/20 relative">
+<div class="p-8 bg-surface-container-lowest rounded-2xl shadow-xl border border-outline-variant/30 flex flex-col items-center gap-4">
+<span class="material-symbols-outlined text-primary text-6xl" style="font-variation-settings: 'wght' 200;">confirmation_number</span>
+<div class="h-2 w-24 bg-surface-variant rounded-full"></div>
+<div class="h-2 w-16 bg-surface-variant rounded-full"></div>
+</div>
+<!-- Decorative blurred circle -->
+<div class="absolute -bottom-10 -right-10 w-32 h-32 bg-secondary/10 rounded-full blur-3xl"></div>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-stack-sm">Buy tickets quickly</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant px-stack-sm">
+                            Seamless checkout with a single tap. Secure, fast, and delivered straight to your digital wallet.
+                        </p>
+</div>
+</div>
+<!-- Step 3: Check in with your face -->
+<div class="min-w-full flex flex-col items-center justify-center p-base h-full">
+<div class="step-card bg-surface-container-lowest rounded-[16px] w-full p-stack-lg flex flex-col items-center text-center">
+<div class="w-full aspect-[4/3] rounded-xl overflow-hidden mb-stack-lg relative bg-tertiary-fixed/10">
+<img class="w-full h-full object-cover" alt="A minimalist 3D rendering of a biometric face scan interface on a sleek smartphone screen. The UI shows a glowing violet scan line passing over a stylized human face silhouette. Soft lavender lighting and clean white backgrounds create a futuristic and high-trust technology feel. The design is airy and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdZYLN0rv4-E48BvFNMxjBVDstMILvDJh4CD1wJDG4dHr0DHpn2f5eJcoOKYKR5AuMTvzP7-K-okqjzmntj06V4c6I-2xtOZXb8B7bEXHblcAvEBQSpPHUmCAu6ToyQyUM0gseHNTwqAMwiw2UCE0Sy7t95maBJsKeAD6Hc8CiNX_6tN70XkKHRiqhN6ZwUTg9ulH6ZlFsF88XpL5nDEtCv3rWISiBZNq_rJuN1qMR1sBWDEawxIriYQ">
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-stack-sm">Check in with your face</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant px-stack-sm">
+                            Skip the long queues. Our advanced facial recognition ensures a smooth and hands-free entry.
+                        </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Controls Footer -->
+<div class="w-full max-w-md px-margin-mobile flex flex-col items-center gap-stack-lg mt-stack-lg">
+<!-- Progress Dots -->
+<div class="flex gap-2">
+<div class="h-2 w-2 rounded-full bg-outline-variant transition-all duration-300 dot-active" id="dot-0"></div>
+<div class="h-2 w-2 rounded-full bg-outline-variant transition-all duration-300" id="dot-1"></div>
+<div class="h-2 w-2 rounded-full bg-outline-variant transition-all duration-300" id="dot-2"></div>
+</div>
+<!-- Primary Action -->
+<button class="w-full min-h-[56px] bg-primary text-on-primary font-title-lg text-title-lg rounded-xl active:scale-[0.98] transition-transform duration-200 shadow-lg shadow-primary/20" id="nextBtn" onclick="nextStep()">
+                Continue
+            </button>
+<!-- Secondary Action (Initially hidden/Back button logic) -->
+<button class="font-label-md text-label-md text-on-surface-variant opacity-0 transition-opacity pointer-events-none" id="backBtn" onclick="prevStep()">
+                Back
+            </button>
+</div>
+</main>
+<script>
+        let currentStep = 0;
+        const totalSteps = 3;
+        const slider = document.getElementById('slider');
+        const nextBtn = document.getElementById('nextBtn');
+        const backBtn = document.getElementById('backBtn');
+
+        function updateUI() {
+            // Slide transition
+            slider.style.transform = `translateX(-${currentStep * 100}%)`;
+
+            // Update dots
+            for (let i = 0; i < totalSteps; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (i === currentStep) {
+                    dot.classList.add('dot-active');
+                    dot.classList.remove('bg-outline-variant');
+                } else {
+                    dot.classList.remove('dot-active');
+                    dot.classList.add('bg-outline-variant');
+                }
+            }
+
+            // Update button text on last step
+            if (currentStep === totalSteps - 1) {
+                nextBtn.innerText = "Get Started";
+            } else {
+                nextBtn.innerText = "Continue";
+            }
+
+            // Show/Hide back button
+            if (currentStep > 0) {
+                backBtn.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                backBtn.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps - 1) {
+                currentStep++;
+                updateUI();
+            } else {
+                // Final completion logic
+                completeOnboarding();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                updateUI();
+            }
+        }
+
+        function skipOnboarding() {
+            completeOnboarding();
+        }
+
+        function completeOnboarding() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease-out';
+            setTimeout(() => {
+                console.log('Onboarding Complete - Navigating to Home');
+                // Normally window.location.href = '/home'
+            }, 500);
+        }
+    </script>
+</body></html>

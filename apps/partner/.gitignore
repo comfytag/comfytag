@@ -9,6 +9,14 @@ dist/
 .next/static
 .next/
 
+# next-pwa generated service worker (rebuilt on every `next build`)
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map
+/public/worker-*.js
+/public/worker-*.js.map
+
 # Compiled Java class files
 *.class
 

@@ -24,10 +24,10 @@ type Props = StackScreenProps<OrganizerEventsStackParamList, 'OrganizerEventDeta
 const FINANCIAL_GOLD = '#D97706'
 
 const STATUS_BADGE: Record<string, { bg: string; text: string }> = {
-  draft:     { bg: '#292524', text: '#A8A29E' },
-  published: { bg: '#14532D', text: '#86EFAC' },
-  cancelled: { bg: '#450A0A', text: '#FCA5A5' },
-  completed: { bg: '#1C1917', text: '#78716C' },
+  draft:     { bg: '#F5F5F4', text: '#78716C' },
+  published: { bg: '#D1FAE5', text: '#065F46' },
+  cancelled: { bg: '#FEE2E2', text: '#991B1B' },
+  completed: { bg: '#F5F5F4', text: '#78716C' },
 }
 
 // ─── StatCard ─────────────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ function ActionRow({ label, onPress, isLast = false }: ActionRowProps) {
     <AnimatedPressable hapticStyle="light" onPress={onPress}>
       <View style={[styles.actionRow, !isLast && styles.actionRowBorder]}>
         <Text style={styles.actionLabel}>{label}</Text>
-        <ChevronRight size={18} color={colors.mobile.textMuted} strokeWidth={2} />
+        <ChevronRight size={18} color={colors.textPublic.muted} strokeWidth={2} />
       </View>
     </AnimatedPressable>
   )
@@ -144,7 +144,7 @@ export default function EventDetailScreen({ navigation, route }: Props) {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ChevronLeft size={24} color={colors.mobile.textPrimary} strokeWidth={2} />
+          <ChevronLeft size={24} color={colors.textPublic.primary} strokeWidth={2} />
         </AnimatedPressable>
         <Text style={styles.headerTitle} numberOfLines={1}>{eventName}</Text>
         <View style={styles.headerSpacer} />
@@ -181,7 +181,7 @@ export default function EventDetailScreen({ navigation, route }: Props) {
             <StatCard
               value={String(analytics.checkInCount)}
               label="Check-ins"
-              valueColor={colors.mobile.success}
+              valueColor={colors.success.DEFAULT}
             />
           </View>
 
@@ -258,7 +258,7 @@ export default function EventDetailScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   header: {
     flexDirection: 'row',
@@ -278,8 +278,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     paddingHorizontal: sp[2],
+    textTransform: 'capitalize',
   },
   headerSpacer: {
     width: 44,
@@ -295,10 +296,10 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     paddingVertical: sp[4],
     paddingHorizontal: sp[2],
     alignItems: 'center',
@@ -310,20 +311,20 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
   },
   card: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     padding: sp[4],
   },
   sectionTitle: {
     fontSize: fs.sm,
     fontWeight: '700',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
     marginBottom: sp[3],
@@ -336,18 +337,18 @@ const styles = StyleSheet.create({
   },
   infoRowBorder: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.mobile.border,
+    borderBottomColor: colors.public.border,
   },
   infoRowStatus: {
     // last row — no bottom border
   },
   infoLabel: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   infoValue: {
     fontSize: fs.sm,
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'right',
     flex: 1,
     marginLeft: sp[4],
@@ -369,12 +370,12 @@ const styles = StyleSheet.create({
   },
   tierRowBorder: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.mobile.border,
+    borderBottomColor: colors.public.border,
   },
   tierName: {
     fontSize: fs.sm,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   tierRight: {
     alignItems: 'flex-end',
@@ -387,7 +388,7 @@ const styles = StyleSheet.create({
   },
   tierProgress: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   actionRow: {
     flexDirection: 'row',
@@ -397,11 +398,11 @@ const styles = StyleSheet.create({
   },
   actionRowBorder: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.mobile.border,
+    borderBottomColor: colors.public.border,
   },
   actionLabel: {
     fontSize: fs.base,
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   centeredMessage: {
     flex: 1,
@@ -411,7 +412,7 @@ const styles = StyleSheet.create({
   },
   mutedText: {
     fontSize: fs.base,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   retryButton: {
     paddingHorizontal: sp[6],

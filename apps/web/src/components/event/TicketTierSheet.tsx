@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { Button } from '@comfytag/ui'
-import { formatNaira, calculatePlatformFee, calculatePaystackFee } from '@comfytag/utils'
+import { formatNaira, calculateTicketCharge } from '@comfytag/utils'
 import type { TicketTier } from '@comfytag/types'
 
 const MAX_TICKETS_PER_ORDER = 10
@@ -67,10 +67,12 @@ export function TicketTierSheet({
     setQty((prev) => Math.min(prev, Math.max(maxQty, 1)))
   }, [maxQty])
 
-  const subtotal = selectedTier ? selectedTier.price * qty : 0
-  const platformFee = calculatePlatformFee(subtotal, 4)
-  const processingFee = calculatePaystackFee(subtotal)
-  const total = subtotal + platformFee + processingFee
+  const charge = selectedTier
+    ? calculateTicketCharge(selectedTier.price, qty)
+    : { subtotal: 0, buyerFee: 0, organizerFee: 0, totalCharge: 0, organizerNet: 0 }
+  const subtotal = charge.subtotal
+  const processingFee = charge.buyerFee
+  const total = charge.totalCharge
 
   function handleDecrement() {
     setQty((prev) => Math.max(1, prev - 1))
@@ -307,12 +309,7 @@ export function TicketTierSheet({
       {selectedTier && (
         <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-100 space-y-2 mt-4 text-sm" style={{ marginBottom: '20px' }}>
           <FeeRow label="Ticket subtotal" value={formatNaira(subtotal)} />
-          <FeeRow label="Platform fee (4%)" value={formatNaira(platformFee)} muted />
-          <FeeRow
-            label="Processing fee (1.5% + ₦100)"
-            value={formatNaira(processingFee)}
-            muted
-          />
+          <FeeRow label="Processing fee" value={formatNaira(processingFee)} muted />
           <div
             style={{
               borderTop: '1px solid var(--color-border)',

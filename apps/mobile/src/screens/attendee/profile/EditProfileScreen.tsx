@@ -3,21 +3,22 @@ import {
   View,
   Text,
   TextInput,
+  Image,
   ScrollView,
   KeyboardAvoidingView,
   ActivityIndicator,
-  Alert,
   StyleSheet,
   Platform,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import * as ImagePicker from 'expo-image-picker'
 import type { StackScreenProps } from '@react-navigation/stack'
-import { ChevronLeft } from 'lucide-react-native'
-import { initials } from '@comfytag/utils'
+import { ChevronLeft, Fingerprint, ShieldCheck, History } from 'lucide-react-native'
+import { initials, formatDate } from '@comfytag/utils'
 import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
 import { AnimatedPressable } from '../../../components/ui/AnimatedPressable'
 import { useAuthStore } from '../../../store'
-import { useUpdateProfile } from '../../../hooks'
+import { useUpdateProfile, useUploadProfilePhoto } from '../../../hooks'
 import type { ProfileStackParamList } from '../../../navigation/types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -37,19 +38,51 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
   const [errorMessage, setErrorMessage] = useState<string>('')
 
   const { mutate: updateProfile, isPending: isSaving } = useUpdateProfile()
+  const { mutate: uploadPhoto, isPending: isUploadingPhoto } = useUploadProfilePhoto()
 
   const hasChanges =
     name.trim() !== originalName.trim() || phone.trim() !== originalPhone.trim()
   const saveDisabled = !hasChanges || isSaving
 
-  // ─── Avatar initials ───────────────────────────────────────────────────
+  // ─── Avatar ──────────────────────────────────────────────────────────────
 
   const avatarInitials = initials(name.trim() !== '' ? name : originalName)
+  const avatarUrl = storeUser?.image ?? storeUser?.avatar ?? ''
 
-  // ─── Change photo placeholder ──────────────────────────────────────────
+  // Commits immediately on pick, independent of the Save button below —
+  // matches the usual "tap avatar, it just updates" convention rather than
+  // bundling it with the name/phone form fields.
+  const handleChangePhoto = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (!permission.granted) {
+      setErrorMessage('Photo library access is needed to change your profile photo.')
+      return
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+      allowsEditing: true,
+      aspect: [1, 1],
+    })
+    if (result.canceled || result.assets.length === 0) return
 
-  const handleChangePhoto = () => {
-    Alert.alert('Coming Soon', 'Photo upload coming soon.')
+    const asset = result.assets[0]
+    setErrorMessage('')
+    uploadPhoto(
+      {
+        uri: asset.uri,
+        name: asset.fileName ?? `avatar-${Date.now()}.jpg`,
+        type: asset.mimeType ?? 'image/jpeg',
+      },
+      {
+        onSuccess: (data) => {
+          if (data.url) updateProfile({ image: data.url })
+        },
+        onError: () => {
+          setErrorMessage('Could not upload photo. Please try again.')
+        },
+      }
+    )
   }
 
   // ─── Save ──────────────────────────────────────────────────────────────
@@ -80,7 +113,7 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
           style={styles.backButton}
           hapticStyle="light"
         >
-          <ChevronLeft size={24} color={colors.mobile.textPrimary} strokeWidth={2} />
+          <ChevronLeft size={24} color={colors.textPublic.primary} strokeWidth={2} />
         </AnimatedPressable>
         <Text style={styles.headerTitle}>Edit Profile</Text>
         <AnimatedPressable
@@ -113,14 +146,26 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
           {/* Avatar section */}
           <View style={styles.avatarSection}>
             <View style={styles.avatarCircle}>
-              <Text style={styles.avatarInitials}>{avatarInitials}</Text>
+              {avatarUrl !== '' ? (
+                <Image source={{ uri: avatarUrl }} style={styles.avatarImage} resizeMode="cover" />
+              ) : (
+                <Text style={styles.avatarInitials}>{avatarInitials}</Text>
+              )}
+              {isUploadingPhoto && (
+                <View style={styles.avatarUploadingOverlay}>
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                </View>
+              )}
             </View>
             <AnimatedPressable
-              onPress={handleChangePhoto}
+              onPress={() => void handleChangePhoto()}
               style={styles.changePhotoPressable}
               hapticStyle="light"
+              disabled={isUploadingPhoto}
             >
-              <Text style={styles.changePhotoText}>Change Photo</Text>
+              <Text style={styles.changePhotoText}>
+                {isUploadingPhoto ? 'Uploading…' : 'Change Photo'}
+              </Text>
             </AnimatedPressable>
           </View>
 
@@ -134,7 +179,7 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
                 value={name}
                 onChangeText={setName}
                 placeholder="Your full name"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
                 returnKeyType="next"
                 autoCapitalize="words"
                 autoCorrect={false}
@@ -151,7 +196,7 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
                 value={phone}
                 onChangeText={setPhone}
                 placeholder="+234 000 000 0000"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
                 keyboardType="phone-pad"
                 returnKeyType="done"
                 autoCorrect={false}
@@ -180,6 +225,40 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
             </View>
           )}
 
+          {/* Biometric hint */}
+          <View style={styles.biometricHint}>
+            <Fingerprint size={22} color={colors.textPublic.muted} strokeWidth={1.5} />
+            <Text style={styles.biometricHintText}>
+              Your identity updates are secured by ComfyTag biometric standards.
+            </Text>
+          </View>
+
+          {/* Contextual info cards */}
+          <View style={styles.contextRow}>
+            <View style={styles.contextCard}>
+              <View style={styles.contextCardHeader}>
+                <ShieldCheck size={16} color={colors.brand.DEFAULT} strokeWidth={2} />
+                <Text style={styles.contextCardLabel}>VERIFIED</Text>
+              </View>
+              <Text style={styles.contextCardBody}>
+                {storeUser?.isVerify?.email === true
+                  ? 'Your email is verified.'
+                  : 'Your email is not yet verified.'}
+              </Text>
+            </View>
+            <View style={styles.contextCard}>
+              <View style={styles.contextCardHeader}>
+                <History size={16} color={colors.textPublic.secondary} strokeWidth={2} />
+                <Text style={styles.contextCardLabel}>LAST UPDATE</Text>
+              </View>
+              <Text style={styles.contextCardBody}>
+                {storeUser?.updatedAt !== undefined
+                  ? `Profile was last updated ${formatDate(storeUser.updatedAt)}.`
+                  : 'No update history yet.'}
+              </Text>
+            </View>
+          </View>
+
           <View style={styles.bottomSpacer} />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -193,7 +272,7 @@ const styles = StyleSheet.create({
   // ── Root ─────────────────────────────────────────────────────────────────
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   keyboardAvoid: {
     flex: 1,
@@ -206,7 +285,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: sp[4],
     paddingTop: sp[2],
     paddingBottom: sp[3],
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   backButton: {
     width: 44,
@@ -218,7 +297,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
   },
   saveButton: {
@@ -233,7 +312,7 @@ const styles = StyleSheet.create({
     color: colors.brand.DEFAULT,
   },
   saveTextDisabled: {
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
 
   // ── Scroll ────────────────────────────────────────────────────────────────
@@ -258,11 +337,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: sp[3],
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarUploadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatarInitials: {
     fontSize: fs['2xl'],
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: '#FFFFFF',
     letterSpacing: 1,
   },
   changePhotoPressable: {
@@ -280,12 +370,12 @@ const styles = StyleSheet.create({
 
   // ── Form card ─────────────────────────────────────────────────────────────
   formCard: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     paddingHorizontal: sp[4],
     marginBottom: sp[4],
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
   },
   fieldGroup: {
     paddingTop: sp[4],
@@ -293,28 +383,28 @@ const styles = StyleSheet.create({
   },
   fieldDivider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.mobile.border,
+    backgroundColor: colors.public.border,
   },
   fieldLabel: {
     fontSize: fs.xs,
     fontWeight: '600',
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: sp[2],
   },
   textInput: {
     fontSize: fs.base,
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     paddingVertical: sp[2],
     minHeight: 44,
   },
   textInputDisabled: {
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   fieldNote: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: 4,
   },
 
@@ -329,8 +419,54 @@ const styles = StyleSheet.create({
   },
   errorBannerText: {
     fontSize: fs.sm,
-    color: colors.mobile.error,
+    color: colors.error.DEFAULT,
     fontWeight: '500',
+  },
+
+  // ── Biometric hint ────────────────────────────────────────────────────────
+  biometricHint: {
+    alignItems: 'center',
+    gap: sp[2],
+    paddingVertical: sp[4],
+  },
+  biometricHintText: {
+    fontSize: fs.xs,
+    color: colors.textPublic.muted,
+    textAlign: 'center',
+    maxWidth: 260,
+  },
+
+  // ── Contextual info cards ─────────────────────────────────────────────────
+  contextRow: {
+    flexDirection: 'row',
+    gap: sp[3],
+    marginTop: sp[2],
+  },
+  contextCard: {
+    flex: 1,
+    backgroundColor: colors.public.surfaceAlt,
+    borderRadius: rd.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.public.border,
+    padding: sp[3],
+    gap: sp[1],
+  },
+  contextCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sp[1],
+    marginBottom: 2,
+  },
+  contextCardLabel: {
+    fontSize: fs.xs,
+    fontWeight: '700',
+    color: colors.textPublic.secondary,
+    letterSpacing: 0.5,
+  },
+  contextCardBody: {
+    fontSize: fs.xs,
+    color: colors.textPublic.muted,
+    lineHeight: 16,
   },
 
   // ── Bottom spacer ─────────────────────────────────────────────────────────

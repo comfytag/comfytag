@@ -56,7 +56,8 @@ export function EventShareRow({ onShare, onHypeLink, shareToast, hypeLinkLoading
           {shareToast ? 'Link Copied ✓' : 'Share Event'}
         </button>
 
-        <button
+{/* Share ype link */}
+        {/* <button
           type="button"
           onClick={onHypeLink}
           disabled={hypeLinkLoading}
@@ -80,7 +81,7 @@ export function EventShareRow({ onShare, onHypeLink, shareToast, hypeLinkLoading
           }}
         >
           🔗 {hypeLinkLoading ? 'Getting link…' : 'Share Hype Link'}
-        </button>
+        </button> */}
       </div>
     </>
   )

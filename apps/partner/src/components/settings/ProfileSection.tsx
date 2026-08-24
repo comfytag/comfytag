@@ -12,9 +12,9 @@ interface Props {
 }
 
 const INPUT_CLASS =
-  'w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none disabled:opacity-50'
+  'w-full bg-zinc-800 border border-(--color-border) rounded-xl px-4 py-3 text-(--color-text) text-sm focus:bg-(--color-surface) focus:border-violet-500 transition-all placeholder:text-zinc-500 focus:outline-none focus-visible:outline-none disabled:opacity-50'
 const LABEL_CLASS =
-  'block text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider mb-2'
+  'block text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider mb-2'
 
 export function ProfileSection({ user }: Props) {
   const router = useRouter()
@@ -56,7 +56,7 @@ export function ProfileSection({ user }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-zinc-900">Profile</h2>
+        <h2 className="text-xl font-bold text-(--color-text)">Profile</h2>
         {!isEditing && (
           <button
             onClick={handleEdit}
@@ -73,15 +73,15 @@ export function ProfileSection({ user }: Props) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <p className={LABEL_CLASS}>Name</p>
-            <p className="text-sm text-zinc-900 font-medium">{user?.name || '—'}</p>
+            <p className="text-sm text-(--color-text) font-medium">{user?.name || '—'}</p>
           </div>
           <div>
             <p className={LABEL_CLASS}>Email</p>
-            <p className="text-sm text-zinc-900 font-medium">{user?.email || '—'}</p>
+            <p className="text-sm text-(--color-text) font-medium">{user?.email || '—'}</p>
           </div>
           <div>
             <p className={LABEL_CLASS}>Phone</p>
-            <p className="text-sm text-zinc-900 font-medium">{user?.phone || '—'}</p>
+            <p className="text-sm text-(--color-text) font-medium">{user?.phone || '—'}</p>
           </div>
           <div>
             <p className={LABEL_CLASS}>Avatar</p>
@@ -89,10 +89,10 @@ export function ProfileSection({ user }: Props) {
               <img
                 src={user.avatar ?? user.image}
                 alt="Avatar"
-                className="w-12 h-12 rounded-full object-cover border-2 border-zinc-100"
+                className="w-12 h-12 rounded-full object-cover border-2 border-zinc-800"
               />
             ) : (
-              <p className="text-sm text-zinc-400">—</p>
+              <p className="text-sm text-zinc-500">—</p>
             )}
           </div>
         </div>
@@ -132,14 +132,14 @@ export function ProfileSection({ user }: Props) {
             <button
               onClick={() => setIsEditing(false)}
               disabled={isSubmitting}
-              className="text-sm font-medium text-zinc-500 hover:text-zinc-900 py-3 px-5 rounded-xl hover:bg-zinc-100 transition-all border border-zinc-200 disabled:opacity-50"
+              className="text-sm font-medium text-zinc-400 hover:text-(--color-text) py-3 px-5 rounded-xl hover:bg-zinc-800 transition-all border border-(--color-border) disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={isSubmitting}
-              className="bg-zinc-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-zinc-800 transition-all active:scale-95 w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
+              className="bg-violet-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-violet-700 transition-all active:scale-95 w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </button>

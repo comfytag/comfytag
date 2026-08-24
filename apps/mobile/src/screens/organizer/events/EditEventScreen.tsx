@@ -149,7 +149,7 @@ export default function EditEventScreen({ navigation, route }: Props) {
           style={styles.backButton}
           hapticStyle="light"
         >
-          <ChevronLeft size={24} color={colors.mobile.textPrimary} strokeWidth={2} />
+          <ChevronLeft size={24} color={colors.textPublic.primary} strokeWidth={2} />
         </AnimatedPressable>
         <Text style={styles.headerTitle}>Edit Event</Text>
         <AnimatedPressable
@@ -195,7 +195,7 @@ export default function EditEventScreen({ navigation, route }: Props) {
                 value={form.name}
                 onChangeText={(v) => setField('name', v)}
                 placeholder="e.g. Lagos Music Festival"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
               />
             </Field>
             <Field label="Category">
@@ -204,7 +204,7 @@ export default function EditEventScreen({ navigation, route }: Props) {
                 value={form.category}
                 onChangeText={(v) => setField('category', v)}
                 placeholder="Music, Comedy, Fashion…"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
               />
             </Field>
             <Field label="Description">
@@ -213,7 +213,7 @@ export default function EditEventScreen({ navigation, route }: Props) {
                 value={form.description}
                 onChangeText={(v) => setField('description', v)}
                 placeholder="Tell attendees what to expect…"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
                 multiline
                 textAlignVertical="top"
               />
@@ -224,7 +224,7 @@ export default function EditEventScreen({ navigation, route }: Props) {
                 value={form.date}
                 onChangeText={(v) => setField('date', v)}
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
                 keyboardType="numbers-and-punctuation"
               />
             </Field>
@@ -234,7 +234,7 @@ export default function EditEventScreen({ navigation, route }: Props) {
                 value={form.startTime}
                 onChangeText={(v) => setField('startTime', v)}
                 placeholder="HH:MM"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
                 keyboardType="numbers-and-punctuation"
               />
             </Field>
@@ -244,7 +244,7 @@ export default function EditEventScreen({ navigation, route }: Props) {
                 value={form.endTime}
                 onChangeText={(v) => setField('endTime', v)}
                 placeholder="HH:MM"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
                 keyboardType="numbers-and-punctuation"
               />
             </Field>
@@ -254,7 +254,7 @@ export default function EditEventScreen({ navigation, route }: Props) {
                 value={form.venue}
                 onChangeText={(v) => setField('venue', v)}
                 placeholder="e.g. Eko Hotel"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
               />
             </Field>
             <Field label="Address">
@@ -263,7 +263,7 @@ export default function EditEventScreen({ navigation, route }: Props) {
                 value={form.address}
                 onChangeText={(v) => setField('address', v)}
                 placeholder="Full street address"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
               />
             </Field>
             <Field label="State">
@@ -272,7 +272,7 @@ export default function EditEventScreen({ navigation, route }: Props) {
                 value={form.state}
                 onChangeText={(v) => setField('state', v)}
                 placeholder="e.g. Lagos"
-                placeholderTextColor={colors.mobile.textMuted}
+                placeholderTextColor={colors.textPublic.muted}
               />
             </Field>
 
@@ -293,7 +293,7 @@ export default function EditEventScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   flex: {
     flex: 1,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     paddingTop: sp[3],
     paddingBottom: sp[3],
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.mobile.border,
+    borderBottomColor: colors.public.border,
   },
   backButton: {
     width: 44,
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   saveButton: {
     minWidth: 44,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     color: colors.brand.DEFAULT,
   },
   saveTextDisabled: {
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   scrollContent: {
     paddingHorizontal: sp[4],
@@ -346,18 +346,18 @@ const styles = StyleSheet.create({
   fieldLabel: {
     fontSize: fs.sm,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     marginBottom: sp[2],
   },
   textInput: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     borderRadius: rd.lg,
     paddingHorizontal: sp[4],
     paddingVertical: sp[3],
     fontSize: fs.base,
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     minHeight: 48,
   },
   textArea: {
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   },
   errorStateText: {
     fontSize: fs.base,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   retryButton: {
     paddingHorizontal: sp[6],
@@ -386,14 +386,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   saveErrorBanner: {
-    backgroundColor: '#450A0A',
+    backgroundColor: 'rgba(239,68,68,0.08)',
     borderRadius: rd.lg,
     padding: sp[4],
     marginTop: sp[2],
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.2)',
   },
   saveErrorText: {
     fontSize: fs.sm,
-    color: '#FCA5A5',
+    color: colors.error.DEFAULT,
     textAlign: 'center',
   },
 })

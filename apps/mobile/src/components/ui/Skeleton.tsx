@@ -97,7 +97,7 @@ export function SkeletonRow({
 
 const styles = StyleSheet.create({
   base: {
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
   },
   row: {
     gap: 6,

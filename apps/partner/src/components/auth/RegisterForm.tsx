@@ -49,7 +49,7 @@ export function RegisterForm() {
     } catch (err: unknown) {
       const e = err as { response?: { status?: number; data?: { message?: string } } }
       if (e.response?.status === 409) {
-        setError('An account with this email already exists. Please sign in instead.')
+        setError('An account with this email already exists. Sign in instead — if it\'s an attendee account, use "Sign in with Google" or upgrade it from your profile on the ComfyTag app.')
       } else {
         setError(e.response?.data?.message ?? 'Registration failed. Please try again.')
       }

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Following - ComfyTag</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "on-secondary-fixed": "#1e1b19",
+                        "secondary": "#625d5b",
+                        "surface-bright": "#f9f9f8",
+                        "outline": "#7b7487",
+                        "on-secondary-container": "#686361",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-primary-fixed": "#25005a",
+                        "tertiary": "#4d4f4e",
+                        "inverse-primary": "#d2bbff",
+                        "surface-dim": "#dadad9",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#e9e1dd",
+                        "on-primary-container": "#ede0ff",
+                        "tertiary-fixed-dim": "#c6c7c6",
+                        "outline-variant": "#ccc3d8",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d2bbff",
+                        "inverse-on-surface": "#f1f1f0",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#4a4455",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#630ed4",
+                        "tertiary-container": "#656766",
+                        "primary-fixed": "#eaddff",
+                        "background": "#f9f9f8",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eeeeed",
+                        "on-background": "#1a1c1c",
+                        "primary-container": "#7c3aed",
+                        "surface-tint": "#732ee4",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-low": "#f3f4f3",
+                        "inverse-surface": "#2f3130",
+                        "secondary-fixed-dim": "#ccc5c2",
+                        "surface": "#f9f9f8",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-container": "#e9e1dd",
+                        "surface-variant": "#e2e2e2",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-container-high": "#e8e8e7",
+                        "on-secondary-fixed-variant": "#4a4643",
+                        "on-tertiary-container": "#e6e6e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "stack-gap": "16px",
+                        "section-gap": "32px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-rg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-rg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #f5f5f4 25%, #e7e5e4 50%, #f5f5f4 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        body {
+            background-color: #f9f9f8;
+            color: #1a1c1c;
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-24">
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-4 h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors duration-200" onclick="window.history.back()">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<div class="flex items-center gap-2">
+<h1 class="font-title-md text-title-md text-on-surface">Following</h1>
+<span class="bg-primary-container text-on-primary-container px-2 py-0.5 rounded-full text-label-caps font-label-caps">12</span>
+</div>
+</div>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors duration-200">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+</button>
+</header>
+<main class="mt-16 px-gutter max-w-2xl mx-auto">
+<!-- Search/Filter Tab Logic (Visual Only) -->
+<div class="flex gap-4 py-4 overflow-x-auto no-scrollbar">
+<button class="px-4 py-2 bg-primary text-on-primary rounded-full font-label-caps text-label-caps whitespace-nowrap">Organizers</button>
+<button class="px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-full font-label-caps text-label-caps whitespace-nowrap">Brands</button>
+<button class="px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-full font-label-caps text-label-caps whitespace-nowrap">Communities</button>
+</div>
+<!-- Skeleton Loading State (Initially Visible, hidden by JS) -->
+<section class="space-y-4" id="skeleton-container">
+<div class="flex items-center justify-between p-4 bg-white rounded-xl border border-outline-variant">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full skeleton"></div>
+<div class="space-y-2">
+<div class="w-32 h-4 rounded skeleton"></div>
+<div class="w-48 h-3 rounded skeleton"></div>
+</div>
+</div>
+<div class="w-20 h-8 rounded-full skeleton"></div>
+</div>
+<div class="flex items-center justify-between p-4 bg-white rounded-xl border border-outline-variant">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full skeleton"></div>
+<div class="space-y-2">
+<div class="w-24 h-4 rounded skeleton"></div>
+<div class="w-40 h-3 rounded skeleton"></div>
+</div>
+</div>
+<div class="w-20 h-8 rounded-full skeleton"></div>
+</div>
+<div class="flex items-center justify-between p-4 bg-white rounded-xl border border-outline-variant opacity-60">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full skeleton"></div>
+<div class="space-y-2">
+<div class="w-36 h-4 rounded skeleton"></div>
+<div class="w-44 h-3 rounded skeleton"></div>
+</div>
+</div>
+<div class="w-20 h-8 rounded-full skeleton"></div>
+</div>
+</section>
+<!-- Main Content (Organizers List) -->
+<section class="hidden space-y-4 mt-2" id="organizers-list">
+<!-- Organizer Row 1 -->
+<div class="flex items-center justify-between p-4 bg-white rounded-xl border border-outline-variant hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" alt="A professional studio portrait of a modern digital artist with soft warm lighting, neutral studio background, high-end commercial aesthetic. The person is wearing minimalist charcoal clothing, representing a creative entrepreneur in the premium ComfyTag ecosystem." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCfmUZ-fihS_izIGYwM5_1fAuwWwByL6XvasKWLlpljsCY8u-mr3aRTlRO7hJXqutCxN-zYrT0EYHzt-oSFSOUaqIbsFQluID-J58bc1TI5Njk7mGFgUBuRwbcXrsbISM8fa_ZcacGCVJP3Du3j9cuJMUti81CDqlxfLEitpxCXBpKY2rN4GwLNSVWMjVw2MVmgT01g9DNWewpzEEdaiupKyqscGGj6lDAk4hnrxzGfcJJ8yWIhJrjlg"/>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-on-surface">Elena Rodriguez</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">elena.creatives@comfytag.net</span>
+</div>
+</div>
+<button class="px-4 py-1.5 border border-outline text-on-surface-variant rounded-full font-label-caps text-label-caps hover:bg-surface-container-high transition-colors active:scale-95 duration-150 unfollow-btn">
+                    Unfollow
+                </button>
+</div>
+<!-- Organizer Row 2 -->
+<div class="flex items-center justify-between p-4 bg-white rounded-xl border border-outline-variant hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" alt="A sophisticated business portrait of a tech founder in a bright, modern glass office environment. The lighting is high-key and airy, reflecting a premium fintech brand identity with soft stone tones and professional clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKoTnAfNci5-So5bq_7S2ltosw5cpaJoVqgRVc3BKgQcJEHv6GO3oWSCVv_I-gHLnFcTLBQpPPo1Y9qZo8Bd89eQJrsXrpKKyJFpxEm2q3JzMaO3fpDJ64j5adnYKM2fzwWBuDRwUcvsjFj-rK6GPL3kGbRMXrm94QX8kn_WGLMbbIM-m9LGCNN1kfzh7YdJNyPM_V8kx35okafowJwSn3VWHgbndzfJlXWLP_vuf3qhYEtI5m1EGzPg"/>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-on-surface">TechNexus Events</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">events@technexus.io</span>
+</div>
+</div>
+<button class="px-4 py-1.5 border border-outline text-on-surface-variant rounded-full font-label-caps text-label-caps hover:bg-surface-container-high transition-colors active:scale-95 duration-150 unfollow-btn">
+                    Unfollow
+                </button>
+</div>
+<!-- Organizer Row 3 -->
+<div class="flex items-center justify-between p-4 bg-white rounded-xl border border-outline-variant hover:shadow-sm transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" alt="Close-up artistic profile of a woman with vibrant lighting accents of violet and magenta, set against a dark, minimalist gallery background. The aesthetic is sophisticated, modern, and aligned with a premium digital identity platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGuMvC7jl_na7TTRVWwJdfF1fAfiNNIYXJvtBq05CLiQSImpAN0BST2bsKzzNUxrTSbHuTjSORITBJq_tF43f3Q3-GIGg4u3ItBQgaI-8n07568G-TY-BlDp_zxSkIz_V84oMbrTujwBHZzKo7C0i-LUKa5R9tHd2cX7tzWp5rqO8jVlzI8XmUUeJgRnYRJlwYqwZr7Q56mpO7LNOj0jHNPmM9zt3N4Ua8FVFAO1EjDonItwp8JbT3ww"/>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-on-surface">Maya Sterling</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">maya.design@vibe.com</span>
+</div>
+</div>
+<button class="px-4 py-1.5 border border-outline text-on-surface-variant rounded-full font-label-caps text-label-caps hover:bg-surface-container-high transition-colors active:scale-95 duration-150 unfollow-btn">
+                    Unfollow
+                </button>
+</div>
+</section>
+<!-- Empty State (Hidden by default) -->
+<section class="hidden flex flex-col items-center justify-center py-24 text-center" id="empty-state">
+<div class="w-24 h-24 bg-surface-container-low rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-outline text-5xl">person_off</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Not following anyone yet</h2>
+<p class="font-body-rg text-body-rg text-on-surface-variant max-w-xs mb-8">Follow organizers and brands to stay updated with their latest tags and events.</p>
+<button class="px-8 py-3 bg-primary text-on-primary rounded-xl font-title-md text-title-md shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95">
+                Explore Organizers
+            </button>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface border-t border-outline-variant md:hidden">
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-caps text-label-caps">Explore</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">confirmation_number</span>
+<span class="font-label-caps text-label-caps">Tickets</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1 hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1 scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-caps text-label-caps">Profile</span>
+</div>
+</nav>
+<script>
+        // Simulate Loading State
+        window.addEventListener('DOMContentLoaded', () => {
+            const skeleton = document.getElementById('skeleton-container');
+            const list = document.getElementById('organizers-list');
+            const empty = document.getElementById('empty-state');
+            
+            setTimeout(() => {
+                skeleton.classList.add('hidden');
+                list.classList.remove('hidden');
+            }, 1800);
+
+            // Mock interaction for unfollow buttons
+            const unfollowBtns = document.querySelectorAll('.unfollow-btn');
+            unfollowBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const row = this.closest('div.flex');
+                    row.style.opacity = '0.5';
+                    row.style.transform = 'translateX(20px)';
+                    row.style.transition = 'all 0.4s ease';
+                    
+                    setTimeout(() => {
+                        row.remove();
+                        // If no more items, show empty state
+                        if (document.querySelectorAll('#organizers-list > div').length === 0) {
+                            list.classList.add('hidden');
+                            empty.classList.remove('hidden');
+                        }
+                    }, 400);
+                });
+            });
+        });
+    </script>
+</body></html>

@@ -27,6 +27,7 @@ export const ticketKeys = {
   mine: ['tickets', 'mine'] as const,
   detail: (id: string) => ['tickets', 'detail', id] as const,
   ref: (reference: string) => ['tickets', 'ref', reference] as const,
+  incoming: ['tickets', 'incoming'] as const,
 }
 
 // ─── Search ─────────────────────────────────────────────

@@ -4,7 +4,7 @@ import { colors } from '@comfytag/ui/tokens'
 import type { GuestStackParamList } from './types'
 import SplashScreen from '../screens/onboarding/SplashScreen'
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen'
-import GuestBrowseScreen from '../screens/onboarding/GuestBrowseScreen'
+import AttendeeNavigator from './AttendeeNavigator'
 import LoginScreen from '../screens/onboarding/LoginScreen'
 import RegisterScreen from '../screens/onboarding/RegisterScreen'
 import ForgotPasswordScreen from '../screens/onboarding/ForgotPasswordScreen'
@@ -52,7 +52,7 @@ export default function GuestNavigator() {
         }}
       />
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
-      <Stack.Screen name="GuestBrowse" component={GuestBrowseScreen} />
+      <Stack.Screen name="GuestHome" component={AttendeeNavigator} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />

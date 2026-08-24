@@ -39,15 +39,15 @@ interface MetricCardProps {
 
 function MetricCard({ label, value, caption }: MetricCardProps) {
   return (
-    <div className="bg-white border border-zinc-200/80 rounded-xl p-6 hover:border-zinc-300 transition-colors duration-200">
-      <span className="text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider mb-2 block">
+    <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-6 hover:border-zinc-700 transition-colors duration-200">
+      <span className="text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider mb-2 block">
         {label}
       </span>
-      <div className="text-4xl font-black text-zinc-900 tracking-tight">
+      <div className="text-4xl font-black text-(--color-text) tracking-tight">
         {value}
       </div>
       {caption && (
-        <p className="text-xs text-zinc-400 mt-2">{caption}</p>
+        <p className="text-xs text-zinc-500 mt-2">{caption}</p>
       )}
     </div>
   )
@@ -87,8 +87,8 @@ export default function AnalyticsPage() {
 
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-black text-zinc-900 tracking-tight">Analytics</h1>
-        <p className="text-zinc-500 text-sm mt-1">Your performance at a glance</p>
+        <h1 className="text-3xl font-black text-(--color-text) tracking-tight">Analytics</h1>
+        <p className="text-(--color-text-muted) text-sm mt-1">Your performance at a glance</p>
       </div>
 
       {/* Hero Metric Cards */}
@@ -121,10 +121,10 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Revenue Over Time — Master Chart Canvas */}
-      <div className="w-full bg-white border border-zinc-200/80 rounded-xl p-6 sm:p-8 overflow-hidden">
-        <h2 className="text-lg font-bold text-zinc-900 mb-6">Revenue Over Time</h2>
+      <div className="w-full bg-(--color-surface) border border-(--color-border) rounded-xl p-6 sm:p-8 overflow-hidden">
+        <h2 className="text-lg font-bold text-(--color-text) mb-6">Revenue Over Time</h2>
         {monthlyRevenue.length === 0 ? (
-          <div className="flex items-center justify-center h-48 text-sm text-zinc-400">
+          <div className="flex items-center justify-center h-48 text-sm text-zinc-500">
             No revenue data available yet
           </div>
         ) : (
@@ -141,7 +141,7 @@ export default function AnalyticsPage() {
                     style={{ height: `${Math.max(h, 8)}px` }}
                     title={`${new Date(item.month + '-01').toLocaleString('default', { month: 'long' })}: ${formatNaira(item.revenue)}`}
                   />
-                  <span className="text-[10px] font-mono text-zinc-400">
+                  <span className="text-[10px] font-mono text-zinc-500">
                     {new Date(item.month + '-01').toLocaleString('default', { month: 'short' })}
                   </span>
                 </div>
@@ -153,13 +153,13 @@ export default function AnalyticsPage() {
 
       {/* Ticket Breakdown Ledger */}
       <div>
-        <h2 className="text-lg font-bold text-zinc-900 mb-4">Ticket Breakdown</h2>
+        <h2 className="text-lg font-bold text-(--color-text) mb-4">Ticket Breakdown</h2>
         {ticketTypes.length === 0 ? (
-          <div className="bg-white border border-zinc-200/80 rounded-xl p-8 text-center text-sm text-zinc-400">
+          <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-8 text-center text-sm text-zinc-500">
             No ticket type data available
           </div>
         ) : (
-          <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden">
+          <div className="bg-(--color-surface) border border-(--color-border) rounded-xl overflow-hidden">
             {ticketTypes.map((ticketType: TicketTypeBreakdown) => {
               const percentageSold =
                 ticketType.capacity > 0
@@ -170,22 +170,22 @@ export default function AnalyticsPage() {
               const isExpanded = expandedTicketType === ticketType.name
 
               return (
-                <div key={ticketType.name} className="border-b border-zinc-100 last:border-0">
+                <div key={ticketType.name} className="border-b border-zinc-800 last:border-0">
                   {/* Ledger Row */}
                   <button
                     onClick={() =>
                       setExpandedTicketType(isExpanded ? null : ticketType.name)
                     }
-                    className="flex items-center justify-between p-5 w-full text-left hover:bg-zinc-50/50 transition-colors group"
+                    className="flex items-center justify-between p-5 w-full text-left hover:bg-zinc-800/50 transition-colors group"
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="text-zinc-900 font-bold text-sm">{ticketType.name}</div>
-                      <div className="text-xs text-zinc-400 mt-0.5">
+                      <div className="text-(--color-text) font-bold text-sm">{ticketType.name}</div>
+                      <div className="text-xs text-zinc-500 mt-0.5">
                         {ticketType.sold} / {ticketType.capacity} sold ({percentageSold.toFixed(0)}%)
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="font-mono text-sm text-zinc-600 font-semibold">
+                      <span className="font-mono text-sm text-zinc-400 font-semibold">
                         {formatNaira(ticketType.revenue)}
                       </span>
                       <svg
@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
-                        className={`text-zinc-400 transition-transform duration-150 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
+                        className={`text-zinc-500 transition-transform duration-150 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
                       >
                         <polyline points="6 9 12 15 18 9" />
                       </svg>
@@ -204,21 +204,21 @@ export default function AnalyticsPage() {
 
                   {/* Expanded Detail Panel */}
                   {isExpanded && (
-                    <div className="px-5 py-4 bg-zinc-50 border-t border-zinc-100">
+                    <div className="px-5 py-4 bg-zinc-900 border-t border-zinc-800">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <span className="text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
+                          <span className="text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider block mb-1">
                             Revenue
                           </span>
-                          <span className="text-sm font-bold text-zinc-900">
+                          <span className="text-sm font-bold text-(--color-text)">
                             {formatNaira(ticketType.revenue)}
                           </span>
                         </div>
                         <div>
-                          <span className="text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
+                          <span className="text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider block mb-1">
                             Avg Price
                           </span>
-                          <span className="text-sm font-bold text-zinc-900">
+                          <span className="text-sm font-bold text-(--color-text)">
                             {formatNaira(avgPrice)}
                           </span>
                         </div>

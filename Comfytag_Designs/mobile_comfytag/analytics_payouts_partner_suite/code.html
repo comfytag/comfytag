@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag Partner | Analytics &amp; Payouts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0F0F0F;
+            color: #f7efeb;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(204, 195, 216, 0.1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .gold-glow {
+            text-shadow: 0 0 12px rgba(217, 119, 6, 0.3);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F0F0F;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #33302d;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "primary-container": "#7c3aed",
+                        "surface-tint": "#732ee4",
+                        "outline-variant": "#ccc3d8",
+                        "on-secondary-fixed-variant": "#653e00",
+                        "primary": "#630ed4",
+                        "on-primary-container": "#ede0ff",
+                        "secondary-container": "#fea619",
+                        "on-primary": "#ffffff",
+                        "background": "#0F0F0F",
+                        "on-surface-variant": "#4a4455",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#eee7e3",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "tertiary-container": "#9d5400",
+                        "outline": "#7b7487",
+                        "inverse-primary": "#d2bbff",
+                        "surface": "#1A1A1A",
+                        "inverse-on-surface": "#f7efeb",
+                        "secondary": "#d97706",
+                        "on-surface": "#f7efeb",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e9e1dd",
+                        "on-error": "#ffffff",
+                        "on-background": "#f7efeb",
+                        "on-secondary-fixed": "#2a1700",
+                        "inverse-surface": "#33302d",
+                        "primary-fixed": "#eaddff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#2f1500",
+                        "surface-container-lowest": "#0F0F0F",
+                        "surface-container-low": "#faf2ee",
+                        "on-tertiary-container": "#ffe1cb",
+                        "surface-dim": "#e0d8d5",
+                        "tertiary": "#7a4000",
+                        "secondary-fixed": "#ffddb8",
+                        "secondary-fixed-dim": "#ffb95f",
+                        "tertiary-fixed": "#ffdcc3",
+                        "surface-bright": "#fff8f5",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e9e1dd",
+                        "on-secondary-container": "#684000",
+                        "on-primary-fixed": "#25005a",
+                        "primary-fixed-dim": "#d2bbff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar-width-expanded": "240px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "margin-tablet": "24px",
+                        "base": "8px",
+                        "margin-desktop": "40px",
+                        "sidebar-width-collapsed": "72px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background">
+<!-- SideNavBar (Context: Payouts/Analytics) -->
+<aside class="fixed left-0 top-0 h-full z-40 flex flex-col w-sidebar-width-expanded bg-inverse-surface shadow-lg">
+<div class="p-6">
+<h1 class="text-headline-sm font-headline-sm text-primary-fixed mb-1">Partner Suite</h1>
+<p class="text-label-sm text-surface-variant/70 uppercase tracking-wider">Event Management</p>
+</div>
+<nav class="flex-1 mt-4 px-2 space-y-1">
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">event</span>
+<span class="font-label-md text-label-md">Events</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">Attendees</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<!-- Active State: Payouts -->
+<a class="flex items-center gap-3 bg-primary-container/20 text-primary-fixed border-l-4 border-primary-container px-4 py-3 rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-label-md text-label-md">Payouts</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-3 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="p-4 mt-auto border-t border-white/5">
+<button class="w-full bg-primary text-on-primary py-3 px-4 rounded-xl font-label-md text-label-md flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+                Create Event
+            </button>
+<div class="mt-6 flex flex-col gap-1">
+<a class="flex items-center gap-3 text-surface-variant px-4 py-2 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-2 hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined text-error">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-sidebar-width-expanded min-h-screen p-margin-desktop">
+<!-- Header -->
+<header class="flex justify-between items-end mb-10">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Financial Analytics</h2>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">Track your earnings and manage withdrawal requests.</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-surface p-2 rounded-lg border border-outline-variant/10">
+<span class="material-symbols-outlined text-on-surface-variant">calendar_today</span>
+<span class="text-label-md font-label-md text-on-surface px-2">Last 30 Days</span>
+<span class="material-symbols-outlined text-on-surface-variant">expand_more</span>
+</div>
+<div class="h-10 w-10 rounded-full bg-primary-container/20 flex items-center justify-center relative">
+<span class="material-symbols-outlined text-primary-fixed">notifications</span>
+<span class="absolute top-0 right-0 w-2.5 h-2.5 bg-error rounded-full border-2 border-background"></span>
+</div>
+</div>
+</header>
+<!-- Bento Grid: Financial Summary -->
+<section class="grid grid-cols-12 gap-gutter mb-gutter">
+<!-- Payout Balance Widget -->
+<div class="col-span-12 md:col-span-4 glass-panel p-8 rounded-xl flex flex-col justify-between group hover:border-secondary transition-all">
+<div>
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-secondary/10 rounded-lg">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+</div>
+<span class="text-label-sm font-label-sm text-secondary bg-secondary/10 px-2 py-1 rounded">Available</span>
+</div>
+<p class="text-on-surface-variant font-label-md text-label-md">Payout Balance</p>
+<h3 class="text-[40px] font-bold text-on-surface gold-glow mt-1">₦12,450.80</h3>
+</div>
+<div class="mt-6">
+<div class="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+<div class="w-3/4 h-full bg-secondary shadow-[0_0_8px_rgba(217,119,6,0.5)]"></div>
+</div>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-2">Next auto-payout in 4 days</p>
+</div>
+</div>
+<!-- Total Earnings Widget -->
+<div class="col-span-12 md:col-span-4 glass-panel p-8 rounded-xl flex flex-col justify-between hover:border-primary transition-all">
+<div>
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<span class="text-label-sm font-label-sm text-primary-fixed-dim bg-primary/20 px-2 py-1 rounded">+18.4%</span>
+</div>
+<p class="text-on-surface-variant font-label-md text-label-md">Total Revenue (YTD)</p>
+<h3 class="text-[40px] font-bold text-on-surface mt-1">₦184,200.00</h3>
+</div>
+<div class="mt-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">trending_up</span>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Outperforming last year by ₦24k</p>
+</div>
+</div>
+<!-- Payout Request Panel -->
+<div class="col-span-12 md:col-span-4 bg-primary text-on-primary p-8 rounded-xl shadow-lg relative overflow-hidden flex flex-col justify-between">
+<!-- Background Decorative Pattern -->
+<div class="absolute -right-10 -bottom-10 opacity-20 transform rotate-12">
+<span class="material-symbols-outlined text-[160px]">account_balance</span>
+</div>
+<div class="relative z-10">
+<h4 class="font-headline-md text-headline-md mb-2">Request Payout</h4>
+<p class="text-primary-fixed font-body-md text-body-md opacity-80">Instant transfer to your connected business bank account.</p>
+</div>
+<div class="relative z-10 mt-8 space-y-4">
+<div class="bg-white/10 backdrop-blur-sm p-3 rounded-lg flex items-center justify-between border border-white/10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-white/20 flex items-center justify-center">
+<span class="material-symbols-outlined">credit_card</span>
+</div>
+<div>
+<p class="text-label-md font-label-md">CHASE BUSINESS •••• 9921</p>
+<p class="text-[10px] opacity-70">Primary Destination</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-label-sm">edit</span>
+</div>
+<button class="w-full bg-white text-primary font-bold py-4 rounded-xl hover:bg-primary-fixed transition-all flex items-center justify-center gap-2 group">
+                        Confirm Withdrawal
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Chart Section -->
+<section class="grid grid-cols-12 gap-gutter mb-gutter">
+<div class="col-span-12 glass-panel p-8 rounded-xl">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h4 class="font-headline-md text-headline-md text-on-surface">Earnings Growth</h4>
+<p class="text-on-surface-variant font-body-md text-body-md">Daily revenue performance over the current month</p>
+</div>
+<div class="flex gap-2">
+<button class="px-4 py-1.5 rounded-full text-label-sm font-label-sm bg-white/5 text-on-surface-variant hover:text-on-surface border border-white/5">Daily</button>
+<button class="px-4 py-1.5 rounded-full text-label-sm font-label-sm bg-primary/20 text-primary-fixed border border-primary/30">Weekly</button>
+<button class="px-4 py-1.5 rounded-full text-label-sm font-label-sm bg-white/5 text-on-surface-variant hover:text-on-surface border border-white/5">Monthly</button>
+</div>
+</div>
+<!-- Mock Chart Visual -->
+<div class="w-full h-72 relative flex items-end gap-2 md:gap-4 px-2">
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10">
+<div class="border-b border-white w-full"></div>
+<div class="border-b border-white w-full"></div>
+<div class="border-b border-white w-full"></div>
+<div class="border-b border-white w-full"></div>
+</div>
+<!-- Bars -->
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[40%] hover:bg-primary/20 transition-colors">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-surface px-2 py-1 rounded text-[10px] hidden group-hover:block border border-outline-variant/20">₦2.1k</div>
+</div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[55%] hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[45%] hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[65%] hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-primary/40 rounded-t group relative cursor-pointer h-[85%] border-t-2 border-primary transition-colors">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-primary text-white px-2 py-1 rounded text-[10px]">₦4.8k</div>
+</div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[60%] hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[75%] hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[50%] hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[40%] hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[90%] hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[70%] hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[60%] hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[80%] hover:bg-primary/20 transition-colors"></div>
+<div class="flex-1 bg-white/5 rounded-t group relative cursor-pointer h-[95%] hover:bg-primary/20 transition-colors"></div>
+</div>
+<div class="flex justify-between mt-4 text-label-sm font-label-sm text-on-surface-variant px-2">
+<span>Oct 01</span>
+<span>Oct 07</span>
+<span>Oct 14</span>
+<span>Oct 21</span>
+<span>Oct 28</span>
+</div>
+</div>
+</section>
+<!-- Withdrawal History Table -->
+<section class="glass-panel rounded-xl overflow-hidden">
+<div class="p-6 border-b border-outline-variant/10 flex justify-between items-center">
+<h4 class="font-headline-md text-headline-md text-on-surface">Recent Payouts</h4>
+<div class="flex items-center gap-3">
+<span class="text-label-md font-label-md text-on-surface-variant">Filter by status</span>
+<select class="bg-surface-container-lowest border-outline-variant/20 rounded text-label-sm font-label-sm text-on-surface focus:ring-primary focus:border-primary">
+<option>All Transactions</option>
+<option>Successful</option>
+<option>Pending</option>
+<option>Failed</option>
+</select>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-white/5 text-on-surface-variant uppercase text-[11px] font-bold tracking-widest">
+<th class="px-6 py-4">Transaction ID</th>
+<th class="px-6 py-4">Date</th>
+<th class="px-6 py-4">Method</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4 text-right">Amount</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 font-mono text-label-sm text-on-surface">#PW-90234-TX</td>
+<td class="px-6 py-4 text-label-md text-on-surface-variant">Oct 24, 2023</td>
+<td class="px-6 py-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+<span class="text-label-md text-on-surface">GTBank</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold uppercase">
+<span class="w-1 h-1 rounded-full bg-green-500"></span>
+                                    Success
+                                </span>
+</td>
+<td class="px-6 py-4 text-right font-bold text-secondary text-body-md gold-glow">₦4,250.00</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 font-mono text-label-sm text-on-surface">#PW-89102-TX</td>
+<td class="px-6 py-4 text-label-md text-on-surface-variant">Oct 18, 2023</td>
+<td class="px-6 py-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+<span class="text-label-md text-on-surface">GTBank</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold uppercase">
+<span class="w-1 h-1 rounded-full bg-green-500"></span>
+                                    Success
+                                </span>
+</td>
+<td class="px-6 py-4 text-right font-bold text-secondary text-body-md gold-glow">₦8,100.25</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 font-mono text-label-sm text-on-surface">#PW-88432-TX</td>
+<td class="px-6 py-4 text-label-md text-on-surface-variant">Oct 12, 2023</td>
+<td class="px-6 py-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+<span class="text-label-md text-on-surface">GTBank</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase">
+<span class="w-1 h-1 rounded-full bg-secondary animate-pulse"></span>
+                                    Processing
+                                </span>
+</td>
+<td class="px-6 py-4 text-right font-bold text-secondary text-body-md gold-glow">₦1,420.00</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 font-mono text-label-sm text-on-surface">#PW-88110-TX</td>
+<td class="px-6 py-4 text-label-md text-on-surface-variant">Oct 05, 2023</td>
+<td class="px-6 py-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+<span class="text-label-md text-on-surface">GTBank</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold uppercase">
+<span class="w-1 h-1 rounded-full bg-green-500"></span>
+                                    Success
+                                </span>
+</td>
+<td class="px-6 py-4 text-right font-bold text-secondary text-body-md gold-glow">₦12,940.50</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-white/5 flex justify-center">
+<button class="text-label-md font-label-md text-primary hover:text-primary-container transition-colors">View All Transaction History</button>
+</div>
+</section>
+</main>
+<script>
+        // Micro-interactions for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                btn.style.filter = 'brightness(1.2)';
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.filter = 'brightness(1)';
+            });
+        });
+
+        // Simple mock value generator for "Total Earnings" animation on load
+        window.onload = () => {
+            const h3 = document.querySelector('h3');
+            const target = 12450.80;
+            let current = 12000.00;
+            const timer = setInterval(() => {
+                if (current >= target) {
+                    clearInterval(timer);
+                } else {
+                    current += 5.12;
+                    h3.innerText = '$' + current.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
+            }, 10);
+        };
+    </script>
+</body></html>

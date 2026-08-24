@@ -100,11 +100,11 @@ export function DigitalStub({ ticket, showBarcode = true, style }: DigitalStubPr
 
 const styles = StyleSheet.create({
   stub: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
   },
 
   // ── Top ──────────────────────────────────────────────────────────────────
@@ -114,9 +114,10 @@ const styles = StyleSheet.create({
   eventName: {
     fontSize: fs['2xl'],
     fontWeight: '800',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     marginBottom: sp[4],
     lineHeight: 30,
+    textTransform: 'capitalize',
   },
   detailRow: {
     flexDirection: 'row',
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     fontWeight: '500',
     marginBottom: 2,
     textTransform: 'uppercase',
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontSize: fs.sm,
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     fontWeight: '600',
   },
   tierRow: {
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   },
   ticketName: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
 
   // ── Tear line ─────────────────────────────────────────────────────────────
@@ -170,21 +171,21 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
     marginLeft: -12,
   },
   tearCircleRight: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
     marginRight: -12,
   },
   tearDash: {
     flex: 1,
     height: 1,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     borderStyle: 'dashed',
     marginHorizontal: sp[2],
   },
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
   },
   refLabel: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     fontWeight: '500',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -209,20 +210,20 @@ const styles = StyleSheet.create({
   },
   barcodeText: {
     fontSize: 11,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     letterSpacing: 4,
     fontFamily: 'monospace',
   },
   barcodeLine: {
     width: '90%',
     height: 48,
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
     borderRadius: rd.sm,
     marginTop: sp[2],
   },
   refCode: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     fontFamily: 'monospace',
     letterSpacing: 2,
   },

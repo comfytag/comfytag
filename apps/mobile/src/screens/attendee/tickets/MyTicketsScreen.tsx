@@ -2,18 +2,26 @@ import React, { useRef, useEffect, useState } from 'react'
 import {
   View,
   Text,
+  Image,
   FlatList,
   Animated,
   StyleSheet,
   RefreshControl,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useNavigation } from '@react-navigation/native'
 import type { StackNavigationProp } from '@react-navigation/stack'
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
-import { Ticket as TicketIcon } from 'lucide-react-native'
+import {
+  Ticket as TicketIcon,
+  Calendar,
+  MapPin,
+  ArrowRight,
+  History,
+} from 'lucide-react-native'
 import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
-import { formatNaira, formatDate } from '@comfytag/utils'
+import { formatDate, formatTime } from '@comfytag/utils'
 import { useMyTickets } from '../../../hooks'
 import { AnimatedPressable } from '../../../components/ui/AnimatedPressable'
 import type { Ticket } from '@comfytag/types'
@@ -26,18 +34,41 @@ type TabNav = BottomTabNavigationProp<AttendeeTabParamList>
 
 type TabType = 'upcoming' | 'past'
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const STATUS_COLORS: Record<Ticket['status'], { bg: string; text: string }> = {
-  active:      { bg: 'rgba(16,185,129,0.15)', text: colors.mobile.success },
-  used:        { bg: colors.mobile.surfaceRaised, text: colors.mobile.textMuted },
-  transferred: { bg: colors.mobile.surfaceRaised, text: colors.mobile.textMuted },
-  refunded:    { bg: 'rgba(239,68,68,0.15)', text: colors.mobile.error },
-  ended:       { bg: colors.mobile.surfaceRaised, text: colors.mobile.textMuted },
+interface StatusBadgeConfig {
+  label: string
+  bg: string
+  dot: string
+  text: string
+  pulse: boolean
 }
 
-function isUpcoming(t: Ticket): boolean {
-  return new Date(t.date) >= new Date()
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// Tabs split on attendance, not event date — a ticket only moves to "Past"
+// once it's actually been used at check-in.
+function isAttended(t: Ticket): boolean {
+  return t.checkedIn === true || t.status === 'used'
+}
+
+function getStatusBadge(ticket: Ticket): StatusBadgeConfig {
+  if (ticket.status === 'active' && !ticket.checkedIn) {
+    return { label: 'Ready for Entry', bg: colors.brand.light, dot: colors.brand.DEFAULT, text: colors.brand.dark, pulse: true }
+  }
+  if (ticket.checkedIn || ticket.status === 'used') {
+    return { label: 'Attended', bg: colors.public.surfaceAlt, dot: colors.textPublic.muted, text: colors.textPublic.secondary, pulse: false }
+  }
+  if (ticket.status === 'refunded') {
+    return { label: 'Refunded', bg: colors.error.bg, dot: colors.error.DEFAULT, text: colors.error.DEFAULT, pulse: false }
+  }
+  if (ticket.status === 'transferred') {
+    return { label: 'Transferred', bg: colors.public.surfaceAlt, dot: colors.textPublic.muted, text: colors.textPublic.secondary, pulse: false }
+  }
+  return { label: 'Ended', bg: colors.public.surfaceAlt, dot: colors.textPublic.muted, text: colors.textPublic.secondary, pulse: false }
+}
+
+function ticketLabel(ticket: Ticket): string {
+  const tier = ticket.type.toUpperCase()
+  return ticket.numOfTicket > 1 ? `${tier} • ${ticket.numOfTicket} TICKETS` : tier
 }
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
@@ -57,33 +88,129 @@ function SkeletonCard() {
   return <Animated.View style={[styles.skeletonCard, { opacity }]} />
 }
 
+function PulseDot({ color }: { color: string }) {
+  const opacity = useRef(new Animated.Value(1)).current
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 0.3, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
+      ])
+    )
+    loop.start()
+    return () => loop.stop()
+  }, [opacity])
+  return <Animated.View style={[styles.pulseDot, { backgroundColor: color, opacity }]} />
+}
+
 interface TicketCardProps {
   ticket: Ticket
   onPress: () => void
 }
 
 function TicketCard({ ticket, onPress }: TicketCardProps) {
-  const badge = STATUS_COLORS[ticket.status]
+  const [imageError, setImageError] = useState(false)
+  const badge = getStatusBadge(ticket)
+  const isVip = ticket.type.toLowerCase().includes('vip')
+  const showImage = !!ticket.eventImage && !imageError
+  const dateLabel = [formatDate(ticket.eventDate ?? ticket.date), formatTime(ticket.eventTime)]
+    .filter(Boolean)
+    .join(' • ')
+
   return (
-    <AnimatedPressable onPress={onPress} hapticStyle="light" style={styles.card}>
-      <View style={styles.cardTopRow}>
-        <Text style={styles.cardEventName} numberOfLines={2}>
-          {ticket.eventname}
-        </Text>
-        <View style={[styles.statusBadge, { backgroundColor: badge.bg }]}>
-          <Text style={[styles.statusBadgeText, { color: badge.text }]}>
-            {ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}
+    <AnimatedPressable onPress={onPress} hapticStyle="light" scaleDown={0.98} style={styles.card}>
+      {/* Image */}
+      <View style={styles.imageWrap}>
+        {showImage ? (
+          <Image
+            source={{ uri: ticket.eventImage as string }}
+            style={styles.image}
+            resizeMode="cover"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <View style={[styles.image, styles.imageFallback]}>
+            <TicketIcon size={28} color="rgba(255,255,255,0.6)" strokeWidth={1.5} />
+          </View>
+        )}
+        {isVip && (
+          <View style={styles.vipBadge}>
+            <Text style={styles.vipBadgeText}>VIP</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Content */}
+      <View style={styles.content}>
+        <View style={styles.topRow}>
+          <Text style={styles.eventName} numberOfLines={2}>
+            {ticket.eventname}
           </Text>
+          <View style={[styles.statusBadge, { backgroundColor: badge.bg }]}>
+            {badge.pulse && <PulseDot color={badge.dot} />}
+            <Text style={[styles.statusBadgeText, { color: badge.text }]}>{badge.label}</Text>
+          </View>
+        </View>
+
+        {dateLabel.length > 0 && (
+          <View style={styles.metaRow}>
+            <Calendar size={16} color={colors.textPublic.secondary} strokeWidth={2} />
+            <Text style={styles.metaText}>{dateLabel}</Text>
+          </View>
+        )}
+        {ticket.eventVenue !== undefined && ticket.eventVenue.length > 0 && (
+          <View style={styles.metaRow}>
+            <MapPin size={16} color={colors.textPublic.secondary} strokeWidth={2} />
+            <Text style={styles.metaText} numberOfLines={1}>
+              {ticket.eventVenue}
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.footerRow}>
+          <Text style={styles.footerLabel}>{ticketLabel(ticket)}</Text>
+          <View style={styles.footerCta}>
+            <Text style={styles.footerCtaText}>View Ticket</Text>
+            <ArrowRight size={16} color={colors.brand.DEFAULT} strokeWidth={2.5} />
+          </View>
         </View>
       </View>
-      <Text style={styles.cardMeta}>
-        {formatDate(ticket.date)} · {ticket.type}
-      </Text>
-      <View style={styles.cardBottomRow}>
-        <Text style={styles.cardAmount}>{formatNaira(ticket.amount)}</Text>
-        <Text style={styles.cardCta}>View ticket →</Text>
-      </View>
     </AnimatedPressable>
+  )
+}
+
+function PastTabHint() {
+  return (
+    <View style={styles.hintBox}>
+      <History size={32} color={colors.textPublic.muted} strokeWidth={1.5} />
+      <Text style={styles.hintText}>Your past tickets will appear in the 'Past' tab.</Text>
+    </View>
+  )
+}
+
+function MemberPromoBanner() {
+  return (
+    <View style={styles.promoCard}>
+      <LinearGradient
+        colors={[colors.brand.light, '#F5F0FF']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <View style={styles.promoIconWrap}>
+        <TicketIcon size={96} color={colors.brand.DEFAULT} strokeWidth={1} style={{ opacity: 0.12 }} />
+      </View>
+      <View style={styles.promoContent}>
+        <Text style={styles.promoEyebrow}>MEMBER EXCLUSIVE</Text>
+        <Text style={styles.promoTitle}>Get 20% off your next booking</Text>
+        <Text style={styles.promoSubtext}>
+          Use code COMFY20 at checkout for any upcoming concert this season.
+        </Text>
+        <AnimatedPressable hapticStyle="medium" style={styles.promoButton}>
+          <Text style={styles.promoButtonText}>Claim Offer</Text>
+        </AnimatedPressable>
+      </View>
+    </View>
   )
 }
 
@@ -91,14 +218,13 @@ function TicketCard({ ticket, onPress }: TicketCardProps) {
 
 export default function MyTicketsScreen() {
   const navigation = useNavigation<Nav>()
-  const tabNavigation = useNavigation<TabNav>()
   const [activeTab, setActiveTab] = useState<TabType>('upcoming')
 
   const { data, isLoading, isFetching, isError, refetch } = useMyTickets()
   const tickets: Ticket[] = data ?? []
 
-  const upcomingTickets = tickets.filter(isUpcoming)
-  const pastTickets = tickets.filter((t) => !isUpcoming(t))
+  const upcomingTickets = tickets.filter((t) => !isAttended(t))
+  const pastTickets = tickets.filter(isAttended)
   const displayed = activeTab === 'upcoming' ? upcomingTickets : pastTickets
 
   // ── Render helpers ────────────────────────────────────────────────────────
@@ -114,54 +240,46 @@ export default function MyTicketsScreen() {
     <View>
       {/* Title */}
       <Text style={styles.screenTitle}>My Tickets</Text>
+      <Text style={styles.screenSubtitle}>Manage your upcoming event experiences</Text>
 
       {/* Tabs */}
       <View style={styles.tabRow}>
         <AnimatedPressable
           hapticStyle="light"
           onPress={() => setActiveTab('upcoming')}
-          style={styles.tab}
+          style={[styles.tabPill, activeTab === 'upcoming' ? styles.tabPillActive : styles.tabPillInactive]}
         >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'upcoming' ? styles.tabTextActive : styles.tabTextInactive,
-            ]}
-          >
+          <Text style={activeTab === 'upcoming' ? styles.tabPillTextActive : styles.tabPillTextInactive}>
             Upcoming
-            {upcomingTickets.length > 0 && (
-              <Text style={styles.tabCount}> {upcomingTickets.length}</Text>
-            )}
           </Text>
-          {activeTab === 'upcoming' && <View style={styles.tabUnderline} />}
         </AnimatedPressable>
 
         <AnimatedPressable
           hapticStyle="light"
           onPress={() => setActiveTab('past')}
-          style={styles.tab}
+          style={[styles.tabPill, activeTab === 'past' ? styles.tabPillActive : styles.tabPillInactive]}
         >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'past' ? styles.tabTextActive : styles.tabTextInactive,
-            ]}
-          >
+          <Text style={activeTab === 'past' ? styles.tabPillTextActive : styles.tabPillTextInactive}>
             Past
-            {pastTickets.length > 0 && (
-              <Text style={styles.tabCount}> {pastTickets.length}</Text>
-            )}
           </Text>
-          {activeTab === 'past' && <View style={styles.tabUnderline} />}
         </AnimatedPressable>
       </View>
+    </View>
+  )
+
+  const ListFooter = () => (
+    <View>
+      {activeTab === 'upcoming' && upcomingTickets.length > 0 && pastTickets.length === 0 && (
+        <PastTabHint />
+      )}
+      <MemberPromoBanner />
     </View>
   )
 
   const ListEmpty = () => (
     <View style={styles.emptyContainer}>
       <View style={styles.emptyIconCircle}>
-        <TicketIcon size={28} color={colors.mobile.textMuted} strokeWidth={1.5} />
+        <TicketIcon size={28} color={colors.textPublic.muted} strokeWidth={1.5} />
       </View>
       <Text style={styles.emptyHeading}>
         {activeTab === 'upcoming' ? 'No upcoming tickets' : 'No past tickets'}
@@ -175,7 +293,7 @@ export default function MyTicketsScreen() {
         <AnimatedPressable
           hapticStyle="medium"
           style={styles.exploreButton}
-          onPress={() => tabNavigation.navigate('Discover')}
+          onPress={() => navigation.getParent<TabNav>()?.navigate('Discover')}
         >
           <Text style={styles.exploreButtonText}>Explore Events</Text>
         </AnimatedPressable>
@@ -222,6 +340,7 @@ export default function MyTicketsScreen() {
         renderItem={renderItem}
         ListHeaderComponent={<ListHeader />}
         ListEmptyComponent={<ListEmpty />}
+        ListFooterComponent={displayed.length > 0 ? <ListFooter /> : undefined}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -242,7 +361,7 @@ export default function MyTicketsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   listContent: {
     paddingHorizontal: sp[4],
@@ -254,111 +373,234 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontSize: fs.xl,
     fontWeight: '800',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     paddingHorizontal: sp[4],
     paddingTop: sp[4],
-    paddingBottom: sp[2],
+  },
+  screenSubtitle: {
+    fontSize: fs.sm,
+    color: colors.textPublic.secondary,
+    paddingHorizontal: sp[4],
+    paddingTop: sp[1],
+    paddingBottom: sp[5],
   },
 
-  // ── Tabs ─────────────────────────────────────────────────────────────────
+  // ── Tabs (pill style) ───────────────────────────────────────────────────
   tabRow: {
     flexDirection: 'row',
-    paddingHorizontal: 0,
-    gap: sp[6],
-    marginBottom: sp[4],
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.mobile.border,
+    gap: sp[3],
+    marginBottom: sp[5],
   },
-  tab: {
-    paddingBottom: sp[3],
-    position: 'relative',
+  tabPill: {
+    paddingHorizontal: sp[5],
+    paddingVertical: sp[2],
+    borderRadius: rd.full,
   },
-  tabText: {
+  tabPillActive: {
+    backgroundColor: colors.brand.DEFAULT,
+  },
+  tabPillInactive: {
+    backgroundColor: colors.public.surfaceAlt,
+  },
+  tabPillTextActive: {
     fontSize: fs.sm,
     fontWeight: '700',
+    color: colors.textPublic.onBrand,
   },
-  tabTextActive: {
-    color: colors.brand.DEFAULT,
-  },
-  tabTextInactive: {
-    color: colors.mobile.textMuted,
-  },
-  tabCount: {
-    fontSize: fs.xs,
-    fontWeight: '400',
-  },
-  tabUnderline: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: colors.brand.DEFAULT,
-    borderRadius: 1,
+  tabPillTextInactive: {
+    fontSize: fs.sm,
+    fontWeight: '700',
+    color: colors.textPublic.secondary,
   },
 
   // ── Ticket card ───────────────────────────────────────────────────────────
   card: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
-    padding: sp[4],
-    marginBottom: sp[3],
+    marginBottom: sp[5],
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
+    overflow: 'hidden',
   },
-  cardTopRow: {
+  imageWrap: {
+    height: 140,
+    width: '100%',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  imageFallback: {
+    backgroundColor: colors.brand.DEFAULT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vipBadge: {
+    position: 'absolute',
+    top: sp[2],
+    left: sp[2],
+    backgroundColor: colors.brand.dark,
+    borderRadius: rd.sm,
+    paddingHorizontal: sp[2],
+    paddingVertical: 2,
+  },
+  vipBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: colors.textPublic.onBrand,
+    letterSpacing: 0.5,
+  },
+  content: {
+    padding: sp[4],
+  },
+  topRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: sp[2],
-    marginBottom: sp[2],
+    marginBottom: sp[3],
   },
-  cardEventName: {
+  eventName: {
     flex: 1,
-    fontSize: fs.base,
+    fontSize: fs.lg,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
-    lineHeight: 22,
+    color: colors.textPublic.primary,
+    lineHeight: 23,
+    textTransform: 'capitalize',
   },
   statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sp[1],
     borderRadius: rd.full,
-    paddingVertical: 3,
+    paddingVertical: 4,
     paddingHorizontal: sp[3],
-    alignSelf: 'flex-start',
     flexShrink: 0,
   },
   statusBadgeText: {
-    fontSize: fs.xs,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
   },
-  cardMeta: {
+  pulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sp[2],
+    marginBottom: sp[2],
+  },
+  metaText: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
-    marginBottom: sp[3],
+    color: colors.textPublic.secondary,
+    flexShrink: 1,
   },
-  cardBottomRow: {
+  footerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: sp[2],
+    paddingTop: sp[4],
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.public.border,
   },
-  cardAmount: {
-    fontSize: fs.base,
+  footerLabel: {
+    fontSize: 11,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.muted,
+    letterSpacing: 0.3,
   },
-  cardCta: {
-    fontSize: fs.xs,
+  footerCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sp[1],
+  },
+  footerCtaText: {
+    fontSize: fs.sm,
+    fontWeight: '700',
     color: colors.brand.DEFAULT,
-    fontWeight: '600',
+  },
+
+  // ── Past-tab hint ────────────────────────────────────────────────────────
+  hintBox: {
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: colors.public.border,
+    borderRadius: rd.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: sp[6],
+    paddingHorizontal: sp[5],
+    gap: sp[2],
+    marginBottom: sp[6],
+  },
+  hintText: {
+    fontSize: fs.sm,
+    color: colors.textPublic.muted,
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+
+  // ── Member promo banner ──────────────────────────────────────────────────
+  promoCard: {
+    borderRadius: rd.xl,
+    overflow: 'hidden',
+    marginBottom: sp[6],
+  },
+  promoIconWrap: {
+    position: 'absolute',
+    right: sp[2],
+    top: '50%',
+    transform: [{ translateY: -48 }],
+  },
+  promoContent: {
+    padding: sp[6],
+    maxWidth: '75%',
+  },
+  promoEyebrow: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1,
+    color: colors.brand.dark,
+    marginBottom: sp[2],
+    textTransform: 'uppercase',
+  },
+  promoTitle: {
+    fontSize: fs.xl,
+    fontWeight: '800',
+    color: colors.textPublic.primary,
+    marginBottom: sp[2],
+  },
+  promoSubtext: {
+    fontSize: fs.sm,
+    color: colors.textPublic.secondary,
+    lineHeight: 20,
+    marginBottom: sp[4],
+  },
+  promoButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.brand.DEFAULT,
+    borderRadius: rd.full,
+    paddingHorizontal: sp[5],
+    paddingVertical: sp[2],
+  },
+  promoButtonText: {
+    fontSize: fs.sm,
+    fontWeight: '700',
+    color: colors.textPublic.onBrand,
   },
 
   // ── Skeleton ─────────────────────────────────────────────────────────────
   skeletonCard: {
-    height: 100,
-    backgroundColor: colors.mobile.surfaceRaised,
+    height: 220,
+    backgroundColor: colors.public.surfaceAlt,
     borderRadius: rd.xl,
     marginHorizontal: sp[4],
-    marginBottom: sp[3],
+    marginBottom: sp[4],
   },
 
   // ── States ───────────────────────────────────────────────────────────────
@@ -371,7 +613,7 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     marginBottom: sp[3],
   },
   retryText: {
@@ -390,7 +632,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: sp[5],
@@ -398,13 +640,13 @@ const styles = StyleSheet.create({
   emptyHeading: {
     fontSize: fs.lg,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
     marginBottom: sp[2],
   },
   emptySubtext: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: sp[8],
@@ -420,6 +662,6 @@ const styles = StyleSheet.create({
   exploreButtonText: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: '#FFFFFF',
   },
 })

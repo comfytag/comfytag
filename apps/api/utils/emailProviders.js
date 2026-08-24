@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import User from "../models/User.js";
+import { fetchQrImageBuffer } from "./QRCode.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = path.join(__dirname, "emailTemplates");
@@ -55,7 +56,7 @@ const zeptoMailTransport = nodemailer.createTransport({
   },
 });
 
-const sendViaZeptoMail = async ({ to, subject, html, text, from }) => {
+const sendViaZeptoMail = async ({ to, subject, html, text, from, attachments = [] }) => {
   if (!process.env.ZEPTOMAIL_SMTP_USER || !process.env.ZEPTOMAIL_SMTP_TOKEN) {
     throw new Error("ZEPTOMAIL_SMTP_USER/ZEPTOMAIL_SMTP_TOKEN is not configured — ZeptoMail unavailable");
   }
@@ -66,6 +67,13 @@ const sendViaZeptoMail = async ({ to, subject, html, text, from }) => {
     subject,
     ...(html && { html }),
     ...(text && { text }),
+    ...(attachments.length > 0 && {
+      attachments: attachments.map(({ filename, content, contentType }) => ({
+        filename,
+        content,
+        contentType,
+      })),
+    }),
   });
 
   return {
@@ -82,7 +90,7 @@ const sendViaZeptoMail = async ({ to, subject, html, text, from }) => {
 // ─── Resend fallback transport ─────────────────────────────────────────────────
 // Uses native fetch (Node 18+) so no extra dependency is required. Used as
 // fallback if ZeptoMail fails.
-const sendViaResend = async ({ to, subject, html, text, from }) => {
+const sendViaResend = async ({ to, subject, html, text, from, attachments = [] }) => {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     throw new Error("RESEND_API_KEY is not configured — Resend fallback unavailable");
@@ -100,6 +108,14 @@ const sendViaResend = async ({ to, subject, html, text, from }) => {
       subject,
       ...(html && { html }),
       ...(text && { text }),
+      ...(attachments.length > 0 && {
+        // Resend's REST API takes attachment bytes as base64 (JSON has no
+        // binary type) rather than nodemailer's raw Buffer.
+        attachments: attachments.map(({ filename, content }) => ({
+          filename,
+          content: content.toString("base64"),
+        })),
+      }),
     }),
   });
 
@@ -227,16 +243,29 @@ export const sendViaEmailProvider = async ({
     };
   }
 
+  // ─── Attach the QR code as a real file, not just a remotely-hosted <img> ──
+  // Applies to any template carrying a qrCodeUrl (ticket confirmation today,
+  // future templates automatically get it too) — some clients block remote
+  // images by default, and a QR meant to be scanned at a venue with poor
+  // signal shouldn't depend on a live fetch to even display.
+  let attachments = [];
+  if (data.qrCodeUrl) {
+    const qrBuffer = await fetchQrImageBuffer(data.qrCodeUrl);
+    if (qrBuffer) {
+      attachments = [{ filename: "comfytag-ticket-qr.png", content: qrBuffer, contentType: "image/png" }];
+    }
+  }
+
   // ─── Dispatch via ZeptoMail (primary) → Resend (fallback) ────────────────
   try {
-    return await sendViaZeptoMail({ to, subject, html, text, from });
+    return await sendViaZeptoMail({ to, subject, html, text, from, attachments });
   } catch (zeptoError) {
     console.warn(
       `[emailProviders] ZeptoMail failed, falling back to Resend...`,
       zeptoError.message
     );
     try {
-      return await sendViaResend({ to, subject, html, text, from });
+      return await sendViaResend({ to, subject, html, text, from, attachments });
     } catch (resendError) {
       console.error(
         `[emailProviders] Both ZeptoMail and Resend failed to ${to}: ${resendError.message}`

@@ -3,9 +3,9 @@
 import { useShellStore } from '@/hooks/useShellStore'
 
 const VARIANT_CLASSES = {
-  default: 'bg-white/5 text-zinc-300 border-white/10 hover:bg-white/10 hover:text-white',
-  primary: 'bg-violet-600/20 text-violet-300 border-violet-500/30 hover:bg-violet-600/30 hover:text-violet-200',
-  destructive: 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20 hover:text-red-300',
+  default: 'bg-zinc-800 text-zinc-300 border-white/10 hover:bg-zinc-700 hover:text-white',
+  primary: 'bg-violet-950 text-violet-300 border-violet-500/30 hover:bg-violet-900 hover:text-violet-200',
+  destructive: 'bg-red-950 text-red-400 border-red-500/20 hover:bg-red-900 hover:text-red-300',
 } as const
 
 export default function ContextRibbon() {
@@ -24,7 +24,7 @@ export default function ContextRibbon() {
           type="button"
           onClick={action.onClick}
           className={[
-            'flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium border backdrop-blur-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
+            'flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
             VARIANT_CLASSES[action.variant ?? 'default'],
           ].join(' ')}
         >

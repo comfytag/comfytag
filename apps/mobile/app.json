@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pixelgumstudio.comfytag"
+      "bundleIdentifier": "com.comfytag.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,10 +25,15 @@
         "backgroundColor": "#ffffff"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.pixelgumstudio.comfytag"
+      "package": "com.comfytag.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5db2615e-e15b-42ea-8c95-5ecdcb773c77"
+      }
     }
   }
 }

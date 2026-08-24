@@ -5,9 +5,9 @@ import { Modal, ErrorMessage } from '@comfytag/ui'
 import { api } from '@/lib/api'
 
 const INPUT_CLASS =
-  'w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none disabled:opacity-50'
+  'w-full bg-zinc-800 border border-(--color-border) rounded-xl px-4 py-3 text-(--color-text) text-sm focus:bg-(--color-surface) focus:border-violet-500 transition-all placeholder:text-zinc-500 focus:outline-none focus-visible:outline-none disabled:opacity-50'
 const LABEL_CLASS =
-  'block text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider mb-2'
+  'block text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider mb-2'
 
 export function SecuritySection() {
   const { data: session } = useSession()
@@ -79,13 +79,13 @@ export function SecuritySection() {
 
   return (
     <div className="space-y-8">
-      <h2 className="text-xl font-bold text-zinc-900">Security</h2>
+      <h2 className="text-xl font-bold text-(--color-text)">Security</h2>
 
       {/* Change Password */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold text-zinc-900">Password</p>
+            <p className="text-sm font-semibold text-(--color-text)">Password</p>
             <p className="text-xs text-zinc-400 mt-0.5">Update your account password</p>
           </div>
           {!showPasswordForm && (
@@ -99,11 +99,11 @@ export function SecuritySection() {
         </div>
 
         {pwSuccess && (
-          <p className="text-sm font-medium text-emerald-600">✓ Password changed successfully</p>
+          <p className="text-sm font-medium text-emerald-400">✓ Password changed successfully</p>
         )}
 
         {showPasswordForm && (
-          <div className="space-y-4 p-6 bg-zinc-50 border border-zinc-200 rounded-2xl">
+          <div className="space-y-4 p-6 bg-zinc-800 border border-(--color-border) rounded-2xl">
             {pwError && <ErrorMessage message={pwError} />}
             <div>
               <label className={LABEL_CLASS}>Current Password</label>
@@ -142,14 +142,14 @@ export function SecuritySection() {
               <button
                 onClick={() => setShowPasswordForm(false)}
                 disabled={pwIsSubmitting}
-                className="text-sm font-medium text-zinc-500 hover:text-zinc-900 py-3 px-5 rounded-xl hover:bg-zinc-100 transition-all border border-zinc-200 disabled:opacity-50"
+                className="text-sm font-medium text-zinc-400 hover:text-(--color-text) py-3 px-5 rounded-xl hover:bg-zinc-700 transition-all border border-(--color-border) disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleChangePassword}
                 disabled={pwIsSubmitting}
-                className="bg-zinc-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-zinc-800 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="bg-violet-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-violet-700 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {pwIsSubmitting ? 'Saving...' : 'Update Password'}
               </button>
@@ -159,23 +159,23 @@ export function SecuritySection() {
       </div>
 
       {/* Danger Zone */}
-      <div className="space-y-4 p-6 bg-red-50 border border-red-100 rounded-2xl">
+      <div className="space-y-4 p-6 bg-red-950/30 border border-red-900/50 rounded-2xl">
         <div>
-          <p className="text-[11px] font-mono font-semibold text-red-600 uppercase tracking-wider mb-1">
+          <p className="text-[11px] font-mono font-semibold text-red-400 uppercase tracking-wider mb-1">
             Danger Zone
           </p>
-          <p className="text-xs text-red-400">These actions are irreversible. Proceed with caution.</p>
+          <p className="text-xs text-red-400/80">These actions are irreversible. Proceed with caution.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={() => setShowDeactivateModal(true)}
-            className="bg-red-50 text-red-600 border border-red-100 font-bold py-3 px-6 rounded-xl hover:bg-red-100 transition-all active:scale-95 text-sm"
+            className="bg-red-950/40 text-red-400 border border-red-900/50 font-bold py-3 px-6 rounded-xl hover:bg-red-950/60 transition-all active:scale-95 text-sm"
           >
             Deactivate Account
           </button>
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="bg-red-50 text-red-600 border border-red-100 font-bold py-3 px-6 rounded-xl hover:bg-red-100 transition-all active:scale-95 text-sm"
+            className="bg-red-950/40 text-red-400 border border-red-900/50 font-bold py-3 px-6 rounded-xl hover:bg-red-950/60 transition-all active:scale-95 text-sm"
           >
             Delete Account
           </button>
@@ -203,14 +203,14 @@ export function SecuritySection() {
             <button
               onClick={() => setShowDeleteModal(false)}
               disabled={deleteIsSubmitting}
-              className="flex-1 text-sm font-medium text-zinc-500 hover:text-zinc-900 py-3 px-5 rounded-xl hover:bg-zinc-100 transition-all border border-zinc-200 disabled:opacity-50"
+              className="flex-1 text-sm font-medium text-zinc-400 hover:text-(--color-text) py-3 px-5 rounded-xl hover:bg-zinc-800 transition-all border border-(--color-border) disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               onClick={handleDeleteAccount}
               disabled={deleteIsSubmitting || deleteConfirmText !== 'DELETE'}
-              className="flex-1 bg-red-50 text-red-600 border border-red-100 font-bold py-3 px-6 rounded-xl hover:bg-red-100 transition-all active:scale-95 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-red-950/40 text-red-400 border border-red-900/50 font-bold py-3 px-6 rounded-xl hover:bg-red-950/60 transition-all active:scale-95 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {deleteIsSubmitting ? 'Deleting...' : 'Delete Permanently'}
             </button>
@@ -226,7 +226,7 @@ export function SecuritySection() {
           </p>
           <button
             onClick={() => setShowDeactivateModal(false)}
-            className="bg-zinc-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-zinc-800 transition-all active:scale-95 text-sm"
+            className="bg-violet-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-violet-700 transition-all active:scale-95 text-sm"
           >
             Got it
           </button>

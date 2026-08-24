@@ -1,4 +1,3 @@
-import https from 'https'
 import crypto from 'crypto'
 import { generateSync } from 'otplib'
 import Event from '../models/Event.js'
@@ -7,7 +6,12 @@ import Audience from '../models/Audience.js'
 import Referral from '../models/Referral.js'
 import Wallet from '../models/Wallet.js'
 import Alert from '../models/Alert.js'
+import Withdraw from '../models/Withdraw.js'
 import { createError } from '../utils/error.js'
+import { verifyAndCheckPaystackReference } from '../utils/paystack.js'
+import { calculateTicketCharge } from '../utils/ticketFees.js'
+import { createPaidTicket } from '../services/ticketCreation.js'
+import { createNotification, notifyAdmins } from './notification.js'
 
 
 // ─── Search Controllers ───────────────────────────────────────────────────────
@@ -22,6 +26,8 @@ export const searchEvents = async (req, res, next) => {
       priceMax,
       priceMin,
       date,
+      dateFrom,
+      dateTo,
       featured,
       showPast,
       page = 1,
@@ -99,6 +105,18 @@ export const searchEvents = async (req, res, next) => {
         sundayEnd.setDate(sundayEnd.getDate() + 1)
         sundayEnd.setHours(23, 59, 59)
         filter.date = { $gte: saturdayStart, $lte: sundayEnd }
+      }
+    }
+
+    // Explicit date range (from the discovery page's date-range filter) — merges
+    // on top of the preset/past-mode bounds above rather than replacing them.
+    if (dateFrom || dateTo) {
+      filter.date = filter.date || {}
+      if (dateFrom) filter.date.$gte = new Date(dateFrom)
+      if (dateTo) {
+        const end = new Date(dateTo)
+        end.setHours(23, 59, 59, 999)
+        filter.date.$lte = end
       }
     }
 
@@ -271,6 +289,20 @@ export const applyReferral = async (req, res, next) => {
       return res.status(200).json({ success: true, credited: false, reason: 'self-referral' })
     }
 
+    if (ticket.referralRedeemed) {
+      return res.status(200).json({ success: true, credited: false, reason: 'already-redeemed' })
+    }
+
+    // Atomic claim closes the race between two concurrent calls for the same ticket.
+    const claimed = await Audience.findOneAndUpdate(
+      { _id: ticketId, referralRedeemed: { $ne: true } },
+      { $set: { referralRedeemed: true, referralCreditedAt: new Date() } },
+      { new: true }
+    )
+    if (!claimed) {
+      return res.status(200).json({ success: true, credited: false, reason: 'already-redeemed' })
+    }
+
     // Credit ₦500 to referrer wallet
     await Wallet.findOneAndUpdate(
       { user_id: referral.referrer_id },
@@ -378,6 +410,139 @@ export const getTicketStatus = async (req, res, next) => {
 
 // ─── Paystack Webhook Controller ─────────────────────────────────────────────
 
+// Recovery path: if a client's payment succeeded but it never got as far as
+// calling POST /audience/:userId/:eventId (app crash, closed tab, dropped
+// network right after paying), the ticket would otherwise be lost. Requires
+// `metadata` to have been attached to the transaction at PaystackPop.setup()
+// time on the web/mobile checkout screens.
+const handleChargeSuccess = async (event, io) => {
+  const reference = event.data?.reference
+  if (!reference) return
+
+  const existing = await Audience.findOne({ reference }).select('_id').lean()
+  if (existing) return // already created — nothing to recover
+
+  const metadata = event.data?.metadata
+  const { eventId, tierName, numOfTicket, userId, name, email, phone } = metadata || {}
+  if (!eventId || !tierName || !numOfTicket || !userId) {
+    console.error('[Webhook] charge.success recovery skipped — incomplete metadata for reference', reference)
+    return
+  }
+
+  const eventDoc = await Event.findById(eventId)
+  if (!eventDoc) {
+    console.error('[Webhook] charge.success recovery skipped — event not found:', eventId)
+    return
+  }
+
+  const tier = eventDoc.ticketType.find(t => t.name === tierName)
+  if (!tier) {
+    console.error('[Webhook] charge.success recovery skipped — invalid tier:', tierName)
+    return
+  }
+
+  // Re-derive the expected charge server-side rather than trusting
+  // event.data.amount blindly — see utils/ticketFees.js.
+  const charge = calculateTicketCharge(tier.price, numOfTicket)
+  if (event.data.amount !== charge.totalCharge * 100) {
+    console.error('[Webhook] charge.success recovery skipped — amount mismatch for reference', reference)
+    return
+  }
+
+  await createPaidTicket({
+    event: eventDoc,
+    eventId,
+    tierName,
+    numOfTicket,
+    name,
+    email,
+    phone,
+    userId,
+    reference,
+    serverAmount: charge.totalCharge,
+    organizerNet: charge.organizerNet,
+    isFreeTicket: false,
+    io,
+  })
+}
+
+// Paystack accepting a transfer request (processPayout) isn't the same as the
+// money having moved — these two handlers are what actually confirm/deny a
+// payout, driven by the transfer_code minted when the transfer was initiated.
+const findWithdrawForTransferEvent = async (event) => {
+  const transferCode = event.data?.transfer_code
+  const reference = event.data?.reference
+  return Withdraw.findOne(
+    transferCode ? { transferCode } : { transferReference: reference }
+  )
+}
+
+const handleTransferSuccess = async (event, io) => {
+  const withdrawal = await findWithdrawForTransferEvent(event)
+  if (!withdrawal) {
+    console.error('[Webhook] transfer.success — no matching Withdraw for transfer_code', event.data?.transfer_code)
+    return
+  }
+  if (withdrawal.status === 'sent') return // already processed
+
+  withdrawal.status = 'sent'
+  await withdrawal.save()
+
+  await createNotification({
+    userId: withdrawal.user_id,
+    type: 'payout_approved',
+    title: 'Payout sent ✓',
+    message: `₦${withdrawal.amount.toLocaleString()} has been sent to your ${withdrawal.bankName} account`,
+    data: {
+      amount: withdrawal.amount,
+      bankName: withdrawal.bankName,
+      acctName: withdrawal.acctName,
+      withdrawId: withdrawal._id.toString(),
+    },
+    io,
+  }).catch(err => console.error('[Notification] Payout sent failed:', err.message))
+}
+
+const handleTransferFailed = async (event, io) => {
+  const withdrawal = await findWithdrawForTransferEvent(event)
+  if (!withdrawal) {
+    console.error('[Webhook] transfer.failed — no matching Withdraw for transfer_code', event.data?.transfer_code)
+    return
+  }
+  if (withdrawal.status === 'failed') return // already processed
+
+  const failureReason = event.data?.reason || event.data?.message || 'Transfer failed at Paystack'
+  withdrawal.status = 'failed'
+  withdrawal.failureReason = failureReason
+  await withdrawal.save()
+
+  await createNotification({
+    userId: withdrawal.user_id,
+    type: 'payout_rejected',
+    title: 'Payout failed',
+    message: 'Your payout could not be completed. Our team has been notified.',
+    data: {
+      amount: withdrawal.amount,
+      rejectionReason: failureReason,
+      withdrawId: withdrawal._id.toString(),
+    },
+    io,
+  }).catch(err => console.error('[Notification] Payout failed notification error:', err.message))
+
+  notifyAdmins({
+    roles: ['finance'],
+    type: 'payout_requested',
+    title: 'Payout transfer failed',
+    message: `₦${withdrawal.amount.toLocaleString()} transfer to ${withdrawal.bankName} failed: ${failureReason}`,
+    data: {
+      withdrawId: withdrawal._id.toString(),
+      amount: String(withdrawal.amount),
+      bankName: withdrawal.bankName,
+    },
+    io,
+  }).catch(err => console.error('[Notification] Finance admin transfer-failed alert failed:', err.message))
+}
+
 // POST /paystack/webhook
 // Paystack calls this server-to-server — NO JWT auth. HMAC validates the sender.
 export const handlePaystackWebhook = async (req, res, next) => {
@@ -412,18 +577,31 @@ export const handlePaystackWebhook = async (req, res, next) => {
     // Acknowledge receipt within Paystack's 5-second window
     res.status(200).json({ received: true })
 
-    // Fire-and-forget: idempotency guard for charge.success events
+    // Fire-and-forget from here on — the ack above already went out, so every
+    // branch below must log rather than throw.
     const event = req.body
-    if (event?.event === 'charge.success' && event.data?.reference) {
-      Audience.findOne({ reference: event.data.reference })
-        .select('_id')
-        .lean()
-        .then(existing => {
-          if (!existing) {
-            // Ticket not yet created — this can be used to trigger recovery logic
-          }
-        })
-        .catch(err => console.error('[Webhook] idempotency check failed:', err.message))
+    const io = req.app.locals.io
+
+    switch (event?.event) {
+      case 'charge.success':
+        handleChargeSuccess(event, io).catch(err =>
+          console.error('[Webhook] charge.success handling failed:', err.message)
+        )
+        break
+      case 'transfer.success':
+        handleTransferSuccess(event, io).catch(err =>
+          console.error('[Webhook] transfer.success handling failed:', err.message)
+        )
+        break
+      case 'transfer.failed':
+      case 'transfer.reversed':
+        handleTransferFailed(event, io).catch(err =>
+          console.error('[Webhook] transfer.failed handling failed:', err.message)
+        )
+        break
+      default:
+        // Other event types are not handled.
+        break
     }
   } catch (err) {
     next(err)
@@ -465,51 +643,25 @@ export const verifyPaystackPayment = async (req, res, next) => {
       })
     }
 
-    const data = await new Promise((resolve, reject) => {
-      const options = {
-        hostname: 'api.paystack.co',
-        path: `/transaction/verify/${encodeURIComponent(reference)}`,
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-        },
-      }
+    const { ok, reason, data } = await verifyAndCheckPaystackReference(reference)
 
-      const request = https.request(options, (response) => {
-        let body = ''
-        response.on('data', (chunk) => { body += chunk })
-        response.on('end', () => {
-          try {
-            resolve(JSON.parse(body))
-          } catch {
-            reject(new Error('Invalid JSON from Paystack'))
-          }
-        })
-      })
-
-      request.on('error', reject)
-      request.end()
-    })
-
-    // Validate Paystack response structure
-    if (!data || !data.data) {
+    if (!data) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid response from Paystack',
-        data: data
+        message: reason || 'Invalid response from Paystack',
       })
     }
 
-    const { status, amount, paid_at } = data.data
+    const { status, amount, paid_at } = data
+    const amountNaira = amount !== undefined ? amount / 100 : undefined
 
-    if (!status || amount === undefined) {
+    if (!ok) {
       return res.status(400).json({
         success: false,
-        message: 'Incomplete payment data from Paystack'
+        message: reason,
+        data: { status, amount: amountNaira, paid_at, charged: false },
       })
     }
-
-    const amountNaira = amount / 100
 
     res.status(200).json({
       success: true,
@@ -517,7 +669,7 @@ export const verifyPaystackPayment = async (req, res, next) => {
         status,
         amount: amountNaira,
         paid_at,
-        charged: status === 'success',
+        charged: true,
       },
     })
   } catch (err) {

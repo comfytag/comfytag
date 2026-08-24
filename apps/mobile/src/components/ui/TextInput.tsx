@@ -42,10 +42,10 @@ export function TextInput({
 
   const hasError = !!error
   const borderColor = hasError
-    ? colors.mobile.error
+    ? colors.error.DEFAULT
     : focused
-    ? colors.mobile.borderFocus
-    : colors.mobile.border
+    ? colors.public.borderFocus
+    : colors.public.border
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -60,7 +60,7 @@ export function TextInput({
 
         <RNTextInput
           style={[styles.input, leftIcon ? styles.inputWithLeft : undefined]}
-          placeholderTextColor={colors.mobile.textMuted}
+          placeholderTextColor={colors.textPublic.muted}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           secureTextEntry={secureToggle ? hidden : secureTextEntry}
@@ -105,13 +105,13 @@ const styles = StyleSheet.create({
   label: {
     fontSize: fs.sm,
     fontWeight: '500',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     marginBottom: sp[1],
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.md,
     borderWidth: 1.5,
     minHeight: 52,
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: fs.base,
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     paddingVertical: sp[3],
   },
   inputWithLeft: {
@@ -139,12 +139,12 @@ const styles = StyleSheet.create({
   },
   error: {
     fontSize: fs.xs,
-    color: colors.mobile.error,
+    color: colors.error.DEFAULT,
     marginTop: sp[1],
   },
   hint: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: sp[1],
   },
 })

@@ -122,7 +122,7 @@ export default function FollowingScreen({ navigation }: Props): React.ReactEleme
         onPress={() => navigation.goBack()}
         hapticStyle="light"
       >
-        <ChevronLeft size={24} color={colors.mobile.textPrimary} strokeWidth={2} />
+        <ChevronLeft size={24} color={colors.textPublic.primary} strokeWidth={2} />
       </AnimatedPressable>
       <View style={styles.headerCenter}>
         <Text style={styles.headerTitle}>Following</Text>
@@ -170,7 +170,7 @@ export default function FollowingScreen({ navigation }: Props): React.ReactEleme
       <SafeAreaView style={styles.container}>
         {renderHeader()}
         <View style={styles.centered}>
-          <UserX size={48} color={colors.mobile.textMuted} strokeWidth={1.5} />
+          <UserX size={48} color={colors.textPublic.muted} strokeWidth={1.5} />
           <Text style={styles.emptyTitle}>Not following anyone yet</Text>
           <AnimatedPressable
             style={styles.discoverButton}
@@ -214,7 +214,7 @@ export default function FollowingScreen({ navigation }: Props): React.ReactEleme
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
 
   // ── Header ────────────────────────────────────────────────────────────────
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: sp[4],
     paddingTop: sp[2],
     paddingBottom: sp[3],
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   backButton: {
     width: 44,
@@ -242,11 +242,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   headerCount: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   headerSpacer: {
     width: 44,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   },
   errorBannerText: {
     fontSize: fs.sm,
-    color: colors.mobile.error,
+    color: colors.error.DEFAULT,
     textAlign: 'center',
   },
 
@@ -277,14 +277,14 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.xl,
     paddingHorizontal: sp[4],
     paddingVertical: sp[3],
     marginBottom: sp[3],
     gap: sp[3],
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
   },
 
   // ── Avatar ────────────────────────────────────────────────────────────────
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   avatarInitials: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: '#FFFFFF',
   },
 
   // ── Row content ───────────────────────────────────────────────────────────
@@ -310,12 +310,12 @@ const styles = StyleSheet.create({
   organizerName: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     marginBottom: 2,
   },
   organizerEmail: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
 
   // ── Unfollow button ───────────────────────────────────────────────────────
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     marginHorizontal: sp[4],
     marginBottom: sp[3],
     borderRadius: rd.xl,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     padding: sp[3],
     gap: sp[3],
   },
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: rd.full,
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
     flexShrink: 0,
   },
   skeletonLines: {
@@ -362,13 +362,13 @@ const styles = StyleSheet.create({
     height: 14,
     width: '60%',
     borderRadius: rd.sm,
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
   },
   skeletonLineBottom: {
     height: 10,
     width: '40%',
     borderRadius: rd.sm,
-    backgroundColor: colors.mobile.surfaceRaised,
+    backgroundColor: colors.public.surfaceAlt,
   },
 
   // ── Centered (error / empty) ──────────────────────────────────────────────
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textAlign: 'center',
   },
   discoverButton: {
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: fs.base,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textAlign: 'center',
   },
   retryPressable: {

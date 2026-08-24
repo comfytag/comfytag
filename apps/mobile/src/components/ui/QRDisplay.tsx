@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   label: {
     marginTop: sp[3],
     fontSize: 12,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     fontFamily: 'monospace',
     letterSpacing: 2,
   },

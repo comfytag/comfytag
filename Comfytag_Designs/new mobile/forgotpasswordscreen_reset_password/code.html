@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag - Reset Password</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .step-transition {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .skeleton-pulse {
+            background: linear-gradient(90deg, #F5F5F4 25%, #E7E5E4 50%, #F5F5F4 75%);
+            background-size: 200% 100%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .blur-overlay {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "on-secondary-fixed": "#1e1b19",
+                        "secondary": "#625d5b",
+                        "surface-bright": "#f9f9f8",
+                        "outline": "#7b7487",
+                        "on-secondary-container": "#686361",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-primary-fixed": "#25005a",
+                        "tertiary": "#4d4f4e",
+                        "inverse-primary": "#d2bbff",
+                        "surface-dim": "#dadad9",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#e9e1dd",
+                        "on-primary-container": "#ede0ff",
+                        "tertiary-fixed-dim": "#c6c7c6",
+                        "outline-variant": "#ccc3d8",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d2bbff",
+                        "inverse-on-surface": "#f1f1f0",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#4a4455",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#630ed4",
+                        "tertiary-container": "#656766",
+                        "primary-fixed": "#eaddff",
+                        "background": "#f9f9f8",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eeeeed",
+                        "on-background": "#1a1c1c",
+                        "primary-container": "#7c3aed",
+                        "surface-tint": "#732ee4",
+                        "on-error-container": "#93000a",
+                        "on-surface": "#1a1c1c",
+                        "surface-container-low": "#f3f4f3",
+                        "inverse-surface": "#2f3130",
+                        "secondary-fixed-dim": "#ccc5c2",
+                        "surface": "#f9f9f8",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-container": "#e9e1dd",
+                        "surface-variant": "#e2e2e2",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "surface-container-high": "#e8e8e7",
+                        "on-secondary-fixed-variant": "#4a4643",
+                        "on-tertiary-container": "#e6e6e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "stack-gap": "16px",
+                        "section-gap": "32px",
+                        "container-padding": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-rg": ["Inter"],
+                        "title-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-rg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "title-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-rg selection:bg-primary-fixed selection:text-primary">
+<!-- Top App Bar (Suppressing standard nav for focused journey) -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-gutter h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<button class="p-2 hover:opacity-80 transition-opacity" onclick="prevStep()">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">ComfyTag</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">help_outline</span>
+</header>
+<main class="pt-24 pb-12 px-container-padding max-w-[480px] mx-auto min-h-screen flex flex-col items-center">
+<!-- Animated Background Ornament (Subtle) -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden opacity-30 z-0">
+<div class="absolute -top-24 -right-24 w-96 h-96 bg-primary-container/20 rounded-full blur-[100px]"></div>
+<div class="absolute -bottom-24 -left-24 w-96 h-96 bg-on-primary-fixed-variant/10 rounded-full blur-[100px]"></div>
+</div>
+<!-- Reset Password Heading -->
+<div class="w-full text-center mb-section-gap relative z-10">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Reset Password</h1>
+<p class="text-on-surface-variant font-body-sm" id="step-description">Enter your registered email or phone number to receive a verification code.</p>
+</div>
+<!-- Main Content Card -->
+<div class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl p-container-padding relative z-10 shadow-sm transition-all duration-500 overflow-hidden min-h-[400px] flex flex-col">
+<!-- Step 1: Identifier Input -->
+<div class="step-transition w-full flex flex-col gap-stack-gap" id="step-1">
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase" for="identifier">Email or Phone Number</label>
+<input class="w-full h-12 px-4 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none bg-white" id="identifier" placeholder="e.g. name@example.com" type="text"/>
+</div>
+<button class="w-full h-12 bg-primary text-on-primary font-title-md text-title-md rounded-lg hover:opacity-90 active:scale-95 transition-all mt-4" onclick="goToOTP()">
+                    Send Code
+                </button>
+<a class="text-center text-primary font-label-caps text-label-caps hover:underline mt-4" href="#">
+                    Back to Login
+                </a>
+</div>
+<!-- Step 2: OTP Entry -->
+<div class="step-transition hidden opacity-0 translate-x-12 w-full flex flex-col gap-stack-gap" id="step-2">
+<div class="text-center mb-4">
+<span class="font-body-rg text-on-surface font-semibold" id="masked-id">****@example.com</span>
+<p class="text-body-sm text-on-surface-variant mt-1">Check your inbox for a 6-digit code.</p>
+</div>
+<div class="flex justify-between gap-2 mb-4">
+<input class="otp-input w-12 h-14 text-center text-headline-lg-mobile border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white outline-none" maxlength="1" type="text"/>
+<input class="otp-input w-12 h-14 text-center text-headline-lg-mobile border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white outline-none" maxlength="1" type="text"/>
+<input class="otp-input w-12 h-14 text-center text-headline-lg-mobile border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white outline-none" maxlength="1" type="text"/>
+<input class="otp-input w-12 h-14 text-center text-headline-lg-mobile border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white outline-none" maxlength="1" type="text"/>
+<input class="otp-input w-12 h-14 text-center text-headline-lg-mobile border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white outline-none" maxlength="1" type="text"/>
+<input class="otp-input w-12 h-14 text-center text-headline-lg-mobile border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white outline-none" maxlength="1" type="text"/>
+</div>
+<button class="w-full h-12 bg-primary text-on-primary font-title-md text-title-md rounded-lg hover:opacity-90 active:scale-95 transition-all" onclick="goToNewPassword()">
+                    Verify Code
+                </button>
+<div class="text-center mt-4">
+<p class="text-body-sm text-on-surface-variant">Didn't receive a code?</p>
+<button class="text-primary font-label-caps text-label-caps mt-1 opacity-50 cursor-not-allowed" id="resend-btn">
+                        Resend Code (<span id="timer">59</span>s)
+                    </button>
+</div>
+</div>
+<!-- Step 3: New Password -->
+<div class="step-transition hidden opacity-0 translate-x-12 w-full flex flex-col gap-stack-gap" id="step-3">
+<div class="flex flex-col gap-2 relative">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase" for="new-pass">New Password</label>
+<div class="relative">
+<input class="w-full h-12 px-4 pr-12 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white" id="new-pass" placeholder="At least 8 characters" type="password"/>
+<button class="absolute right-3 top-3 text-on-surface-variant" onclick="togglePass('new-pass')" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-2 relative">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase" for="confirm-pass">Confirm Password</label>
+<div class="relative">
+<input class="w-full h-12 px-4 pr-12 rounded-lg border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none bg-white" id="confirm-pass" placeholder="Re-enter password" type="password"/>
+<button class="absolute right-3 top-3 text-on-surface-variant" onclick="togglePass('confirm-pass')" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+<div class="p-3 bg-surface-container-low rounded-lg flex items-start gap-2">
+<span class="material-symbols-outlined text-secondary text-sm">info</span>
+<p class="text-[12px] text-on-surface-variant">Password must include at least one uppercase letter, one number, and one special character.</p>
+</div>
+<button class="w-full h-12 bg-primary text-on-primary font-title-md text-title-md rounded-lg hover:opacity-90 active:scale-95 transition-all mt-4" onclick="finalizeReset()">
+                    Reset Password
+                </button>
+</div>
+</div>
+<!-- Visual Credibility Section -->
+<div class="mt-section-gap grid grid-cols-2 gap-4 w-full">
+<div class="p-4 border border-outline-variant rounded-lg flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="text-body-sm text-on-surface-variant">End-to-End Encrypted</span>
+</div>
+<div class="p-4 border border-outline-variant rounded-lg flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">fingerprint</span>
+<span class="text-body-sm text-on-surface-variant">Biometric Secure</span>
+</div>
+</div>
+</main>
+<!-- Global Loading Overlay -->
+<div class="fixed inset-0 z-[100] bg-white/80 blur-overlay flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300" id="loading-overlay">
+<div class="relative w-24 h-24">
+<div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+<div class="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-4xl animate-pulse">lock_reset</span>
+</div>
+</div>
+<p class="mt-4 font-title-md text-primary animate-pulse">Securing account...</p>
+</div>
+<!-- Success Feedback Overlay -->
+<div class="fixed inset-0 z-[110] bg-white flex flex-col items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500" id="success-overlay">
+<div class="bg-green-50 rounded-full p-8 mb-6">
+<span class="material-symbols-outlined text-[#10B981] text-7xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h2 class="font-headline-lg-mobile text-on-surface mb-2">Password Updated!</h2>
+<p class="text-on-surface-variant text-center px-12 mb-8">Your account security has been updated successfully. You can now log in with your new password.</p>
+<button class="px-12 h-12 bg-primary text-on-primary font-title-md rounded-lg shadow-lg">Login Now</button>
+</div>
+<script>
+        let currentStep = 1;
+        const descriptions = [
+            "Enter your registered email or phone number to receive a verification code.",
+            "We've sent a 6-digit verification code to your identifier.",
+            "Choose a strong, unique password to protect your account."
+        ];
+
+        function showLoading(duration = 1500) {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            return new Promise(resolve => setTimeout(() => {
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                resolve();
+            }, duration));
+        }
+
+        async function goToOTP() {
+            const identifier = document.getElementById('identifier').value;
+            if (!identifier) return alert("Please enter an identifier");
+            
+            await showLoading(1200);
+            
+            document.getElementById('masked-id').textContent = identifier;
+            document.getElementById('step-1').classList.add('hidden', 'opacity-0');
+            document.getElementById('step-2').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('step-2').classList.remove('opacity-0', 'translate-x-12');
+            }, 50);
+            
+            currentStep = 2;
+            updateDescription();
+            startTimer();
+        }
+
+        async function goToNewPassword() {
+            await showLoading(1000);
+            
+            document.getElementById('step-2').classList.add('hidden', 'opacity-0');
+            document.getElementById('step-3').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('step-3').classList.remove('opacity-0', 'translate-x-12');
+            }, 50);
+            
+            currentStep = 3;
+            updateDescription();
+        }
+
+        async function finalizeReset() {
+            const p1 = document.getElementById('new-pass').value;
+            const p2 = document.getElementById('confirm-pass').value;
+            
+            if (p1 !== p2) return alert("Passwords do not match");
+            if (p1.length < 8) return alert("Password too short");
+
+            await showLoading(2000);
+            
+            const success = document.getElementById('success-overlay');
+            success.classList.remove('opacity-0', 'pointer-events-none');
+        }
+
+        function prevStep() {
+            if (currentStep === 1) return window.history.back();
+            
+            const prev = currentStep;
+            currentStep--;
+            
+            document.getElementById(`step-${prev}`).classList.add('hidden', 'opacity-0', 'translate-x-12');
+            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById(`step-${currentStep}`).classList.remove('opacity-0');
+            }, 50);
+            
+            updateDescription();
+        }
+
+        function updateDescription() {
+            document.getElementById('step-description').textContent = descriptions[currentStep - 1];
+        }
+
+        function togglePass(id) {
+            const input = document.getElementById(id);
+            const btn = input.nextElementSibling.querySelector('span');
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                btn.textContent = 'visibility';
+            }
+        }
+
+        function startTimer() {
+            let timeLeft = 59;
+            const timerEl = document.getElementById('timer');
+            const resendBtn = document.getElementById('resend-btn');
+            
+            const interval = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    resendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    resendBtn.classList.add('hover:underline');
+                    resendBtn.innerHTML = "Resend Code";
+                }
+            }, 1000);
+        }
+
+        // OTP Input Focus Logic
+        const otpInputs = document.querySelectorAll('.otp-input');
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+    </script>
+</body></html>

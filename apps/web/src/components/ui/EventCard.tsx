@@ -54,7 +54,7 @@ export function EventCard({
 
   const content = (
     <article
-      className="group relative block w-full aspect-[4/5] sm:aspect-[3/4] rounded-2xl overflow-hidden border border-transparent hover:border-brand transition-colors duration-(--duration-micro) ease-(--ease-standard) bg-zinc-900"
+      className={`group relative block w-full ${compact ? 'aspect-[3/4]' : 'aspect-[4/5] sm:aspect-[3/4]'} rounded-2xl overflow-hidden border border-transparent hover:border-brand transition-colors duration-(--duration-micro) ease-(--ease-standard) bg-zinc-900`}
       onClick={onSelect}
       role={onSelect ? 'button' : undefined}
       tabIndex={onSelect ? 0 : undefined}
@@ -112,32 +112,44 @@ export function EventCard({
       )}
 
       {/* Bottom content block */}
-      <div className="absolute bottom-0 inset-x-0 p-5 flex flex-col justify-end">
+      <div className={`absolute bottom-0 inset-x-0 flex flex-col justify-end ${compact ? 'p-3' : 'p-5'}`}>
         {/* Date / time */}
-        <p className="text-xs font-mono font-medium text-zinc-300 mb-1.5">{overline}</p>
+        <p className={`text-xs font-mono font-medium text-zinc-300 ${compact ? 'mb-1' : 'mb-1.5'}`}>{overline}</p>
 
         {/* Title */}
-        <h3 className="text-md font-bold tracking-tight text-white line-clamp-2 leading-tight mb-2 capitalize">
+        <h3
+          className={`font-bold tracking-tight text-white leading-tight capitalize ${
+            compact ? 'text-sm line-clamp-1 mb-1' : 'text-md line-clamp-2 mb-2'
+          }`}
+        >
           {event.name}
         </h3>
 
-        {/* Headline tagline */}
-        {event.headline && (
+        {/* Headline tagline — full card only, no room for it in the compact rail */}
+        {event.headline && !compact && (
           <p className="text-sm text-zinc-300 line-clamp-2 leading-snug mb-3">{event.headline}</p>
         )}
 
         {/* Venue */}
-        <p className="text-sm font-medium text-zinc-400 mb-5 truncate capitalize">{event.venue}</p>
+        <p className={`font-medium text-zinc-400 truncate capitalize ${compact ? 'text-xs mb-2' : 'text-sm mb-5'}`}>
+          {event.venue}
+        </p>
 
         {/* Footer row — price + CTA */}
-        <div className="flex items-center justify-between mt-auto">
+        <div className="flex items-center justify-between gap-2 mt-auto">
           {lowestPrice === 0 ? (
-            <span className="text-md font-bold text-white">Free</span>
+            <span className={`shrink-0 font-bold text-white ${compact ? 'text-sm' : 'text-md'}`}>Free</span>
           ) : (
-            <span className="text-md font-bold text-white">{formatNaira(lowestPrice)}</span>
+            <span className={`shrink-0 font-bold text-white ${compact ? 'text-sm' : 'text-md'}`}>
+              {formatNaira(lowestPrice)}
+            </span>
           )}
 
-          <span className="bg-white/25 hover:bg-white/35 border border-white/10 text-white px-5 py-2.5 rounded-full text-sm font-bold transition-colors">
+          <span
+            className={`shrink-0 whitespace-nowrap bg-white/25 hover:bg-white/35 border border-white/10 text-white rounded-full font-bold transition-colors ${
+              compact ? 'px-3 py-1.5 text-xs' : 'px-5 py-2.5 text-sm'
+            }`}
+          >
             {isPast ? 'View Recap' : 'Get Tickets'}
           </span>
         </div>

@@ -92,7 +92,7 @@ function TierEditForm({ form, onChange, onSave, onCancel, saving }: TierEditForm
         value={form.name}
         onChangeText={(v) => onChange('name', v)}
         placeholder="Tier name"
-        placeholderTextColor={colors.mobile.textMuted}
+        placeholderTextColor={colors.textPublic.muted}
         autoCapitalize="words"
       />
       <TextInput
@@ -100,7 +100,7 @@ function TierEditForm({ form, onChange, onSave, onCancel, saving }: TierEditForm
         value={form.price}
         onChangeText={(v) => onChange('price', v)}
         placeholder="Price (₦)"
-        placeholderTextColor={colors.mobile.textMuted}
+        placeholderTextColor={colors.textPublic.muted}
         keyboardType="decimal-pad"
       />
       <TextInput
@@ -108,7 +108,7 @@ function TierEditForm({ form, onChange, onSave, onCancel, saving }: TierEditForm
         value={form.capacity}
         onChangeText={(v) => onChange('capacity', v)}
         placeholder="Capacity"
-        placeholderTextColor={colors.mobile.textMuted}
+        placeholderTextColor={colors.textPublic.muted}
         keyboardType="number-pad"
       />
       <View style={styles.formActions}>
@@ -321,7 +321,7 @@ export default function TicketTiersScreen({ navigation, route }: Props) {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <ChevronLeft size={24} color={colors.mobile.textPrimary} strokeWidth={2} />
+          <ChevronLeft size={24} color={colors.textPublic.primary} strokeWidth={2} />
         </AnimatedPressable>
         <Text style={styles.headerTitle} numberOfLines={1}>Ticket Tiers</Text>
         <View style={styles.headerSpacer} />
@@ -353,7 +353,7 @@ export default function TicketTiersScreen({ navigation, route }: Props) {
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.emptyState}>
-                <CalendarX size={48} color={colors.mobile.textMuted} strokeWidth={1.5} />
+                <CalendarX size={48} color={colors.textPublic.muted} strokeWidth={1.5} />
                 <Text style={styles.emptyTitle}>No ticket tiers yet</Text>
                 <Text style={styles.emptySubtitle}>
                   Add a tier to start selling tickets for {eventName}
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   header: {
     flexDirection: 'row',
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     paddingHorizontal: sp[2],
   },
   headerSpacer: {
@@ -455,13 +455,13 @@ const styles = StyleSheet.create({
   skeletonCard: {
     height: 80,
     borderRadius: rd.lg,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
   },
   tierCard: {
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     padding: sp[4],
     gap: sp[3],
   },
@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
   tierName: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     flex: 1,
   },
   tierPrice: {
@@ -483,12 +483,12 @@ const styles = StyleSheet.create({
   },
   tierCapacityText: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   progressTrack: {
     height: 4,
     borderRadius: rd.full,
-    backgroundColor: colors.mobile.border,
+    backgroundColor: colors.public.border,
     overflow: 'hidden',
   },
   progressFill: {
@@ -505,14 +505,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: sp[4],
     borderRadius: rd.full,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   actionPillText: {
     fontSize: fs.xs,
     fontWeight: '600',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
   actionPillDanger: {
     borderColor: colors.error.DEFAULT,
@@ -521,11 +521,11 @@ const styles = StyleSheet.create({
     color: colors.error.DEFAULT,
   },
   actionPillDisabled: {
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     opacity: 0.4,
   },
   actionPillTextDisabled: {
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   inlineForm: {
     gap: sp[3],
@@ -534,11 +534,11 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: rd.md,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     paddingHorizontal: sp[3],
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     fontSize: fs.sm,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   formActions: {
     flexDirection: 'row',
@@ -566,7 +566,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   addFormCard: {
     borderWidth: 1,
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
   addFormTitle: {
     fontSize: fs.sm,
     fontWeight: '700',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
@@ -606,11 +606,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   emptySubtitle: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
     paddingHorizontal: sp[4],
   },
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   },
   mutedText: {
     fontSize: fs.base,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
   retryButton: {
     paddingHorizontal: sp[6],

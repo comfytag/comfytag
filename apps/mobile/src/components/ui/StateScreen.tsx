@@ -16,6 +16,8 @@ export interface StateScreenProps {
   title?: string
   subtitle?: string
   action?: { label: string; onPress: () => void }
+  /** Which surface this renders on — light (attendee) or dark (organizer). Defaults to light. */
+  theme?: 'light' | 'dark'
 }
 
 // ─── Default copy per type ────────────────────────────────────────────────────
@@ -58,21 +60,28 @@ export default function StateScreen({
   title,
   subtitle,
   action,
+  theme = 'light',
 }: StateScreenProps): React.ReactElement {
   const defaults = DEFAULTS[type]
   const resolvedTitle = title ?? defaults.title
   const resolvedSubtitle = subtitle ?? defaults.subtitle
+  const isLight = theme === 'light'
+
+  const bg = isLight ? colors.public.bg : colors.mobile.bg
+  const textPrimary = isLight ? colors.textPublic.primary : colors.mobile.textPrimary
+  const textSecondary = isLight ? colors.textPublic.secondary : colors.mobile.textSecondary
+  const borderColor = isLight ? colors.public.border : colors.mobile.border
 
   // Loading renders a spinner with no icon circle.
   if (type === 'loading') {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: bg }]}>
         <ActivityIndicator size="large" color={colors.brand.DEFAULT} />
         {resolvedTitle.length > 0 && resolvedTitle !== 'Loading...' && (
-          <Text style={styles.loadingText}>{resolvedTitle}</Text>
+          <Text style={[styles.loadingText, { color: textSecondary }]}>{resolvedTitle}</Text>
         )}
         {resolvedTitle === 'Loading...' && (
-          <Text style={styles.loadingText}>{resolvedTitle}</Text>
+          <Text style={[styles.loadingText, { color: textSecondary }]}>{resolvedTitle}</Text>
         )}
       </SafeAreaView>
     )
@@ -82,19 +91,19 @@ export default function StateScreen({
   const iconBg: Record<Exclude<StateScreenProps['type'], 'loading'>, string> = {
     success: colors.success.DEFAULT,
     error: colors.error.bg,
-    empty: colors.public.border,
-    declined: colors.public.border,
+    empty: borderColor,
+    declined: borderColor,
   }
 
   const iconColor: Record<Exclude<StateScreenProps['type'], 'loading'>, string> = {
-    success: colors.textPublic.onBrand,
+    success: '#FFFFFF',
     error: colors.error.DEFAULT,
-    empty: colors.textPublic.secondary,
-    declined: colors.textPublic.secondary,
+    empty: textSecondary,
+    declined: textSecondary,
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: bg }]}>
       {/* Icon circle */}
       <View
         style={[
@@ -113,11 +122,11 @@ export default function StateScreen({
       </View>
 
       {/* Title */}
-      <Text style={styles.title}>{resolvedTitle}</Text>
+      <Text style={[styles.title, { color: textPrimary }]}>{resolvedTitle}</Text>
 
       {/* Subtitle */}
       {resolvedSubtitle.length > 0 && (
-        <Text style={styles.subtitle}>{resolvedSubtitle}</Text>
+        <Text style={[styles.subtitle, { color: textSecondary }]}>{resolvedSubtitle}</Text>
       )}
 
       {/* Action button */}
@@ -139,7 +148,6 @@ export default function StateScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.public.bg,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: sp[8],
@@ -149,7 +157,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: sp[4],
     fontSize: fs.base,
-    color: colors.textPublic.secondary,
     textAlign: 'center',
   },
 
@@ -171,13 +178,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.textPublic.primary,
     textAlign: 'center',
     marginBottom: sp[2],
   },
   subtitle: {
     fontSize: fs.sm,
-    color: colors.textPublic.secondary,
     textAlign: 'center',
     marginBottom: sp[8],
     lineHeight: 20,
@@ -196,6 +201,6 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.textPublic.onBrand,
+    color: '#FFFFFF',
   },
 })

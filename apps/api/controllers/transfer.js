@@ -69,6 +69,9 @@ export const initiateTransfer = async (req, res, next) => {
         user_id:      senderId,       // sender holds the escrow ticket until accepted
         eventname:    ticket.eventname,
         amount:       Math.round(ticket.amount * qty / ticket.numOfTicket),
+        organizerNet: ticket.organizerNet != null
+          ? Math.round(ticket.organizerNet * qty / ticket.numOfTicket)
+          : null,
         isFreeTicket: ticket.isFreeTicket,
         numOfTicket:  qty,
         reference:    `${ticket.reference}_SPLIT_${Date.now()}`,
@@ -150,6 +153,12 @@ export const initiateTransfer = async (req, res, next) => {
         senderId,
         shareQuantity: qty,
         isPartial,
+        // Only in-app channel that carries this besides the email deep link
+        // (acceptLink/declineLink below) — the recipient needs it to call
+        // POST /tickets/transfer/accept|decline, and GET /tickets/transfer/incoming
+        // deliberately strips it from its response, so without this the app
+        // has no way to complete a transfer without leaving the app for email.
+        transferToken,
       },
       io,
     }).catch(err => console.error('[Notification] Transfer received failed:', err.message))
@@ -201,13 +210,21 @@ export const acceptTransfer = async (req, res, next) => {
     }
 
     const previousOwner = ticket.user_id
+    const recipientUser = await User.findById(recipientId)
 
     // Transfer ownership.
     // Works for both full-transfer (status: 'active') and partial-split
     // escrow tickets (status: 'escrow') — status: 'active' covers both.
+    //
+    // email is updated here too — getMyTickets falls back to matching by
+    // email (for guests who bought before creating an account), so leaving
+    // the previous owner's email on this document would keep it showing up
+    // in *their* ticket list forever after a transfer, even though user_id
+    // now points to the recipient.
     await Audience.findByIdAndUpdate(ticketId, {
       user_id: recipientId,
       faceOwner: recipientId,
+      email: recipientUser?.email ?? ticket.email,
       transferredFrom: previousOwner,
       transferredAt: new Date(),
       transferToken: null,
@@ -226,16 +243,15 @@ export const acceptTransfer = async (req, res, next) => {
 
     // Create in-app notification for original owner
     const io = req.app.locals.io
-    const recipient2 = await User.findById(recipientId)
 
     await createNotification({
       userId: previousOwner.toString(),
       type: 'transfer_accepted',
       title: 'Transfer accepted ✓',
-      message: `${recipient2?.name || 'Someone'} accepted your ticket`,
+      message: `${recipientUser?.name || 'Someone'} accepted your ticket`,
       data: {
         ticketId,
-        recipientName: recipient2?.name,
+        recipientName: recipientUser?.name,
         recipientId: recipientId,
       },
       io,
@@ -252,7 +268,7 @@ export const acceptTransfer = async (req, res, next) => {
       template: 'transferAccepted.hbs',
       data: {
         senderName: sender?.name || 'You',
-        recipientName: recipient2?.name || 'Someone',
+        recipientName: recipientUser?.name || 'Someone',
         eventName: event?.title || ticket.eventname || 'Event',
         eventDate: event?.startDate ? moment(event.startDate).format('ddd, MMM D, YYYY') : 'TBA',
         eventTime: event?.startTime || 'TBA',
@@ -381,9 +397,13 @@ export const claimTicket = async (req, res, next) => {
     }
 
     const previousOwner = ticket.user_id
+    // email is updated here too — otherwise getMyTickets' guest-migration
+    // email fallback (see audience.js:getMyTickets) keeps matching this
+    // ticket for the previous owner even after user_id has moved on.
     await Audience.findByIdAndUpdate(ticket._id, {
       user_id: req.user.id,
       faceOwner: req.user.id,
+      email: req.user.email ?? ticket.email,
       transferredFrom: previousOwner,
       transferredTo: null,
       transferredAt: new Date(),
@@ -412,10 +432,29 @@ export const getIncomingTransfers = async (req, res, next) => {
       transferToken: { $ne: null },
     }).select('+transferToken').lean()
 
-    // Remove sensitive transferToken from response before sending to client
+    // Batch-fetch event details to avoid N+1 queries
+    const eventIds = [...new Set(pendingTransfers.map(t => t.event_id))]
+    const events = await Event.find({ _id: { $in: eventIds } }).lean()
+    const eventMap = Object.fromEntries(events.map(e => [e._id.toString(), e]))
+
+    // Remove sensitive transferToken from response before sending to client,
+    // and enrich with event metadata (mirrors getMyTickets/getAudience) so
+    // the review screen can show a real image/venue/date, not just the bare
+    // ticket fields.
     const transfers = pendingTransfers.map(t => {
       const { transferToken, ...rest } = t
-      return rest
+      const event = eventMap[t.event_id?.toString?.()]
+      return {
+        ...rest,
+        eventDate: event?.date || t.date,
+        eventTime: event?.startTime,
+        eventEndTime: event?.endTime,
+        eventVenue: event?.venue,
+        eventLocation: event?.location,
+        eventState: event?.state,
+        eventSlug: event?.slug,
+        eventImage: event?.images?.[0] || null,
+      }
     })
 
     res.status(200).json({

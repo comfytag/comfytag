@@ -13,12 +13,12 @@ function ShellInner({ children }: { children: ReactNode }) {
   useNotificationSocket()
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-(--color-bg)">
       {/* Mobile-only branding header; FloatingIslandNav handles desktop */}
       <MobileTopHeader />
       <FloatingIslandNav />
       <ContextRibbon />
-      <main className="min-h-screen bg-slate-50 pt-0 md:pt-32 pb-28 md:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-(--color-bg) pt-0 md:pt-32 pb-28 md:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {children}
       </main>
       <BottomPillNav />

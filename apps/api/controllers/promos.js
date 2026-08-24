@@ -2,6 +2,15 @@ import Event from '../models/Event.js'
 import { createError } from '../utils/error.js'
 import crypto from 'crypto'
 
+// Throws a 403 unless requester is admin or the event's own planner.
+const assertOwnsEvent = (event, req) => {
+  if (req.user.isAdmin) return
+  const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+  if (event.planner_id?.toString() !== requesterId) {
+    throw createError(403, 'Not authorized to manage promo codes for this event')
+  }
+}
+
 // POST /events/:id/promos
 // Create a new promo code for an event
 export const createPromoCode = async (req, res, next) => {
@@ -20,6 +29,7 @@ export const createPromoCode = async (req, res, next) => {
 
     const event = await Event.findById(eventId)
     if (!event) return next(createError(404, 'Event not found'))
+    assertOwnsEvent(event, req)
 
     // Check if code already exists in this event
     if (event.promos.some(p => p.code === code)) {
@@ -78,6 +88,7 @@ export const updatePromoCode = async (req, res, next) => {
 
     const event = await Event.findById(eventId)
     if (!event) return next(createError(404, 'Event not found'))
+    assertOwnsEvent(event, req)
 
     const promo = event.promos.find(p => p.code === codeToUpdate)
     if (!promo) return next(createError(404, 'Promo code not found'))
@@ -142,6 +153,7 @@ export const deletePromoCode = async (req, res, next) => {
 
     const event = await Event.findById(eventId)
     if (!event) return next(createError(404, 'Event not found'))
+    assertOwnsEvent(event, req)
 
     const promoIndex = event.promos.findIndex(p => p.code === codeToDelete)
     if (promoIndex === -1) return next(createError(404, 'Promo code not found'))

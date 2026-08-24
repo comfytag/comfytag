@@ -18,8 +18,7 @@ import {
   formatNaira,
   formatDate,
   formatTime,
-  calculatePlatformFee,
-  calculatePaystackFee,
+  calculateTicketCharge,
 } from '@comfytag/utils'
 import type { Event as EventType, TicketTier } from '@comfytag/types'
 import type { Comment } from '@/components/event/CommentSection'
@@ -37,6 +36,7 @@ declare global {
         ref: string
         currency: string
         firstname?: string
+        metadata?: Record<string, unknown>
         onClose(): void
         callback(res: { reference: string }): void
       }): { openIframe(): void }
@@ -199,16 +199,17 @@ export function EventInteractiveSection({
     setDesktopQty((prev) => Math.min(prev, Math.max(desktopMaxQty, 1)))
   }, [desktopMaxQty])
 
-  // Preload Paystack inline.js so it's ready when a logged-in user hits "Buy Ticket"
+  // Preload Paystack inline.js so it's ready when a logged-in user hits "Buy
+  // Ticket". No cleanup/removal on unmount — the dedup guard alone isn't
+  // enough under React 18 Strict Mode's dev-only mount->cleanup->remount
+  // cycle, since the cleanup removes the tag the guard would otherwise find,
+  // aborting and restarting the fetch (the actual cause of "slow to load").
   useEffect(() => {
     if (!session) return
     if (document.querySelector('script[src*="paystack"]')) return
     const s = document.createElement('script')
     s.src = 'https://js.paystack.co/v1/inline.js'
     document.head.appendChild(s)
-    return () => {
-      if (document.head.contains(s)) document.head.removeChild(s)
-    }
   }, [session])
 
   const { openModal } = useAuthModal()
@@ -282,16 +283,16 @@ export function EventInteractiveSection({
     const tier = event.ticketType.find((t: TicketTier) => t._id === tierId)
     if (!tier) return
 
-    setDirectCheckoutState('processing')
-
     const userEmail = session.user.email ?? ''
     const userName = session.user.name ?? ''
     const userId = session.user.id
 
     if (tier.price === 0) {
-      const ref = `FREE_${Date.now()}`
+      // No Paystack popup involved for a free ticket — this overlay is the
+      // only loading feedback the user gets, so it stays for this branch.
+      setDirectCheckoutState('processing')
       try {
-        await api.post(`/audience/free/${event._id}`, {
+        const res = await api.post(`/audience/free/${event._id}`, {
           name: userName,
           email: userEmail,
           phone: undefined,
@@ -301,9 +302,8 @@ export function EventInteractiveSection({
           userId,
         })
         if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([200, 100, 200])
-        router.push(
-          `/checkout/success?ref=${ref}&eventId=${encodeURIComponent(event._id)}&eventName=${encodeURIComponent(event.name)}&contactInfo=${encodeURIComponent(userEmail)}`,
-        )
+        const ticketId = res.data?.data?._id ?? res.data?._id
+        router.push(ticketId ? `/tickets/${ticketId}` : '/tickets')
       } catch {
         setDirectCheckoutState('idle')
       }
@@ -311,49 +311,63 @@ export function EventInteractiveSection({
     }
 
     if (!window.PaystackPop) {
-      setDirectCheckoutState('idle')
       router.push(`/checkout?eventId=${event._id}&tierId=${tierId}&qty=${qty}`)
       return
     }
 
-    const subtotal = tier.price * qty
-    const platformFee = calculatePlatformFee(subtotal, 4)
-    const processingFee = calculatePaystackFee(subtotal)
-    const total = subtotal + platformFee + processingFee
+    const { totalCharge: total } = calculateTicketCharge(tier.price, qty)
     const ref = `CT_${Date.now()}`
 
     window.PaystackPop.setup({
-      key: process.env.NEXT_PUBLIC_PAYSTACK_KEY ?? '',
+      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ?? '',
       email: userEmail,
       amount: total * 100,
       ref,
       currency: 'NGN',
       firstname: userName.split(' ')[0],
+      // Lets the webhook rebuild this exact ticket if the client never
+      // completes the create-ticket call after a successful charge.
+      metadata: {
+        userId,
+        eventId: event._id,
+        tierName: tier.name,
+        numOfTicket: qty,
+        name: userName,
+        email: userEmail,
+        phone: '',
+      },
       onClose() {
         setDirectCheckoutState('idle')
       },
-      async callback(res: { reference: string }) {
+      // Paystack's inline.js (v1) validates this attribute with a strict
+      // type check that treats `async function`s as a different type than
+      // plain functions, rejecting them with "Attribute callback must be a
+      // valid function" even though typeof reports 'function' for both — so
+      // the config callback itself must stay a plain function; the async
+      // work runs inside an IIFE instead.
+      callback(res: { reference: string }) {
         setDirectCheckoutState('verifying')
-        try {
-          await api.post(`/paystack/verify/${res.reference}`)
-          await api.post(`/audience/${userId}/${event._id}`, {
-            name: userName,
-            email: userEmail,
-            phone: '',
-            eventname: event.name,
-            numOfTicket: qty,
-            type: tier.name,
-            amount: total,
-            reference: res.reference,
-            status: 'active',
-          })
-          if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([200, 100, 200])
-          router.push(
-            `/checkout/success?ref=${res.reference}&eventId=${encodeURIComponent(event._id)}&eventName=${encodeURIComponent(event.name)}&contactInfo=${encodeURIComponent(userEmail)}`,
-          )
-        } catch {
-          setDirectCheckoutState('idle')
-        }
+        void (async () => {
+          try {
+            await api.post(`/paystack/verify/${res.reference}`)
+            const created = await api.post(`/audience/${userId}/${event._id}`, {
+              name: userName,
+              email: userEmail,
+              phone: '',
+              eventname: event.name,
+              numOfTicket: qty,
+              type: tier.name,
+              amount: total,
+              reference: res.reference,
+              status: 'active',
+            })
+            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([200, 100, 200])
+            const ticketId = created.data?.data?._id ?? created.data?._id
+            router.push(ticketId ? `/tickets/${ticketId}` : '/tickets')
+          } catch {
+            setDirectCheckoutState('idle')
+          }
+        })()
       },
     }).openIframe()
   }
@@ -393,8 +407,8 @@ export function EventInteractiveSection({
   const fullAddress = [event.venue, event.address, event.state].filter(Boolean).join(', ')
 
   const desktopSubtotal = desktopSelectedTier ? desktopSelectedTier.price * desktopQty : 0
-  const desktopTotal = desktopSubtotal > 0
-    ? desktopSubtotal + calculatePlatformFee(desktopSubtotal, 4) + calculatePaystackFee(desktopSubtotal)
+  const desktopTotal = desktopSelectedTier
+    ? calculateTicketCharge(desktopSelectedTier.price, desktopQty).totalCharge
     : 0
 
   return (

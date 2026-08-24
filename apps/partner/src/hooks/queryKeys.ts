@@ -18,6 +18,7 @@ export const payoutKeys = {
   wallet: ['payouts', 'wallet'] as const,
   withdrawals: ['payouts', 'withdrawals'] as const,
   bank: ['payouts', 'bank'] as const,
+  bankList: ['payouts', 'bank-list'] as const,
 }
 
 export const attendeeKeys = {

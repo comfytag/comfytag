@@ -62,7 +62,7 @@ echo ""
 echo "${YELLOW}[4/6]${NC} Checking container health (must be 'Up', not 'Restarting')..."
 UNHEALTHY=0
 
-for service in web partner admin api nginx redis mongodb; do
+for service in web partner admin api nginx redis; do
     STATUS=$(docker compose -f docker-compose.prod.yml ps | grep "comfytag-$service" | awk '{print $NF}' 2>/dev/null || echo "MISSING")
 
     if [[ "$STATUS" == *"Up"* ]]; then

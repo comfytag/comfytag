@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import type { StackNavigationProp } from '@react-navigation/stack'
 import { isValidNigerianPhone, isValidEmail, maskIdentifier } from '@comfytag/utils'
+import { ChevronLeft, Info } from 'lucide-react-native'
 import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
 import { AnimatedPressable } from '../../components/ui/AnimatedPressable'
 import { post } from '../../lib/api'
@@ -278,7 +279,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
         onBlur={() => setIdentifierTouched(true)}
         onFocus={() => setIdentifierFocused(true)}
         placeholder="08012345678 or you@example.com"
-        placeholderTextColor={colors.mobile.textMuted}
+        placeholderTextColor={colors.textPublic.muted}
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
@@ -407,7 +408,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
           onBlur={() => setPasswordTouched(true)}
           onFocus={() => setNewPasswordFocused(true)}
           placeholder="At least 8 characters"
-          placeholderTextColor={colors.mobile.textMuted}
+          placeholderTextColor={colors.textPublic.muted}
           secureTextEntry={!showNewPassword}
           autoCapitalize="none"
           autoCorrect={false}
@@ -440,7 +441,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
           onBlur={() => setPasswordTouched(true)}
           onFocus={() => setConfirmPasswordFocused(true)}
           placeholder="Re-enter your password"
-          placeholderTextColor={colors.mobile.textMuted}
+          placeholderTextColor={colors.textPublic.muted}
           secureTextEntry={!showConfirmPassword}
           autoCapitalize="none"
           autoCorrect={false}
@@ -455,6 +456,14 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
         >
           <Text style={styles.eyeIcon}>{showConfirmPassword ? '🙈' : '👁'}</Text>
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.passwordHintCard}>
+        <Info size={16} color={colors.textPublic.secondary} strokeWidth={2} />
+        <Text style={styles.passwordHintText}>
+          Password must include at least one uppercase letter, one number, and one special
+          character.
+        </Text>
       </View>
 
       {passwordError.length > 0 && (
@@ -482,6 +491,19 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* Persistent header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.headerBack}
+          activeOpacity={0.7}
+          onPress={() => navigation.goBack()}
+        >
+          <ChevronLeft size={22} color={colors.brand.DEFAULT} strokeWidth={2} />
+        </TouchableOpacity>
+        <Text style={styles.headerBrand}>ComfyTag</Text>
+        <View style={styles.headerSpacer} />
+      </View>
+
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -493,17 +515,6 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Back button — only on entry step */}
-          {step === 'entry' && (
-            <TouchableOpacity
-              style={styles.backButton}
-              activeOpacity={0.7}
-              onPress={() => navigation.goBack()}
-            >
-              <Text style={styles.backButtonText}>‹ Back</Text>
-            </TouchableOpacity>
-          )}
-
           {step === 'entry' && renderEntry()}
           {step === 'otp' && renderOtp()}
           {step === 'reset' && renderReset()}
@@ -520,7 +531,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   flex: {
     flex: 1,
@@ -531,18 +542,28 @@ const styles = StyleSheet.create({
     paddingBottom: sp[10],
   },
 
-  // ── Back button ─────────────────────────────────────────────────────────────
-  backButton: {
-    alignSelf: 'flex-start',
+  // ── Header ────────────────────────────────────────────────────────────────
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: sp[4],
     paddingVertical: sp[3],
-    paddingRight: sp[3],
-    marginTop: sp[2],
-    marginBottom: sp[1],
   },
-  backButtonText: {
-    fontSize: fs.base,
+  headerBack: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerBrand: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: fs.lg,
+    fontWeight: '800',
     color: colors.brand.DEFAULT,
-    fontWeight: '500',
+  },
+  headerSpacer: {
+    width: 44,
   },
 
   // ── Step container ───────────────────────────────────────────────────────────
@@ -555,25 +576,25 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     marginBottom: sp[2],
   },
   stepSubtitle: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     marginBottom: sp[6],
     lineHeight: 20,
   },
   maskedIdentifier: {
     fontWeight: '600',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
   },
 
   // ── Input labels ─────────────────────────────────────────────────────────────
   inputLabel: {
     fontSize: fs.sm,
     fontWeight: '500',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     marginBottom: sp[2],
   },
   inputLabelSpaced: {
@@ -584,18 +605,18 @@ const styles = StyleSheet.create({
   input: {
     height: 52,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     borderRadius: rd.md,
     paddingHorizontal: sp[4],
     fontSize: fs.base,
-    color: colors.mobile.textPrimary,
-    backgroundColor: colors.mobile.surface,
+    color: colors.textPublic.primary,
+    backgroundColor: colors.public.surface,
   },
   inputFocused: {
-    borderColor: colors.mobile.borderFocus,
+    borderColor: colors.public.borderFocus,
   },
   inputError: {
-    borderColor: colors.mobile.error,
+    borderColor: colors.error.DEFAULT,
   },
 
   // ── Password row (input + eye toggle) ────────────────────────────────────────
@@ -616,10 +637,27 @@ const styles = StyleSheet.create({
     fontSize: fs.base,
   },
 
+  // ── Password hint ─────────────────────────────────────────────────────────────
+  passwordHintCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: sp[2],
+    backgroundColor: colors.public.surface,
+    borderRadius: rd.md,
+    padding: sp[3],
+    marginTop: sp[2],
+  },
+  passwordHintText: {
+    flex: 1,
+    fontSize: fs.xs,
+    color: colors.textPublic.secondary,
+    lineHeight: 16,
+  },
+
   // ── Inline error ──────────────────────────────────────────────────────────────
   inlineError: {
     fontSize: fs.sm,
-    color: colors.mobile.error,
+    color: colors.error.DEFAULT,
     marginTop: sp[2],
     lineHeight: 18,
   },
@@ -633,7 +671,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 52,
     backgroundColor: colors.brand.DEFAULT,
-    borderRadius: rd.full,
+    borderRadius: rd.md,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: sp[5],
@@ -644,7 +682,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textOnBrand,
+    color: colors.textPublic.onBrand,
   },
 
   // ── OTP row ───────────────────────────────────────────────────────────────────
@@ -657,12 +695,12 @@ const styles = StyleSheet.create({
     width: 48,
     height: 56,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     borderRadius: rd.md,
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
-    backgroundColor: colors.mobile.surface,
+    color: colors.textPublic.primary,
+    backgroundColor: colors.public.surface,
     textAlign: 'center',
   },
   otpBoxFocused: {
@@ -682,7 +720,7 @@ const styles = StyleSheet.create({
   },
   resendPrompt: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
   },
   resendLink: {
     fontSize: fs.sm,
@@ -691,7 +729,7 @@ const styles = StyleSheet.create({
   },
   resendCountdown: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
   },
 
   // ── Loading overlay ────────────────────────────────────────────────────────────

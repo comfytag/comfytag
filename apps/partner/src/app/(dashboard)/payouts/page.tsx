@@ -54,8 +54,8 @@ export default function PayoutsPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black text-zinc-900 tracking-tight">Vault</h1>
-            <p className="mt-1 text-sm text-zinc-500">Your earnings and withdrawal history</p>
+            <h1 className="text-3xl font-black text-(--color-text) tracking-tight">Vault</h1>
+            <p className="mt-1 text-sm text-(--color-text-muted)">Your earnings and withdrawal history</p>
           </div>
           <button
             type="button"

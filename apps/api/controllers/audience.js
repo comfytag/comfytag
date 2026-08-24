@@ -8,6 +8,9 @@ import { createNotification } from './notification.js'
 import moment from 'moment/moment.js';
 import { QR } from '../utils/QRCode.js';
 import { generateSecret } from 'otplib'
+import { verifyAndCheckPaystackReference } from '../utils/paystack.js'
+import { calculateTicketCharge } from '../utils/ticketFees.js'
+import { createPaidTicket, TicketCreationError } from '../services/ticketCreation.js'
 
 // Returns true only if the event exists and its planner_id matches partnerId.
 const assertPartnerOwnsEvent = async (eventId, partnerId) => {
@@ -156,10 +159,7 @@ export const createAudience = async (req, res, next) => {
 
         // Server-side derivation — never trust req.body.amount or req.body.isFreeTicket
         const isFreeTicket = tier.price === 0
-        // 5% platform fee applied to the ticket subtotal
-        const serverAmount = isFreeTicket
-            ? 0
-            : Math.round(tier.price * numOfTicket * 1.05)
+        const subtotal = tier.price * numOfTicket
 
         // Free-ticket duplicate limit
         if (isFreeTicket) {
@@ -168,131 +168,56 @@ export const createAudience = async (req, res, next) => {
                 return res.status(400).json({ success: false, message: 'You have reached the maximum limit of 10 free tickets per person for this event.' })
             }
         }
-        if (!isFreeTicket && !req.body.reference) {
-            return res.status(400).json({ success: false, message: 'Paid tickets require a Paystack reference.' })
+
+        let serverAmount = 0
+        let organizerNet = 0
+        if (!isFreeTicket) {
+            if (!req.body.reference) {
+                return res.status(400).json({ success: false, message: 'Paid tickets require a Paystack reference.' })
+            }
+
+            // Re-verify server-side rather than trusting that the client already
+            // called /paystack/verify/:reference — a client could otherwise submit
+            // an arbitrary/unpaid reference straight to this endpoint.
+            const { ok, reason, data } = await verifyAndCheckPaystackReference(req.body.reference)
+            if (!ok) {
+                return res.status(402).json({ success: false, message: reason || 'Payment could not be verified.' })
+            }
+
+            const charge = calculateTicketCharge(tier.price, numOfTicket)
+            if (data.amount !== charge.totalCharge * 100) {
+                return res.status(402).json({ success: false, message: 'Charged amount does not match the expected ticket price.' })
+            }
+            serverAmount = charge.totalCharge
+            organizerNet = charge.organizerNet
         }
 
-        // Atomic capacity check + decrement (Fix P-3 — eliminates TOCTOU race condition).
-        // $elemMatch scopes both the name match and the sold guard to the same array element,
-        // so the positional $ operator is unambiguous.
-        const capacityFilter = tier.capacity > 0
-            ? { _id: eventId, ticketType: { $elemMatch: { name: tierName, sold: { $lte: tier.capacity - numOfTicket } } } }
-            : { _id: eventId, 'ticketType.name': tierName }
-
-        const atomicEvent = await Event.findOneAndUpdate(
-            capacityFilter,
-            { $inc: { 'ticketType.$.sold': numOfTicket, sold: numOfTicket } },
-            { new: true }
-        )
-
-        if (tier.capacity > 0 && !atomicEvent) {
-            return res.status(409).json({ success: false, message: 'Tickets sold out or insufficient capacity.' })
-        }
-
-        // Build document from explicit field list — never spread req.body
-        const existingTicketCount = await Audience.countDocuments({ event_id: eventId })
-
-        const newAudience = new Audience({
-            name: req.body.name,
-            email: req.body.email,
-            phone: req.body.phone,
-            eventname: req.body.eventname,
-            numOfTicket,
-            type: tierName,
-            amount: serverAmount,
-            reference: req.body.reference,
-            event_id: eventId,
-            user_id: userId,
-            totpSecret: generateSecret(),
-            isFreeTicket,
-            status: 'active',
-            ticketNumber: existingTicketCount + 1,
-        })
-
-        const savedAudience = await newAudience.save()
-
-        // Generate and save QR code
-        let qrCode = ''
+        const io = req.app.locals.io
+        let savedAudience
         try {
-            qrCode = await QR(savedAudience.reference)
-            await Audience.findByIdAndUpdate(savedAudience._id, { qrCode })
-            savedAudience.qrCode = qrCode
-        } catch (qrErr) {
-            console.log('QR generation failed:', qrErr.message)
+            savedAudience = await createPaidTicket({
+                event,
+                eventId,
+                tierName,
+                numOfTicket,
+                name: req.body.name,
+                email: req.body.email,
+                phone: req.body.phone,
+                userId,
+                reference: req.body.reference,
+                serverAmount,
+                organizerNet,
+                isFreeTicket,
+                io,
+            })
+        } catch (err) {
+            if (err instanceof TicketCreationError) {
+                return res.status(err.status).json({ success: false, message: err.message })
+            }
+            throw err
         }
-
-        // NOTE: sold count was already incremented atomically above — no second updateOne needed
 
         res.status(200).json(savedAudience)
-
-        const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
-        const buyer = await User.findById(userId)
-
-        // Create in-app notification with real-time emission
-        const io = req.app.locals.io
-        await createNotification({
-          userId,
-          type: 'ticket_confirmed',
-          title: 'Ticket confirmed ✓',
-          message: `Your ticket to ${savedAudience.eventname} is ready`,
-          data: {
-            ticketId: savedAudience._id.toString(),
-            eventId: eventId,
-            eventName: savedAudience.eventname,
-            reference: savedAudience.reference,
-          },
-          io,
-        }).catch(err => console.error('[Notification] In-app creation failed:', err.message))
-
-        // Notify organizer of the sale
-        if (event?.planner_id) {
-          const netEarning = tier.price * numOfTicket
-          await createNotification({
-            userId: event.planner_id,
-            type: 'ticket_sold',
-            title: 'New ticket sale 🎟',
-            message: `${numOfTicket} ticket${numOfTicket > 1 ? 's' : ''} sold for ${savedAudience.eventname} — ₦${netEarning.toLocaleString('en-NG')}`,
-            data: {
-              eventId: eventId,
-              eventName: savedAudience.eventname,
-              ticketId: savedAudience._id.toString(),
-              qty: String(numOfTicket),
-              revenue: String(netEarning),
-              tierName,
-            },
-            io,
-          }).catch(err => console.error('[Notification] Organizer ticket_sold failed:', err.message))
-        }
-
-        // Enqueue ticket confirmation email (CRITICAL PATH — must succeed)
-        const ticketEmailResult = await enqueueEmail({
-          to: savedAudience.email,
-          subject: `ComfyTag Ticket — ${savedAudience.eventname}`,
-          template: 'ticketConfirmation.hbs',
-          data: {
-            eventName: savedAudience.eventname,
-            eventDate: savedAudience.date ? moment(savedAudience.date).format('ddd, MMM D, YYYY') : 'TBA',
-            eventTime: savedAudience.time || 'TBA',
-            attendeeName: savedAudience.name?.split(' ')[0] || '',
-            ticketTier: savedAudience.type,
-            qty: savedAudience.numOfTicket,
-            ticketLabel: savedAudience.numOfTicket > 1 ? 'tickets' : 'ticket',
-            totalPrice: savedAudience.amount === 0 ? 'Free' : `₦${savedAudience.amount.toLocaleString()}`,
-            organizerName: event?.planner || '',
-            eventVenue: event?.venue || event?.address || '',
-            eventDescription: event?.description ? event.description.slice(0, 150) + (event.description.length > 150 ? '…' : '') : '',
-            shareLink: `${baseUrl}/share?ticket=${savedAudience.reference}`,
-            qrCodeUrl: qrCode || null,
-            year: new Date().getFullYear(),
-            unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
-            preferencesUrl: `${baseUrl}/preferences`,
-          },
-          from: 'tickets@comfytag.com',
-        });
-
-        if (!ticketEmailResult.success) {
-          console.error(`[Audience] ERROR: Ticket confirmation email queue failed for ${savedAudience.email}: ${ticketEmailResult.error}`);
-        }
     } catch (err) {
         next(err)
     }
@@ -376,13 +301,26 @@ export const getAudienceByReference = async (req, res, next) => {
 // GET — self or admin (enforced in controller)
 export const getAudience = async (req, res, next) => {
     try {
-        const ticket = await Audience.findById(req.params.id)
+        const ticket = await Audience.findById(req.params.id).lean()
         if (!ticket) return next(createError(404, 'Ticket not found'))
         const requesterId = (req.user._id ?? req.user.id ?? '').toString()
         if (!req.user.isAdmin && ticket.user_id !== requesterId) {
             return next(createError(403, 'Not authorized'))
         }
-        res.status(200).json(ticket)
+
+        const event = await Event.findById(ticket.event_id).lean()
+
+        res.status(200).json({
+            ...ticket,
+            eventDate: event?.date || ticket.date,
+            eventTime: event?.startTime,
+            eventEndTime: event?.endTime,
+            eventVenue: event?.venue,
+            eventLocation: event?.location,
+            eventState: event?.state,
+            eventSlug: event?.slug,
+            eventImage: event?.images?.[0] || null,
+        })
     } catch (err) {
         next(err)
     }
@@ -472,7 +410,10 @@ export const getMyTickets = async (req, res, next) => {
             eventTime: eventMap[t.event_id?.toString?.()]?.startTime,
             eventEndTime: eventMap[t.event_id?.toString?.()]?.endTime,
             eventVenue: eventMap[t.event_id?.toString?.()]?.venue,
+            eventLocation: eventMap[t.event_id?.toString?.()]?.location,
+            eventState: eventMap[t.event_id?.toString?.()]?.state,
             eventSlug: eventMap[t.event_id?.toString?.()]?.slug,
+            eventImage: eventMap[t.event_id?.toString?.()]?.images?.[0] || null,
         }))
 
         res.status(200).json({ success: true, data: enriched })

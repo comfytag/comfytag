@@ -35,17 +35,17 @@ const variantStyles: Record<
   { bg: string; text: string; border?: string }
 > = {
   primary: {
-    bg: colors.mobile.btnPrimaryBg,
-    text: colors.mobile.btnPrimaryText,
+    bg: colors.textPublic.primary,
+    text: colors.public.bg,
   },
   brand: {
-    bg: colors.mobile.btnBrandBg,
-    text: colors.mobile.textOnBrand,
+    bg: colors.brand.DEFAULT,
+    text: colors.textPublic.onBrand,
   },
   ghost: {
     bg: 'transparent',
-    text: colors.mobile.textPrimary,
-    border: colors.mobile.btnGhostBorder,
+    text: colors.textPublic.primary,
+    border: colors.public.border,
   },
   outline: {
     bg: 'transparent',
@@ -54,8 +54,8 @@ const variantStyles: Record<
   },
   danger: {
     bg: 'transparent',
-    text: colors.mobile.error,
-    border: colors.mobile.error,
+    text: colors.error.DEFAULT,
+    border: colors.error.DEFAULT,
   },
 }
 
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: rd.full,
+    borderRadius: rd.md,
     gap: sp[2],
   },
   label: {

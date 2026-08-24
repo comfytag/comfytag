@@ -84,21 +84,21 @@ export function CrewInviteSection({
   }
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-xl p-6 space-y-6">
+    <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-6 space-y-6">
       <div>
-        <h3 className="text-base font-black text-zinc-900">Invite to Crew</h3>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <h3 className="text-base font-black text-(--color-text)">Invite to Crew</h3>
+        <p className="text-sm text-(--color-text-muted) mt-0.5">
           Share a magic link or send a direct email invite.
         </p>
       </div>
 
       {/* ── Magic Link ── */}
       <div>
-        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2">
+        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">
           Magic Link
         </p>
-        <div className="bg-zinc-100 rounded-xl p-4">
-          <p className="font-mono text-sm text-zinc-500 break-all leading-relaxed">
+        <div className="bg-zinc-800 rounded-xl p-4">
+          <p className="font-mono text-sm text-zinc-400 break-all leading-relaxed">
             {inviteUrl}
           </p>
         </div>
@@ -110,8 +110,8 @@ export function CrewInviteSection({
             onClick={handleCopy}
             className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl border-2 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1 ${
               copied
-                ? 'border-emerald-300 bg-emerald-50 text-emerald-600'
-                : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50'
+                ? 'border-emerald-800 bg-emerald-950/40 text-emerald-400'
+                : 'border-(--color-border) bg-(--color-surface) text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800'
             }`}
           >
             {copied ? <CheckIcon /> : <CopyIcon />}
@@ -132,11 +132,11 @@ export function CrewInviteSection({
 
       {/* ── Divider ── */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-zinc-100" />
-        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest whitespace-nowrap">
+        <div className="flex-1 h-px bg-zinc-800" />
+        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest whitespace-nowrap">
           or invite by email
         </span>
-        <div className="flex-1 h-px bg-zinc-100" />
+        <div className="flex-1 h-px bg-zinc-800" />
       </div>
 
       {/* ── Email invite form ── */}
@@ -144,7 +144,7 @@ export function CrewInviteSection({
         <div>
           <label
             htmlFor="crew-invite-email"
-            className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2"
+            className="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2"
           >
             Email Address
           </label>
@@ -155,13 +155,13 @@ export function CrewInviteSection({
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
             placeholder="teammate@example.com"
-            className="w-full bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none transition-colors"
+            className="w-full bg-(--color-surface) border-2 border-(--color-border) focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-(--color-text) placeholder:text-zinc-500 focus:outline-none transition-colors"
           />
         </div>
 
         {/* Permission selector — visual toggle grid */}
         <div>
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">
+          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2">
             Permissions
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -174,14 +174,14 @@ export function CrewInviteSection({
                   onClick={() => togglePermission(value)}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium border-2 transition-all text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
                     active
-                      ? 'border-violet-500 bg-violet-50 text-violet-700'
-                      : 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-300 hover:bg-zinc-50'
+                      ? 'border-violet-500 bg-violet-950/40 text-violet-400'
+                      : 'border-(--color-border) bg-(--color-surface) text-zinc-500 hover:border-zinc-700 hover:bg-zinc-800'
                   }`}
                 >
                   {/* Checkbox swatch */}
                   <span
                     className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-colors ${
-                      active ? 'bg-violet-600' : 'bg-zinc-200'
+                      active ? 'bg-violet-600' : 'bg-zinc-700'
                     }`}
                   >
                     {active && (
@@ -209,8 +209,8 @@ export function CrewInviteSection({
 
         {/* Mutation error */}
         {inviteError && (
-          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-            <p className="text-sm text-red-600 font-medium">{inviteError}</p>
+          <div className="bg-red-950/40 border border-red-900/50 rounded-xl px-4 py-3">
+            <p className="text-sm text-red-400 font-medium">{inviteError}</p>
           </div>
         )}
 

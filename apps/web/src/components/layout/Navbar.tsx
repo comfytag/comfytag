@@ -417,7 +417,8 @@ export function Navbar({ user, onSearch }: NavbarProps) {
                     <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentUser.email}</div>
                   </div>
                   <Link href="/tickets" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>My Tickets</Link>
-                  <Link href="/my-following" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>Saved Events</Link>
+                  {/* MVP: Saved events features for users that want to save and event and come back to it */}
+                  {/* <Link href="/my-following" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>Saved Events</Link> */}
                   {/* MVP: Hype Links affiliate feature disabled for initial launch — re-enable when affiliate system is ready */}
                   {/* <Link href="/hype-link" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>My Hype Link</Link> */}
                   <Link href="/profile" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>Settings</Link>
@@ -440,14 +441,14 @@ export function Navbar({ user, onSearch }: NavbarProps) {
               href="/login"
               onClick={(e) => { e.preventDefault(); openModal('login') }}
               className="__ct_nav_login_link"
-              style={{ fontSize: '14px', fontWeight: 500, padding: '6px 10px', textDecoration: 'none', display: 'inline-block' }}
+              style={{ fontSize: '14px', fontWeight: 500, padding: '6px 10px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}
             >
               Log In
             </Link>
             <Link
               href="/register"
               onClick={(e) => { e.preventDefault(); openModal('register') }}
-              style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-on-brand)', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', padding: '8px 16px', textDecoration: 'none', display: 'inline-block' }}
+              style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-on-brand)', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', padding: '8px 16px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}
             >
               Sign Up
             </Link>

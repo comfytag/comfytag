@@ -61,7 +61,7 @@ function FeaturedCardTile({ card, priority }: { card: FeaturedCard; priority: bo
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" aria-hidden="true" />
 
-      <div className="absolute inset-0 flex flex-col justify-end p-8">
+      <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
         {card.badge && (
           <span className="inline-flex w-fit mb-4 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-(--color-energy) text-white">
             {card.badge}
@@ -71,18 +71,18 @@ function FeaturedCardTile({ card, priority }: { card: FeaturedCard; priority: bo
         {card.description && (
           <p className="text-white/80 text-sm mb-6 max-w-md line-clamp-2">{card.description}</p>
         )}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex gap-5 text-white/90 text-xs">
-            <span className="flex items-center gap-1.5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex min-w-0 gap-5 text-white/90 text-xs">
+            <span className="flex shrink-0 items-center gap-1.5">
               <Calendar className="w-4 h-4" aria-hidden="true" />
               {card.dateLabel}
             </span>
-            <span className="flex items-center gap-1.5 truncate max-w-[160px]">
+            <span className="flex items-center gap-1.5 min-w-0 truncate">
               <MapPin className="w-4 h-4 shrink-0" aria-hidden="true" />
               {card.venue}
             </span>
           </div>
-          <span className="shrink-0 px-5 py-2.5 bg-white text-brand font-bold rounded-lg text-sm group-hover:bg-(--color-brand-light) transition-colors">
+          <span className="shrink-0 w-full md:w-auto text-center px-5 py-2.5 bg-white text-brand font-bold rounded-lg text-sm group-hover:bg-(--color-brand-light) transition-colors">
             Get Ticket
           </span>
         </div>

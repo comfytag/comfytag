@@ -15,6 +15,7 @@ import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
 import { formatDate } from '@comfytag/utils'
 import { AnimatedPressable } from '../../../components/ui/AnimatedPressable'
 import { useMyEvents } from '../../../hooks'
+import { FEATURES } from '../../../lib/features'
 import type { OrganizerCheckInStackParamList } from '../../../navigation/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -85,7 +86,7 @@ function EventCard({ event, onPress }: EventCardProps) {
 function EmptyState() {
   return (
     <View style={styles.emptyContainer}>
-      <CalendarX size={48} color={colors.mobile.textMuted} strokeWidth={1.5} />
+      <CalendarX size={48} color={colors.textPublic.muted} strokeWidth={1.5} />
       <Text style={styles.emptyTitle}>No live events</Text>
       <Text style={styles.emptySubtitle}>
         Published events will appear here for check-in.
@@ -109,7 +110,11 @@ export default function CheckInScreen({ navigation }: Props) {
 
   const handleEventPress = useCallback(
     (event: Event) => {
-      navigation.navigate('FaceCheckIn', {
+      // Face check-in is a v2 feature (see lib/features.ts) — route to manual
+      // check-in by default. FaceCheckInScreen still has its own fallback
+      // link to ManualCheckIn too, so re-enabling the flag doesn't remove
+      // that escape hatch either way.
+      navigation.navigate(FEATURES.faceVerification ? 'FaceCheckIn' : 'ManualCheckIn', {
         eventId: event._id,
         eventName: event.name,
       })
@@ -187,7 +192,7 @@ export default function CheckInScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
   header: {
     paddingHorizontal: sp[5],
@@ -197,12 +202,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: fs.xl,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     letterSpacing: -0.3,
   },
   headerSubtitle: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: sp[1],
   },
   flatListContent: {
@@ -219,7 +224,7 @@ const styles = StyleSheet.create({
   },
   skeletonCard: {
     height: 72,
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
   },
   separator: {
@@ -229,17 +234,17 @@ const styles = StyleSheet.create({
   eventCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.mobile.surface,
+    backgroundColor: colors.public.surface,
     borderRadius: rd.lg,
     borderWidth: 1,
-    borderColor: colors.mobile.border,
+    borderColor: colors.public.border,
     overflow: 'hidden',
     minHeight: 72,
   },
   eventCardStrip: {
     width: 4,
     alignSelf: 'stretch',
-    backgroundColor: colors.mobile.success,
+    backgroundColor: colors.success.DEFAULT,
   },
   eventCardBody: {
     flex: 1,
@@ -249,12 +254,13 @@ const styles = StyleSheet.create({
   eventName: {
     fontSize: fs.sm,
     fontWeight: '600',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     lineHeight: 20,
+    textTransform: 'capitalize',
   },
   eventMeta: {
     fontSize: fs.xs,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     marginTop: sp[1],
   },
   eventCta: {
@@ -274,12 +280,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: fs.base,
     fontWeight: '600',
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     marginTop: sp[4],
   },
   emptySubtitle: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
+    color: colors.textPublic.muted,
     textAlign: 'center',
     marginTop: sp[2],
     lineHeight: 20,

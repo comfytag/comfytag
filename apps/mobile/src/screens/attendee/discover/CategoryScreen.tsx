@@ -45,7 +45,7 @@ function Header({ name, headerColor, onBack }: HeaderProps) {
           hapticStyle="light"
           style={styles.backButton}
         >
-          <ChevronLeft size={20} color={colors.mobile.textPrimary} />
+          <ChevronLeft size={20} color="#FFFFFF" />
         </AnimatedPressable>
         <Text style={styles.categoryName}>{name}</Text>
       </View>
@@ -136,7 +136,7 @@ export default function CategoryScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
+    backgroundColor: colors.public.bg,
   },
 
   // ── Header ────────────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 28,
     fontWeight: '800',
-    color: colors.mobile.textPrimary,
+    color: '#FFFFFF',
     marginTop: sp[2],
   },
 
@@ -195,13 +195,13 @@ const styles = StyleSheet.create({
   stateTitle: {
     fontSize: fs.base,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
+    color: colors.textPublic.primary,
     textAlign: 'center',
     marginBottom: sp[2],
   },
   stateSubtitle: {
     fontSize: fs.sm,
-    color: colors.mobile.textSecondary,
+    color: colors.textPublic.secondary,
     textAlign: 'center',
   },
   retryText: {

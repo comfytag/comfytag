@@ -10,6 +10,8 @@ import { AnimatedPressable } from './AnimatedPressable'
 interface Props {
   children: React.ReactNode
   fallbackTitle?: string
+  /** Which surface this boundary renders on top of — dark (organizer) or light (attendee). */
+  theme?: 'dark' | 'light'
 }
 
 interface State {
@@ -33,16 +35,21 @@ export class ErrorBoundary extends React.Component<Props, State> {
   render(): React.ReactNode {
     if (!this.state.hasError) return this.props.children
 
+    const isLight = this.props.theme === 'light'
+    const bg = isLight ? colors.public.bg : colors.mobile.bg
+    const textPrimary = isLight ? colors.textPublic.primary : colors.mobile.textPrimary
+    const textMuted = isLight ? colors.textPublic.secondary : colors.mobile.textMuted
+
     return (
-      <SafeAreaView style={styles.root} edges={['top']}>
+      <SafeAreaView style={[styles.root, { backgroundColor: bg }]} edges={['top']}>
         <View style={styles.center}>
           <View style={styles.iconWrap}>
-            <AlertCircle size={40} color={colors.mobile.error} strokeWidth={1.5} />
+            <AlertCircle size={40} color={colors.error.DEFAULT} strokeWidth={1.5} />
           </View>
-          <Text style={styles.title}>
+          <Text style={[styles.title, { color: textPrimary }]}>
             {this.props.fallbackTitle ?? 'Something went wrong'}
           </Text>
-          <Text style={styles.message} numberOfLines={3}>
+          <Text style={[styles.message, { color: textMuted }]} numberOfLines={3}>
             {this.state.message || 'An unexpected error occurred. Please try again.'}
           </Text>
           <AnimatedPressable
@@ -63,7 +70,6 @@ export class ErrorBoundary extends React.Component<Props, State> {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.mobile.bg,
   },
   center: {
     flex: 1,
@@ -84,12 +90,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fs.lg,
     fontWeight: '700',
-    color: colors.mobile.textPrimary,
     textAlign: 'center',
   },
   message: {
     fontSize: fs.sm,
-    color: colors.mobile.textMuted,
     textAlign: 'center',
     lineHeight: 20,
   },

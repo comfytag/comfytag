@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag | My Tickets Wallet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "error": "#ba1a1a",
+                "tertiary-fixed-dim": "#ffb77d",
+                "on-primary-fixed-variant": "#5a00c6",
+                "primary-container": "#7c3aed",
+                "surface-tint": "#732ee4",
+                "outline-variant": "#ccc3d8",
+                "on-secondary-fixed-variant": "#653e00",
+                "primary": "#630ed4",
+                "on-primary-container": "#ede0ff",
+                "surface-container": "#f4ece8",
+                "secondary-container": "#fea619",
+                "on-primary": "#ffffff",
+                "background": "#fff8f5",
+                "on-surface-variant": "#4a4455",
+                "on-tertiary": "#ffffff",
+                "surface-container-high": "#eee7e3",
+                "on-tertiary-fixed-variant": "#6e3900",
+                "tertiary-container": "#9d5400",
+                "outline": "#7b7487",
+                "inverse-primary": "#d2bbff",
+                "surface": "#fff8f5",
+                "inverse-on-surface": "#f7efeb",
+                "secondary": "#855300",
+                "on-surface": "#1e1b19",
+                "on-error-container": "#93000a",
+                "surface-container-highest": "#e9e1dd",
+                "on-error": "#ffffff",
+                "on-background": "#1e1b19",
+                "on-secondary-fixed": "#2a1700",
+                "inverse-surface": "#33302d",
+                "primary-fixed": "#eaddff",
+                "error-container": "#ffdad6",
+                "on-tertiary-fixed": "#2f1500",
+                "surface-container-lowest": "#ffffff",
+                "surface-container-low": "#faf2ee",
+                "on-tertiary-container": "#ffe1cb",
+                "surface-dim": "#e0d8d5",
+                "tertiary": "#7a4000",
+                "secondary-fixed": "#ffddb8",
+                "secondary-fixed-dim": "#ffb95f",
+                "tertiary-fixed": "#ffdcc3",
+                "surface-bright": "#fff8f5",
+                "on-secondary": "#ffffff",
+                "surface-variant": "#e9e1dd",
+                "on-secondary-container": "#684000",
+                "on-primary-fixed": "#25005a",
+                "primary-fixed-dim": "#d2bbff"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "sidebar-width-expanded": "240px",
+                "gutter": "24px",
+                "margin-mobile": "16px",
+                "margin-tablet": "24px",
+                "base": "8px",
+                "margin-desktop": "40px",
+                "sidebar-width-collapsed": "72px",
+                "container-max": "1280px"
+            },
+            "fontFamily": {
+                "headline-md": ["Inter"],
+                "label-sm": ["Inter"],
+                "display-lg-mobile": ["Inter"],
+                "headline-lg": ["Inter"],
+                "label-md": ["Inter"],
+                "body-lg": ["Inter"],
+                "body-md": ["Inter"],
+                "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: #FAFAF9; /* Brand Anchor Requirement */
+            color: #1e1b19;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ticket-cut-out {
+            position: relative;
+        }
+        .ticket-cut-out::before, .ticket-cut-out::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-color: #FAFAF9;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+        .ticket-cut-out::before { left: -12px; }
+        .ticket-cut-out::after { right: -12px; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+<!-- TopNavBar (Large) -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center h-[72px] px-margin-desktop bg-surface/80 backdrop-blur-md border-b border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-headline-md font-bold text-primary">ComfyTag</span>
+<div class="hidden md:flex gap-6">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">Events</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1" href="#">My Tickets</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">About</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors" href="#">Help</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-label-md w-64 focus:ring-2 focus:ring-primary" placeholder="Search events..." type="text"/>
+</div>
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">account_balance_wallet</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a friendly user for a digital wallet application profile. The lighting is soft and warm, characteristic of a high-end light-mode UI. The background is a clean, neutral studio setting that matches the minimalist corporate aesthetic of the brand, emphasizing trust and clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7gFXrOBx7aPnWFYteTf3NrApfJVzePgfHqFM_4qryp91lJsg8dZMERYrW2jIje1HG7BDp2a5TCVo1nc6ddMp6GceDxC9M1FDmd8rHEaADattqtjoutvJZ35iYcNDaucvL_1H-WuZLr48nuZ6qbgEy0qqMR7u8AoiIFVrk1gdrpmc-ULCKoFDS5j3EJCOFI4eGo-kLfCfm9HzvvOyiOOYDNhrh-CpBdm2wjXyNjs1DhoNelzsohNnCow"/>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="pt-[104px] pb-12 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface">Ticket Wallet</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Manage your entries, past events, and digital access.</p>
+</div>
+<div class="flex gap-2 p-1 bg-surface-container-low rounded-xl">
+<button class="px-6 py-2 bg-white shadow-sm rounded-lg text-label-md font-bold text-primary transition-all">All Tickets</button>
+<button class="px-6 py-2 text-label-md font-medium text-on-surface-variant hover:text-primary transition-colors">Upcoming</button>
+<button class="px-6 py-2 text-label-md font-medium text-on-surface-variant hover:text-primary transition-colors">Past</button>
+</div>
+</header>
+<!-- Bento Grid Layout for Tickets -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="ticket-grid">
+<!-- Ticket Card 1 (Active/Details Target) -->
+<div class="group cursor-pointer bg-white rounded-xl shadow-sm border border-outline-variant/10 overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1" onclick="openTicketDetails(1)">
+<div class="relative h-48">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A vibrant night-time concert scene with purple and gold stage lighting illuminating a large crowd. The atmosphere is energetic and premium, with professional photography capturing the scale of the event. The aesthetic is modern and cinematic, fitting for a high-end event management platform." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDTZSewdiM1mrOf9GZyC-uo1Wqw7KoXh71K143Z4CWdznznjf68zfXuvQuBKqXHxPQADaYhNZpQjeJc4_YXgKpB3Y630WE3jN6sbR2nMsi_sMY6GawAqSiULS67Uc3mb9oaAk9-loPTA7lx4DHPkRBGMY4D_XzPWUj79D8t9M4PMGtk6Ov-MYrH-MUnc-oRXSdMeHcbQeUJrBHklMrkyY6I4HX3pdQXjDYr1EdleFhdo1ifIzgmqxdkVQ')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute top-4 left-4">
+<span class="bg-[#C6F6D5] text-[#22543D] px-3 py-1 rounded-full text-[12px] font-bold shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Face Entry Ready
+                        </span>
+</div>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-md text-headline-md text-on-surface leading-tight">Synthwave Dreams 2024</h3>
+<span class="material-symbols-outlined text-primary">qr_code_2</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant mb-4">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span class="text-label-md">Oct 24, 2024 • 8:00 PM</span>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant/20">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Profile of a concert attendee, minimalist and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd0HRZngJEhwrg1LTUFZ56eRtXRow9Dim8pQc4G5snqo35E440OqLoixsOldr0YEvlExDSAjqyILgbe4O0C7UOnlo3_jBIcbkGwS6RurOYmnI_B9dNHfNFC_Nth9nUDKnx3VyEEN6VPhKmQAOgy7yLGAJmLPoW4Izto0dnpYQoGG22rniDsyiyRHkx-iX9gFADQTt4SxGwlvMVm3La-mbf1bl4d02PI_LCaDIGbymYpC94mV4KhoOWwA"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center bg-primary-container text-[10px] text-white font-bold">+2</div>
+</div>
+<span class="text-primary font-bold text-label-md">Section A, Row 12</span>
+</div>
+</div>
+</div>
+<!-- Ticket Card 2 (Upcoming) -->
+<div class="group cursor-pointer bg-white rounded-xl shadow-sm border border-outline-variant/10 overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+<div class="relative h-48">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A bright, minimalist indoor design conference hall with floor-to-ceiling windows and soft morning light. The setting is professional and tranquil, emphasizing modern corporate architecture. The color palette uses warm woods and pristine whites to create an inviting light-mode environment." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDttShecUH_3iMx_D01AK7563orWHr8po2WgR7OvGJ-I49K4PuwPYy2V3va7rtTZ9ubAG7qTmW3wiFW4a7bJtvf7IF7OtTks24rIYa5kHK-7RP2SZ-hSpWitUOOKf7auwYlMnObSUKVBCI21XdJboiui4IX9Nap5rWdNsqx0X4C6ECRh_Z-NjwNds78jI_o8Xhl17eAzZyq7qxnheJzPvojX6alcT7_YVuRQaAZTM1skXHJztCN8YVLlQ')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute top-4 left-4">
+<span class="bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-[12px] font-bold shadow-sm">
+                            Upcoming
+                        </span>
+</div>
+</div>
+<div class="p-6">
+<h3 class="font-headline-md text-headline-md text-on-surface leading-tight mb-2">Design Future Summit</h3>
+<div class="flex items-center gap-2 text-on-surface-variant mb-4">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span class="text-label-md">Nov 12, 2024 • 9:00 AM</span>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant/20">
+<span class="text-on-surface-variant text-label-md">Main Hall, Center Stage</span>
+<span class="text-primary font-bold text-label-md">1 Ticket</span>
+</div>
+</div>
+</div>
+<!-- Ticket Card 3 (Past) -->
+<div class="group cursor-pointer bg-white/60 grayscale-[0.5] opacity-80 rounded-xl shadow-sm border border-outline-variant/10 overflow-hidden hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+<div class="relative h-48">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="An atmospheric evening outdoor food festival with hanging fairy lights and vibrant food stalls. The scene is slightly blurred to emphasize a nostalgic feeling of a past event. Warm golden hues and deep shadows create a rich, textured visual that fits a premium wallet interface." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBgoDrnkrCDEbCmclw7vK_f3dGvrqY5Ql_kPoloTpMFagjv1HzuOW1sioYghCBlXpXP8Bu91OfNuZvMXLy-qjZHFQ7Dz7lRjOFd1V3nF8kea0IjZZimWI8baa4x-4IlvHXdWsZhMW6RsiRT7yhZLK7QWyfn-ya317N3lm9pRpDvZEur9IIHjlLAYRVxXI5da8Vy5ncNIHG2VqDJKUctdcc2lmutKjb42HvIF5lWoXZykCYvuoF_w4QP2A')"></div>
+<div class="absolute inset-0 bg-black/20"></div>
+<div class="absolute top-4 left-4">
+<span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full text-[12px] font-bold shadow-sm">
+                            Past
+                        </span>
+</div>
+</div>
+<div class="p-6">
+<h3 class="font-headline-md text-headline-md text-on-surface leading-tight mb-2">Global Food Expo</h3>
+<div class="flex items-center gap-2 text-on-surface-variant mb-4">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span class="text-label-md">Aug 05, 2024</span>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant/20">
+<span class="text-on-surface-variant text-label-md italic">Archive Available</span>
+<button class="text-primary font-bold text-label-md hover:underline">View Receipt</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Ticket Detail Overlay (Hidden by default) -->
+<div class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4" id="ticket-overlay">
+<div class="bg-[#FAFAF9] w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden relative animate-fade-in">
+<button class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors" onclick="closeTicketDetails()">
+<span class="material-symbols-outlined text-white">close</span>
+</button>
+<!-- Hero Section -->
+<div class="h-56 relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A detailed close-up of high-performance stage lighting and atmospheric fog at a premium musical event. The lighting is dominated by deep violets and golds, creating a majestic and exclusive atmosphere that mirrors the high-quality interface of the event wallet." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDNNb_A53fIsmY7Hf_J2PWe3qyhV04EmQSvAlg2kNRFHOHD6bU60F0YJMuaff1aD3W4EyBWlUGx6S243E4Tmivjp-tTKn2XLmUUCzmEhxv6Fe4MoijN5-pYRdt9Vcl1l5rBCRzyvVbcPSxxKX-2JSJ0Bs9r8KQIgBD8_nWZFkEw-ntWA6hoeQ4Qb5mbtTwjbXWHSndM7dcukhO6V2odn0Hpn_Lssw6asbLIeTO5ROHG1MHSnZJwvM9vbg')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-[#FAFAF9] via-transparent to-black/30"></div>
+<div class="absolute bottom-6 left-8">
+<span class="bg-[#C6F6D5] text-[#22543D] px-3 py-1 rounded-full text-[12px] font-bold mb-3 inline-block">Face Entry Ready</span>
+<h2 class="font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface">Synthwave Dreams 2024</h2>
+</div>
+</div>
+<!-- Ticket Content -->
+<div class="px-8 pb-8 pt-4">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8 py-6 border-b border-outline-variant/20">
+<div>
+<p class="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Date</p>
+<p class="font-headline-sm text-on-surface">Oct 24, 2024</p>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Time</p>
+<p class="font-headline-sm text-on-surface">08:00 PM</p>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Section</p>
+<p class="font-headline-sm text-on-surface">Gold Lounge</p>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Seat</p>
+<p class="font-headline-sm text-on-surface">A-12, A-13</p>
+</div>
+</div>
+<!-- Digital Ticket Area -->
+<div class="ticket-cut-out bg-white p-8 rounded-xl border border-outline-variant/10 shadow-sm mb-8 flex flex-col items-center">
+<div class="w-48 h-48 bg-white p-4 border border-outline-variant/20 rounded-lg mb-6">
+<img class="w-full h-full" data-alt="A clean, high-resolution QR code generated for digital event entry. The code is crisp and black against a white background, framed by a subtle, elegant border that aligns with the premium event management design system. The surrounding space is clean and minimalist." src="https://lh3.googleusercontent.com/aida-public/AB6AXuASdYY_txwJp2ahRufIqbD1hMXFgT3DRD3mjeRdzX-zFYBG9vNRpDhL30CpaOEwEfJAAwLHMjtd73NLZHNzYr3XH3ktBP9kz2tYrk1XzWUWA8gt13RHY-danFrM5UB-644y1KCa2m1B8K3ymY8zncB2-DH02PO8HBVEG9WHOHDJhFYUs1mgpz9-nOJti5CTb2FlLFzYbTgoOJxl6iSoUCc21BDHOIwH6MSt3drApSZ7lSF6V_v7ImAKBg"/>
+</div>
+<div class="text-center">
+<p class="font-headline-md text-headline-md text-on-surface mb-1">Scan for Entry</p>
+<p class="text-body-md text-on-surface-variant">Gate B • Dedicated Lane 2</p>
+</div>
+</div>
+<!-- Entry Instructions -->
+<div class="space-y-4">
+<h4 class="font-headline-md text-on-surface">Entry Instructions</h4>
+<div class="flex gap-4 p-4 bg-surface-container rounded-xl">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">face_retouching_natural</span>
+<div>
+<p class="font-bold text-on-surface">Biometric Entry Enabled</p>
+<p class="text-label-md text-on-surface-variant">You've enabled ComfyTag FaceID. Proceed directly to the "Face Entry" lane for seamless, touchless access.</p>
+</div>
+</div>
+<div class="flex gap-4 p-4 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-on-surface-variant">info</span>
+<div>
+<p class="font-bold text-on-surface">Arrival Suggestion</p>
+<p class="text-label-md text-on-surface-variant">Doors open 90 minutes before showtime. We recommend arriving by 7:00 PM for the best experience.</p>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="mt-10 flex gap-4">
+<button class="flex-1 bg-primary text-white font-bold py-4 rounded-xl hover:bg-primary/90 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">share</span> Share Ticket
+                    </button>
+<button class="flex-1 border-2 border-primary text-primary font-bold py-4 rounded-xl hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">download</span> Save Offline
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button (Only for relevant action) -->
+<button class="fixed bottom-8 right-8 w-16 h-16 bg-primary-container text-on-primary-container rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center group">
+<span class="material-symbols-outlined text-[32px] group-hover:rotate-90 transition-transform">add</span>
+<span class="absolute right-20 bg-inverse-surface text-inverse-on-surface px-4 py-2 rounded-lg text-label-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Add Ticket Code</span>
+</button>
+<script>
+        function openTicketDetails(id) {
+            const overlay = document.getElementById('ticket-overlay');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTicketDetails() {
+            const overlay = document.getElementById('ticket-overlay');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close overlay when clicking outside the content box
+        document.getElementById('ticket-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTicketDetails();
+            }
+        });
+
+        // Add subtle animation to ticket cards on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('#ticket-grid > div');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.animation = `fadeIn 0.5s ease-out ${index * 0.1}s forwards`;
+            });
+        });
+    </script>
+</body></html>

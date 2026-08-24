@@ -11,6 +11,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { TicketWalletCard } from '@/components/tickets/TicketWalletCard'
 import { FaceEnrollmentBanner } from '@/components/tickets/FaceEnrollmentBanner'
 import { useMyTickets } from '@/hooks/useTickets'
+import { useBecomePartner } from '@/hooks/useProfile'
 
 type WalletTab = 'all' | 'upcoming' | 'past'
 
@@ -19,6 +20,7 @@ export default function TicketsPage() {
   const { data: session, status } = useSession()
   const { data: tickets = [], isLoading } = useMyTickets()
   const [activeTab, setActiveTab] = useState<WalletTab>('all')
+  const { mutate: becomePartner, isPending: isBecomingPartner } = useBecomePartner()
 
   const { data: profileData } = useQuery({
     queryKey: ['profile', session?.user?.id],
@@ -259,12 +261,14 @@ export default function TicketsPage() {
                 <p className="text-sm font-bold text-brand">Enjoyed attending?</p>
                 <p className="text-sm text-(--color-text-muted) mt-0.5">Host your own event and sell tickets on ComfyTag.</p>
               </div>
-              <Link
-                href="/profile"
-                className="shrink-0 inline-flex items-center gap-2 bg-brand hover:bg-brand-dark text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+              <button
+                type="button"
+                onClick={() => becomePartner()}
+                disabled={isBecomingPartner}
+                className="shrink-0 inline-flex items-center gap-2 bg-brand hover:bg-brand-dark text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Become a Partner →
-              </Link>
+                {isBecomingPartner ? 'Setting up your dashboard…' : 'Become a Partner'}
+              </button>
             </div>
           )}
 

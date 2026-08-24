@@ -58,22 +58,22 @@ function OverviewSkeleton() {
     <div className="space-y-6 animate-pulse">
       {/* Header skeleton */}
       <div className="space-y-2">
-        <div className="h-7 w-56 rounded-xl bg-zinc-200" />
-        <div className="h-4 w-72 rounded-lg bg-zinc-100" />
+        <div className="h-7 w-56 rounded-xl bg-zinc-800" />
+        <div className="h-4 w-72 rounded-lg bg-zinc-900" />
       </div>
       {/* Hero grid skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 h-64 rounded-xl bg-zinc-900 border border-zinc-800" />
-        <div className="h-64 rounded-xl bg-zinc-100 border border-zinc-200" />
+        <div className="h-64 rounded-xl bg-zinc-900 border border-zinc-800" />
       </div>
       {/* Chip row skeleton */}
       <div className="grid grid-cols-3 gap-4">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-20 rounded-2xl bg-zinc-100 border border-zinc-200" />
+          <div key={i} className="h-20 rounded-2xl bg-zinc-900 border border-zinc-800" />
         ))}
       </div>
       {/* Milestone skeleton */}
-      <div className="h-28 rounded-2xl bg-zinc-100 border border-zinc-200" />
+      <div className="h-28 rounded-2xl bg-zinc-900 border border-zinc-800" />
     </div>
   )
 }
@@ -174,14 +174,14 @@ export default function OverviewPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="bg-zinc-50/50 space-y-8">
+    <div className="space-y-8">
 
       {/* ── 1. Page Header ─────────────────────────────────────────────────── */}
       <header>
-        <h1 className="text-2xl font-black text-zinc-900 tracking-tight leading-tight">
+        <h1 className="text-2xl font-black text-(--color-text) tracking-tight leading-tight">
           {getGreeting()}, {organizerName}.
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-(--color-text-muted)">
           Your studio ecosystem is fully operational.
         </p>
       </header>
@@ -259,7 +259,7 @@ export default function OverviewPage() {
 
         {/* Ticket Pulse Ring — spans 1 col */}
         <div
-          className="card-enter bg-white border border-zinc-200/80 rounded-xl p-8 flex flex-col items-center justify-center text-center relative"
+          className="card-enter bg-(--color-surface) border border-(--color-border) rounded-xl p-8 flex flex-col items-center justify-center text-center relative"
           style={{ animationDelay: '60ms' }}
         >
           <TicketPulseRing count={ticketsSoldToday} label="Tickets Today" />
@@ -270,11 +270,11 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Total Events */}
         <div
-          className="card-enter bg-white border border-zinc-200/80 rounded-xl p-5 flex items-center gap-3 hover:border-zinc-300 transition-colors"
+          className="card-enter bg-(--color-surface) border border-(--color-border) rounded-xl p-5 flex items-center gap-3 hover:border-zinc-700 transition-colors"
           style={{ animationDelay: '100ms' }}
         >
-          <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-violet-600" aria-hidden="true">
+          <div className="w-10 h-10 rounded-xl bg-violet-950/40 border border-violet-900/50 flex items-center justify-center shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-violet-400" aria-hidden="true">
               <rect x="3" y="4" width="18" height="18" rx="2" />
               <line x1="16" y1="2" x2="16" y2="6" />
               <line x1="8" y1="2" x2="8" y2="6" />
@@ -282,20 +282,20 @@ export default function OverviewPage() {
             </svg>
           </div>
           <div className="min-w-0">
-            <p className="text-2xl font-black text-zinc-900 leading-none tabular-nums">
+            <p className="text-2xl font-black text-(--color-text) leading-none tabular-nums">
               {totalEvents.toLocaleString('en-NG')}
             </p>
-            <p className="mt-0.5 text-xs text-zinc-500 font-medium">Total Events</p>
+            <p className="mt-0.5 text-xs text-(--color-text-muted) font-medium">Total Events</p>
           </div>
         </div>
 
         {/* Followers */}
         <div
-          className="card-enter bg-white border border-zinc-200/80 rounded-xl p-5 flex items-center gap-3 hover:border-zinc-300 transition-colors"
+          className="card-enter bg-(--color-surface) border border-(--color-border) rounded-xl p-5 flex items-center gap-3 hover:border-zinc-700 transition-colors"
           style={{ animationDelay: '140ms' }}
         >
-          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500" aria-hidden="true">
+          <div className="w-10 h-10 rounded-xl bg-amber-950/40 border border-amber-900/50 flex items-center justify-center shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400" aria-hidden="true">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
               <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -303,48 +303,48 @@ export default function OverviewPage() {
             </svg>
           </div>
           <div className="min-w-0">
-            <p className="text-2xl font-black text-zinc-900 leading-none tabular-nums">
+            <p className="text-2xl font-black text-(--color-text) leading-none tabular-nums">
               {followers.toLocaleString('en-NG')}
             </p>
-            <p className="mt-0.5 text-xs text-zinc-500 font-medium">Followers</p>
+            <p className="mt-0.5 text-xs text-(--color-text-muted) font-medium">Followers</p>
           </div>
         </div>
 
         {/* Tickets Sold */}
         <div
-          className="card-enter bg-white border border-zinc-200/80 rounded-xl p-5 flex items-center gap-3 hover:border-zinc-300 transition-colors"
+          className="card-enter bg-(--color-surface) border border-(--color-border) rounded-xl p-5 flex items-center gap-3 hover:border-zinc-700 transition-colors"
           style={{ animationDelay: '180ms' }}
         >
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600" aria-hidden="true">
+          <div className="w-10 h-10 rounded-xl bg-emerald-950/40 border border-emerald-900/50 flex items-center justify-center shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400" aria-hidden="true">
               <path d="M22 12.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v5c1.1 0 2 .9 2 2s-.9 2-2 2v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.5" />
               <polyline points="16 8 9 15 6 12" />
             </svg>
           </div>
           <div className="min-w-0">
-            <p className="text-2xl font-black text-zinc-900 leading-none tabular-nums">
+            <p className="text-2xl font-black text-(--color-text) leading-none tabular-nums">
               {totalTicketsSold.toLocaleString('en-NG')}
             </p>
-            <p className="mt-0.5 text-xs text-zinc-500 font-medium">Tickets Sold</p>
+            <p className="mt-0.5 text-xs text-(--color-text-muted) font-medium">Tickets Sold</p>
           </div>
         </div>
       </div>
 
       {/* ── 4. Milestone Progress Rail ─────────────────────────────────────── */}
       <div
-        className="card-enter bg-white border border-zinc-200/80 rounded-xl p-5"
+        className="card-enter bg-(--color-surface) border border-(--color-border) rounded-xl p-5"
         style={{ animationDelay: '220ms' }}
       >
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-sm font-bold text-zinc-900 tracking-tight">
+            <h2 className="text-sm font-bold text-(--color-text) tracking-tight">
               Your Progress
             </h2>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <p className="text-xs text-(--color-text-muted) mt-0.5">
               {totalTicketsSold.toLocaleString('en-NG')} tickets sold all-time
             </p>
           </div>
-          <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-3 py-1">
+          <span className="text-[11px] font-semibold text-amber-400 bg-amber-950/40 border border-amber-900/50 rounded-full px-3 py-1">
             Level up
           </span>
         </div>
@@ -357,12 +357,12 @@ export default function OverviewPage() {
       {/* ── 5. Live Event Timeline ─────────────────────────────────────────── */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold text-zinc-900 tracking-tight uppercase tracking-wider">
+          <h2 className="text-sm font-bold text-(--color-text) tracking-tight uppercase tracking-wider">
             Your Events
           </h2>
           <Link
             href="/events/create"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-200 rounded-full px-3 py-1.5 transition-all"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-400 hover:text-violet-300 bg-violet-950/40 hover:bg-violet-900/50 border border-violet-900/50 rounded-full px-3 py-1.5 transition-all"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
               <line x1="12" y1="5" x2="12" y2="19" />
@@ -378,7 +378,7 @@ export default function OverviewPage() {
           <div className="mt-4 text-center">
             <Link
               href="/events"
-              className="text-sm font-semibold text-zinc-400 hover:text-zinc-700 transition-colors"
+              className="text-sm font-semibold text-(--color-text-muted) hover:text-(--color-text) transition-colors"
             >
               View all {events.length} events →
             </Link>

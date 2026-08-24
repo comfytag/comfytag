@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ComfyTag Organizer Portal</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#ccc3d8",
+                    "secondary-fixed-dim": "#d3bbff",
+                    "on-secondary-fixed": "#250059",
+                    "outline": "#7b7487",
+                    "inverse-on-surface": "#f1f1f0",
+                    "tertiary-container": "#905b00",
+                    "tertiary": "#704500",
+                    "on-tertiary-container": "#ffe1c0",
+                    "on-background": "#1a1c1c",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed": "#2a1700",
+                    "on-surface": "#1a1c1c",
+                    "surface-container": "#eeeeed",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e2e2e2",
+                    "surface-container-highest": "#e2e2e2",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-error-container": "#93000a",
+                    "surface": "#f9f9f8",
+                    "on-secondary-container": "#fffbff",
+                    "error-container": "#ffdad6",
+                    "error": "#ba1a1a",
+                    "secondary": "#6e3aca",
+                    "on-primary-fixed": "#25005a",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#eaddff",
+                    "inverse-surface": "#2f3130",
+                    "primary": "#630ed4",
+                    "background": "#f9f9f8",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "secondary-container": "#8856e5",
+                    "on-secondary-fixed-variant": "#581db3",
+                    "inverse-primary": "#d2bbff",
+                    "primary-container": "#7c3aed",
+                    "tertiary-fixed": "#ffddb8",
+                    "on-primary-container": "#ede0ff",
+                    "primary-fixed-dim": "#d2bbff",
+                    "secondary-fixed": "#ebddff",
+                    "surface-dim": "#dadad9",
+                    "surface-tint": "#732ee4",
+                    "surface-container-low": "#f3f4f3",
+                    "surface-container-high": "#e8e8e7",
+                    "surface-bright": "#f9f9f8",
+                    "on-surface-variant": "#4a4455"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "40px",
+                    "margin-mobile": "20px",
+                    "base": "4px",
+                    "stack-sm": "8px",
+                    "stack-md": "16px",
+                    "stack-lg": "24px",
+                    "margin-tablet": "32px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .soft-card-shadow {
+            box-shadow: 0px 4px 20px rgba(26, 28, 28, 0.04);
+        }
+        .glass-nav {
+            backdrop-filter: blur(20px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-lg overflow-x-hidden min-h-screen flex flex-col">
+<!-- Hero Background Animation Overlay -->
+<div class="fixed inset-0 pointer-events-none z-0">
+
+</div>
+<!-- Navigation Shell (TopAppBar logic from JSON) -->
+<nav class="fixed top-0 w-full z-50 h-16 flex justify-between items-center px-margin-mobile glass-nav shadow-sm">
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined text-primary text-headline-md">menu</span>
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">ComfyTag</span>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-fixed">
+<img class="w-full h-full object-cover" alt="A professional headshot of a business executive in a modern, brightly lit office environment. The style is crisp and high-contrast, with a soft lavender glow in the background. The individual is wearing a sophisticated dark blazer, conveying trust and authority in the Nigerian event tech industry." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBh2KixzZOC2CLRqAfkRLB7rtWKHwFNcvYDEf4ni7xIR4NyuXeYuB6mdyw_NbuJbnE6f5rMnhLofh0E-8Dvf3wHMldu4Wa54YCEUwlG1tVUCtsT__EHRfg3SpCHy2JPhVomP3rg2Jvou0faRbqlhcl6dx3eZLDSM10EQ5aVjATqtDa6cFW0Bo0hblvgbMLzJI_jCa7Rgdt6tFRqUPrf-ZnwNs_M6HRdnzVMIiW9K2_v_fy6XVuhkJrmwA"/>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="relative z-10 flex-grow flex items-center justify-center pt-16 pb-section-gap px-margin-mobile">
+<div class="w-full max-w-[440px]">
+<!-- Branding/Identity -->
+<div class="text-center mb-stack-lg animate-in fade-in slide-in-from-bottom-4 duration-700">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-2">Organizer Access</h1>
+<p class="font-body-md text-body-md text-on-surface-variant px-stack-lg">Log in to manage your high-stakes event ticketing and attendee experiences.</p>
+</div>
+<!-- Login Card -->
+<div class="bg-surface-container-lowest rounded-xl p-8 soft-card-shadow border border-outline-variant/10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+<form class="space-y-stack-lg" onsubmit="event.preventDefault();">
+<!-- Email Field -->
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="email">ORGANIZER EMAIL</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
+<input class="w-full h-[56px] pl-12 pr-4 bg-surface rounded-lg border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-lg text-body-lg placeholder:text-outline/50" id="email" placeholder="name@event-premium.com" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-base">
+<div class="flex justify-between items-center px-1">
+<label class="font-label-md text-label-md text-on-surface-variant" for="password">PASSWORD</label>
+<button class="text-label-md text-primary font-bold hover:underline" type="button">FORGOT?</button>
+</div>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
+<input class="w-full h-[56px] pl-12 pr-12 bg-surface rounded-lg border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-lg text-body-lg placeholder:text-outline/50" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+<!-- Main CTA -->
+<button class="w-full h-[56px] bg-primary-container text-on-primary font-title-lg text-title-lg rounded-xl soft-card-shadow active:scale-[0.98] transition-transform duration-200 hover:opacity-90 flex items-center justify-center gap-2">
+                        Sign In as Organizer
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<!-- Divider -->
+<div class="flex items-center gap-4 py-stack-sm">
+<div class="h-[1px] flex-grow bg-outline-variant/30"></div>
+<span class="font-label-md text-label-md text-outline">OR</span>
+<div class="h-[1px] flex-grow bg-outline-variant/30"></div>
+</div>
+<!-- Secondary Option -->
+<button class="w-full h-[56px] bg-secondary-fixed text-on-secondary-fixed font-title-lg text-title-lg rounded-xl border border-secondary-fixed-dim/30 active:scale-[0.98] transition-transform duration-200 hover:bg-secondary-fixed-dim/40 flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+                        Staff Access via Invite Code
+                    </button>
+</form>
+</div>
+<!-- Decorative Visual (Ticket Logic) -->
+<div class="mt-section-gap opacity-60">
+<div class="relative w-full h-32 bg-secondary-fixed/20 rounded-xl overflow-hidden border border-outline-variant/20 flex items-center px-8">
+<div class="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-background rounded-full"></div>
+<div class="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-background rounded-full"></div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-secondary tracking-widest">SYSTEM STATUS</span>
+<span class="font-headline-md text-headline-md text-on-surface">Secure Cloud Gateway Active</span>
+</div>
+<div class="ml-auto">
+<span class="material-symbols-outlined text-4xl text-secondary-fixed-dim">verified_user</span>
+</div>
+</div>
+</div>
+<!-- Footer Links -->
+<div class="mt-stack-lg text-center space-x-gutter">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<span class="text-outline-variant text-label-md">•</span>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Security Standards</a>
+<span class="text-outline-variant text-label-md">•</span>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Support</a>
+</div>
+</div>
+</main>
+<!-- Visual Accent Element -->
+<div class="fixed bottom-0 right-0 w-64 h-64 pointer-events-none opacity-20 transform translate-x-20 translate-y-20">
+<div class="w-full h-full rounded-full bg-tertiary blur-3xl"></div>
+</div>
+<script>
+        // Micro-interaction for input fields
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.parentElement.classList.add('scale-[1.01]');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.parentElement.classList.remove('scale-[1.01]');
+            });
+        });
+
+        // Simple button press feedback
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                console.log('Action triggered');
+            });
+        });
+    </script>
+</body></html>

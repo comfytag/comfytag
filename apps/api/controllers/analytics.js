@@ -4,49 +4,73 @@ import Withdraw from '../models/Withdraw.js'
 import Follow from '../models/Follow.js'
 import { createError } from '../utils/error.js'
 
+// What the organizer actually nets from a ticket after their absorbed fee
+// (see utils/ticketFees.js) — falls back to the full buyer-paid `amount` for
+// tickets sold before organizerNet existed, so historical earnings aren't
+// zeroed out by this field's introduction.
+const netOf = (t) => t.organizerNet ?? t.amount ?? 0
+
+// Shared balance calculation, reused by getPartnerRevenue and withdrawal validation.
+export const computeAvailableBalance = async (userId) => {
+  // Get all events for this partner
+  const events = await Event.find({ planner_id: userId })
+  const eventIds = events.map(e => e._id)
+
+  // Get all tickets sold for these events
+  const tickets = await Audience.find({
+    event_id: { $in: eventIds },
+    status: { $in: ['active', 'used', 'transferred'] },
+  })
+
+  // Calculate total revenue — organizerNet (subtotal minus the fee the
+  // organizer absorbs, see utils/ticketFees.js) is what's actually payable to
+  // them. Tickets created before that field existed have it as null; fall
+  // back to the full `amount` for those so historical earnings aren't zeroed
+  // out by this change.
+  const totalRevenue = tickets.reduce((sum, t) => sum + netOf(t), 0)
+  const totalTicketsSold = tickets.length
+
+  // Get withdrawal stats
+  const withdrawals = await Withdraw.find({ user_id: userId })
+  const pendingWithdrawals = withdrawals
+    .filter(w => w.status === 'pending')
+    .reduce((sum, w) => sum + w.amount, 0)
+  const approvedWithdrawals = withdrawals
+    .filter(w => w.status === 'approved')
+    .reduce((sum, w) => sum + w.amount, 0)
+  const sentWithdrawals = withdrawals
+    .filter(w => w.status === 'sent')
+    .reduce((sum, w) => sum + w.amount, 0)
+
+  const availableBalance = totalRevenue - (pendingWithdrawals + approvedWithdrawals + sentWithdrawals)
+
+  return {
+    totalRevenue,
+    totalTicketsSold,
+    totalEvents: events.length,
+    pendingWithdrawals,
+    approvedWithdrawals,
+    sentWithdrawals,
+    availableBalance: Math.max(0, availableBalance),
+  }
+}
+
 // GET /partner/:userId/revenue
 // Get real partner balance: total revenue - withdrawals
 export const getPartnerRevenue = async (req, res, next) => {
   try {
     const userId = req.params.userId
 
-    // Get all events for this partner
-    const events = await Event.find({ planner_id: userId })
-    const eventIds = events.map(e => e._id)
+    if (!req.user.isAdmin) {
+      const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+      if (requesterId !== userId) return next(createError(403, "Not authorized to view this partner's data"))
+    }
 
-    // Get all tickets sold for these events
-    const tickets = await Audience.find({
-      event_id: { $in: eventIds },
-      status: { $in: ['active', 'used', 'transferred'] },
-    })
-
-    // Calculate total revenue
-    const totalRevenue = tickets.reduce((sum, t) => sum + (t.amount || 0), 0)
-    const totalTicketsSold = tickets.length
-
-    // Get withdrawal stats
-    const withdrawals = await Withdraw.find({ user_id: userId })
-    const pendingWithdrawals = withdrawals
-      .filter(w => w.status === 'pending')
-      .reduce((sum, w) => sum + w.amount, 0)
-    const approvedWithdrawals = withdrawals
-      .filter(w => w.status === 'approved')
-      .reduce((sum, w) => sum + w.amount, 0)
-    const sentWithdrawals = withdrawals
-      .filter(w => w.status === 'sent')
-      .reduce((sum, w) => sum + w.amount, 0)
-
-    const availableBalance = totalRevenue - (pendingWithdrawals + approvedWithdrawals + sentWithdrawals)
+    const balance = await computeAvailableBalance(userId)
 
     res.status(200).json({
       userId,
-      totalRevenue,
-      totalTicketsSold,
-      totalEvents: events.length,
-      pendingWithdrawals,
-      approvedWithdrawals,
-      sentWithdrawals,
-      availableBalance: Math.max(0, availableBalance),
+      ...balance,
     })
   } catch (err) {
     next(err)
@@ -62,11 +86,18 @@ export const getEventAnalytics = async (req, res, next) => {
     const event = await Event.findById(eventId)
     if (!event) return next(createError(404, 'Event not found'))
 
+    if (!req.user.isAdmin) {
+      const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+      if (event.planner_id?.toString() !== requesterId) return next(createError(403, 'Not authorized to view analytics for this event'))
+    }
+
     // Get all tickets for this event
     const tickets = await Audience.find({ event_id: eventId })
 
-    // Calculate totals
-    const totalRevenue = tickets.reduce((sum, t) => sum + (t.amount || 0), 0)
+    // Calculate totals — organizerNet reflects what the organizer actually
+    // nets after their absorbed fee; showing the full buyer-paid `amount`
+    // here would overstate what they'll receive.
+    const totalRevenue = tickets.reduce((sum, t) => sum + netOf(t), 0)
     const totalTicketsSold = tickets.length
     const totalCapacity = event.ticketType.reduce((sum, t) => sum + t.capacity, 0)
     const checkInCount = tickets.filter(t => t.checkedIn).length
@@ -80,7 +111,7 @@ export const getEventAnalytics = async (req, res, next) => {
         dailySales[date] = { sold: 0, revenue: 0 }
       }
       dailySales[date].sold += t.numOfTicket
-      dailySales[date].revenue += t.amount
+      dailySales[date].revenue += netOf(t)
     })
 
     const dailySalesArray = Object.entries(dailySales).map(([date, data]) => ({
@@ -126,6 +157,11 @@ export const getPartnerAnalytics = async (req, res, next) => {
   try {
     const userId = req.params.userId
 
+    if (!req.user.isAdmin) {
+      const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+      if (requesterId !== userId) return next(createError(403, "Not authorized to view this partner's data"))
+    }
+
     // Get all events for this partner
     const events = await Event.find({ planner_id: userId })
     const eventIds = events.map(e => e._id)
@@ -133,8 +169,9 @@ export const getPartnerAnalytics = async (req, res, next) => {
     // Get all tickets
     const tickets = await Audience.find({ event_id: { $in: eventIds } })
 
-    // Calculate lifetime stats
-    const totalLifetimeRevenue = tickets.reduce((sum, t) => sum + (t.amount || 0), 0)
+    // Calculate lifetime stats — organizerNet reflects what the organizer
+    // actually nets after their absorbed fee.
+    const totalLifetimeRevenue = tickets.reduce((sum, t) => sum + netOf(t), 0)
     const totalTicketsSold = tickets.length
     const averageTicketPrice = totalTicketsSold > 0 ? totalLifetimeRevenue / totalTicketsSold : 0
 
@@ -146,7 +183,7 @@ export const getPartnerAnalytics = async (req, res, next) => {
       if (!monthlyRevenue[month]) {
         monthlyRevenue[month] = 0
       }
-      monthlyRevenue[month] += t.amount
+      monthlyRevenue[month] += netOf(t)
     })
 
     const monthlyRevenueArray = Object.entries(monthlyRevenue)
@@ -159,7 +196,7 @@ export const getPartnerAnalytics = async (req, res, next) => {
       if (!topEvents[t.event_id]) {
         topEvents[t.event_id] = { revenue: 0, eventName: t.eventname }
       }
-      topEvents[t.event_id].revenue += t.amount
+      topEvents[t.event_id].revenue += netOf(t)
     })
 
     const topEventsArray = Object.entries(topEvents)
@@ -190,7 +227,7 @@ export const getPartnerAnalytics = async (req, res, next) => {
       const key = ticket.type
       if (key && ticketTypeMap[key]) {
         ticketTypeMap[key].sold += (ticket.numOfTicket ?? 1)
-        ticketTypeMap[key].revenue += (ticket.amount ?? 0)
+        ticketTypeMap[key].revenue += netOf(ticket)
       }
     }
 
@@ -220,6 +257,11 @@ export const getCheckInStats = async (req, res, next) => {
 
     const event = await Event.findById(eventId)
     if (!event) return next(createError(404, 'Event not found'))
+
+    if (!req.user.isAdmin) {
+      const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+      if (event.planner_id?.toString() !== requesterId) return next(createError(403, 'Not authorized to view analytics for this event'))
+    }
 
     const tickets = await Audience.find({ event_id: eventId })
 

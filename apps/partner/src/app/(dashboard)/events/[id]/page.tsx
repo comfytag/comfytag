@@ -18,7 +18,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner centered size="lg" />
       </div>
     )
@@ -26,7 +26,7 @@ export default function EventDetailPage({ params }: EventDetailPageProps) {
 
   if (eventError || !event) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+      <div className="min-h-screen flex items-center justify-center p-6">
         <ErrorMessage
           message="Failed to load event."
           onRetry={() => refetchEvent()}

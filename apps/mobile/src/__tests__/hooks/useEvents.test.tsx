@@ -3,7 +3,7 @@ import { waitFor } from '@testing-library/react-native'
 import { renderHookWithQuery } from '../test-utils'
 import { useEvents, useEventBySlug, useCategories } from '../../hooks/useEvents'
 import { get } from '../../lib/api'
-import type { Event, PaginatedResponse, ApiResponse, Category } from '@comfytag/types'
+import type { Event, PaginatedResponse, ApiResponse } from '@comfytag/types'
 
 jest.mock('../../lib/api', () => ({
   get: jest.fn(),
@@ -82,7 +82,7 @@ describe('useEventBySlug', () => {
 
 describe('useCategories', () => {
   it('returns categories array on success', async () => {
-    const cats: Category[] = [{ _id: 'c1', name: 'Music', slug: 'music' }] as never
+    const cats: string[] = ['Music', 'Nightlife']
     mockGet.mockResolvedValue({ data: { success: true, data: cats } } as never)
 
     const { result } = renderHookWithQuery(() => useCategories())

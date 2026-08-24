@@ -2,17 +2,29 @@
 
 import { useState } from 'react'
 import { Lock } from 'lucide-react'
+import { api } from '@/lib/api'
 
 export function NewsletterSection() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!email.trim()) return
-    // No public newsletter/waitlist endpoint exists yet on the API —
-    // this records local confirmation only. Wire to a real endpoint once one exists.
-    setSubmitted(true)
+    if (!email.trim() || isSubmitting) return
+    setIsSubmitting(true)
+    setError(null)
+    try {
+      await api.post('/newsletter/subscribe', { email: email.trim() })
+      setSubmitted(true)
+    } catch (err) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+      setError(message || 'Something went wrong — please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -28,7 +40,7 @@ export function NewsletterSection() {
             </p>
 
             {submitted ? (
-              <p className="text-white font-semibold">✓ You&apos;re on the list — we&apos;ll be in touch.</p>
+              <p className="text-white font-semibold">✓ You&apos;re subscribed — we&apos;ll notify you.</p>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
                 <input
@@ -37,16 +49,19 @@ export function NewsletterSection() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="flex-grow px-6 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder:text-white/40 focus:ring-2 focus:ring-brand focus:outline-none transition-all"
+                  disabled={isSubmitting}
+                  className="flex-grow px-6 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder:text-white/40 focus:ring-2 focus:ring-brand focus:outline-none transition-all disabled:opacity-60"
                 />
                 <button
                   type="submit"
-                  className="px-8 py-4 bg-brand text-white rounded-2xl font-bold hover:bg-brand-dark transition-colors whitespace-nowrap"
+                  disabled={isSubmitting}
+                  className="px-8 py-4 bg-brand text-white rounded-2xl font-bold hover:bg-brand-dark transition-colors whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Join Waitlist
+                  {isSubmitting ? 'Subscribing…' : 'Notify Me'}
                 </button>
               </form>
             )}
+            {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
 
             <p className="text-white/40 text-xs mt-6 flex items-center gap-2">
               <Lock className="w-3.5 h-3.5" aria-hidden="true" />

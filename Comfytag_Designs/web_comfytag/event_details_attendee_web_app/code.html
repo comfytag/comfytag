@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "primary-container": "#7c3aed",
+                    "surface-tint": "#732ee4",
+                    "outline-variant": "#ccc3d8",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "primary": "#630ed4",
+                    "on-primary-container": "#ede0ff",
+                    "surface-container": "#f4ece8",
+                    "secondary-container": "#fea619",
+                    "on-primary": "#ffffff",
+                    "background": "#fff8f5",
+                    "on-surface-variant": "#4a4455",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#eee7e3",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "tertiary-container": "#9d5400",
+                    "outline": "#7b7487",
+                    "inverse-primary": "#d2bbff",
+                    "surface": "#fff8f5",
+                    "inverse-on-surface": "#f7efeb",
+                    "secondary": "#855300",
+                    "on-surface": "#1e1b19",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#e9e1dd",
+                    "on-error": "#ffffff",
+                    "on-background": "#1e1b19",
+                    "on-secondary-fixed": "#2a1700",
+                    "inverse-surface": "#33302d",
+                    "primary-fixed": "#eaddff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed": "#2f1500",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#faf2ee",
+                    "on-tertiary-container": "#ffe1cb",
+                    "surface-dim": "#e0d8d5",
+                    "tertiary": "#7a4000",
+                    "secondary-fixed": "#ffddb8",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "tertiary-fixed": "#ffdcc3",
+                    "surface-bright": "#fff8f5",
+                    "on-secondary": "#ffffff",
+                    "surface-variant": "#e9e1dd",
+                    "on-secondary-container": "#684000",
+                    "on-primary-fixed": "#25005a",
+                    "primary-fixed-dim": "#d2bbff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar-width-expanded": "240px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "margin-tablet": "24px",
+                    "base": "8px",
+                    "margin-desktop": "40px",
+                    "sidebar-width-collapsed": "72px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { background-color: #FAFAF9; font-family: 'Inter', sans-serif; }
+        .glass-effect { backdrop-filter: blur(15px); background: rgba(255, 255, 255, 0.7); }
+        .hero-gradient { background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 100%); }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- TopNavBar: Large Variant -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center h-[72px] px-margin-desktop bg-surface/80 backdrop-blur-md border-b border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-headline-md font-bold text-primary">ComfyTag</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-md text-label-md transition-colors" href="#">Events</a>
+<a class="text-on-surface-variant font-medium hover:text-primary font-label-md text-label-md transition-colors" href="#">About</a>
+<a class="text-on-surface-variant font-medium hover:text-primary font-label-md text-label-md transition-colors" href="#">Help</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary text-label-md w-64" placeholder="Search events..." type="text"/>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-outline-variant/20">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a friendly user for an event platform, high-key studio lighting with a clean white background. The subject is wearing modern corporate attire in soft tones. The image has a premium, polished look with sharp focus and natural skin textures, fitting a modern digital dashboard aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0TNjLqCAM-hZ0sxS89YI65F_ySAAZWLhPNOf7FPiTEIkMLWMhVGLTuAK04tTomKDRRkiEL-_ViosSr2Q8uoR_T0KKMbscivbedckU4yfTS7CR_o8Vw6RwvQNe88LE59cSp5vNEA3ilLyrgfjl68TwOWVB00gGKvfDhgo77u_k50q_YoELOD-aYhfj85FKWqHAsuAMrIauQyFEpKAxLB6KGVLunPDWceS2V0a-RgHccsp5gZPQ6VOMSA"/>
+</div>
+</div>
+</nav>
+<main class="pt-[72px] min-h-screen">
+<!-- Hero Banner -->
+<div class="relative w-full h-[400px] md:h-[500px]">
+<img class="w-full h-full object-cover" data-alt="A wide cinematic shot of a high-end technology conference hall with vibrant purple and gold ambient lighting. The atmosphere is sophisticated and electric, featuring large holographic screens and a diverse crowd of professionals in soft focus. The lighting is dominated by deep violet and golden accents, reflecting a premium corporate event identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBY4tytngZ4uuDf8D5Tl4fDtiEOiYZs83AiQVNkNYexLW7lfdJoFtdXnZj9CqS0f5l2EoEE18xR_QzE75QPcDCmxXYvlvodZOp8VrnNJ9oJktpXOoAEsSwdKlpHvIgL5o-JJdm1phr7Po34AhFSrFTx7PoKJlmwApP4SY6m3R7USxJq1KpxOK2ieYacOeo6U4PBM5kyS03gs3UzVZTHAX0MMbO4jhlGSVn7Rc3WwZgdeBxoLdMMNNvsrQ"/>
+<div class="absolute inset-0 hero-gradient"></div>
+<div class="absolute bottom-0 left-0 w-full p-margin-desktop text-white">
+<div class="max-w-container-max mx-auto">
+<span class="inline-block px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm mb-4">Technology &amp; Design</span>
+<h1 class="font-display-lg text-display-lg mb-2">ComfyConf 2024: The Future of Workspace</h1>
+</div>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-desktop py-12">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Left Main Column -->
+<div class="lg:col-span-8 space-y-12">
+<!-- Date/Venue Card -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="p-6 bg-surface-container-lowest rounded-xl border border-outline-variant/10 shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow">
+<div class="p-3 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">calendar_today</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-1">Friday, Oct 24</h3>
+<p class="text-on-surface-variant font-body-md text-body-md">09:00 AM - 06:00 PM EST</p>
+<button class="mt-2 text-primary font-label-md text-label-md hover:underline">Add to calendar</button>
+</div>
+</div>
+<div class="p-6 bg-surface-container-lowest rounded-xl border border-outline-variant/10 shadow-sm flex items-start gap-4 hover:shadow-md transition-shadow">
+<div class="p-3 bg-secondary/10 rounded-lg text-secondary">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-secondary mb-1">The Glass Pavilion</h3>
+<p class="text-on-surface-variant font-body-md text-body-md">452 Innovation Blvd, New York</p>
+<button class="mt-2 text-secondary font-label-md text-label-md hover:underline">View on map</button>
+</div>
+</div>
+</div>
+<!-- Description -->
+<section class="space-y-6">
+<h2 class="font-headline-lg text-headline-lg border-l-4 border-primary pl-4">About this Event</h2>
+<div class="prose prose-on-surface max-w-none text-on-surface-variant font-body-lg text-body-lg leading-relaxed">
+<p>Join us for an immersive day of exploration into the intersection of comfort, technology, and architectural tag systems. ComfyConf 2024 brings together world-renowned designers, behavioral psychologists, and smart-office engineers to redefine how we interact with our physical surroundings.</p>
+<p>Expect keynote sessions that challenge conventional workspace wisdom, interactive bento-box design workshops, and a premier networking glassmorphism lounge where industry leaders share insights into the next decade of workplace wellness.</p>
+</div>
+</section>
+<!-- Organizer Profile -->
+<section class="p-8 bg-surface-container-low rounded-xl border border-outline-variant/10">
+<div class="flex flex-col md:flex-row items-center gap-8">
+<div class="w-24 h-24 rounded-full border-4 border-white shadow-sm overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A portrait of a creative entrepreneur, mid-40s, with a warm and inspiring expression. The lighting is soft and artistic, with golden hour vibes. The background is a blurred high-end studio office with plants and warm wooden textures, matching the ComfyTag brand identity of high-performance and comfort." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3DLxutNncYFg7vExb0dEldp35Ilw4K9nCVIjZ1jWTc3gRup7mj8_tzAjDxyuqcF8ad1W8rT84OgFohpH_MkmCofcXpNdsp05jHVpyBts6vb4bDw9A-b3quznwaUqViH2WzhJB5hRfJuo7FgcMbOYNhXQ4WpZhBkO8q7PWMr8YGUu_9ONRoyTrTa8jRon0g4GTQmtCn23ryVlREiCYFAIC_r9ZaFQZSl-zddZDHCTrWleRn3SY5-Dl-g"/>
+</div>
+<div class="flex-grow text-center md:text-left">
+<h4 class="font-headline-md text-headline-md mb-1">Organized by Elena Vance</h4>
+<p class="text-on-surface-variant font-body-md text-body-md mb-4">Visionary behind ComfyTag. Dedicated to creating seamless event experiences through sustainable design and intelligent tracking.</p>
+<div class="flex justify-center md:justify-start gap-4">
+<button class="px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md hover:brightness-110 transition-all shadow-sm">Follow</button>
+<button class="px-6 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-primary/5 transition-all">Contact</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Sticky Column -->
+<div class="lg:col-span-4">
+<div class="sticky top-[100px] p-8 bg-surface rounded-2xl border border-outline-variant/20 shadow-xl space-y-8 glass-effect">
+<div class="flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md">Tickets</h3>
+<span class="text-on-surface-variant font-label-md text-label-md">248 left</span>
+</div>
+<!-- Ticket Tiers -->
+<div class="space-y-4" id="ticket-selection">
+<label class="group block relative cursor-pointer">
+<input checked="" class="peer hidden" name="ticket_tier" type="radio" value="regular"/>
+<div class="p-4 rounded-xl border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary/5 transition-all group-hover:bg-surface-container-high">
+<div class="flex justify-between items-center mb-1">
+<span class="font-bold text-on-surface">Regular Access</span>
+<span class="font-bold text-primary">$149</span>
+</div>
+<p class="text-on-surface-variant font-label-sm text-label-sm">Standard seat, coffee, and digital workshop materials.</p>
+</div>
+<span class="material-symbols-outlined absolute top-4 right-4 text-primary opacity-0 peer-checked:opacity-100 transition-opacity">check_circle</span>
+</label>
+<label class="group block relative cursor-pointer">
+<input class="peer hidden" name="ticket_tier" type="radio" value="vip"/>
+<div class="p-4 rounded-xl border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary/5 transition-all group-hover:bg-surface-container-high">
+<div class="flex justify-between items-center mb-1">
+<div class="flex items-center gap-2">
+<span class="font-bold text-on-surface">VIP Experience</span>
+<span class="material-symbols-outlined text-[16px] text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="font-bold text-primary">$399</span>
+</div>
+<p class="text-on-surface-variant font-label-sm text-label-sm">Front row seating, lunch with speakers, and exclusive kit.</p>
+</div>
+<span class="material-symbols-outlined absolute top-4 right-4 text-primary opacity-0 peer-checked:opacity-100 transition-opacity">check_circle</span>
+</label>
+</div>
+<div class="space-y-3 pt-4">
+<div class="flex justify-between text-on-surface-variant font-label-md text-label-md">
+<span>Subtotal</span>
+<span id="display-price">$149.00</span>
+</div>
+<div class="flex justify-between text-on-surface-variant font-label-md text-label-md">
+<span>Service Fee</span>
+<span>$12.50</span>
+</div>
+<div class="pt-4 border-t border-outline-variant/30 flex justify-between font-bold text-headline-md">
+<span>Total</span>
+<span class="text-primary" id="total-price">$161.50</span>
+</div>
+</div>
+<button class="w-full py-4 bg-[#7C3AED] text-white rounded-xl font-bold font-label-md text-label-md shadow-lg shadow-primary/30 hover:shadow-primary/40 hover:-translate-y-0.5 active:scale-95 transition-all uppercase tracking-wide">
+                            Buy Ticket
+                        </button>
+<div class="flex items-center justify-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span class="font-label-sm text-label-sm">Secure checkout by ComfyPay</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Space -->
+<footer class="bg-inverse-surface text-on-surface-variant py-12 mt-24">
+<div class="max-w-container-max mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="text-white font-bold text-headline-md">ComfyTag</div>
+<div class="flex gap-8 font-label-md text-label-md">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors" href="#">Event Guidelines</a>
+</div>
+<p class="font-label-sm text-label-sm">© 2024 ComfyTag Inc. All rights reserved.</p>
+</div>
+</footer>
+<script>
+        // Micro-interaction for ticket selection
+        const radioButtons = document.querySelectorAll('input[name="ticket_tier"]');
+        const displayPrice = document.getElementById('display-price');
+        const totalPrice = document.getElementById('total-price');
+
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const isVIP = e.target.value === 'vip';
+                const subtotal = isVIP ? 399 : 149;
+                const total = subtotal + 12.5;
+
+                displayPrice.innerText = `$${subtotal.toFixed(2)}`;
+                totalPrice.innerText = `$${total.toFixed(2)}`;
+
+                // Simple haptic feedback simulation
+                totalPrice.classList.add('scale-110', 'text-secondary');
+                setTimeout(() => {
+                    totalPrice.classList.remove('scale-110', 'text-secondary');
+                }, 200);
+            });
+        });
+
+        // Sticky observer for header shadow
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                nav.classList.add('shadow-md');
+            } else {
+                nav.classList.remove('shadow-md');
+            }
+        });
+    </script>
+</body></html>
