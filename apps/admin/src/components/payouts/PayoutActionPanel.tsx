@@ -32,21 +32,35 @@ function Section({ children }: { children: React.ReactNode }) {
 
 // ─── Resolved banner (shown when payout is already processed/rejected) ─────────
 
-function ResolvedBanner({ status }: { status: WithdrawRequest['status'] }) {
-  const isProcessed = status === 'sent' || status === 'approved'
+const RESOLVED_COPY: Record<Exclude<WithdrawRequest['status'], 'pending'>, string> = {
+  approved: 'Payout Processed',
+  sent: 'Payout Sent',
+  processing: 'Transfer In Progress',
+  failed: 'Transfer Failed',
+  rejected: 'Payout Rejected',
+}
+
+function ResolvedBanner({ withdraw }: { withdraw: WithdrawRequest }) {
+  const { status, failureReason } = withdraw
+  const isGood = status === 'sent' || status === 'approved' || status === 'processing'
   return (
     <Section>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {isProcessed ? (
+        {isGood ? (
           <CheckCircle size={22} color="var(--color-success)" />
         ) : (
           <XCircle size={22} color="var(--color-error)" />
         )}
         <div>
           <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>
-            {isProcessed ? 'Payout Processed' : 'Payout Rejected'}
+            {status === 'pending' ? 'Payout Pending' : RESOLVED_COPY[status]}
           </div>
           <Badge status={status} />
+          {status === 'failed' && failureReason && (
+            <div style={{ fontSize: 13, color: 'var(--color-text-muted)', marginTop: 6 }}>
+              {failureReason}
+            </div>
+          )}
         </div>
       </div>
     </Section>
@@ -58,7 +72,6 @@ function ResolvedBanner({ status }: { status: WithdrawRequest['status'] }) {
 export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelProps) {
   // Process modal
   const [processOpen, setProcessOpen] = useState(false)
-  const [txRef, setTxRef]             = useState('')
 
   // Reject modal
   const [rejectOpen, setRejectOpen]       = useState(false)
@@ -73,10 +86,9 @@ export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelPro
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   function handleProcess() {
-    if (!txRef.trim()) return
     processPayout.mutate(
       { withdrawId },
-      { onSuccess: () => { setProcessOpen(false); setTxRef('') } },
+      { onSuccess: () => { setProcessOpen(false) } },
     )
   }
 
@@ -91,7 +103,6 @@ export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelPro
   function closeProcessModal() {
     if (processPayout.isPending) return
     setProcessOpen(false)
-    setTxRef('')
   }
 
   function closeRejectModal() {
@@ -103,7 +114,7 @@ export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelPro
   // ── Already resolved ───────────────────────────────────────────────────────
 
   if (withdraw.status !== 'pending') {
-    return <ResolvedBanner status={withdraw.status} />
+    return <ResolvedBanner withdraw={withdraw} />
   }
 
   // ── Pending — show action buttons ─────────────────────────────────────────
@@ -115,7 +126,7 @@ export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelPro
           Finance Actions
         </h2>
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: '0 0 20px', lineHeight: 1.5 }}>
-          Verify the bank details above before processing. Both actions are irreversible once confirmed.
+          Verify the bank details above before sending. Both actions are irreversible once confirmed.
         </p>
 
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -124,7 +135,7 @@ export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelPro
             onClick={() => setProcessOpen(true)}
             disabled={isBusy}
           >
-            Mark as Processed
+            Send Payout
           </Button>
 
           <Button
@@ -140,7 +151,7 @@ export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelPro
         {/* Inline feedback */}
         {processPayout.isError && (
           <div style={{ marginTop: 14, fontSize: 13, color: 'var(--color-error)' }}>
-            Processing failed — please try again.
+            Could not initiate the transfer — please try again.
           </div>
         )}
         {rejectPayout.isError && (
@@ -154,7 +165,7 @@ export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelPro
       <Modal
         isOpen={processOpen}
         onClose={closeProcessModal}
-        title="Confirm Payout Processed"
+        title="Send Payout"
         footer={
           <>
             <Button
@@ -169,9 +180,9 @@ export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelPro
               size="sm"
               onClick={handleProcess}
               loading={processPayout.isPending}
-              disabled={!txRef.trim() || processPayout.isPending}
+              disabled={processPayout.isPending}
             >
-              {processPayout.isPending ? 'Confirming…' : 'Confirm Processed'}
+              {processPayout.isPending ? 'Sending…' : 'Confirm & Send'}
             </Button>
           </>
         }
@@ -181,48 +192,14 @@ export function PayoutActionPanel({ withdrawId, withdraw }: PayoutActionPanelPro
             fontSize: 14,
             color: 'var(--color-text-muted)',
             marginTop: 0,
-            marginBottom: 16,
+            marginBottom: 0,
             lineHeight: 1.6,
           }}
         >
-          Enter the bank transfer reference number to confirm the payout was sent.
-          The organizer will be notified that their withdrawal has been processed.
+          This initiates a real bank transfer via Paystack — the amount moves out of the
+          platform balance immediately. The status will show as "Processing" until Paystack
+          confirms the transfer, at which point the organizer is notified automatically.
         </p>
-        <label
-          htmlFor="payout-tx-ref"
-          style={{
-            display: 'block',
-            fontSize: 12,
-            fontWeight: 500,
-            color: 'var(--color-text-muted)',
-            marginBottom: 6,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-          }}
-        >
-          Transaction / Receipt Reference *
-        </label>
-        <input
-          id="payout-tx-ref"
-          type="text"
-          value={txRef}
-          onChange={(e) => setTxRef(e.target.value)}
-          placeholder="e.g. TXN-2026-0123456 or bank receipt number"
-          disabled={processPayout.isPending}
-          autoComplete="off"
-          style={{
-            width: '100%',
-            padding: '9px 12px',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--color-border)',
-            backgroundColor: 'var(--color-surface-2)',
-            color: 'var(--color-text)',
-            fontSize: 14,
-            outline: 'none',
-            boxSizing: 'border-box',
-            opacity: processPayout.isPending ? 0.6 : 1,
-          }}
-        />
       </Modal>
 
       {/* ─── Reject confirmation modal ──────────────────────── */}

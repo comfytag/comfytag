@@ -3,7 +3,6 @@
 import React from 'react'
 import { useSession } from 'next-auth/react'
 import { Navbar } from '@/components/layout/Navbar'
-import { Footer } from '@/components/layout/Footer'
 import { EventCard, OrganizerCard } from '@/components/ui'
 import { EmptyState, Skeleton } from '@comfytag/ui'
 import { useMyFollowing } from '@/hooks/useProfile'
@@ -180,7 +179,6 @@ export default function MyFollowingPage() {
           )}
         </div>
       </main>
-      <Footer />
     </>
   )
 }

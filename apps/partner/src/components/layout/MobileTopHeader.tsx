@@ -9,7 +9,7 @@ export default function MobileTopHeader() {
   const { unreadCount } = useContext(NotificationContext)
 
   return (
-    <header className="md:hidden sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-zinc-200/80">
+    <header className="md:hidden sticky top-0 z-40 flex items-center justify-between px-4 py-3 bg-(--color-surface) border-b border-(--color-border)">
       <Link href="/" aria-label="ComfyTag home">
         <Image
           src="/logo.png"
@@ -26,7 +26,7 @@ export default function MobileTopHeader() {
         aria-label={
           unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'
         }
-        className="relative flex items-center justify-center w-9 h-9 rounded-full text-zinc-500 hover:bg-zinc-100 transition-colors duration-150"
+        className="relative flex items-center justify-center w-9 h-9 rounded-full text-(--color-text-muted) hover:bg-(--color-bg) transition-colors duration-150"
       >
         <svg
           width="20"
@@ -45,7 +45,7 @@ export default function MobileTopHeader() {
         {unreadCount > 0 && (
           <span
             aria-hidden="true"
-            className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border-2 border-slate-50"
+            className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-(--color-error) border-2 border-(--color-surface)"
           />
         )}
       </Link>

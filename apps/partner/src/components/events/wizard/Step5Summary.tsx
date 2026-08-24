@@ -12,13 +12,13 @@ interface SummaryCardProps {
 
 function SummaryCard({ title, onEdit, children }: SummaryCardProps) {
   return (
-    <div className="bg-zinc-50 border border-zinc-100 rounded-2xl p-4">
+    <div className="bg-zinc-800 border border-zinc-700 rounded-2xl p-4">
       <div className="flex items-start justify-between gap-2 mb-2">
-        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold">{title}</p>
+        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 font-semibold">{title}</p>
         <button
           type="button"
           onClick={onEdit}
-          className="text-violet-600 text-xs font-bold hover:text-violet-700 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded"
+          className="text-violet-400 text-xs font-bold hover:text-violet-300 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded"
         >
           Edit
         </button>
@@ -60,23 +60,23 @@ export function Step5Summary({
     <>
     <div className="max-w-3xl mx-auto space-y-5 mt-8 animate-in fade-in duration-300">
       {/* Celebratory launch header */}
-      <div className="bg-white border border-zinc-200/80 rounded-xl p-8 text-center">
+      <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-8 text-center">
         <div className="text-5xl mb-4" aria-hidden="true">🚀</div>
-        <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 5 of 5</span>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Ready for launch?</h2>
-        <p className="text-sm text-zinc-500 mb-8 max-w-xs mx-auto">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-violet-400 font-bold mb-4 block">Step 5 of 5</span>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-(--color-text) mb-2">Ready for launch?</h2>
+        <p className="text-sm text-(--color-text-muted) mb-8 max-w-xs mx-auto">
           Review your event details below. You can always edit before publishing.
         </p>
       </div>
 
       {/* Summary sections */}
-      <div className="bg-white border border-zinc-200/80 rounded-xl p-6 space-y-3">
+      <div className="bg-(--color-surface) border border-(--color-border) rounded-xl p-6 space-y-3">
         <SummaryCard title="Event Info" onEdit={() => onGoToStep(1)}>
-          <p className="text-sm font-bold text-zinc-900 leading-tight">{formData.name || '—'}</p>
-          <p className="text-xs text-zinc-500 mt-1">{dateLabel}</p>
-          <p className="text-xs text-zinc-500 mt-0.5">{locationLabel}</p>
+          <p className="text-sm font-bold text-(--color-text) leading-tight">{formData.name || '—'}</p>
+          <p className="text-xs text-zinc-400 mt-1">{dateLabel}</p>
+          <p className="text-xs text-zinc-400 mt-0.5">{locationLabel}</p>
           {formData.category && (
-            <span className="inline-block mt-2 text-[10px] font-bold bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
+            <span className="inline-block mt-2 text-[10px] font-bold bg-violet-950/40 text-violet-400 px-2 py-0.5 rounded-full">
               {formData.category}
             </span>
           )}
@@ -96,20 +96,20 @@ export function Step5Summary({
                   <img
                     src={url}
                     alt={`Image ${i + 1}`}
-                    className="w-16 h-11 object-cover rounded-lg border border-zinc-200"
+                    className="w-16 h-11 object-cover rounded-lg border border-zinc-700"
                   />
                 </div>
               ))}
               {formData.images.length > 4 && (
-                <div className="w-16 h-11 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center shrink-0">
-                  <span className="text-[10px] font-bold text-zinc-400">
+                <div className="w-16 h-11 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
+                  <span className="text-[10px] font-bold text-zinc-500">
                     +{formData.images.length - 4}
                   </span>
                 </div>
               )}
             </div>
           ) : (
-            <p className="text-sm text-zinc-400">No images uploaded</p>
+            <p className="text-sm text-zinc-500">No images uploaded</p>
           )}
         </SummaryCard>
 
@@ -118,7 +118,7 @@ export function Step5Summary({
             <div className="space-y-1 mt-1">
               {formData.tiers.map((tier, i) => (
                 <div key={i} className="flex items-center justify-between text-sm">
-                  <span className="font-semibold text-zinc-800">{tier.name}</span>
+                  <span className="font-semibold text-zinc-300">{tier.name}</span>
                   <span className="text-zinc-500 text-xs">
                     {Number(tier.price) === 0 ? 'Free' : formatNaira(Number(tier.price))} · {Number(tier.capacity).toLocaleString()} cap
                   </span>
@@ -131,22 +131,22 @@ export function Step5Summary({
         </SummaryCard>
 
         <SummaryCard title="Description & Details" onEdit={() => onGoToStep(4)}>
-          <p className="text-sm text-zinc-700 leading-relaxed line-clamp-3">
-            {formData.description || <span className="text-zinc-400">No description added</span>}
+          <p className="text-sm text-zinc-300 leading-relaxed line-clamp-3">
+            {formData.description || <span className="text-zinc-500">No description added</span>}
           </p>
           {formData.performers.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-2">
               {formData.performers.map((p, i) => (
                 <span
                   key={i}
-                  className="text-[11px] font-semibold bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full"
+                  className="text-[11px] font-semibold bg-violet-950/40 text-violet-400 px-2 py-0.5 rounded-full"
                 >
                   {p}
                 </span>
               ))}
             </div>
           )}
-          <p className="text-xs text-zinc-500 mt-2">
+          <p className="text-xs text-zinc-400 mt-2">
             {formData.details.isPublic ? '🌐 Public event' : '🔒 Private event'}
           </p>
         </SummaryCard>
@@ -154,15 +154,15 @@ export function Step5Summary({
 
       {/* Mutation error */}
       {stepErrors && (
-        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-          <p className="text-sm text-red-600 font-medium">{stepErrors}</p>
+        <div className="bg-red-950/40 border border-red-900/50 rounded-xl px-4 py-3">
+          <p className="text-sm text-red-400 font-medium">{stepErrors}</p>
         </div>
       )}
     </div>
 
     {/* Sticky launch bar */}
     <div
-      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50"
+      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-(--color-surface) border-t border-(--color-border) p-4 z-50"
       style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
     >
       <div className="max-w-3xl mx-auto flex flex-col gap-2">
@@ -170,7 +170,7 @@ export function Step5Summary({
           type="button"
           onClick={() => onSubmit('published')}
           disabled={isPending}
-          className="w-full bg-zinc-900 text-white font-bold py-3 px-8 rounded-full active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+          className="w-full bg-violet-600 text-white font-bold py-3 px-8 rounded-full active:scale-95 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
         >
           {isPending ? 'Launching…' : '🚀 Publish Event'}
         </button>
@@ -178,7 +178,7 @@ export function Step5Summary({
           <button
             type="button"
             onClick={onPrev}
-            className="bg-white border border-zinc-200 text-zinc-700 font-bold py-2.5 px-6 rounded-full hover:bg-zinc-50 active:scale-95 transition-all text-sm"
+            className="bg-(--color-surface) border border-(--color-border) text-zinc-300 font-bold py-2.5 px-6 rounded-full hover:bg-zinc-800 active:scale-95 transition-all text-sm"
           >
             Back
           </button>
@@ -186,7 +186,7 @@ export function Step5Summary({
             type="button"
             onClick={() => onSubmit('draft')}
             disabled={isPending}
-            className="flex-1 text-sm font-semibold text-zinc-500 hover:text-zinc-700 transition-colors text-center disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 text-sm font-semibold text-zinc-400 hover:text-zinc-200 transition-colors text-center disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Save as Draft
           </button>

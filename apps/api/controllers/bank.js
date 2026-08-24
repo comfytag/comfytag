@@ -5,23 +5,89 @@ import User from '../models/User.js';
 import { createNotification, notifyAdmins } from './notification.js';
 import { createError } from '../utils/error.js';
 import { computeAvailableBalance } from './analytics.js';
+import { listBanks, resolveAccountNumber, createTransferRecipient, PaystackApiError } from '../utils/paystack.js';
+
+// In-process cache for Paystack's bank list — it changes rarely, so there's
+// no need to hit their API on every dropdown render. No Redis needed: per-instance
+// staleness (up to 24h) is harmless for a reference list like this.
+let bankListCache = { data: null, fetchedAt: 0 }
+const BANK_LIST_TTL_MS = 24 * 60 * 60 * 1000
+
+const getCachedBankList = async () => {
+    const isFresh = bankListCache.data && (Date.now() - bankListCache.fetchedAt) < BANK_LIST_TTL_MS
+    if (!isFresh) {
+        const { data } = await listBanks()
+        bankListCache = { data, fetchedAt: Date.now() }
+    }
+    return bankListCache.data
+}
+
+// GET /bank/list — Nigerian banks with their Paystack bank codes
+export const getBankList = async (req, res, next) => {
+    try {
+        res.status(200).json(await getCachedBankList())
+    } catch (err) {
+        next(err)
+    }
+}
 
 
 // CREATE Bank
 
 export const createBank = async (req, res, next) => {
     const userId = req.params.userId;
-    const acctName =   await User.findById(userId)
+    const { bankCode, acctNumber } = req.body
 
-    const newBank = new Bank({
-        ...req.body,
-        user_id: userId,
-        acctName: acctName.name,
-        isActive: true,
-     });
+    if (!bankCode || !acctNumber) {
+        return next(createError(400, 'bankCode and acctNumber are required.'))
+    }
+
     try {
+        // Resolve against Paystack first — acctName is never trusted from the
+        // client. This also catches invalid account numbers before anything
+        // is saved (previously acctName was silently set to the platform
+        // user's own display name, not the real bank account holder).
+        let resolved
+        try {
+            const { data } = await resolveAccountNumber(acctNumber, bankCode)
+            resolved = data
+        } catch (err) {
+            if (err instanceof PaystackApiError) {
+                return next(createError(400, err.message || 'Could not verify this bank account.'))
+            }
+            throw err
+        }
+
+        const bankList = await getCachedBankList()
+        const matchedBank = bankList?.find(b => b.code === bankCode)
+
+        const newBank = new Bank({
+            user_id: userId,
+            bankCode,
+            bankName: matchedBank?.name || req.body.bankName || '',
+            acctNumber,
+            acctName: resolved.account_name,
+            isActive: true,
+        })
+
         const savedBank = await newBank.save()
-      
+
+        // Create the transfer recipient in the same request. If this fails,
+        // still keep the resolved Bank doc — the resolution itself succeeded
+        // and is the expensive/valuable part; payouts are simply blocked
+        // against this account (recipientCode stays null) until retried.
+        try {
+            const { data: recipient } = await createTransferRecipient({
+                name: resolved.account_name,
+                account_number: acctNumber,
+                bank_code: bankCode,
+            })
+            savedBank.recipientCode = recipient.recipient_code
+            await savedBank.save()
+        } catch (err) {
+            console.error('[Bank] Transfer recipient creation failed:', err.message)
+        }
+
         res.status(200).json(savedBank)
     } catch (err) {
         next(err)
@@ -39,21 +105,20 @@ export const updateBank = async (req, res, next) => {
             return next(createError(403, 'You are not authorized!'))
         }
 
-        // Strict whitelist — only bank detail fields; never user_id, status, or flags
-        const updateData = {}
-        if ('bankName' in req.body) updateData.bankName = req.body.bankName
-        if ('acctName' in req.body) updateData.acctName = req.body.acctName
-        if ('acctNumber' in req.body) updateData.acctNumber = req.body.acctNumber
-        if (Object.keys(updateData).length === 0) {
-            return res.status(400).json({ success: false, message: 'No valid fields to update. Allowed: bankName, acctName, acctNumber.' })
+        // bankName/bankCode/acctName/acctNumber are Paystack-resolved and tied
+        // to a recipientCode created for that exact account — editing them in
+        // place would desync the record from what Paystack actually verified.
+        // Changing account details must go through delete + re-add so the new
+        // account gets its own resolution and recipient code.
+        const blockedFields = ['bankName', 'bankCode', 'acctName', 'acctNumber'].filter(f => f in req.body)
+        if (blockedFields.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Bank account details cannot be edited. Delete this account and add it again to change bank, account number, or account name.',
+            })
         }
 
-        const updatedBank = await Bank.findByIdAndUpdate(
-            req.params.id,
-            { $set: updateData },
-            { new: true }
-        )
-        res.status(200).json(updatedBank)
+        return res.status(400).json({ success: false, message: 'No editable fields were provided.' })
     } catch (err) {
         next(err)
     }
@@ -165,6 +230,7 @@ export const createWithdraw = async (req, res, next) => {
         }
 
         const newWithdraw = new Withdraw({
+            bankId: bank._id,
             bankName,
             acctName,
             acctNumber,

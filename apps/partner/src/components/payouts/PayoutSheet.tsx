@@ -101,7 +101,7 @@ export function PayoutSheet({
             Withdrawal Amount
           </label>
           <div className="relative">
-            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-2xl font-black text-zinc-300 pointer-events-none select-none">
+            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-2xl font-black text-zinc-600 pointer-events-none select-none">
               ₦
             </span>
             <input
@@ -113,7 +113,7 @@ export function PayoutSheet({
               onChange={(e) => setAmount(e.target.value)}
               min={1}
               max={maxAmount}
-              className="w-full bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-2xl pl-12 pr-5 py-4 text-3xl font-black text-zinc-900 placeholder:text-zinc-200 focus:outline-none transition-colors"
+              className="w-full bg-(--color-surface) border-2 border-(--color-border) focus:border-violet-500 rounded-2xl pl-12 pr-5 py-4 text-3xl font-black text-(--color-text) placeholder:text-zinc-700 focus:outline-none transition-colors"
             />
           </div>
           {!isNaN(amountNum) && amountNum > maxAmount && (
@@ -132,8 +132,8 @@ export function PayoutSheet({
             Destination Account
           </label>
           {banks.length === 0 ? (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-              <p className="text-sm text-amber-700 font-medium">
+            <div className="bg-amber-950/40 border border-amber-900/50 rounded-xl px-4 py-3">
+              <p className="text-sm text-amber-400 font-medium">
                 No active bank accounts. Add one in Settings.
               </p>
             </div>
@@ -143,7 +143,7 @@ export function PayoutSheet({
                 id="payout-bank"
                 value={selectedBankId}
                 onChange={(e) => setSelectedBankId(e.target.value)}
-                className="w-full appearance-none bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3 pr-10 text-sm font-medium text-zinc-800 focus:outline-none transition-colors cursor-pointer"
+                className="w-full appearance-none bg-(--color-surface) border-2 border-(--color-border) focus:border-violet-500 rounded-xl px-4 py-3 pr-10 text-sm font-medium text-(--color-text) focus:outline-none transition-colors cursor-pointer"
               >
                 <option value="">Choose bank account…</option>
                 {banks.map((bank) => (
@@ -186,14 +186,14 @@ export function PayoutSheet({
             placeholder="e.g., Night Market Vol. 3"
             value={eventName}
             onChange={(e) => setEventName(e.target.value)}
-            className="w-full bg-white border-2 border-zinc-200 focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none transition-colors"
+            className="w-full bg-(--color-surface) border-2 border-(--color-border) focus:border-violet-500 rounded-xl px-4 py-3 text-sm text-(--color-text) placeholder:text-zinc-500 focus:outline-none transition-colors"
           />
         </div>
 
         {/* Mutation error */}
         {error instanceof Error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-            <p className="text-sm text-red-600 font-medium">{error.message}</p>
+          <div className="bg-red-950/40 border border-red-900/50 rounded-xl px-4 py-3">
+            <p className="text-sm text-red-400 font-medium">{error.message}</p>
           </div>
         )}
 

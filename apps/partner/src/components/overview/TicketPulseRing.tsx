@@ -23,7 +23,7 @@ export function TicketPulseRing({ count, label = 'Tickets Today' }: TicketPulseR
             cy="100"
             r="92"
             fill="none"
-            stroke="rgba(24,24,27,0.04)"
+            stroke="rgba(255,255,255,0.08)"
             strokeWidth="1"
             strokeDasharray="6 10"
             className={hasActivity ? 'animate-spin' : 'animate-pulse'}
@@ -38,7 +38,7 @@ export function TicketPulseRing({ count, label = 'Tickets Today' }: TicketPulseR
             cy="100"
             r="74"
             fill="none"
-            stroke="rgba(24,24,27,0.04)"
+            stroke="rgba(255,255,255,0.08)"
             strokeWidth="1.5"
             strokeDasharray="5 7"
             className={hasActivity ? 'animate-spin' : 'animate-pulse'}
@@ -83,10 +83,10 @@ export function TicketPulseRing({ count, label = 'Tickets Today' }: TicketPulseR
 
         {/* Center count */}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-          <span className="text-4xl font-black text-zinc-900 leading-none tabular-nums tracking-tight">
+          <span className="text-4xl font-black text-(--color-text) leading-none tabular-nums tracking-tight">
             {count.toLocaleString('en-NG')}
           </span>
-          <span className="text-[10px] font-semibold text-zinc-500 uppercase tracking-widest">
+          <span className="text-[10px] font-semibold text-(--color-text-muted) uppercase tracking-widest">
             {label}
           </span>
         </div>
@@ -98,10 +98,10 @@ export function TicketPulseRing({ count, label = 'Tickets Today' }: TicketPulseR
           aria-hidden="true"
           className={[
             'w-1.5 h-1.5 rounded-full',
-            hasActivity ? 'bg-violet-500 animate-pulse' : 'bg-zinc-300',
+            hasActivity ? 'bg-violet-500 animate-pulse' : 'bg-zinc-700',
           ].join(' ')}
         />
-        <span className="text-xs text-zinc-500 font-medium">
+        <span className="text-xs text-(--color-text-muted) font-medium">
           {hasActivity ? 'Active sales velocity' : 'Idle heartbeat'}
         </span>
       </div>

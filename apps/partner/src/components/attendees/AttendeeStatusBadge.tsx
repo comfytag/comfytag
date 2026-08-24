@@ -5,11 +5,11 @@ interface AttendeeStatusBadgeProps {
 }
 
 const STATUS_CONFIG: Record<AttendeeStatusBadgeProps['status'], { classes: string; label: string }> = {
-  active:      { classes: 'bg-emerald-100 text-emerald-700', label: 'Active' },
-  used:        { classes: 'bg-violet-100 text-violet-700',   label: 'Used' },
-  transferred: { classes: 'bg-zinc-100 text-zinc-500',       label: 'Transferred' },
-  refunded:    { classes: 'bg-red-100 text-red-600',         label: 'Refunded' },
-  ended:       { classes: 'bg-zinc-100 text-zinc-400',       label: 'Ended' },
+  active:      { classes: 'bg-emerald-950/40 text-emerald-400', label: 'Active' },
+  used:        { classes: 'bg-violet-950/40 text-violet-400',   label: 'Used' },
+  transferred: { classes: 'bg-zinc-800 text-zinc-400',          label: 'Transferred' },
+  refunded:    { classes: 'bg-red-950/40 text-red-400',         label: 'Refunded' },
+  ended:       { classes: 'bg-zinc-800 text-zinc-500',          label: 'Ended' },
 }
 
 export function AttendeeStatusBadge({ status }: AttendeeStatusBadgeProps) {

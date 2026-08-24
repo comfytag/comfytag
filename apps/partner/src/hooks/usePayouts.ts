@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { api } from '@/lib/api'
 import { payoutKeys } from './queryKeys'
-import type { BankAccount, WithdrawRequest } from '@comfytag/types'
+import type { BankAccount, PaystackBank, WithdrawRequest } from '@comfytag/types'
 
 interface WalletData {
   balance: number
@@ -50,6 +50,16 @@ export function useBankAccount(id: string) {
       api.get<BankAccount[]>(`/bank/${id}`).then((r) => r.data ?? []),
     staleTime: 300_000,
     enabled: !!id,
+  })
+}
+
+// Reference list of Nigerian banks + Paystack bank codes, for the bank
+// dropdown on the add-account form. Rarely changes — cached client-side too.
+export function useBankList() {
+  return useQuery({
+    queryKey: payoutKeys.bankList,
+    queryFn: () => api.get<PaystackBank[]>('/bank/list').then((r) => r.data ?? []),
+    staleTime: 60 * 60_000,
   })
 }
 

@@ -57,7 +57,6 @@ export function EventTransparentNav({ onBack, onShare, onGetTickets, allSoldOut 
           alignItems: 'center',
           justifyContent: 'center',
           color: '#ffffff',
-          backdropFilter: hovering ? 'blur(4px)' : 'none',
           transition: 'background 200ms ease',
         }}
       >
@@ -91,7 +90,6 @@ export function EventTransparentNav({ onBack, onShare, onGetTickets, allSoldOut 
           alignItems: 'center',
           justifyContent: 'center',
           color: '#ffffff',
-          backdropFilter: hovering ? 'blur(4px)' : 'none',
           transition: 'background 200ms ease',
         }}
       >

@@ -56,6 +56,18 @@ const TABS: Tab[] = [
     ),
   },
   {
+    label: 'Alerts',
+    href: '/notifications',
+    ariaLabel: 'Alerts',
+    protected: true,
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      </svg>
+    ),
+  },
+  {
     label: 'Profile',
     href: '/profile',
     ariaLabel: 'Profile',
@@ -91,11 +103,9 @@ export function BottomTabBar({ currentPath }: BottomTabBarProps) {
           left: 0;
           right: 0;
           z-index: 100;
-          background: rgba(255, 255, 255, 0.8);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-top: 1px solid rgb(228, 228, 231);
-          padding: 8px 24px calc(8px + env(safe-area-inset-bottom));
+          background: var(--color-surface);
+          border-top: 1px solid var(--color-border);
+          padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -111,7 +121,7 @@ export function BottomTabBar({ currentPath }: BottomTabBarProps) {
           gap: 3px;
           padding: 8px 0;
           text-decoration: none;
-          color: #a1a1aa;
+          color: var(--color-text-secondary);
           font-size: 11px;
           font-weight: 500;
           transition: color 200ms ease;
@@ -122,10 +132,10 @@ export function BottomTabBar({ currentPath }: BottomTabBarProps) {
           position: relative;
         }
         .__ct_bottom_tab_link.active {
-          color: #7C3AED;
+          color: var(--color-brand);
         }
         .__ct_bottom_tab_link:focus-visible {
-          outline: 2px solid #7C3AED;
+          outline: 2px solid var(--color-brand);
           outline-offset: -2px;
         }
         @media (min-width: 768px) {
@@ -170,7 +180,7 @@ export function BottomTabBar({ currentPath }: BottomTabBarProps) {
                     width: 4,
                     height: 4,
                     borderRadius: '50%',
-                    background: '#7C3AED',
+                    background: 'var(--color-brand)',
                     marginTop: 1,
                   }}
                 />

@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useBecomePartner } from '@/hooks/useProfile'
 
 interface PaymentSuccessViewProps {
   eventId: string
@@ -28,6 +28,7 @@ export function PaymentSuccessView({
   const router = useRouter()
   const { data: session } = useSession()
   const isPartner = session?.user?.isPartner ?? true
+  const { mutate: becomePartner, isPending: isBecomingPartner } = useBecomePartner()
 
   const shareUrl =
     typeof window !== 'undefined'
@@ -45,7 +46,7 @@ export function PaymentSuccessView({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50/50 flex flex-col items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-16">
       <div className="w-full max-w-md flex flex-col items-center">
 
         {/* Apple-style animated success header */}
@@ -64,19 +65,19 @@ export function PaymentSuccessView({
             </svg>
           </div>
 
-          <h1 className="text-3xl font-black mt-6 text-zinc-900 text-center leading-tight">
+          <h1 className="text-3xl font-black mt-6 text-foreground text-center leading-tight">
             {displayName}
           </h1>
-          <p className="text-zinc-500 mt-2 text-base text-center">
+          <p className="text-muted-foreground mt-2 text-base text-center">
             Your ticket is confirmed! 🎟️
           </p>
         </div>
 
         {/* Confirmation info */}
         {contactInfo && (
-          <p className="mt-4 text-sm text-zinc-500 text-center leading-relaxed">
+          <p className="mt-4 text-sm text-muted-foreground text-center leading-relaxed">
             Your ticket has been sent to{' '}
-            <strong className="text-zinc-800">{contactInfo}</strong> via email.
+            <strong className="text-foreground">{contactInfo}</strong> via email.
           </p>
         )}
 
@@ -115,7 +116,7 @@ export function PaymentSuccessView({
             </p>
           </div>
         </div>
-        <p className="text-xs text-zinc-400 mt-2 text-center">Tap card to share</p>
+        <p className="text-xs text-muted-foreground mt-2 text-center">Tap card to share</p>
 
         {/* WhatsApp share button */}
         <a
@@ -137,20 +138,22 @@ export function PaymentSuccessView({
         <button
           type="button"
           onClick={() => router.push('/tickets')}
-          className="mt-3 w-full border-2 border-zinc-200 hover:border-violet-600 hover:text-violet-700 text-zinc-700 rounded-xl py-4 font-bold transition-all bg-transparent cursor-pointer"
+          className="mt-3 w-full border-2 border-border hover:border-violet-600 hover:text-violet-700 text-foreground rounded-xl py-4 font-bold transition-all bg-transparent cursor-pointer"
         >
           View My Tickets
         </button>
 
         {!isPartner && (
-          <p className="mt-8 text-xs text-zinc-400 text-center">
+          <p className="mt-8 text-xs text-muted-foreground text-center">
             Thinking about hosting your own event?{' '}
-            <Link
-              href="/profile"
-              className="text-violet-400 hover:text-violet-600 font-medium transition-colors"
+            <button
+              type="button"
+              onClick={() => becomePartner()}
+              disabled={isBecomingPartner}
+              className="font-bold text-violet-600 hover:text-violet-700 underline bg-transparent border-none p-0 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Become a Partner →
-            </Link>
+              {isBecomingPartner ? 'Setting up your dashboard…' : 'Become a Partner'}
+            </button>
           </p>
         )}
       </div>

@@ -27,8 +27,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.45)',
-          backdropFilter: 'blur(3px)',
+          backgroundColor: 'rgba(0,0,0,0.55)',
           zIndex: 40,
           opacity: open ? 1 : 0,
           pointerEvents: open ? 'auto' : 'none',
@@ -46,8 +45,8 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
           height: '100vh',
           width: '480px',
           maxWidth: '92vw',
-          backgroundColor: '#ffffff',
-          borderLeft: '1px solid #e4e4e7',
+          backgroundColor: 'var(--color-surface)',
+          borderLeft: '1px solid var(--color-border)',
           zIndex: 50,
           transform: open ? 'translateX(0)' : 'translateX(100%)',
           transition: 'transform var(--duration-entrance) var(--ease-entrance)',
@@ -61,11 +60,11 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '20px 24px',
-            borderBottom: '1px solid #e4e4e7',
+            borderBottom: '1px solid var(--color-border)',
             flexShrink: 0,
           }}
         >
-          <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#18181b', margin: 0 }}>
+          <h2 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>
             {title}
           </h2>
           <button
@@ -79,9 +78,9 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
               height: '32px',
               borderRadius: '8px',
               border: 'none',
-              background: '#f4f4f5',
+              background: '#27272a',
               cursor: 'pointer',
-              color: '#71717a',
+              color: '#a1a1aa',
               flexShrink: 0,
             }}
           >

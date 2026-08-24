@@ -37,7 +37,7 @@ export function GuestDetailsForm({ onSubmit, loading = false }: GuestDetailsForm
 
   return (
     <form id="guest-checkout-form" onSubmit={handleSubmit} className="space-y-4 mb-6">
-      <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400 mb-2">
+      <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
         Your details
       </p>
 
@@ -45,7 +45,7 @@ export function GuestDetailsForm({ onSubmit, loading = false }: GuestDetailsForm
       <div>
         <label
           htmlFor="guest-name"
-          className="block text-sm font-semibold text-zinc-700 mb-1.5"
+          className="block text-sm font-semibold text-foreground mb-1.5"
         >
           Full Name
         </label>
@@ -57,10 +57,10 @@ export function GuestDetailsForm({ onSubmit, loading = false }: GuestDetailsForm
           placeholder="e.g. Tolu Adeyemi"
           disabled={loading}
           required
-          className="w-full bg-zinc-50 border border-zinc-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-xl px-4 py-3 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition-all disabled:opacity-50"
+          className="w-full bg-muted border border-border focus:border-primary focus:ring-4 focus:ring-primary/10 rounded-xl px-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none transition-all disabled:opacity-50"
         />
         {errors.name && (
-          <p className="text-xs text-red-500 mt-1.5">{errors.name}</p>
+          <p className="text-xs text-destructive mt-1.5">{errors.name}</p>
         )}
       </div>
 
@@ -68,7 +68,7 @@ export function GuestDetailsForm({ onSubmit, loading = false }: GuestDetailsForm
       <div>
         <label
           htmlFor="guest-email"
-          className="block text-sm font-semibold text-zinc-700 mb-1.5"
+          className="block text-sm font-semibold text-foreground mb-1.5"
         >
           Email Address
         </label>
@@ -80,10 +80,10 @@ export function GuestDetailsForm({ onSubmit, loading = false }: GuestDetailsForm
           placeholder="e.g. tolu@email.com"
           disabled={loading}
           required
-          className="w-full bg-zinc-50 border border-zinc-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-xl px-4 py-3 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition-all disabled:opacity-50"
+          className="w-full bg-muted border border-border focus:border-primary focus:ring-4 focus:ring-primary/10 rounded-xl px-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none transition-all disabled:opacity-50"
         />
         {errors.email && (
-          <p className="text-xs text-red-500 mt-1.5">{errors.email}</p>
+          <p className="text-xs text-destructive mt-1.5">{errors.email}</p>
         )}
       </div>
 
@@ -91,7 +91,7 @@ export function GuestDetailsForm({ onSubmit, loading = false }: GuestDetailsForm
       <div>
         <label
           htmlFor="guest-phone"
-          className="block text-sm font-semibold text-zinc-700 mb-1.5"
+          className="block text-sm font-semibold text-foreground mb-1.5"
         >
           Phone Number
         </label>
@@ -103,13 +103,13 @@ export function GuestDetailsForm({ onSubmit, loading = false }: GuestDetailsForm
           placeholder="e.g. 08012345678"
           disabled={loading}
           required
-          className="w-full bg-zinc-50 border border-zinc-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10 rounded-xl px-4 py-3 text-sm text-zinc-900 placeholder-zinc-400 outline-none transition-all disabled:opacity-50"
+          className="w-full bg-muted border border-border focus:border-primary focus:ring-4 focus:ring-primary/10 rounded-xl px-4 py-3 text-sm text-foreground placeholder-muted-foreground outline-none transition-all disabled:opacity-50"
         />
-        <p className="text-xs text-zinc-400 mt-1.5">
+        <p className="text-xs text-muted-foreground mt-1.5">
           We&apos;ll send your ticket confirmation to this number via SMS
         </p>
         {errors.phone && (
-          <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
+          <p className="text-xs text-destructive mt-1">{errors.phone}</p>
         )}
       </div>
     </form>

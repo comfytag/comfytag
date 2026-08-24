@@ -12,11 +12,11 @@ interface Step1BasicInfoProps {
   onPrev: () => void
 }
 
-const label = 'block text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider mb-2'
+const label = 'block text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider mb-2'
 const input =
-  'w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none'
+  'w-full bg-zinc-800 border border-(--color-border) rounded-xl px-4 py-3 text-(--color-text) text-sm focus:bg-(--color-surface) focus:border-violet-500 transition-all placeholder:text-zinc-500 focus:outline-none focus-visible:outline-none'
 const select =
-  'w-full appearance-none bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 pr-10 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all focus:outline-none focus-visible:outline-none cursor-pointer'
+  'w-full appearance-none bg-zinc-800 border border-(--color-border) rounded-xl px-4 py-3 pr-10 text-(--color-text) text-sm focus:bg-(--color-surface) focus:border-violet-500 transition-all focus:outline-none focus-visible:outline-none cursor-pointer'
 
 const VIBES = [
   { key: 'Hype',         label: '🔥 Hype' },
@@ -106,11 +106,11 @@ export function Step1BasicInfo({
 
   return (
     <>
-    <div className="max-w-3xl mx-auto bg-white border border-zinc-200/80 rounded-xl p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
+    <div className="max-w-3xl mx-auto bg-(--color-surface) border border-(--color-border) rounded-xl p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
       <div>
-        <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 1 of 5</span>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Basic Info</h2>
-        <p className="text-sm text-zinc-500 mb-8">Name, category, date, and location</p>
+        <span className="text-[10px] font-mono uppercase tracking-widest text-violet-400 font-bold mb-4 block">Step 1 of 5</span>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-(--color-text) mb-2">Basic Info</h2>
+        <p className="text-sm text-(--color-text-muted) mb-8">Name, category, date, and location</p>
       </div>
 
       {/* Event name */}
@@ -133,7 +133,7 @@ export function Step1BasicInfo({
       <div>
         <div className="flex items-center justify-between mb-2">
           <label htmlFor="event-headline" className={label} style={{ marginBottom: 0 }}>
-            Headline <span className="text-zinc-400 font-normal normal-case">(optional)</span>
+            Headline <span className="text-zinc-500 font-normal normal-case">(optional)</span>
           </label>
           <div className="relative" ref={headlinePopoverRef}>
             <button
@@ -142,7 +142,7 @@ export function Step1BasicInfo({
               disabled={isGenerating || aiUsesLeft === 0}
               aria-expanded={isVibeOpen}
               aria-haspopup="dialog"
-              className="text-xs font-bold text-violet-600 bg-violet-50 px-2.5 py-1 rounded-full hover:bg-violet-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+              className="text-xs font-bold text-violet-400 bg-violet-950/40 px-2.5 py-1 rounded-full hover:bg-violet-900/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
             >
               {isGenerating ? '…' : '✨ Enhance'}
             </button>
@@ -150,19 +150,19 @@ export function Step1BasicInfo({
               <div
                 role="dialog"
                 aria-label="Choose a vibe for AI headline"
-                className="absolute top-full right-0 mt-2 w-64 bg-white border border-zinc-200 rounded-lg p-4 z-50"
+                className="absolute top-full right-0 mt-2 w-64 bg-(--color-surface) border border-(--color-border) rounded-lg p-4 z-50"
               >
                 <div className="flex items-start justify-between mb-1">
-                  <p className="text-xs font-black text-zinc-900">Choose a vibe</p>
+                  <p className="text-xs font-black text-(--color-text)">Choose a vibe</p>
                   <span
                     className={`text-[10px] font-bold tabular-nums whitespace-nowrap ${
-                      aiUsesLeft > 0 ? 'text-violet-600' : 'text-zinc-400'
+                      aiUsesLeft > 0 ? 'text-violet-400' : 'text-zinc-500'
                     }`}
                   >
                     {aiUsesLeft > 0 ? `✨ ${aiUsesLeft} uses remaining` : 'Limit reached'}
                   </span>
                 </div>
-                <p className="text-[10px] text-zinc-400 mb-3">
+                <p className="text-[10px] text-zinc-500 mb-3">
                   AI will write a punchy 1-line hook for your event.
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -172,7 +172,7 @@ export function Step1BasicInfo({
                       type="button"
                       onClick={() => handleVibeSelect(vibe.key)}
                       disabled={aiUsesLeft === 0}
-                      className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-50 hover:bg-violet-50 border border-zinc-200 hover:border-violet-300 rounded-xl text-xs font-semibold text-zinc-700 hover:text-violet-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                      className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-800 hover:bg-violet-950/40 border border-(--color-border) hover:border-violet-700 rounded-xl text-xs font-semibold text-zinc-300 hover:text-violet-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                     >
                       {vibe.label}
                     </button>
@@ -181,7 +181,7 @@ export function Step1BasicInfo({
                 {/* Popover arrow */}
                 <div className="absolute top-0 right-6 -translate-y-full rotate-180">
                   <div className="w-3 h-1.5 overflow-hidden">
-                    <div className="w-3 h-3 bg-white border border-zinc-200 rotate-45 -translate-y-1.5" />
+                    <div className="w-3 h-3 bg-(--color-surface) border border-(--color-border) rotate-45 -translate-y-1.5" />
                   </div>
                 </div>
               </div>
@@ -198,7 +198,7 @@ export function Step1BasicInfo({
           disabled={isGenerating}
           className={[input, isGenerating ? 'opacity-50 animate-pulse cursor-not-allowed' : ''].filter(Boolean).join(' ')}
         />
-        <p className="text-[11px] text-zinc-400 mt-1.5 text-right tabular-nums">
+        <p className="text-[11px] text-zinc-500 mt-1.5 text-right tabular-nums">
           {formData.headline.length}/150
         </p>
       </div>
@@ -250,7 +250,7 @@ export function Step1BasicInfo({
       <div>
         <label htmlFor="event-secondary-category" className={label}>
           Second Vibe{' '}
-          <span className="font-normal normal-case text-zinc-400 tracking-normal">(optional)</span>
+          <span className="font-normal normal-case text-zinc-500 tracking-normal">(optional)</span>
         </label>
         <div className="relative">
           <select
@@ -270,7 +270,7 @@ export function Step1BasicInfo({
           <SelectChevron />
         </div>
         {!formData.category && (
-          <p className="text-[11px] text-zinc-400 mt-1.5">Select a primary category first</p>
+          <p className="text-[11px] text-zinc-500 mt-1.5">Select a primary category first</p>
         )}
       </div>
 
@@ -357,8 +357,8 @@ export function Step1BasicInfo({
 
       {/* Error */}
       {stepErrors && (
-        <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-          <p className="text-sm text-red-600 font-medium">{stepErrors}</p>
+        <div className="bg-red-950/40 border border-red-900/50 rounded-xl px-4 py-3">
+          <p className="text-sm text-red-400 font-medium">{stepErrors}</p>
         </div>
       )}
 
@@ -366,7 +366,7 @@ export function Step1BasicInfo({
 
     {/* Sticky nav bar */}
     <div
-      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50"
+      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-(--color-surface) border-t border-(--color-border) p-4 z-50"
       style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
     >
       <div className="max-w-3xl mx-auto flex justify-between items-center">
@@ -374,14 +374,14 @@ export function Step1BasicInfo({
           type="button"
           disabled
           aria-disabled="true"
-          className="bg-white border border-zinc-200 text-zinc-300 font-bold py-3 px-8 rounded-full cursor-not-allowed text-sm"
+          className="bg-(--color-surface) border border-(--color-border) text-zinc-600 font-bold py-3 px-8 rounded-full cursor-not-allowed text-sm"
         >
           Back
         </button>
         <button
           type="button"
           onClick={onNext}
-          className="bg-zinc-900 text-white font-bold py-3 px-8 rounded-full active:scale-95 transition-all text-sm"
+          className="bg-violet-600 text-white font-bold py-3 px-8 rounded-full active:scale-95 transition-all text-sm"
         >
           Next: Cover Image →
         </button>
@@ -390,7 +390,7 @@ export function Step1BasicInfo({
 
     {/* Toast */}
     {toastMsg && (
-      <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-100 bg-zinc-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 duration-200">
+      <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-100 bg-zinc-800 text-white text-xs font-semibold px-4 py-2.5 rounded-full border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 duration-200">
         {toastMsg}
       </div>
     )}

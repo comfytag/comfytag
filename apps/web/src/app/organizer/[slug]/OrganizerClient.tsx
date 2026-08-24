@@ -22,6 +22,7 @@ interface OrganizerProfile {
   bio?: string
   image?: string
   avatar?: string
+  bgImg?: string
   isPartner?: boolean
   isVerify?: {
     email?: boolean
@@ -58,21 +59,31 @@ function VerifiedBadge() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      width="20"
-      height="20"
-      aria-label="Verified organizer"
-      role="img"
+      width="16"
+      height="16"
+      aria-hidden="true"
       className="inline-block shrink-0"
     >
       <path
         d="M12 1l2.83 5.74L21 8l-4.5 4.39 1.06 6.19L12 15.77l-5.56 2.81 1.06-6.19L3 8l6.17-.26L12 1z"
-        fill="#7C3AED"
-      />
-      <path
-        d="M9.5 13.5L7.5 11.5 6 13l3.5 3.5 7-7-1.5-1.5z"
         fill="white"
       />
+      <path d="M9.5 13.5L7.5 11.5 6 13l3.5 3.5 7-7-1.5-1.5z" fill="var(--color-brand)" />
     </svg>
+  )
+}
+
+function StatCard({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
+  return (
+    <div className="p-6 bg-(--color-surface) rounded-2xl border border-(--color-border) flex items-center gap-5">
+      <div className="w-14 h-14 rounded-2xl bg-(--color-brand-alpha-8) text-brand flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <div>
+        <div className="text-2xl font-bold text-(--color-text) tabular-nums">{value}</div>
+        <div className="text-sm text-(--color-text-muted)">{label}</div>
+      </div>
+    </div>
   )
 }
 
@@ -209,13 +220,9 @@ export function OrganizerClient({
 
   const tabEvents = activeTab === 'upcoming' ? upcomingEvents : pastEvents
 
-  // Social proof metric — sum of all public ticket tier capacities
-  const totalAttendeePool = events.reduce(
-    (sum, event) => sum + event.ticketType.reduce((s, t) => s + t.capacity, 0),
-    0
-  )
+  // Real attendance — tickets actually sold, not raw tier capacity
+  const totalAttendees = events.reduce((sum, event) => sum + (event.sold ?? 0), 0)
 
-  const liveEventsCount = upcomingEvents.length
   const verified = isVerified(organizer)
   const avatarSrc = organizer.avatar ?? organizer.image
 
@@ -255,141 +262,164 @@ export function OrganizerClient({
 
       <Navbar />
 
-      {/* ── Block 1: Dark Premium Hero Canopy ──────────────────────────────── */}
-      <div className="w-full bg-linear-to-b from-zinc-950 via-zinc-900 to-zinc-950 text-white pt-28 pb-12 border-b border-zinc-800">
-        <div className="max-w-350 mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center md:items-end justify-between gap-6">
+      {/* ── Hero: cover banner + avatar + identity ─────────────────────── */}
+      <div className="relative">
+        <div className="relative h-56 sm:h-70 w-full overflow-hidden bg-(--color-surface-2)">
+          {organizer.bgImg ? (
+            <Image
+              src={organizer.bgImg}
+              alt=""
+              fill
+              priority
+              className="object-cover"
+              sizes="100vw"
+            />
+          ) : (
+            <div className="w-full h-full bg-linear-to-br from-(--color-brand) to-(--color-brand-dark)" />
+          )}
+        </div>
 
-          {/* Avatar + Identity */}
-          <div className="flex flex-col md:flex-row items-center md:items-end gap-5">
-            {/* Avatar frame */}
-            <div className="relative w-28 h-28 shrink-0 rounded-full overflow-hidden border-2 border-zinc-700 ring-4 ring-violet-500/20">
-              {avatarSrc ? (
-                <Image
-                  src={avatarSrc}
-                  alt={capitalizeWords(organizerName)}
-                  fill
-                  className="object-cover"
-                  sizes="112px"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-violet-600 text-3xl font-bold text-white select-none">
-                  {initials(organizerName)}
+        <button
+          type="button"
+          onClick={() => router.back()}
+          aria-label="Go back"
+          className="absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+
+        <div className="max-w-350 mx-auto px-4 md:px-8 relative -mt-14 sm:-mt-18">
+          <div className="flex flex-col md:flex-row items-start md:items-end gap-6 pb-8 border-b border-(--color-border)">
+
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-(--color-bg) overflow-hidden bg-(--color-surface)">
+                {avatarSrc ? (
+                  <Image
+                    src={avatarSrc}
+                    alt={capitalizeWords(organizerName)}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 112px, 144px"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-brand text-3xl font-bold text-white select-none">
+                    {initials(organizerName)}
+                  </div>
+                )}
+              </div>
+              {verified && (
+                <div className="absolute bottom-1 right-1 bg-brand p-1.5 rounded-full border-2 border-(--color-bg) flex items-center justify-center">
+                  <VerifiedBadge />
                 </div>
               )}
             </div>
 
-            {/* Name + badge */}
-            <div className="pb-1 text-center md:text-left">
-              <div className="flex items-center justify-center md:justify-start gap-2">
-                <h1 className="text-2xl font-extrabold tracking-tight md:text-3xl">
+            {/* Name + bio */}
+            <div className="flex-1 min-w-0 pb-1">
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-(--color-text)">
                   {capitalizeWords(organizerName)}
                 </h1>
-                {verified && <VerifiedBadge />}
+                {verified && (
+                  <span className="px-3 py-1 bg-(--color-brand-alpha-8) text-brand rounded-full text-xs font-semibold">
+                    Verified Organizer
+                  </span>
+                )}
               </div>
-              <p className="mt-1 text-sm text-zinc-400">Organizer on ComfyTag</p>
+              <p className="text-(--color-text-muted) text-base max-w-2xl leading-relaxed">
+                {organizer.bio ??
+                  'Curating premium live entertainment experiences on the ComfyTag network.'}
+              </p>
             </div>
-          </div>
 
-          {/* Block 2: Social Proof Statistics Row */}
-          <div className="flex shrink-0 items-center gap-8">
-            <div className="text-center">
-              <div className="text-2xl font-bold tabular-nums">
-                {followerCount.toLocaleString()}
-              </div>
-              <div className="mt-1 text-[11px] uppercase tracking-widest text-zinc-400">
-                Followers
-              </div>
-            </div>
-            <div className="h-10 w-px shrink-0 bg-zinc-700" aria-hidden="true" />
-            <div className="text-center">
-              <div className="text-2xl font-bold tabular-nums">{liveEventsCount}</div>
-              <div className="mt-1 text-[11px] uppercase tracking-widest text-zinc-400">
-                Live Experiences
-              </div>
-            </div>
-            <div className="h-10 w-px shrink-0 bg-zinc-700" aria-hidden="true" />
-            <div className="text-center">
-              <div className="text-2xl font-bold tabular-nums">
-                {totalAttendeePool.toLocaleString()}+
-              </div>
-              <div className="mt-1 text-[11px] uppercase tracking-widest text-zinc-400">
-                Community Pool
-              </div>
+            {/* Actions: Share + Follow */}
+            <div className="flex items-center gap-3 pb-1 shrink-0">
+              <button
+                onClick={() => { void handleShare() }}
+                aria-label="Share this organizer profile"
+                className="w-11 h-11 flex items-center justify-center rounded-xl border border-(--color-border) text-(--color-text-muted) hover:bg-(--color-surface-2) transition-colors"
+              >
+                <Share2 className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <button
+                onClick={() => {
+                  if (!isFollowing) {
+                    handleFollow()
+                  } else {
+                    setUnfollowSheetOpen(true)
+                  }
+                }}
+                onMouseEnter={() => setFollowHovered(true)}
+                onMouseLeave={() => setFollowHovered(false)}
+                aria-pressed={isFollowing}
+                aria-label={
+                  isFollowing
+                    ? followHovered
+                      ? 'Unfollow this organizer'
+                      : 'Following this organizer'
+                    : 'Follow this organizer'
+                }
+                className={[
+                  'px-6 py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center gap-2 text-sm',
+                  isFollowing
+                    ? followHovered
+                      ? 'border border-error text-error bg-error/10'
+                      : 'border border-(--color-border) bg-(--color-surface) text-(--color-text) hover:bg-(--color-surface-2)'
+                    : 'bg-brand text-white hover:bg-brand-dark',
+                ].join(' ')}
+              >
+                {isFollowing ? (followHovered ? 'Unfollow' : 'Following') : 'Follow'}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Block 3: Wide 2-Column Desktop Grid Split ──────────────────────── */}
-      <div className="max-w-350 mx-auto grid grid-cols-1 items-start gap-8 px-4 pb-20 md:px-8 mt-12 lg:grid-cols-4">
-
-        {/* ── Left Aside Column (25%) ─────────────────────────────────────── */}
-        <aside className="bg-white border border-zinc-200 rounded-2xl p-6 sticky top-28 space-y-6 lg:col-span-1">
-          {/* Bio block */}
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-zinc-400">
-              About
-            </p>
-            <p className="text-sm leading-relaxed text-zinc-600">
-              {organizer.bio ??
-                'Curating premium live entertainment experiences on the ComfyTag network.'}
-            </p>
-          </div>
-
-          {/* Follow Creator — solid black CTA */}
-          <button
-            onClick={() => {
-              if (!isFollowing) {
-                handleFollow()
-              } else {
-                setUnfollowSheetOpen(true)
-              }
-            }}
-            onMouseEnter={() => setFollowHovered(true)}
-            onMouseLeave={() => setFollowHovered(false)}
-            aria-pressed={isFollowing}
-            aria-label={
-              isFollowing
-                ? followHovered
-                  ? 'Unfollow this organizer'
-                  : 'Following this organizer'
-                : 'Follow this organizer'
+      {/* ── Stats row ────────────────────────────────────────────────────── */}
+      <div className="max-w-350 mx-auto px-4 md:px-8 py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <StatCard
+            value={events.length.toLocaleString()}
+            label="Events Hosted"
+            icon={
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+                <path d="M9 16l2 2 4-4" />
+              </svg>
             }
-            className={[
-              'w-full rounded-2xl py-3 text-sm font-bold transition-all duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2',
-              isFollowing
-                ? followHovered
-                  ? 'border border-red-400 bg-red-50/70 text-red-500'
-                  : 'border border-zinc-200 bg-transparent text-zinc-500 hover:bg-zinc-50'
-                : 'border border-zinc-900 bg-zinc-900 text-white hover:bg-zinc-800',
-            ].join(' ')}
-          >
-            {isFollowing
-              ? followHovered
-                ? 'Unfollow'
-                : 'Following'
-              : 'Follow Creator'}
-          </button>
+          />
+          <StatCard
+            value={`${totalAttendees.toLocaleString()}+`}
+            label="Total Attendees"
+            icon={
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            }
+          />
+          <StatCard
+            value={followerCount.toLocaleString()}
+            label="Followers"
+            icon={
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            }
+          />
+        </div>
+      </div>
 
-          {/* Share link pill */}
-          <button
-            onClick={() => { void handleShare() }}
-            aria-label="Share this organizer profile"
-            className={[
-              'flex w-full items-center justify-center gap-2 rounded-2xl',
-              'border border-zinc-200 py-2.5 text-sm font-semibold text-zinc-500',
-              'transition-colors hover:bg-zinc-50 hover:text-zinc-700',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2',
-            ].join(' ')}
-          >
-            <Share2 className="h-4 w-4" aria-hidden="true" />
-            Share Profile
-          </button>
-        </aside>
-
-        {/* ── Right Grid Canvas (75%) ─────────────────────────────────────── */}
-        <div className="lg:col-span-3">
+      {/* ── Events content ───────────────────────────────────────────────── */}
+      <div className="max-w-350 mx-auto px-4 pb-20 md:px-8 mt-12">
 
           {/* Tab navigation row */}
           <div className="mb-8 flex w-fit items-center gap-1 rounded-2xl bg-zinc-100 p-1">
@@ -488,7 +518,6 @@ export function OrganizerClient({
               </button>
             </div>
           )}
-        </div>
       </div>
     </>
   )

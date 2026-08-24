@@ -40,10 +40,10 @@ export function WizardProgressBar({ currentStep, onStepClick }: WizardProgressBa
                 className={[
                   'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
                   active
-                    ? 'bg-violet-600 text-white ring-4 ring-violet-100 scale-110'
+                    ? 'bg-violet-600 text-white ring-4 ring-violet-950/50 scale-110'
                     : completed
                       ? 'bg-violet-600 text-white cursor-pointer hover:bg-violet-700'
-                      : 'bg-zinc-100 text-zinc-400 cursor-default',
+                      : 'bg-zinc-800 text-zinc-500 cursor-default',
                 ].join(' ')}
               >
                 {completed ? (
@@ -60,7 +60,7 @@ export function WizardProgressBar({ currentStep, onStepClick }: WizardProgressBa
               <span
                 className={[
                   'text-[9px] font-bold tracking-widest uppercase mt-1.5 whitespace-nowrap',
-                  active ? 'text-violet-600' : completed ? 'text-zinc-900' : 'text-zinc-400',
+                  active ? 'text-violet-400' : completed ? 'text-(--color-text)' : 'text-zinc-500',
                 ].join(' ')}
               >
                 {step.label}
@@ -72,7 +72,7 @@ export function WizardProgressBar({ currentStep, onStepClick }: WizardProgressBa
               <div
                 className={[
                   'flex-1 h-0.5 mt-4 mx-2 rounded-full transition-colors duration-300',
-                  completed ? 'bg-violet-400' : 'bg-zinc-200',
+                  completed ? 'bg-violet-400' : 'bg-zinc-800',
                 ].join(' ')}
               />
             )}

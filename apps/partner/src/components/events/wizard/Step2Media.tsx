@@ -42,16 +42,16 @@ export function Step2Media({
 
   return (
     <>
-    <div className="max-w-3xl mx-auto bg-white border border-zinc-200/80 rounded-xl p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
+    <div className="max-w-3xl mx-auto bg-(--color-surface) border border-(--color-border) rounded-xl p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
       <div>
-        <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 2 of 5</span>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Event Images</h2>
-        <p className="text-sm text-zinc-500 mb-8">Upload up to 10 images. The first image becomes your cover (16:9 recommended).</p>
+        <span className="text-[10px] font-mono uppercase tracking-widest text-violet-400 font-bold mb-4 block">Step 2 of 5</span>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-(--color-text) mb-2">Event Images</h2>
+        <p className="text-sm text-(--color-text-muted) mb-8">Upload up to 10 images. The first image becomes your cover (16:9 recommended).</p>
       </div>
 
       {/* Hint */}
-      <div className="bg-violet-50 border border-violet-200 rounded-xl px-4 py-3">
-        <p className="text-xs font-semibold text-violet-700">
+      <div className="bg-violet-950/40 border border-violet-900/50 rounded-xl px-4 py-3">
+        <p className="text-xs font-semibold text-violet-400">
           Great visuals can increase ticket sales by up to 40%. Add multiple angles — stage, venue, past events.
         </p>
       </div>
@@ -70,7 +70,7 @@ export function Step2Media({
               <img
                 src={url}
                 alt={`Event image ${i + 1}`}
-                className="w-28 h-20 object-cover rounded-xl border-2 border-zinc-200 group-hover:border-violet-400 transition-colors"
+                className="w-28 h-20 object-cover rounded-xl border-2 border-(--color-border) group-hover:border-violet-400 transition-colors"
               />
               <button
                 type="button"
@@ -100,22 +100,22 @@ export function Step2Media({
         type="button"
         disabled={uploading || formData.images.length >= 10}
         onClick={() => inputRef.current?.click()}
-        className="w-full border-2 border-dashed border-zinc-300 hover:border-violet-400 rounded-xl py-8 flex flex-col items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+        className="w-full border-2 border-dashed border-zinc-700 hover:border-violet-400 rounded-xl py-8 flex flex-col items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
       >
         {uploading ? (
           <>
             <div className="w-6 h-6 border-2 border-violet-600 border-t-transparent rounded-full animate-spin" />
-            <span className="text-sm font-semibold text-violet-600">Uploading…</span>
+            <span className="text-sm font-semibold text-violet-400">Uploading…</span>
           </>
         ) : (
           <>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
             </svg>
-            <span className="text-sm font-semibold text-zinc-700">
+            <span className="text-sm font-semibold text-zinc-300">
               {formData.images.length === 0 ? 'Upload images' : 'Add more images'}
             </span>
-            <span className="text-xs text-zinc-400">
+            <span className="text-xs text-zinc-500">
               {formData.images.length}/10 · JPG, PNG, WEBP
             </span>
           </>
@@ -129,21 +129,21 @@ export function Step2Media({
 
     {/* Sticky nav bar */}
     <div
-      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50"
+      className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-(--color-surface) border-t border-(--color-border) p-4 z-50"
       style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
     >
       <div className="max-w-3xl mx-auto flex justify-between items-center">
         <button
           type="button"
           onClick={onPrev}
-          className="bg-white border border-zinc-200 text-zinc-700 font-bold py-3 px-8 rounded-full hover:bg-zinc-50 active:scale-95 transition-all text-sm"
+          className="bg-(--color-surface) border border-(--color-border) text-zinc-300 font-bold py-3 px-8 rounded-full hover:bg-zinc-800 active:scale-95 transition-all text-sm"
         >
           Back
         </button>
         <button
           type="button"
           onClick={onNext}
-          className="bg-zinc-900 text-white font-bold py-3 px-8 rounded-full active:scale-95 transition-all text-sm"
+          className="bg-violet-600 text-white font-bold py-3 px-8 rounded-full active:scale-95 transition-all text-sm"
         >
           Next: Ticket Tiers →
         </button>

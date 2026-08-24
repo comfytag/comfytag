@@ -134,24 +134,37 @@ export interface Ticket {
 }
 
 // ─── Bank & Payouts ────────────────────────────────────
+export interface PaystackBank {
+  name: string
+  code: string
+}
+
 export interface BankAccount {
   _id: string
   user_id: string
   bankName: string
+  bankCode: string | null
   acctName: string
   acctNumber: string
+  recipientCode: string | null
   isActive: boolean
 }
+
+export type WithdrawStatus = 'pending' | 'approved' | 'processing' | 'sent' | 'failed' | 'rejected'
 
 export interface WithdrawRequest {
   _id: string
   user_id: string
+  bankId: string | null
   bankName: string
   acctName: string
   acctNumber: string
   eventName: string
   amount: number
-  status: 'pending' | 'approved' | 'rejected' | 'sent'
+  status: WithdrawStatus
+  transferCode: string | null
+  transferReference: string | null
+  failureReason: string | null
   createdAt: string
   updatedAt: string
 }

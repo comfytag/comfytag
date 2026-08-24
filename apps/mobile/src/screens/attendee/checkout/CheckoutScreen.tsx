@@ -13,7 +13,7 @@ import { ChevronLeft, X, Minus, Plus, Calendar, MapPin, CreditCard, Landmark, Sh
 import { WebView } from 'react-native-webview'
 import type { WebViewMessageEvent } from 'react-native-webview'
 import { colors, sp, rd, fs } from '@comfytag/ui/tokens'
-import { formatNaira } from '@comfytag/utils'
+import { formatNaira, calculateTicketCharge } from '@comfytag/utils'
 import { AnimatedPressable } from '../../../components/ui/AnimatedPressable'
 import { useAuthStore } from '../../../store'
 import { navigateUpTo } from '../../../lib/navigation'
@@ -45,10 +45,28 @@ function buildPaystackHtml(params: {
   reference: string
   eventName: string
   channels: string[]
+  userId: string
+  eventId: string
+  tierName: string
+  numOfTicket: number
+  name: string
+  phone: string
 }): string {
   const safeName = params.eventName.replace(/['"<>]/g, '')
   const safeEmail = params.email.replace(/['"<>]/g, '')
   const channelsJson = JSON.stringify(params.channels)
+  // Lets the webhook rebuild this exact ticket if the client never completes
+  // the create-ticket call after a successful charge.
+  const metadataJson = JSON.stringify({
+    userId: params.userId,
+    eventId: params.eventId,
+    tierName: params.tierName,
+    numOfTicket: params.numOfTicket,
+    name: params.name,
+    email: params.email,
+    phone: params.phone,
+    custom_fields: [{ display_name: 'Event', variable_name: 'event', value: safeName }],
+  })
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -64,7 +82,7 @@ function buildPaystackHtml(params: {
       amount: ${params.amountKobo},
       ref: '${params.reference}',
       channels: ${channelsJson},
-      metadata: { custom_fields: [{ display_name: 'Event', variable_name: 'event', value: '${safeName}' }] },
+      metadata: ${metadataJson},
       onClose: function() {
         window.ReactNativeWebView.postMessage(JSON.stringify({ event: 'cancel' }));
       },
@@ -177,12 +195,16 @@ export default function CheckoutScreen({ route, navigation }: Props) {
     (t) => t._id === selectedTierId
   )
 
-  const subtotal = useMemo(
-    () => (selectedTier === undefined ? 0 : selectedTier.price * quantity),
+  const charge = useMemo(
+    () =>
+      selectedTier === undefined
+        ? { subtotal: 0, buyerFee: 0, organizerFee: 0, totalCharge: 0, organizerNet: 0 }
+        : calculateTicketCharge(selectedTier.price, quantity),
     [selectedTier, quantity]
   )
-  const platformFee = useMemo(() => Math.round(subtotal * 0.05), [subtotal])
-  const totalAmount = useMemo(() => subtotal + platformFee, [subtotal, platformFee])
+  const subtotal = charge.subtotal
+  const processingFee = charge.buyerFee
+  const totalAmount = charge.totalCharge
   const isFree = selectedTier !== undefined && selectedTier.price === 0
 
   const paystackHtml = useMemo(() => {
@@ -194,8 +216,14 @@ export default function CheckoutScreen({ route, navigation }: Props) {
       reference: pendingReference,
       eventName,
       channels: paymentMethod === 'card' ? ['card'] : ['bank_transfer'],
+      userId: user._id,
+      eventId,
+      tierName: selectedTier.name,
+      numOfTicket: quantity,
+      name: user.name,
+      phone: user.phone ?? '',
     })
-  }, [user, selectedTier, totalAmount, pendingReference, eventName, paymentMethod])
+  }, [user, selectedTier, totalAmount, pendingReference, eventName, paymentMethod, eventId, quantity])
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
 
@@ -486,8 +514,8 @@ export default function CheckoutScreen({ route, navigation }: Props) {
               <Text style={styles.summaryValue}>{formatNaira(subtotal)}</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Platform fee (5%)</Text>
-              <Text style={styles.summaryValue}>{formatNaira(platformFee)}</Text>
+              <Text style={styles.summaryLabel}>Processing fee</Text>
+              <Text style={styles.summaryValue}>{formatNaira(processingFee)}</Text>
             </View>
             <View style={styles.summaryDivider} />
             <View style={styles.summaryRow}>

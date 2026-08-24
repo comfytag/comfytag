@@ -30,7 +30,7 @@ export function AttendeeSearchFilter({
   return (
     <div className="space-y-3">
       {/* Search hub */}
-      <div className="bg-white p-2 border border-zinc-200/80 rounded-xl flex items-center gap-3">
+      <div className="bg-(--color-surface) p-2 border border-(--color-border) rounded-xl flex items-center gap-3">
         <Search
           size={16}
           strokeWidth={1.5}
@@ -42,14 +42,14 @@ export function AttendeeSearchFilter({
           placeholder="Search by name, email, or phone…"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full bg-transparent border-none px-2 py-2 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-0 text-base"
+          className="w-full bg-transparent border-none px-2 py-2 text-(--color-text) placeholder:text-zinc-500 focus:outline-none focus:ring-0 text-base"
         />
         {searchQuery && (
           <button
             type="button"
             aria-label="Clear search"
             onClick={() => onSearchChange('')}
-            className="shrink-0 mr-1 text-zinc-400 hover:text-zinc-600 transition-colors"
+            className="shrink-0 mr-1 text-zinc-400 hover:text-zinc-200 transition-colors"
           >
             <X size={16} strokeWidth={1.5} aria-hidden="true" />
           </button>
@@ -66,14 +66,14 @@ export function AttendeeSearchFilter({
               className={
                 statusFilter === tab.value
                   ? 'px-4 py-1.5 rounded-full text-xs font-semibold bg-violet-600 text-white transition-colors'
-                  : 'px-4 py-1.5 rounded-full text-xs font-semibold bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300 transition-colors'
+                  : 'px-4 py-1.5 rounded-full text-xs font-semibold bg-(--color-surface) border border-(--color-border) text-zinc-400 hover:bg-zinc-800 hover:border-zinc-700 transition-colors'
               }
             >
               {tab.label}
             </button>
           ))}
         </div>
-        <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 font-semibold shrink-0">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-(--color-text-muted) font-semibold shrink-0">
           {attendeeCount} attendee{attendeeCount !== 1 ? 's' : ''}
         </span>
       </div>

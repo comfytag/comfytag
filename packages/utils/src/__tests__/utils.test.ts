@@ -10,9 +10,7 @@ import {
   truncate,
   initials,
   maskIdentifier,
-  calculatePlatformFee,
-  calculatePaystackFee,
-  totalCharges,
+  calculateTicketCharge,
   isValidEmail,
   isValidNigerianPhone,
   authHeader,
@@ -192,56 +190,80 @@ describe('utils', () => {
     })
   })
 
-  describe('calculatePlatformFee', () => {
-    it('calculatePlatformFee(0) returns 0', () => {
-      expect(calculatePlatformFee(0)).toBe(0)
-    })
-
-    it('calculatePlatformFee(1000) with default 5% returns 50', () => {
-      expect(calculatePlatformFee(1000)).toBe(50)
-    })
-
-    it('calculatePlatformFee(0.5) rounds to 0', () => {
-      expect(calculatePlatformFee(0.5)).toBe(0)
-    })
-
-    it('calculatePlatformFee(1000, 10) with 10% returns 100', () => {
-      expect(calculatePlatformFee(1000, 10)).toBe(100)
-    })
-  })
-
-  describe('calculatePaystackFee', () => {
-    it('calculatePaystackFee(0) returns 0', () => {
-      expect(calculatePaystackFee(0)).toBe(0)
-    })
-
-    it('calculatePaystackFee(10000) returns 250', () => {
-      // 10000 * 0.015 + 100 = 150 + 100 = 250
-      expect(calculatePaystackFee(10_000)).toBe(250)
-    })
-
-    it('calculatePaystackFee(200000) returns capped at 2000', () => {
-      // 200000 * 0.015 + 100 = 3100 + 100 = 3200, capped at 2000
-      expect(calculatePaystackFee(200_000)).toBe(2000)
-    })
-  })
-
-  describe('totalCharges', () => {
-    it('totalCharges(10000) returns { platformFee: 500, paystackFee: 250, total: 10750 }', () => {
-      const result = totalCharges(10_000)
-      expect(result).toEqual({
-        platformFee: 500,
-        paystackFee: 250,
-        total: 10_750,
+  describe('calculateTicketCharge', () => {
+    it('free ticket (price 0) returns all zeros', () => {
+      expect(calculateTicketCharge(0, 3)).toEqual({
+        subtotal: 0,
+        buyerFee: 0,
+        organizerFee: 0,
+        totalCharge: 0,
+        organizerNet: 0,
       })
     })
 
-    it('totalCharges(0) returns all zeros', () => {
-      const result = totalCharges(0)
-      expect(result).toEqual({
-        platformFee: 0,
-        paystackFee: 0,
-        total: 0,
+    it('subtotal under ₦2,500: buyer pays 4.5% only, no flat add-on; organizer pays nothing', () => {
+      // buyerFee round(1000*0.045) = round(45) = 45
+      expect(calculateTicketCharge(1000, 1)).toEqual({
+        subtotal: 1000,
+        buyerFee: 45,
+        organizerFee: 0,
+        totalCharge: 1045,
+        organizerNet: 1000,
+      })
+    })
+
+    it('subtotal just under ₦2,500: no flat add-on, rounds the percentage portion', () => {
+      // buyerFee round(2499*0.045) = round(112.455) = 112
+      expect(calculateTicketCharge(2499, 1)).toEqual({
+        subtotal: 2499,
+        buyerFee: 112,
+        organizerFee: 0,
+        totalCharge: 2611,
+        organizerNet: 2499,
+      })
+    })
+
+    it('subtotal at exactly ₦2,500: flat ₦100 add-on applies', () => {
+      // buyerFee round(2500*0.045) + 100 = round(112.5) + 100 = 113 + 100 = 213
+      expect(calculateTicketCharge(2500, 1)).toEqual({
+        subtotal: 2500,
+        buyerFee: 213,
+        organizerFee: 0,
+        totalCharge: 2713,
+        organizerNet: 2500,
+      })
+    })
+
+    it('quantity multiplies the subtotal before the fee is computed', () => {
+      // tier price 3000 * qty 4 = ₦12,000 subtotal (>= 2,500, so +₦100 applies)
+      // buyerFee round(12000*0.045) + 100 = 540 + 100 = 640
+      expect(calculateTicketCharge(3000, 4)).toEqual({
+        subtotal: 12_000,
+        buyerFee: 640,
+        organizerFee: 0,
+        totalCharge: 12_640,
+        organizerNet: 12_000,
+      })
+    })
+
+    it('no cap — the buyer fee keeps scaling on high-value tickets', () => {
+      // buyerFee round(200000*0.045) + 100 = 9000 + 100 = 9100
+      expect(calculateTicketCharge(200_000, 1)).toEqual({
+        subtotal: 200_000,
+        buyerFee: 9100,
+        organizerFee: 0,
+        totalCharge: 209_100,
+        organizerNet: 200_000,
+      })
+    })
+
+    it('organizer always nets the full subtotal regardless of price or quantity', () => {
+      expect(calculateTicketCharge(15_000, 3)).toEqual({
+        subtotal: 45_000,
+        buyerFee: 2125, // round(45000*0.045) + 100 = 2025 + 100
+        organizerFee: 0,
+        totalCharge: 47_125,
+        organizerNet: 45_000,
       })
     })
   })

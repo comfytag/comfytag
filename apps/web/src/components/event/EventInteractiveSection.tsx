@@ -4,28 +4,27 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { EventHeroCarousel } from '@/components/event/EventHeroCarousel'
-import { EventMeta } from '@/components/event/EventMeta'
+import { EventTransparentNav } from '@/components/event/EventTransparentNav'
 import { EventShareRow } from '@/components/event/EventShareRow'
 import { EventStickyBar } from '@/components/event/EventStickyBar'
 import { TicketTierSheet } from '@/components/event/TicketTierSheet'
 import { AuthGateSheet } from '@/components/ui/AuthGateSheet'
 import { BackLink } from '@/components/ui/BackLink'
 import { CommentSection } from '@/components/event/CommentSection'
-import { Divider } from '@/components/events/EventIcons'
+import { CalendarIcon, MapPinIcon, HeartIcon } from '@/components/events/EventIcons'
 import { useLikeEvent, useLikeStatus } from '@/hooks/useEvents'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import {
   formatNaira,
-  calculatePlatformFee,
-  calculatePaystackFee,
+  formatDate,
   formatTime,
+  calculateTicketCharge,
 } from '@comfytag/utils'
 import type { Event as EventType, TicketTier } from '@comfytag/types'
 import type { Comment } from '@/components/event/CommentSection'
 import { api } from '@/lib/api'
 import { Navbar } from '@/components/layout/Navbar'
 import { useAuthModal } from '@/hooks/useAuthModal'
-import Image from 'next/image'
 
 declare global {
   interface Window {
@@ -37,6 +36,7 @@ declare global {
         ref: string
         currency: string
         firstname?: string
+        metadata?: Record<string, unknown>
         onClose(): void
         callback(res: { reference: string }): void
       }): { openIframe(): void }
@@ -60,11 +60,41 @@ function toTitleCase(str: string): string {
   return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-interface OrganizerMini {
-  _id: string
-  name: string
-  image?: string
-  username?: string
+// Builds a Google Calendar "add event" link from the event's date/time fields —
+// a real, working feature that needs no backend support.
+function toGCalDateTime(dateStr: string, timeStr?: string): string {
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return ''
+  let hours = 0
+  let minutes = 0
+  if (timeStr) {
+    const t = new Date(`1970-01-01 ${timeStr.trim()}`)
+    if (!isNaN(t.getTime())) {
+      hours = t.getHours()
+      minutes = t.getMinutes()
+    }
+  }
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const hh = String(hours).padStart(2, '0')
+  const mm = String(minutes).padStart(2, '0')
+  return `${y}${m}${d}T${hh}${mm}00`
+}
+
+function buildGoogleCalendarUrl(event: EventType, fullAddress: string): string {
+  const dateSource = event.date || event.event_date || ''
+  const start = toGCalDateTime(dateSource, event.startTime)
+  if (!start) return ''
+  const end = event.endTime ? toGCalDateTime(dateSource, event.endTime) : start
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: event.name,
+    dates: `${start}/${end}`,
+    details: event.headline ?? (event.description ? event.description.slice(0, 200) : ''),
+    location: fullAddress,
+  })
+  return `https://calendar.google.com/calendar/render?${params.toString()}`
 }
 
 interface EventInteractiveSectionProps {
@@ -72,15 +102,77 @@ interface EventInteractiveSectionProps {
   initialComments: Comment[]
   initialHasMore: boolean
   relatedEvents: EventType[]
-  organizer?: OrganizerMini | null
   children?: React.ReactNode
+}
+
+// ── Local presentational cards (mockup: Date / Venue 2-up info cards) ──────
+
+function DateInfoCard({ event }: { event: EventType }) {
+  const calendarUrl = buildGoogleCalendarUrl(
+    event,
+    [event.venue, event.address, event.state].filter(Boolean).join(', '),
+  )
+  return (
+    <div className="p-5 bg-(--color-surface) rounded-xl border border-(--color-border)">
+      <div className="w-10 h-10 rounded-full bg-(--color-brand-alpha-8) text-brand flex items-center justify-center mb-3">
+        <CalendarIcon />
+      </div>
+      <p className="text-lg font-bold text-(--color-text) mb-0.5">
+        {formatDate(event.date || event.event_date)}
+      </p>
+      <p className="text-sm text-(--color-text-muted) mb-3">
+        {formatTime(event.startTime)}
+        {event.endTime ? ` – ${formatTime(event.endTime)}` : ''}
+      </p>
+      {calendarUrl && (
+        <a
+          href={calendarUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm font-semibold text-brand hover:underline"
+        >
+          Add to calendar
+        </a>
+      )}
+    </div>
+  )
+}
+
+function VenueInfoCard({ event, fullAddress }: { event: EventType; fullAddress: string }) {
+  const destination = event.address ?? event.venue
+  const rideLinks = [
+    { label: 'View on map', href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}` },
+    { label: '⚡ Bolt', href: `https://bolt.eu/en/?destination=${encodeURIComponent(destination)}` },
+    { label: '🚗 Uber', href: `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(destination)}` },
+  ]
+  return (
+    <div className="p-5 bg-(--color-surface) rounded-xl border border-(--color-border)">
+      <div className="w-10 h-10 rounded-full bg-(--color-surface-2) text-(--color-text) flex items-center justify-center mb-3">
+        <MapPinIcon />
+      </div>
+      <p className="text-lg font-bold text-(--color-text) mb-0.5 capitalize">{event.venue}</p>
+      <p className="text-sm text-(--color-text-muted) mb-3 capitalize leading-relaxed">{fullAddress}</p>
+      <div className="flex flex-wrap gap-x-4 gap-y-1">
+        {rideLinks.map(({ label, href }) => (
+          <a
+            key={label}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-semibold text-brand hover:underline"
+          >
+            {label}
+          </a>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export function EventInteractiveSection({
   event,
   initialComments,
   initialHasMore,
-  organizer,
   children,
 }: EventInteractiveSectionProps) {
   const router = useRouter()
@@ -107,16 +199,17 @@ export function EventInteractiveSection({
     setDesktopQty((prev) => Math.min(prev, Math.max(desktopMaxQty, 1)))
   }, [desktopMaxQty])
 
-  // Preload Paystack inline.js so it's ready when a logged-in user hits "Get Tickets"
+  // Preload Paystack inline.js so it's ready when a logged-in user hits "Buy
+  // Ticket". No cleanup/removal on unmount — the dedup guard alone isn't
+  // enough under React 18 Strict Mode's dev-only mount->cleanup->remount
+  // cycle, since the cleanup removes the tag the guard would otherwise find,
+  // aborting and restarting the fetch (the actual cause of "slow to load").
   useEffect(() => {
     if (!session) return
     if (document.querySelector('script[src*="paystack"]')) return
     const s = document.createElement('script')
     s.src = 'https://js.paystack.co/v1/inline.js'
     document.head.appendChild(s)
-    return () => {
-      if (document.head.contains(s)) document.head.removeChild(s)
-    }
   }, [session])
 
   const { openModal } = useAuthModal()
@@ -190,16 +283,16 @@ export function EventInteractiveSection({
     const tier = event.ticketType.find((t: TicketTier) => t._id === tierId)
     if (!tier) return
 
-    setDirectCheckoutState('processing')
-
     const userEmail = session.user.email ?? ''
     const userName = session.user.name ?? ''
     const userId = session.user.id
 
     if (tier.price === 0) {
-      const ref = `FREE_${Date.now()}`
+      // No Paystack popup involved for a free ticket — this overlay is the
+      // only loading feedback the user gets, so it stays for this branch.
+      setDirectCheckoutState('processing')
       try {
-        await api.post(`/audience/free/${event._id}`, {
+        const res = await api.post(`/audience/free/${event._id}`, {
           name: userName,
           email: userEmail,
           phone: undefined,
@@ -209,9 +302,8 @@ export function EventInteractiveSection({
           userId,
         })
         if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([200, 100, 200])
-        router.push(
-          `/checkout/success?ref=${ref}&eventId=${encodeURIComponent(event._id)}&eventName=${encodeURIComponent(event.name)}&contactInfo=${encodeURIComponent(userEmail)}`,
-        )
+        const ticketId = res.data?.data?._id ?? res.data?._id
+        router.push(ticketId ? `/tickets/${ticketId}` : '/tickets')
       } catch {
         setDirectCheckoutState('idle')
       }
@@ -219,49 +311,63 @@ export function EventInteractiveSection({
     }
 
     if (!window.PaystackPop) {
-      setDirectCheckoutState('idle')
       router.push(`/checkout?eventId=${event._id}&tierId=${tierId}&qty=${qty}`)
       return
     }
 
-    const subtotal = tier.price * qty
-    const platformFee = calculatePlatformFee(subtotal, 4)
-    const processingFee = calculatePaystackFee(subtotal)
-    const total = subtotal + platformFee + processingFee
+    const { totalCharge: total } = calculateTicketCharge(tier.price, qty)
     const ref = `CT_${Date.now()}`
 
     window.PaystackPop.setup({
-      key: process.env.NEXT_PUBLIC_PAYSTACK_KEY ?? '',
+      key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ?? '',
       email: userEmail,
       amount: total * 100,
       ref,
       currency: 'NGN',
       firstname: userName.split(' ')[0],
+      // Lets the webhook rebuild this exact ticket if the client never
+      // completes the create-ticket call after a successful charge.
+      metadata: {
+        userId,
+        eventId: event._id,
+        tierName: tier.name,
+        numOfTicket: qty,
+        name: userName,
+        email: userEmail,
+        phone: '',
+      },
       onClose() {
         setDirectCheckoutState('idle')
       },
-      async callback(res: { reference: string }) {
+      // Paystack's inline.js (v1) validates this attribute with a strict
+      // type check that treats `async function`s as a different type than
+      // plain functions, rejecting them with "Attribute callback must be a
+      // valid function" even though typeof reports 'function' for both — so
+      // the config callback itself must stay a plain function; the async
+      // work runs inside an IIFE instead.
+      callback(res: { reference: string }) {
         setDirectCheckoutState('verifying')
-        try {
-          await api.post(`/paystack/verify/${res.reference}`)
-          await api.post(`/audience/${userId}/${event._id}`, {
-            name: userName,
-            email: userEmail,
-            phone: '',
-            eventname: event.name,
-            numOfTicket: qty,
-            type: tier.name,
-            amount: total,
-            reference: res.reference,
-            status: 'active',
-          })
-          if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([200, 100, 200])
-          router.push(
-            `/checkout/success?ref=${res.reference}&eventId=${encodeURIComponent(event._id)}&eventName=${encodeURIComponent(event.name)}&contactInfo=${encodeURIComponent(userEmail)}`,
-          )
-        } catch {
-          setDirectCheckoutState('idle')
-        }
+        void (async () => {
+          try {
+            await api.post(`/paystack/verify/${res.reference}`)
+            const created = await api.post(`/audience/${userId}/${event._id}`, {
+              name: userName,
+              email: userEmail,
+              phone: '',
+              eventname: event.name,
+              numOfTicket: qty,
+              type: tier.name,
+              amount: total,
+              reference: res.reference,
+              status: 'active',
+            })
+            if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate([200, 100, 200])
+            const ticketId = created.data?.data?._id ?? created.data?._id
+            router.push(ticketId ? `/tickets/${ticketId}` : '/tickets')
+          } catch {
+            setDirectCheckoutState('idle')
+          }
+        })()
       },
     }).openIframe()
   }
@@ -295,18 +401,15 @@ export function EventInteractiveSection({
   const allSoldOut =
     event.ticketType.length > 0 &&
     event.ticketType.every((t) => t.capacity > 0 && t.sold >= t.capacity)
+  const totalAvailable = event.ticketType.reduce((sum, t) => sum + availableCount(t), 0)
 
   const displayEvent = { ...event, name: toTitleCase(event.name) }
   const fullAddress = [event.venue, event.address, event.state].filter(Boolean).join(', ')
 
   const desktopSubtotal = desktopSelectedTier ? desktopSelectedTier.price * desktopQty : 0
-  const desktopTotal = desktopSubtotal > 0
-    ? desktopSubtotal + calculatePlatformFee(desktopSubtotal, 4) + calculatePaystackFee(desktopSubtotal)
+  const desktopTotal = desktopSelectedTier
+    ? calculateTicketCharge(desktopSelectedTier.price, desktopQty).totalCharge
     : 0
-
-  const organizerHref = organizer
-    ? `/organizer/${organizer.username && !organizer.username.includes('@') ? organizer.username : organizer._id}`
-    : '#'
 
   return (
     <>
@@ -319,8 +422,7 @@ export function EventInteractiveSection({
             position: 'fixed',
             inset: 0,
             zIndex: 9999,
-            background: 'rgba(255,255,255,0.92)',
-            backdropFilter: 'blur(10px)',
+            background: 'rgba(255,255,255,0.97)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -364,54 +466,95 @@ export function EventInteractiveSection({
         isPast={isPast}
       />
 
-      {/* Page canvas */}
-      <div className="min-h-screen bg-slate-50 text-zinc-900 font-sans">
+      <div className="min-h-screen bg-(--color-bg) text-(--color-text)">
+
+        {/* ── Full-bleed hero ──────────────────────────────────────── */}
+        <div className="relative w-full h-85 sm:h-105 md:h-120">
+          <div className="absolute inset-0 [&>div]:h-full">
+            <EventHeroCarousel
+              images={allImages}
+              name={event.name}
+              containerClassName="relative w-full h-full bg-[#09090b] overflow-hidden"
+              dotsOverlay
+            />
+          </div>
+          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/10 to-transparent pointer-events-none" />
+          <EventTransparentNav onBack={() => router.push('/events')} onShare={handleShare} />
+          <div className="absolute bottom-0 inset-x-0 p-6 sm:p-8 md:p-10">
+            <div className="max-w-7xl mx-auto">
+              {event.category && (
+                <span className="inline-block px-3 py-1 rounded-full bg-brand text-white text-xs font-bold uppercase tracking-wide mb-3">
+                  {event.category}
+                </span>
+              )}
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight max-w-3xl capitalize">
+                {displayEvent.name}
+              </h1>
+            </div>
+          </div>
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
 
-          {/* Back nav */}
           <div className="mb-6">
             <BackLink href="/events" marginBottom={0}>Events</BackLink>
           </div>
 
-          {/* Two-column responsive grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
 
-            {/* ── LEFT COLUMN: Hero + Content ─────────────────── */}
+            {/* ── LEFT COLUMN ────────────────────────────────────── */}
             <div className="lg:col-span-7">
 
-              {/* Hero image carousel */}
-              <div
-                className="w-full rounded-2xl overflow-hidden border border-zinc-200/50 mb-8"
-                data-testid="event-hero"
-              >
-                <EventHeroCarousel
-                  images={allImages}
-                  name={event.name}
-                  containerClassName="relative w-full aspect-[4/5] sm:aspect-video lg:aspect-[4/3] bg-[#09090b] overflow-hidden touch-pan-y"
-                />
+              {event.headline && (
+                <p className="text-lg text-(--color-text-muted) mb-6 leading-relaxed">
+                  {event.headline}
+                </p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-3 mb-8">
+                <button
+                  type="button"
+                  onClick={handleLike}
+                  aria-pressed={isLiked}
+                  aria-label={isLiked ? 'Unlike event' : 'Like event'}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-sm font-semibold transition-all duration-150 ${
+                    isLiked
+                      ? 'border-error text-error'
+                      : 'border-(--color-border) bg-(--color-surface) text-(--color-text-muted) hover:border-brand'
+                  }`}
+                >
+                  <HeartIcon filled={isLiked} />
+                  {(likeCount ?? 0) > 0 && <span>{(likeCount ?? 0).toLocaleString()}</span>}
+                </button>
+
+                {event.sold > 0 ? (
+                  <span className="text-sm font-semibold text-brand">
+                    {event.sold.toLocaleString()} people going
+                  </span>
+                ) : (
+                  <span className="text-sm text-(--color-text-muted)">Be the first!</span>
+                )}
               </div>
 
-              {/* Event title, date, venue, like */}
-              <EventMeta
-                event={displayEvent}
-                isLiked={isLiked}
-                likeCount={likeCount ?? undefined}
-                onLike={handleLike}
-              />
+              {/* Date / Venue info cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+                <DateInfoCard event={event} />
+                <VenueInfoCard event={event} fullAddress={fullAddress} />
+              </div>
 
-              {/* RSC children: lineup, description, media, location, organizer, related */}
-              <div className="space-y-8 mt-8">
+              {/* RSC children: About this event, Lineup, Media gallery, Organizer, Related */}
+              <div className="space-y-10">
                 {children}
               </div>
 
-              <Divider />
-
-              <CommentSection
-                eventId={event._id}
-                initialComments={initialComments}
-                initialHasMore={initialHasMore}
-                organizerId={event.planner_id}
-              />
+              <div className="mt-10">
+                <CommentSection
+                  eventId={event._id}
+                  initialComments={initialComments}
+                  initialHasMore={initialHasMore}
+                  organizerId={event.planner_id}
+                />
+              </div>
 
               <EventShareRow
                 onShare={handleShare}
@@ -424,204 +567,161 @@ export function EventInteractiveSection({
               <div className="h-48 lg:hidden" aria-hidden="true" />
             </div>
 
-            {/* ── RIGHT COLUMN: Sticky Ticketing Hub ───────────── */}
+            {/* ── RIGHT COLUMN: Sticky Tickets card ────────────────── */}
             <div className="hidden md:block lg:col-span-5">
-              <div className="sticky top-24 space-y-6">
+              <div className="sticky top-24">
+                <div className="bg-(--color-surface) rounded-2xl border border-(--color-border) p-6 sm:p-8">
 
-                {/* Gate Access Card — boarding pass style */}
-                <div className="bg-white rounded-2xl border border-zinc-200/80 p-4 sm:p-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 bg-orange-50 text-orange-600 rounded-full shrink-0">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                      </svg>
-                    </div>
-                    <h2 className="text-base font-bold text-zinc-900">Gate Access</h2>
-                  </div>
-
-                  <div className="flex justify-between items-center gap-4">
-                    {event.startTime && (
-                      <div>
-                        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 font-semibold">Gates Open</p>
-                        <p className="text-sm font-semibold text-zinc-900">{formatTime(event.startTime)}</p>
-                      </div>
-                    )}
-                    {event.endTime && (
-                      <div className="text-right">
-                        <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 font-semibold">Gates Close</p>
-                        <p className="text-sm font-semibold text-zinc-900">{formatTime(event.endTime)}</p>
-                      </div>
+                  <div className="flex items-center justify-between mb-5">
+                    <h2 className="text-lg font-bold text-(--color-text)">Tickets</h2>
+                    {!allSoldOut && event.ticketType.length > 0 && (
+                      <span className="text-xs font-semibold text-(--color-text-muted)">
+                        {totalAvailable.toLocaleString()} left
+                      </span>
                     )}
                   </div>
 
-                  <div className="mt-3 pt-3 border-t border-zinc-100">
-                    <p className="text-sm text-zinc-500 leading-relaxed capitalize">{fullAddress}</p>
-                  </div>
-                </div>
-
-                {/* Ticket Selection Card */}
-                <div className="bg-white rounded-2xl border border-zinc-200/80 p-4 sm:p-5">
                   {event.ticketType.length === 0 ? (
-                    <p className="text-sm text-zinc-400 text-center py-4">No tickets available</p>
+                    <p className="text-sm text-(--color-text-muted) text-center py-4">No tickets available</p>
                   ) : (
                     <>
-                      {/* Tier selector */}
-                      {event.ticketType.length > 1 && (
-                        <div className="space-y-2 mb-4">
-                          {event.ticketType.map((tier: TicketTier) => {
-                            const soldOut = isSoldOut(tier)
-                            const selected = tier._id === desktopSelectedId
-                            return (
-                              <button
-                                key={tier._id}
-                                type="button"
-                                disabled={soldOut}
-                                onClick={() => {
-                                  if (!soldOut) {
-                                    setDesktopSelectedId(tier._id)
-                                    setDesktopQty(1)
-                                  }
-                                }}
-                                className={`w-full text-left px-4 py-3 rounded-2xl border-[1.5px] transition-all ${
-                                  selected
-                                    ? 'border-violet-400 bg-violet-50/60'
-                                    : soldOut
-                                    ? 'border-zinc-200 bg-zinc-50 opacity-60 cursor-not-allowed'
-                                    : 'border-zinc-200 hover:border-zinc-300 bg-white cursor-pointer'
-                                }`}
-                              >
-                                <div className="flex justify-between items-center gap-2">
-                                  <span className={`text-sm font-semibold ${soldOut ? 'text-zinc-400' : 'text-zinc-900'}`}>
-                                    {tier.name}
-                                  </span>
-                                  <div className="flex items-center gap-2 shrink-0">
-                                    <span className={`text-sm font-bold ${soldOut ? 'text-zinc-400' : 'text-zinc-900'}`}>
-                                      {tier.price === 0 ? 'Free' : formatNaira(tier.price)}
-                                    </span>
-                                    {soldOut && (
-                                      <span className="text-[10px] font-semibold bg-zinc-100 text-zinc-400 px-2 py-0.5 rounded-full">Sold Out</span>
-                                    )}
-                                    {!soldOut && (
-                                      <span className="text-[10px] text-zinc-400">{availableCount(tier)} left</span>
-                                    )}
-                                  </div>
-                                </div>
-                              </button>
-                            )
-                          })}
-                        </div>
-                      )}
+                      {/* Tier radio-cards */}
+                      <div className="space-y-3 mb-6">
+                        {event.ticketType.map((tier: TicketTier) => {
+                          const soldOut = isSoldOut(tier)
+                          const selected = tier._id === desktopSelectedId
+                          return (
+                            <button
+                              key={tier._id}
+                              type="button"
+                              disabled={soldOut}
+                              onClick={() => {
+                                if (!soldOut) {
+                                  setDesktopSelectedId(tier._id)
+                                  setDesktopQty(1)
+                                }
+                              }}
+                              className={`w-full text-left px-4 py-3.5 rounded-xl border-2 transition-all flex items-center justify-between gap-3 ${
+                                selected
+                                  ? 'border-brand bg-(--color-brand-alpha-8)'
+                                  : soldOut
+                                  ? 'border-(--color-border) bg-(--color-surface-2) opacity-60 cursor-not-allowed'
+                                  : 'border-(--color-border) hover:border-brand cursor-pointer'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span
+                                  className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
+                                    selected ? 'border-brand bg-brand' : 'border-(--color-border)'
+                                  }`}
+                                >
+                                  {selected && (
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                      <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                  )}
+                                </span>
+                                <span className={`text-sm font-semibold truncate ${soldOut ? 'text-(--color-text-muted)' : 'text-(--color-text)'}`}>
+                                  {tier.name}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className={`text-sm font-bold ${soldOut ? 'text-(--color-text-muted)' : 'text-(--color-text)'}`}>
+                                  {tier.price === 0 ? 'Free' : formatNaira(tier.price)}
+                                </span>
+                                {soldOut ? (
+                                  <span className="text-[10px] font-semibold bg-(--color-surface-2) text-(--color-text-muted) px-2 py-0.5 rounded-full">Sold Out</span>
+                                ) : (
+                                  <span className="text-[10px] text-(--color-text-muted)">{availableCount(tier)} left</span>
+                                )}
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
 
-                      {/* Ticket name/price (left) + Quantity selector (right) — single horizontal row */}
-                      {desktopSelectedTier && (
-                        <div className="flex justify-between items-center gap-3 mb-4">
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold text-zinc-700 truncate">{desktopSelectedTier.name}</p>
-                            <p className="text-xl font-bold text-zinc-900">
-                              {desktopSelectedTier.price === 0 ? 'Free' : formatNaira(desktopSelectedTier.price)}
-                            </p>
-                            {desktopSelectedTier.price > 0 && (
-                              <p className="text-[10px] text-zinc-400 mt-0.5">per ticket</p>
-                            )}
+                      {/* Quantity stepper */}
+                      {desktopSelectedTier && !isSoldOut(desktopSelectedTier) && (
+                        <div className="flex items-center justify-between mb-6 pb-6 border-b border-(--color-border)">
+                          <span className="text-sm font-medium text-(--color-text-muted)">Quantity</span>
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setDesktopQty((prev) => Math.max(1, prev - 1))}
+                              disabled={desktopQty <= 1}
+                              aria-label="Decrease quantity"
+                              className="w-8 h-8 rounded-full border border-(--color-border) bg-(--color-surface) flex items-center justify-center text-(--color-text) hover:bg-(--color-surface-2) disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                              </svg>
+                            </button>
+                            <span className="text-base font-bold text-(--color-text) min-w-5 text-center tabular-nums">
+                              {desktopQty}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setDesktopQty((prev) => Math.min(desktopMaxQty, prev + 1))}
+                              disabled={desktopQty >= desktopMaxQty}
+                              aria-label="Increase quantity"
+                              className="w-8 h-8 rounded-full border border-(--color-border) bg-(--color-surface) flex items-center justify-center text-(--color-text) hover:bg-(--color-surface-2) disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                              </svg>
+                            </button>
                           </div>
-                          {!isSoldOut(desktopSelectedTier) && (
-                            <div className="flex items-center gap-3 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => setDesktopQty((prev) => Math.max(1, prev - 1))}
-                                disabled={desktopQty <= 1}
-                                aria-label="Decrease quantity"
-                                className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                              >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <line x1="5" y1="12" x2="19" y2="12" />
-                                </svg>
-                              </button>
-                              <span className="text-base font-bold text-zinc-900 min-w-5 text-center tabular-nums">
-                                {desktopQty}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => setDesktopQty((prev) => Math.min(desktopMaxQty, prev + 1))}
-                                disabled={desktopQty >= desktopMaxQty}
-                                aria-label="Increase quantity"
-                                className="w-8 h-8 rounded-full border border-zinc-200 bg-white flex items-center justify-center text-zinc-700 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                              >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                  <line x1="12" y1="5" x2="12" y2="19" />
-                                  <line x1="5" y1="12" x2="19" y2="12" />
-                                </svg>
-                              </button>
-                            </div>
-                          )}
                         </div>
                       )}
 
-                      {/* Total price (multi-qty) */}
-                      {desktopSelectedTier && desktopSelectedTier.price > 0 && desktopQty > 1 && (
-                        <div className="flex justify-between items-center mb-4 py-3 border-t border-zinc-100">
-                          <span className="text-sm text-zinc-500">{desktopQty} tickets total</span>
-                          <span className="text-base font-bold text-zinc-900">{formatNaira(desktopTotal)}</span>
+                      {/* Price breakdown */}
+                      {desktopSelectedTier && desktopSelectedTier.price > 0 && (
+                        <div className="space-y-2 mb-6">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-(--color-text-muted)">Subtotal</span>
+                            <span className="text-(--color-text) font-medium">{formatNaira(desktopSubtotal)}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-(--color-text-muted)">Service Fee</span>
+                            <span className="text-(--color-text) font-medium">{formatNaira(desktopTotal - desktopSubtotal)}</span>
+                          </div>
+                          <div className="flex justify-between text-base font-bold pt-2 border-t border-(--color-border)">
+                            <span className="text-(--color-text)">Total</span>
+                            <span className="text-(--color-text)">{formatNaira(desktopTotal)}</span>
+                          </div>
                         </div>
                       )}
 
-                      {/* Desktop checkout button */}
                       <button
                         type="button"
                         disabled={allSoldOut || isPast}
-                        onClick={() => setTicketSheetOpen(true)}
-                        className="w-full bg-zinc-900 text-white font-bold py-4 rounded-full active:scale-95 transition-all disabled:bg-zinc-200 disabled:text-zinc-400 disabled:cursor-not-allowed"
+                        onClick={handleDesktopCheckout}
+                        className="w-full bg-brand text-white font-bold uppercase tracking-wide text-sm py-4 rounded-full active:scale-95 transition-all disabled:bg-(--color-surface-2) disabled:text-(--color-text-muted) disabled:cursor-not-allowed"
                       >
-                        {isPast ? 'Ended' : allSoldOut ? 'Sold Out' : 'Get Tickets'}
+                        {isPast ? 'Ended' : allSoldOut ? 'Sold Out' : 'Buy Ticket'}
                       </button>
 
-                      {/* Security badge */}
-                      <div className="flex items-center justify-center gap-2 mt-4 text-xs text-zinc-400">
+                      <div className="flex items-center justify-center gap-2 mt-4 text-xs text-(--color-text-muted)">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                           <polyline points="9 12 12 15 15 9" />
                         </svg>
                         <span>Secured by Paystack</span>
                       </div>
+
+                      {(event.startTime || event.endTime) && (
+                        <p className="text-center text-xs text-(--color-text-muted) mt-3">
+                          Gates{event.startTime ? ` open ${formatTime(event.startTime)}` : ''}
+                          {event.endTime ? ` · close ${formatTime(event.endTime)}` : ''}
+                        </p>
+                      )}
                     </>
                   )}
                 </div>
-
-                {/* Organizer mini-card */}
-                {organizer && (
-                  <a
-                    href={organizerHref}
-                    className="bg-white rounded-2xl border border-zinc-200/80 p-4 flex items-center gap-3 hover:bg-zinc-50 transition-colors no-underline"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-violet-100 overflow-hidden shrink-0 flex items-center justify-center">
-                      {organizer.image ? (
-                        <Image
-                          src={organizer.image}
-                          alt={organizer.name}
-                          width={40}
-                          height={40}
-                          className="object-cover w-full h-full"
-                        />
-                      ) : (
-                        <span className="text-violet-600 font-bold text-sm">
-                          {organizer.name.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 truncate">{organizer.name}</p>
-                      <p className="text-[11px] text-zinc-400">Organizer · View profile</p>
-                    </div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-300 shrink-0 ml-auto" aria-hidden="true">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </a>
-                )}
-
               </div>
             </div>
-            {/* ── END RIGHT COLUMN ─────────────────────────────── */}
+            {/* ── END RIGHT COLUMN ─────────────────────────────────── */}
 
           </div>
         </div>

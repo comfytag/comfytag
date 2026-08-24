@@ -1,6 +1,6 @@
 'use client'
 
-import type { WithdrawRequest } from '@comfytag/types'
+import type { WithdrawRequest, WithdrawStatus } from '@comfytag/types'
 import { formatNaira, formatDate } from '@comfytag/utils'
 
 interface WithdrawalRowProps {
@@ -8,16 +8,16 @@ interface WithdrawalRowProps {
 }
 
 export function WithdrawalRow({ withdrawal }: WithdrawalRowProps) {
-  const getStatusColor = (
-    status: 'pending' | 'approved' | 'rejected' | 'sent'
-  ): string => {
+  const getStatusColor = (status: WithdrawStatus): string => {
     switch (status) {
       case 'pending':
         return 'var(--color-warning)'
       case 'approved':
+      case 'processing':
         return 'var(--color-brand)'
       case 'sent':
         return 'var(--color-success)'
+      case 'failed':
       case 'rejected':
         return 'var(--color-error)'
       default:

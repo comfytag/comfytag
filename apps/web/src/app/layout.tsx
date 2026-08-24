@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, JetBrains_Mono, Anybody, Space_Grotesk, Geist } from 'next/font/google'
+import { Inter, JetBrains_Mono, Anybody, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { BottomTabBarWrapper } from '@/components/layout/BottomTabBarWrapper'
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
+// design.md v2.0: Inter is the primary body/UI font. globals.css maps
+// --font-sans to --font-inter so the Tailwind `font-sans` utility resolves
+// to Inter too (previously fed by an unused Geist instance).
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono', display: 'swap' })
 // NEW: Anybody for bold headers
@@ -49,9 +50,9 @@ export const metadata: Metadata = {
     images: ['/api/og'],
   },
   icons: {
-    icon: '/logo.png',
+    icon: '/icon-192.png',
     shortcut: '/logo.png',
-    apple: '/logo.png',
+    apple: '/apple-touch-icon.png',
   },
   manifest: '/manifest.json',
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'ComfyTag' },
@@ -63,7 +64,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html suppressHydrationWarning lang="en" className={cn(inter.variable, jetbrainsMono.variable, anybody.variable, spaceGrotesk.variable, "font-sans", geist.variable)}>
+    <html suppressHydrationWarning lang="en" className={cn(inter.variable, jetbrainsMono.variable, anybody.variable, spaceGrotesk.variable, "font-sans")}>
       <body suppressHydrationWarning>
         <Providers>
           {children}

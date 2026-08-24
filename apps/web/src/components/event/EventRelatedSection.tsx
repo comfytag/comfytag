@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { EventCard } from '@/components/ui'
-import { Divider } from '@/components/events/EventIcons'
 import type { Event } from '@comfytag/types'
 
 interface EventRelatedSectionProps {
@@ -13,9 +12,8 @@ export function EventRelatedSection({ events }: EventRelatedSectionProps) {
   if (events.length === 0) return null
 
   return (
-    <>
-      <Divider />
-      <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 14px' }}>
+    <div>
+      <h2 className="text-xl font-bold text-(--color-text) border-l-4 border-brand pl-4 mb-4">
         More like this
       </h2>
       <div
@@ -34,6 +32,6 @@ export function EventRelatedSection({ events }: EventRelatedSectionProps) {
           </div>
         ))}
       </div>
-    </>
+    </div>
   )
 }

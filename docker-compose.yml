@@ -23,7 +23,12 @@ services:
     environment:
       - NODE_ENV=development
       - REDIS_URL=redis://comfytag-redis:6379
+      - REDIS_HOST=comfytag-redis
+      - REDIS_PORT=6379
       - PORT=4002
+      - MONGO=mongodb://admin:comfytag456@host.docker.internal:27017/?authSource=admin
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - ./apps/api/.env
     depends_on:

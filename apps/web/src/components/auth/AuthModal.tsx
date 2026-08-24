@@ -114,9 +114,7 @@ export function AuthModal() {
               position: 'fixed',
               inset: 0,
               zIndex: 200,
-              background: 'rgba(0, 0, 0, 0.52)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)',
+              background: 'rgba(0, 0, 0, 0.6)',
             }}
           />
 

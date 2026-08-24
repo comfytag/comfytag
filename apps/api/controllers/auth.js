@@ -573,7 +573,7 @@ export const requestLoginOtp = async (req, res) => {
 			return res.status(200).json({ success: true, requiresPassword: true, message: 'Please sign in with your password.' });
 		}
 
-		const emailResult = await issueVerifyOtp(user);
+		const emailResult = await issueVerifyOtp(user, 'login');
 		if (!emailResult.success) {
 			console.error(`[Auth] ERROR: requestLoginOtp email failed for ${user.email}: ${emailResult.error}`);
 		}
@@ -934,6 +934,11 @@ export const forgotPassword = async (req, res, next) => {
         data: {
           otp,
           year: new Date().getFullYear(),
+          heading: 'Reset Your Password',
+          intro: 'Use the one-time code below to reset your ComfyTag password. Do not share this code with anyone.',
+          codeLabel: 'Your Reset Code',
+          securityNotice: "If you didn't request a password reset, you can safely ignore this email. Your account is not at risk and no changes have been made.",
+          expiryText: '1 hour',
           unsubscribeUrl: `${baseUrl}/preferences?unsub=email`,
           preferencesUrl: `${baseUrl}/preferences`,
         },

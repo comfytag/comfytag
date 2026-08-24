@@ -10,6 +10,15 @@ import { api } from '@/lib/api'
 
 type Step = 'email' | 'otp' | 'password' | '2fa'
 
+// Shown when credentials/OTP are valid but the account isn't an organizer yet
+// (a plain attendee account) — points at the actual fix instead of looping
+// back to /register, which just 409s since the account already exists.
+// "Sign in with Google" on this same page already auto-upgrades an existing
+// attendee (see auth.ts's signIn callback), so that's the fastest path if
+// the account has a Google login; otherwise the web app's profile page works too.
+const NOT_PARTNER_MESSAGE =
+  'This account exists as an attendee. Use "Sign in with Google" above to get organizer access instantly, or log in at the ComfyTag app and choose "Become a Partner" from your profile.'
+
 export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -111,7 +120,11 @@ export function LoginForm() {
       }
       const result = await signIn('token', { backendToken: data.token, redirect: false })
       if (result?.error) {
-        setError('This account does not have partner access.')
+        // The token provider returns null (not a thrown error) for a valid but
+        // non-partner account, so NextAuth's generic 'CredentialsSignin' is
+        // the only signal here — this really is the same "valid attendee
+        // account, not yet an organizer" case as the password path above.
+        setError(NOT_PARTNER_MESSAGE)
         return
       }
       router.push('/overview')
@@ -137,6 +150,8 @@ export function LoginForm() {
       if (result.error === 'TWO_FACTOR_REQUIRED') {
         setTwoFactorOtp(Array(6).fill(''))
         setStep('2fa')
+      } else if (result.error === 'NOT_PARTNER') {
+        setError(NOT_PARTNER_MESSAGE)
       } else if (result.error === 'CredentialsSignin') {
         setError('Invalid email or password')
       } else {
@@ -157,7 +172,11 @@ export function LoginForm() {
     setIsLoading(false)
 
     if (result?.error) {
-      setError(result.error === 'CredentialsSignin' ? 'Invalid code. Please try again.' : result.error)
+      if (result.error === 'NOT_PARTNER') {
+        setError(NOT_PARTNER_MESSAGE)
+      } else {
+        setError(result.error === 'CredentialsSignin' ? 'Invalid code. Please try again.' : result.error)
+      }
     } else if (result?.ok) {
       router.push('/overview')
     }

@@ -5,15 +5,13 @@ import { formatNaira } from '@comfytag/utils'
 
 interface FeeBreakdownProps {
   subtotal: number
-  platformFee: number
-  paystackFee: number
+  processingFee: number
   total: number
 }
 
 export function FeeBreakdown({
   subtotal,
-  platformFee,
-  paystackFee,
+  processingFee,
   total,
 }: FeeBreakdownProps) {
   return (
@@ -40,19 +38,10 @@ export function FeeBreakdown({
 
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
-          Platform fee (4%)
+          Processing fee
         </span>
         <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
-          {formatNaira(platformFee)}
-        </span>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
-          Processing fee (1.5% + ₦100)
-        </span>
-        <span style={{ fontSize: '13px', color: 'var(--color-text-muted)' }}>
-          {formatNaira(paystackFee)}
+          {formatNaira(processingFee)}
         </span>
       </div>
 

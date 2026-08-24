@@ -110,21 +110,21 @@ export default function TeamPage() {
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-black text-zinc-900 tracking-tight">Crew</h1>
-          <p className="mt-1 text-sm text-zinc-500">Manage your event team</p>
+          <h1 className="text-3xl font-black text-(--color-text) tracking-tight">Crew</h1>
+          <p className="mt-1 text-sm text-(--color-text-muted)">Manage your event team</p>
         </div>
 
         {/* Event selector */}
         <div className="relative">
           {eventsLoading ? (
-            <div className="w-48 h-10 bg-zinc-100 rounded-full animate-pulse" />
+            <div className="w-48 h-10 bg-zinc-800 rounded-full animate-pulse" />
           ) : (
             <>
               <select
                 value={selectedEventId ?? ''}
                 onChange={(e) => setSelectedEventId(e.target.value || null)}
                 aria-label="Select event"
-                className="appearance-none bg-white border border-zinc-200 rounded-full pl-4 pr-10 py-2.5 text-sm font-medium text-zinc-700 focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors hover:border-zinc-300 max-w-60 truncate"
+                className="appearance-none bg-(--color-surface) border border-(--color-border) rounded-full pl-4 pr-10 py-2.5 text-sm font-medium text-zinc-300 focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-violet-500 cursor-pointer transition-colors hover:border-zinc-700 max-w-60 truncate"
               >
                 <option value="">Select event…</option>
                 {events.map((e) => (
@@ -165,7 +165,7 @@ export default function TeamPage() {
 
       {/* ── Event-gated content ── */}
       {!selectedEventId ? (
-        <div className="bg-white border border-zinc-200 rounded-2xl p-10">
+        <div className="bg-(--color-surface) border border-(--color-border) rounded-2xl p-10">
           <EmptyState
             title="No event selected"
             subtitle="Use the dropdown above to choose an event and manage its crew."
@@ -177,10 +177,10 @@ export default function TeamPage() {
           <section aria-label="Crew members">
             {/* Section header */}
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xs font-bold text-zinc-500 tracking-widest uppercase whitespace-nowrap">
+              <span className="text-xs font-bold text-zinc-400 tracking-widest uppercase whitespace-nowrap">
                 · Crew Members ·
               </span>
-              <div className="flex-1 h-px bg-zinc-200" />
+              <div className="flex-1 h-px bg-zinc-800" />
               {!teamLoading && (
                 <span className="text-xs font-semibold text-zinc-400 tabular-nums">
                   {members.length}
@@ -193,14 +193,14 @@ export default function TeamPage() {
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div
                     key={i}
-                    className="bg-white border border-zinc-200 rounded-2xl p-5 h-40 animate-pulse"
+                    className="bg-(--color-surface) border border-(--color-border) rounded-2xl p-5 h-40 animate-pulse"
                   />
                 ))}
               </div>
             ) : teamError ? (
               <ErrorMessage message="Failed to load team members." />
             ) : members.length === 0 ? (
-              <div className="bg-white border border-zinc-200 rounded-2xl p-10">
+              <div className="bg-(--color-surface) border border-(--color-border) rounded-2xl p-10">
                 <EmptyState
                   title="No crew members yet"
                   subtitle="Invite someone below to start collaborating on this event."

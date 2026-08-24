@@ -38,7 +38,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-6xl mx-auto py-8 animate-in fade-in duration-300">
-      <h1 className="text-3xl font-black text-zinc-900 tracking-tight mb-8">Settings</h1>
+      <h1 className="text-3xl font-black text-(--color-text) tracking-tight mb-8">Settings</h1>
       <SettingsPanel user={user} banks={banks} />
     </div>
   )

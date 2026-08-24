@@ -95,8 +95,8 @@ export default function EventsPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-zinc-900 tracking-tight">Events Vault</h1>
-          <p className="mt-1 text-sm text-zinc-500">Manage and track all your events</p>
+          <h1 className="text-3xl font-black text-(--color-text) tracking-tight">Events Vault</h1>
+          <p className="mt-1 text-sm text-(--color-text-muted)">Manage and track all your events</p>
         </div>
         <Link
           href="/events/create"
@@ -119,14 +119,14 @@ export default function EventsPage() {
           placeholder="Search events…"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-white border border-zinc-200 rounded-full pl-10 pr-10 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-colors"
+          className="w-full bg-(--color-surface) border border-(--color-border) rounded-full pl-10 pr-10 py-2.5 text-sm text-(--color-text) placeholder:text-zinc-500 focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-colors"
         />
         {searchQuery && (
           <button
             type="button"
             aria-label="Clear search"
             onClick={() => setSearchQuery('')}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
           >
             <X size={14} aria-hidden="true" />
           </button>

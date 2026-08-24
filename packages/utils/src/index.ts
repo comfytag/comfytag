@@ -104,32 +104,38 @@ export function maskIdentifier(identifier: string): string {
   return visibleLocal + '***@' + domain
 }
 
-// ─── Platform fee calculator ───────────────────────────
-export function calculatePlatformFee(
-  amount: number,
-  feePercent: number = 5
-): number {
-  if (amount === 0) return 0
-  return Math.round(amount * (feePercent / 100))
+// ─── Ticket charge / fee split calculator ───────────────
+//
+// Fee model: the buyer pays the entire fee — 4.5% of the order subtotal,
+// always, plus ₦100 more if the subtotal is >= ₦2,500. No cap. The organizer
+// pays nothing; they receive the full ticket price.
+export interface TicketChargeBreakdown {
+  subtotal: number
+  buyerFee: number
+  organizerFee: number
+  totalCharge: number  // what the buyer actually pays via Paystack
+  organizerNet: number // what the organizer receives at payout (subtotal - organizerFee)
 }
 
-export function calculatePaystackFee(amount: number): number {
-  if (amount === 0) return 0
-  const fee = amount * 0.015 + 100
-  return Math.min(Math.round(fee), 2000)
-}
+export function calculateTicketCharge(
+  tierPrice: number,
+  quantity: number
+): TicketChargeBreakdown {
+  const subtotal = tierPrice * quantity
+  if (subtotal === 0) {
+    return { subtotal: 0, buyerFee: 0, organizerFee: 0, totalCharge: 0, organizerNet: 0 }
+  }
 
-export function totalCharges(amount: number): {
-  platformFee: number
-  paystackFee: number
-  total: number
-} {
-  const platformFee = calculatePlatformFee(amount)
-  const paystackFee = calculatePaystackFee(amount)
+  const flatFeeApplies = subtotal >= 2_500
+  const buyerFee = Math.round(subtotal * 0.045) + (flatFeeApplies ? 100 : 0)
+  const organizerFee = 0
+
   return {
-    platformFee,
-    paystackFee,
-    total: amount + platformFee + paystackFee,
+    subtotal,
+    buyerFee,
+    organizerFee,
+    totalCharge: subtotal + buyerFee,
+    organizerNet: subtotal - organizerFee,
   }
 }
 

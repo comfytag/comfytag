@@ -11,7 +11,7 @@ export function VaultSectionHeader({ label, count }: VaultSectionHeaderProps) {
       <span className="text-xs font-bold text-zinc-500 tracking-widest uppercase whitespace-nowrap">
         · {label} ·
       </span>
-      <div className="flex-1 h-px bg-zinc-200" />
+      <div className="flex-1 h-px bg-zinc-800" />
       <span className="text-xs font-semibold text-zinc-400 tabular-nums">{count}</span>
     </div>
   )

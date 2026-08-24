@@ -23,7 +23,28 @@ export function OTPInput({ length = 6, onComplete, onChangeOTP }: OTPInputProps)
   const refs = useRef<(TextInput | null)[]>([])
 
   const handleChange = (text: string, index: number) => {
-    const digit = text.replace(/[^0-9]/g, '').slice(-1)
+    const digits = text.replace(/[^0-9]/g, '')
+
+    if (digits.length > 1) {
+      const next = [...otp]
+      for (let i = 0; i < digits.length && index + i < length; i++) {
+        next[index + i] = digits[i]
+      }
+      setOtp(next)
+
+      const joined = next.join('')
+      onChangeOTP?.(joined)
+
+      const nextIndex = Math.min(index + digits.length, length - 1)
+      refs.current[nextIndex]?.focus()
+
+      if (joined.length === length && !joined.includes('')) {
+        onComplete(joined)
+      }
+      return
+    }
+
+    const digit = digits.slice(-1)
     const next = [...otp]
     next[index] = digit
     setOtp(next)
@@ -61,7 +82,7 @@ export function OTPInput({ length = 6, onComplete, onChangeOTP }: OTPInputProps)
           onChangeText={(t) => handleChange(t, i)}
           onKeyPress={(e) => handleKeyPress(e, i)}
           keyboardType="number-pad"
-          maxLength={1}
+          maxLength={length}
           selectTextOnFocus
           textAlign="center"
         />

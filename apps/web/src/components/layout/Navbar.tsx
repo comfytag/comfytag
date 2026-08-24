@@ -3,13 +3,13 @@
 import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { SearchSuggestionsOverlay } from '@/components/ui/SearchSuggestionsOverlay'
 
 import { AvatarInitials, LoadingSpinner } from '@comfytag/ui'
-import { authHeader, formatNaira } from '@comfytag/utils'
+import { authHeader } from '@comfytag/utils'
 import type { Notification, User } from '@comfytag/types'
 import { api } from '@/lib/api'
 import { useAuthModal } from '@/hooks/useAuthModal'
@@ -22,6 +22,7 @@ export interface NavbarProps {
 export function Navbar({ user, onSearch }: NavbarProps) {
   const { data: session } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
   const [searchVal, setSearchVal] = useState('')
   const [searchFocused, setSearchFocused] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
@@ -31,7 +32,6 @@ export function Navbar({ user, onSearch }: NavbarProps) {
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifs, setNotifs] = useState<Notification[]>([])
   const [notifLoading, setNotifLoading] = useState(false)
-  const [walletBalance, setWalletBalance] = useState<number | null>(null)
   const notifRef = useRef<HTMLDivElement>(null)
 
   const currentUser = user || session?.user
@@ -91,18 +91,6 @@ export function Navbar({ user, onSearch }: NavbarProps) {
       .finally(() => setNotifLoading(false))
   }, [notifOpen, session])
 
-  // Fetch wallet balance when dropdown opens
-  useEffect(() => {
-    if (!dropdownOpen || !session) return
-    api
-      .get('/wallet')
-      .then((r) => {
-        const bal = r.data?.data?.balance ?? r.data?.balance ?? null
-        setWalletBalance(typeof bal === 'number' ? bal : null)
-      })
-      .catch(() => {})
-  }, [dropdownOpen, session])
-
   // Escape key closes mobile search overlay
   useEffect(() => {
     if (!mobileSearchOpen) return
@@ -140,15 +128,71 @@ export function Navbar({ user, onSearch }: NavbarProps) {
           z-index: 40;
           background: var(--color-bg);
           border-bottom: 1px solid var(--color-border);
-          height: 64px;
+          height: 72px;
           display: flex;
           align-items: center;
           padding: 0 24px;
-          gap: 16px;
+          gap: 24px;
         }
         .__ct_nav_search {
-          flex: 1;
-          max-width: 480px;
+          width: 384px;
+        }
+        .__ct_nav_links {
+          display: flex;
+          align-items: center;
+          gap: 24px;
+        }
+        .__ct_nav_link {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--color-text-muted);
+          text-decoration: none;
+          transition: color var(--duration-micro) ease;
+          white-space: nowrap;
+        }
+        .__ct_nav_link:hover {
+          color: var(--color-brand);
+        }
+        .__ct_nav_link.active {
+          color: var(--color-brand);
+          font-weight: 700;
+        }
+        .__ct_nav_wallet_btn {
+          width: 38px;
+          height: 38px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: var(--radius-full);
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: var(--color-text-muted);
+          transition: color var(--duration-micro) ease, background var(--duration-micro) ease;
+          flex-shrink: 0;
+        }
+        .__ct_nav_wallet_btn:hover {
+          color: var(--color-text);
+          background: var(--color-surface-2);
+        }
+        .__ct_nav_mobile_profile_btn {
+          display: none;
+          width: 38px;
+          height: 38px;
+          align-items: center;
+          justify-content: center;
+          border-radius: var(--radius-full);
+          background: none;
+          color: var(--color-text-muted);
+          transition: color var(--duration-micro) ease, background var(--duration-micro) ease;
+          flex-shrink: 0;
+        }
+        .__ct_nav_mobile_profile_btn:hover {
+          color: var(--color-text);
+          background: var(--color-surface-2);
+        }
+        @media (max-width: 767px) {
+          .__ct_nav_links { display: none; }
         }
         .__ct_nav_drop_item {
           display: block;
@@ -196,10 +240,8 @@ export function Navbar({ user, onSearch }: NavbarProps) {
           .__ct_navbar {
             height: 56px;
             padding: 0 16px;
-            background: rgba(255, 255, 255, 0.80);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom-color: rgba(228, 228, 231, 0.50);
+            background: var(--color-bg);
+            border-bottom-color: var(--color-border);
           }
           .__ct_nav_search {
             display: none;
@@ -209,14 +251,18 @@ export function Navbar({ user, onSearch }: NavbarProps) {
             align-items: center;
             justify-content: center;
           }
+          /* Mobile keeps only Search + Profile — wallet and notifications drop off */
+          .__ct_nav_wallet_btn { display: none; }
+          .__ct_nav_bell_wrap { display: none; }
+          .__ct_nav_mobile_profile_btn { display: flex; }
           /* Avatar dropdown handled by Profile tab in bottom nav */
           .__ct_nav_avatar_wrap { display: none; }
         }
       `}</style>
       <nav className="__ct_navbar" aria-label="Main navigation">
         {/* Logo — left-aligned on both desktop and mobile */}
-        <Link href="/" className="__ct_nav_logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-          <img alt="ComfyTag" className="w-auto h-8 object-contain" src="/logo.png" />
+        <Link href="/" className="__ct_nav_logo" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
+          <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-brand)', letterSpacing: '-0.01em' }}>ComfyTag</span>
         </Link>
 
         {/* Search — desktop only */}
@@ -238,6 +284,13 @@ export function Navbar({ user, onSearch }: NavbarProps) {
 
         <div style={{ flex: 1 }} />
 
+        {/* Primary nav links — desktop only */}
+        <nav className="__ct_nav_links" aria-label="Primary">
+          <Link href="/events" className={`__ct_nav_link ${pathname?.startsWith('/events') ? 'active' : ''}`}>Events</Link>
+          <Link href="/about" className={`__ct_nav_link ${pathname === '/about' ? 'active' : ''}`}>About</Link>
+          <Link href="/contact" className={`__ct_nav_link ${pathname === '/contact' ? 'active' : ''}`}>Help</Link>
+        </nav>
+
         {/* Mobile search button */}
         <button
           type="button"
@@ -253,9 +306,23 @@ export function Navbar({ user, onSearch }: NavbarProps) {
 
         {/* Right side */}
         {currentUser ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {/* Bell + notification panel */}
-            <div ref={notifRef} style={{ position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Ticket wallet */}
+            <Link
+              href="/tickets"
+              className="__ct_nav_wallet_btn"
+              aria-label="Ticket Wallet"
+              title="Ticket Wallet"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+                <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+                <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+              </svg>
+            </Link>
+
+            {/* Bell + notification panel — desktop only, replaced by a Profile icon on mobile */}
+            <div ref={notifRef} className="__ct_nav_bell_wrap" style={{ position: 'relative' }}>
               <button
                 type="button"
                 onClick={() => setNotifOpen((o) => !o)}
@@ -326,14 +393,19 @@ export function Navbar({ user, onSearch }: NavbarProps) {
 
             </div>
 
-            {/* Avatar + dropdown — hidden on mobile (lives in MobileMenuDrawer) */}
+            {/* Profile avatar — mobile only, same avatar image as desktop, replaces the bell + wallet */}
+            <Link href="/profile" className="__ct_nav_mobile_profile_btn" aria-label="Profile">
+              <AvatarInitials name={currentUser.name ?? currentUser.email} src={currentUser.image ?? undefined} size={32} fontSize={13} />
+            </Link>
+
+            {/* Avatar + dropdown — hidden on mobile (Profile tab in BottomTabBar covers account access there) */}
             <div ref={dropdownRef} className="__ct_nav_avatar_wrap" style={{ position: 'relative' }}>
               <button
                 type="button"
                 onClick={() => setDropdownOpen((o) => !o)}
                 aria-label="Account menu"
                 aria-expanded={dropdownOpen}
-                style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-full)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}
+                style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-full)', background: 'none', border: '2px solid var(--color-brand-light)', cursor: 'pointer', padding: 0, flexShrink: 0, overflow: 'hidden' }}
               >
                 <AvatarInitials name={currentUser.name ?? currentUser.email} src={currentUser.image ?? undefined} size={36} fontSize={13} />
               </button>
@@ -343,14 +415,10 @@ export function Navbar({ user, onSearch }: NavbarProps) {
                   <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-border)' }}>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text)' }}>{currentUser.name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{currentUser.email}</div>
-                    {/* {walletBalance !== null && (
-                      <div style={{ fontSize: '12px', color: 'var(--color-brand)', marginTop: '4px', fontWeight: 600 }}>
-                        Hype Credits: {formatNaira(walletBalance)}
-                      </div>
-                    )} */}
                   </div>
                   <Link href="/tickets" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>My Tickets</Link>
-                  <Link href="/my-following" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>Saved Events</Link>
+                  {/* MVP: Saved events features for users that want to save and event and come back to it */}
+                  {/* <Link href="/my-following" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>Saved Events</Link> */}
                   {/* MVP: Hype Links affiliate feature disabled for initial launch — re-enable when affiliate system is ready */}
                   {/* <Link href="/hype-link" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>My Hype Link</Link> */}
                   <Link href="/profile" className="__ct_nav_drop_item" onClick={() => setDropdownOpen(false)}>Settings</Link>
@@ -373,14 +441,14 @@ export function Navbar({ user, onSearch }: NavbarProps) {
               href="/login"
               onClick={(e) => { e.preventDefault(); openModal('login') }}
               className="__ct_nav_login_link"
-              style={{ fontSize: '14px', fontWeight: 500, padding: '6px 10px', textDecoration: 'none', display: 'inline-block' }}
+              style={{ fontSize: '14px', fontWeight: 500, padding: '6px 10px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}
             >
               Log In
             </Link>
             <Link
               href="/register"
               onClick={(e) => { e.preventDefault(); openModal('register') }}
-              style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-on-brand)', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', padding: '8px 16px', textDecoration: 'none', display: 'inline-block' }}
+              style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-on-brand)', background: 'var(--color-brand)', borderRadius: 'var(--radius-md)', padding: '8px 16px', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}
             >
               Sign Up
             </Link>

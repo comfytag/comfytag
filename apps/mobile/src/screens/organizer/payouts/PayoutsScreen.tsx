@@ -28,10 +28,12 @@ import {
 const GOLD = '#D97706'
 
 const STATUS: Record<WithdrawRequest['status'], { color: string; label: string }> = {
-  pending:  { color: '#F59E0B',                label: 'Pending'  },
-  approved: { color: colors.success.DEFAULT,    label: 'Approved' },
-  rejected: { color: '#EF4444',                label: 'Rejected' },
-  sent:     { color: GOLD,                     label: 'Paid Out' },
+  pending:    { color: '#F59E0B',             label: 'Pending'    },
+  approved:   { color: colors.success.DEFAULT, label: 'Approved'   },
+  processing: { color: colors.success.DEFAULT, label: 'Processing' },
+  rejected:   { color: '#EF4444',             label: 'Rejected'   },
+  failed:     { color: '#EF4444',             label: 'Failed'     },
+  sent:       { color: GOLD,                  label: 'Paid Out'   },
 }
 
 // ─── SkeletonPulse ────────────────────────────────────────────────────────────

@@ -26,9 +26,9 @@ const VIBES = [
 
 const AI_LIMIT = 3
 
-const fieldLabel = 'block text-[11px] font-mono font-semibold text-zinc-500 uppercase tracking-wider mb-2'
+const fieldLabel = 'block text-[11px] font-mono font-semibold text-zinc-400 uppercase tracking-wider mb-2'
 const inputCls =
-  'w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none resize-none'
+  'w-full bg-zinc-800 border border-(--color-border) rounded-xl px-4 py-3 text-(--color-text) text-sm focus:bg-(--color-surface) focus:border-violet-500 transition-all placeholder:text-zinc-500 focus:outline-none focus-visible:outline-none resize-none'
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
@@ -160,11 +160,11 @@ export function Step4Details({
 
   return (
     <>
-      <div className="max-w-3xl mx-auto bg-white border border-zinc-200/80 rounded-xl p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
+      <div className="max-w-3xl mx-auto bg-(--color-surface) border border-(--color-border) rounded-xl p-6 sm:p-10 mt-8 animate-in fade-in duration-300 space-y-6">
         <div>
-          <span className="text-[10px] font-mono uppercase tracking-widest text-violet-600 font-bold mb-4 block">Step 4 of 5</span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-2">Event Details</h2>
-          <p className="text-sm text-zinc-500 mb-8">Description, lineup, and visibility</p>
+          <span className="text-[10px] font-mono uppercase tracking-widest text-violet-400 font-bold mb-4 block">Step 4 of 5</span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-(--color-text) mb-2">Event Details</h2>
+          <p className="text-sm text-(--color-text-muted) mb-8">Description, lineup, and visibility</p>
         </div>
 
         {/* Description + AI Enhance */}
@@ -181,20 +181,20 @@ export function Step4Details({
               <div
                 role="dialog"
                 aria-label="Choose a vibe for AI enhancement"
-                className="absolute bottom-full right-0 mb-2.5 w-64 bg-white border border-zinc-200 rounded-lg p-4 z-50"
+                className="absolute bottom-full right-0 mb-2.5 w-64 bg-(--color-surface) border border-(--color-border) rounded-lg p-4 z-50"
               >
                 {/* Popover header */}
                 <div className="flex items-start justify-between mb-1">
-                  <p className="text-xs font-bold text-zinc-900">Choose a vibe</p>
+                  <p className="text-xs font-bold text-(--color-text)">Choose a vibe</p>
                   <span
                     className={`text-[10px] font-bold tabular-nums whitespace-nowrap ${
-                      aiUsesLeft > 0 ? 'text-violet-600' : 'text-zinc-400'
+                      aiUsesLeft > 0 ? 'text-violet-400' : 'text-zinc-500'
                     }`}
                   >
                     {aiUsesLeft > 0 ? `✨ ${aiUsesLeft} uses remaining` : 'Limit reached for this event.'}
                   </span>
                 </div>
-                <p className="text-[10px] text-zinc-400 mb-3">
+                <p className="text-[10px] text-zinc-500 mb-3">
                   AI will rewrite your description in the chosen tone.
                 </p>
 
@@ -206,7 +206,7 @@ export function Step4Details({
                       type="button"
                       onClick={() => handleVibeSelect(vibe.key)}
                       disabled={aiUsesLeft === 0}
-                      className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-50 hover:bg-violet-50 border border-zinc-200 hover:border-violet-300 rounded-xl text-xs font-semibold text-zinc-700 hover:text-violet-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                      className="flex items-center gap-1.5 px-3 py-2.5 bg-zinc-800 hover:bg-violet-950/40 border border-(--color-border) hover:border-violet-700 rounded-xl text-xs font-semibold text-zinc-300 hover:text-violet-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                     >
                       {vibe.label}
                     </button>
@@ -216,7 +216,7 @@ export function Step4Details({
                 {/* Arrow pointing down at the button */}
                 <div className="absolute bottom-0 right-6 translate-y-full">
                   <div className="w-3 h-1.5 overflow-hidden">
-                    <div className="w-3 h-3 bg-white border border-zinc-200 rotate-45 -translate-y-1.5" />
+                    <div className="w-3 h-3 bg-(--color-surface) border border-(--color-border) rotate-45 -translate-y-1.5" />
                   </div>
                 </div>
               </div>
@@ -272,7 +272,7 @@ export function Step4Details({
 
           {/* Uses exhausted hint below textarea */}
           {aiUsesLeft === 0 && (
-            <p className="mt-1.5 text-[11px] text-zinc-400 font-medium">
+            <p className="mt-1.5 text-[11px] text-zinc-500 font-medium">
               AI enhancement limit reached for this session.
             </p>
           )}
@@ -282,7 +282,7 @@ export function Step4Details({
         <div>
           <label htmlFor="performer-input" className={fieldLabel}>
             Performers / Lineup{' '}
-            <span className="text-zinc-400 font-medium normal-case tracking-normal">(Optional)</span>
+            <span className="text-zinc-500 font-medium normal-case tracking-normal">(Optional)</span>
           </label>
           <div className="flex gap-2">
             <input
@@ -292,13 +292,13 @@ export function Step4Details({
               onChange={(e) => setPerformerInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Add performer and press Enter"
-              className="flex-1 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 text-sm focus:bg-white focus:border-violet-500 transition-all placeholder:text-zinc-400 focus:outline-none focus-visible:outline-none"
+              className="flex-1 bg-zinc-800 border border-(--color-border) rounded-xl px-4 py-3 text-(--color-text) text-sm focus:bg-(--color-surface) focus:border-violet-500 transition-all placeholder:text-zinc-500 focus:outline-none focus-visible:outline-none"
             />
             <button
               type="button"
               onClick={handleAddPerformer}
               aria-label="Add performer"
-              className="w-12 h-12 flex items-center justify-center bg-violet-50 border border-violet-200 hover:bg-violet-100 rounded-full text-violet-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 shrink-0 mt-0.5"
+              className="w-12 h-12 flex items-center justify-center bg-violet-950/40 border border-violet-900/50 hover:bg-violet-900/50 rounded-full text-violet-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 shrink-0 mt-0.5"
             >
               <Plus size={16} aria-hidden="true" />
             </button>
@@ -321,7 +321,7 @@ export function Step4Details({
         <div>
           <label htmlFor="event-notes" className={fieldLabel}>
             Special Notes / Requirements{' '}
-            <span className="text-zinc-400 font-medium normal-case tracking-normal">(Optional)</span>
+            <span className="text-zinc-500 font-medium normal-case tracking-normal">(Optional)</span>
           </label>
           <textarea
             id="event-notes"
@@ -355,14 +355,14 @@ export function Step4Details({
                 className="sr-only peer"
                 id="is-public"
               />
-              <div className="w-10 h-6 bg-zinc-200 peer-checked:bg-violet-600 rounded-full transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-violet-500 peer-focus-visible:ring-offset-2" />
+              <div className="w-10 h-6 bg-zinc-700 peer-checked:bg-violet-600 rounded-full transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-violet-500 peer-focus-visible:ring-offset-2" />
               <div className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-zinc-900">
+              <p className="text-sm font-semibold text-(--color-text)">
                 {formData.details.isPublic ? 'Public' : 'Private'}
               </p>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-xs text-(--color-text-muted) mt-0.5">
                 {formData.details.isPublic
                   ? 'Visible to all attendees on ComfyTag'
                   : 'Only accessible via direct link'}
@@ -373,8 +373,8 @@ export function Step4Details({
 
         {/* Form validation error */}
         {stepErrors && (
-          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-            <p className="text-sm text-red-600 font-medium">{stepErrors}</p>
+          <div className="bg-red-950/40 border border-red-900/50 rounded-xl px-4 py-3">
+            <p className="text-sm text-red-400 font-medium">{stepErrors}</p>
           </div>
         )}
 
@@ -382,21 +382,21 @@ export function Step4Details({
 
       {/* Sticky nav bar */}
       <div
-        className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-zinc-200/80 p-4 z-50"
+        className="fixed bottom-0 max-md:bottom-24 inset-x-0 bg-(--color-surface) border-t border-(--color-border) p-4 z-50"
         style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
       >
         <div className="max-w-3xl mx-auto flex justify-between items-center">
           <button
             type="button"
             onClick={onPrev}
-            className="bg-white border border-zinc-200 text-zinc-700 font-bold py-3 px-8 rounded-full hover:bg-zinc-50 active:scale-95 transition-all text-sm"
+            className="bg-(--color-surface) border border-(--color-border) text-zinc-300 font-bold py-3 px-8 rounded-full hover:bg-zinc-800 active:scale-95 transition-all text-sm"
           >
             Back
           </button>
           <button
             type="button"
             onClick={onNext}
-            className="bg-zinc-900 text-white font-bold py-3 px-8 rounded-full active:scale-95 transition-all text-sm"
+            className="bg-violet-600 text-white font-bold py-3 px-8 rounded-full active:scale-95 transition-all text-sm"
           >
             Review & Launch →
           </button>

@@ -1,23 +1,26 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import type { Ticket, User } from '@comfytag/types'
 import { LoadingSpinner, EmptyState } from '@comfytag/ui'
 import { api } from '@/lib/api'
 import { Navbar } from '@/components/layout/Navbar'
-import { TicketListItem } from '@/components/tickets/TicketListItem'
+import { TicketWalletCard } from '@/components/tickets/TicketWalletCard'
 import { FaceEnrollmentBanner } from '@/components/tickets/FaceEnrollmentBanner'
 import { useMyTickets } from '@/hooks/useTickets'
+import { useBecomePartner } from '@/hooks/useProfile'
+
+type WalletTab = 'all' | 'upcoming' | 'past'
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function TicketsPage() {
   const { data: session, status } = useSession()
-  const router = useRouter()
   const { data: tickets = [], isLoading } = useMyTickets()
+  const [activeTab, setActiveTab] = useState<WalletTab>('all')
+  const { mutate: becomePartner, isPending: isBecomingPartner } = useBecomePartner()
 
   const { data: profileData } = useQuery({
     queryKey: ['profile', session?.user?.id],
@@ -105,32 +108,60 @@ export default function TicketsPage() {
 
   const showFaceBanner = upcoming.length > 0 && !bannerUser.faceEnrolled
 
-  const handleTicketAction = (
-    action: 'show-qr' | 'transfer' | 'details',
-    ticket: Ticket
-  ): void => {
-    if (action === 'transfer') {
-      router.push(`/tickets/${ticket._id}/transfer`)
-    } else {
-      router.push(`/tickets/${ticket._id}`)
-    }
-  }
+  const showUpcoming = (activeTab === 'all' || activeTab === 'upcoming') && upcoming.length > 0
+  const showPast = (activeTab === 'all' || activeTab === 'past') && past.length > 0
+  const tabHasNoResults =
+    (activeTab === 'upcoming' && upcoming.length === 0) ||
+    (activeTab === 'past' && past.length === 0)
 
   return (
     <>
       <Navbar />
-      <div className="w-full min-h-screen bg-zinc-50/50 pt-24 pb-16">
-        <div className="max-w-5xl mx-auto px-4 md:px-8">
+      <div className="w-full min-h-screen bg-(--color-bg) pt-8 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* ── Page Header ── */}
-          <div className="flex items-center gap-3 mb-8">
-            <h1 className="text-3xl font-black text-zinc-900 tracking-tight">My Wallet</h1>
-            {!isLoading && upcoming.length > 0 && (
-              <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-700 text-xs font-bold tabular-nums">
-                {upcoming.length} active
-              </span>
+          <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl sm:text-4xl font-bold text-(--color-text) tracking-tight">Ticket Wallet</h1>
+                {!isLoading && upcoming.length > 0 && (
+                  <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full bg-(--color-brand-alpha-8) text-brand text-xs font-bold tabular-nums">
+                    {upcoming.length} active
+                  </span>
+                )}
+              </div>
+              <p className="text-(--color-text-muted) mt-1">
+                Manage your entries, past events, and digital access.
+              </p>
+            </div>
+
+            {tickets.length > 0 && (
+              <div className="flex gap-1 p-1 bg-(--color-surface-2) rounded-xl w-fit">
+                {(
+                  [
+                    { value: 'all' as const, label: 'All Tickets' },
+                    { value: 'upcoming' as const, label: 'Upcoming' },
+                    { value: 'past' as const, label: 'Past' },
+                  ]
+                ).map((tab) => (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => setActiveTab(tab.value)}
+                    aria-pressed={activeTab === tab.value}
+                    className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                      activeTab === tab.value
+                        ? 'bg-(--color-surface) text-brand'
+                        : 'text-(--color-text-muted) hover:text-(--color-text)'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             )}
-          </div>
+          </header>
 
           {/* ── Face Biometric Promo Banner ── */}
           {showFaceBanner && (
@@ -150,15 +181,15 @@ export default function TicketsPage() {
 
           ) : tickets.length === 0 ? (
             /* ── Empty wallet placeholder ── */
-            <div className="border-2 border-dashed border-zinc-200 rounded-2xl bg-white p-16 text-center flex flex-col items-center justify-center mt-8">
-              <div className="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center mb-5">
+            <div className="border-2 border-dashed border-(--color-border) rounded-2xl bg-(--color-surface) p-16 text-center flex flex-col items-center justify-center mt-8">
+              <div className="w-16 h-16 rounded-2xl bg-(--color-surface-2) flex items-center justify-center mb-5">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="1.5"
-                  className="w-8 h-8 text-zinc-400"
+                  className="w-8 h-8 text-(--color-text-muted)"
                   aria-hidden="true"
                 >
                   <path
@@ -168,46 +199,56 @@ export default function TicketsPage() {
                   />
                 </svg>
               </div>
-              <p className="text-base font-semibold text-zinc-700 mb-2">Your wallet is currently empty.</p>
-              <p className="text-sm text-zinc-500 mb-6 max-w-xs leading-relaxed">
+              <p className="text-base font-semibold text-(--color-text) mb-2">Your wallet is currently empty.</p>
+              <p className="text-sm text-(--color-text-muted) mb-6 max-w-xs leading-relaxed">
                 Explore active vibes to book your next live pass.
               </p>
               <Link
                 href="/events"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-white text-sm font-semibold rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand hover:bg-brand-dark text-white text-sm font-semibold rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
               >
                 Browse Events
               </Link>
             </div>
 
           ) : (
-            /* ── Ticket pass list ── */
-            <div className="space-y-4 mt-8">
+            /* ── Ticket bento grid ── */
+            <div className="mt-2">
 
-              {upcoming.length > 0 && (
-                <section>
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">
-                    Upcoming Passes
-                  </h2>
-                  <div className="space-y-3">
+              {showUpcoming && (
+                <section className={showPast && activeTab === 'all' ? 'mb-10' : ''}>
+                  {activeTab === 'all' && (
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-(--color-text-muted) mb-4">
+                      Upcoming
+                    </h2>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {upcoming.map((t) => (
-                      <TicketListItem key={t._id} ticket={t} onAction={handleTicketAction} />
+                      <TicketWalletCard key={t._id} ticket={t} />
                     ))}
                   </div>
                 </section>
               )}
 
-              {past.length > 0 && (
-                <section className={upcoming.length > 0 ? 'mt-8' : ''}>
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-3">
-                    Past Passes
-                  </h2>
-                  <div className="space-y-3">
+              {showPast && (
+                <section>
+                  {activeTab === 'all' && (
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-(--color-text-muted) mb-4">
+                      Past
+                    </h2>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {past.map((t) => (
-                      <TicketListItem key={t._id} ticket={t} isPast onAction={handleTicketAction} />
+                      <TicketWalletCard key={t._id} ticket={t} isPast />
                     ))}
                   </div>
                 </section>
+              )}
+
+              {tabHasNoResults && (
+                <p className="text-sm text-(--color-text-muted) text-center py-16">
+                  {activeTab === 'upcoming' ? 'No upcoming tickets.' : 'No past tickets.'}
+                </p>
               )}
 
             </div>
@@ -215,22 +256,41 @@ export default function TicketsPage() {
 
           {/* ── Become a Partner Banner (non-partners only) ── */}
           {!session.user.isPartner && (
-            <div className="mt-12 rounded-2xl bg-violet-50 border border-violet-200 px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="mt-12 rounded-2xl bg-(--color-brand-alpha-8) border border-brand-light px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-bold text-violet-900">Enjoyed attending?</p>
-                <p className="text-sm text-violet-700 mt-0.5">Host your own event and sell tickets on ComfyTag.</p>
+                <p className="text-sm font-bold text-brand">Enjoyed attending?</p>
+                <p className="text-sm text-(--color-text-muted) mt-0.5">Host your own event and sell tickets on ComfyTag.</p>
               </div>
-              <Link
-                href="/profile"
-                className="shrink-0 inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
+              <button
+                type="button"
+                onClick={() => becomePartner()}
+                disabled={isBecomingPartner}
+                className="shrink-0 inline-flex items-center gap-2 bg-brand hover:bg-brand-dark text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Become a Partner →
-              </Link>
+                {isBecomingPartner ? 'Setting up your dashboard…' : 'Become a Partner'}
+              </button>
             </div>
           )}
 
         </div>
       </div>
+
+      {/* ── Floating Action Button: claim a ticket by code ── */}
+      {!isLoading && tickets.length > 0 && (
+        <Link
+          href="/claim-ticket"
+          aria-label="Add ticket by code"
+          className="group fixed right-6 sm:right-8 bottom-[calc(64px+env(safe-area-inset-bottom)+20px)] md:bottom-8 w-14 h-14 sm:w-16 sm:h-16 bg-brand text-white rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-40 no-underline"
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:rotate-90" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-3 bg-(--color-text) text-(--color-bg) px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
+            Add Ticket Code
+          </span>
+        </Link>
+      )}
     </>
   )
 }

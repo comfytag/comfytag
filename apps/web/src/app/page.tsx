@@ -1,13 +1,11 @@
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { HeroSection } from '@/components/home/HeroSection'
-import { FomoStrip } from '@/components/home/FomoStrip'
-import { HomeClientShell } from '@/components/home/HomeClientShell'
-import { HomeFeedClient } from '@/components/home/HomeFeedClient'
-import { EditorPicksSection } from '@/components/home/EditorPicksSection'
-import { HowItWorksSection, type CmsStep } from '@/components/home/HowItWorksSection'
-import { CategoryGridSection, type CategoryGridItem } from '@/components/home/CategoryGridSection'
-import { TestimonialsSection } from '@/components/home/TestimonialsSection'
+import { StoryReel } from '@/components/home/StoryReel'
+import { CategoryPillsBar } from '@/components/home/CategoryPillsBar'
+import { FeaturedExperiencesSection } from '@/components/home/FeaturedExperiencesSection'
+import { TrendingEventsSection } from '@/components/home/TrendingEventsSection'
+import { NewsletterSection } from '@/components/home/NewsletterSection'
 import { JsonLd } from '@/components/seo/JsonLd'
 import type { Event, Category } from '@comfytag/types'
 
@@ -31,76 +29,6 @@ async function fetchSiteConfig(): Promise<SiteConfigData> {
     return json.data ?? {}
   } catch {
     return {}
-  }
-}
-
-// ─── Marquee items (FomoStrip) ────────────────────────────────────────────────
-
-interface MarqueeStripItem {
-  text: string
-  pulse?: boolean
-  dotColor?: 'red' | 'violet'
-}
-
-async function fetchMarqueeItems(): Promise<MarqueeStripItem[]> {
-  try {
-    const res = await fetch(`${API}/cms/marquee`, { next: { revalidate: 60 } })
-    if (!res.ok) return []
-    const json = (await res.json()) as { success: boolean; data: MarqueeStripItem[] }
-    return Array.isArray(json.data) ? json.data : []
-  } catch {
-    return []
-  }
-}
-
-// ─── How It Works steps ───────────────────────────────────────────────────────
-
-async function fetchHowItWorksSteps(): Promise<CmsStep[]> {
-  try {
-    const res = await fetch(`${API}/cms/how-it-works`, { next: { revalidate: 3600 } })
-    if (!res.ok) return []
-    const json = (await res.json()) as { success: boolean; data: CmsStep[] }
-    return Array.isArray(json.data) ? json.data : []
-  } catch {
-    return []
-  }
-}
-
-// ─── Category vibes grid (CategoryGridSection) ───────────────────────────────
-
-const CATEGORY_IMAGES: Record<string, string> = {
-  'Music':                   'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80',
-  'Comedy':                  'https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=800&q=80',
-  'Tech & Innovation':       'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80',
-  'Business & Finance':      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&q=80',
-  'Fashion':                 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
-  'Sports':                  'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&q=80',
-  'Food & Drinks':           'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80',
-  'Arts & Culture':          'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=800&q=80',
-  'Health & Wellness':       'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80',
-  'Education':               'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&q=80',
-  'Kids & Family':           'https://images.unsplash.com/photo-1526634332515-d56c5fd16991?w=800&q=80',
-  'Religion & Spirituality': 'https://images.unsplash.com/photo-1548625149-720634a9b5a8?w=800&q=80',
-  'Networking':              'https://images.unsplash.com/photo-1515169067868-5387ec356754?w=800&q=80',
-  'Film & Media':            'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800&q=80',
-  'Games & Esports':         'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80',
-}
-const CATEGORY_IMAGE_FALLBACK = 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&q=80'
-
-async function fetchCategoryVibes(): Promise<CategoryGridItem[]> {
-  try {
-    const res = await fetch(`${API}/events/category-counts`, { next: { revalidate: 300 } })
-    if (!res.ok) return []
-    const json = (await res.json()) as { success: boolean; data: { category: string; count: number }[] }
-    const counts = Array.isArray(json.data) ? json.data : []
-    return counts.slice(0, 4).map((item) => ({
-      label: item.category,
-      slug: item.category,
-      image: CATEGORY_IMAGES[item.category] ?? CATEGORY_IMAGE_FALLBACK,
-      count: `${item.count} ${item.count === 1 ? 'Event' : 'Events'}`,
-    }))
-  } catch {
-    return []
   }
 }
 
@@ -141,34 +69,6 @@ async function fetchEditorPicks(): Promise<Event[]> {
     return (Array.isArray(obj.data) ? obj.data : Array.isArray(obj.events) ? obj.events : []) as Event[]
   } catch {
     return []
-  }
-}
-
-interface TestimonialRaw {
-  _id: string
-  name?: string
-  userName?: string
-  userImage?: string
-  text?: string
-  quote?: string
-  rating?: number
-}
-
-interface TestimonialNormalized {
-  _id: string
-  userName: string
-  userImage?: string
-  quote: string
-  rating?: number
-}
-
-function normalizeTestimonial(t: TestimonialRaw): TestimonialNormalized {
-  return {
-    _id: t._id,
-    userName: t.userName ?? t.name ?? '',
-    userImage: t.userImage,
-    quote: t.quote ?? t.text ?? '',
-    rating: t.rating,
   }
 }
 
@@ -213,60 +113,18 @@ async function fetchFaqs(): Promise<FaqItem[]> {
   }
 }
 
-async function fetchTestimonials(): Promise<TestimonialNormalized[]> {
-  const defaultTestimonials: TestimonialNormalized[] = [
-    {
-      _id: '1',
-      userName: 'Zainab',
-      quote: 'Finally a ticket app that gets it. No stress, no QR codes, just my face. Love it.',
-      rating: 5,
-    },
-    {
-      _id: '2',
-      userName: 'Tunde',
-      quote: 'The checkout is so fast I thought it didn\'t work. But my ticket was there. Insane.',
-      rating: 5,
-    },
-    {
-      _id: '3',
-      userName: 'Amara',
-      quote: 'No more digging for my ticket at the door. I just show up and boom — I\'m in.',
-      rating: 5,
-    },
-  ]
-
-  try {
-    const res = await fetch(`${API}/testimonials`, { next: { revalidate: 3600 } })
-    if (!res.ok) return defaultTestimonials
-    const data: unknown = await res.json()
-    const raw = (Array.isArray(data) ? data : Array.isArray((data as Record<string, unknown>).data) ? (data as Record<string, unknown>).data : []) as TestimonialRaw[]
-    const fetched = raw.map(normalizeTestimonial)
-    return fetched.length > 0 ? fetched : defaultTestimonials
-  } catch {
-    return defaultTestimonials
-  }
-}
-
 export default async function HomePage() {
   const [
     events,
     categories,
     editorPicks,
-    testimonials,
     siteConfig,
-    marqueeItems,
-    howItWorksSteps,
-    featuredCategories,
     faqs,
   ] = await Promise.all([
     fetchEvents(),
     fetchCategories(),
     fetchEditorPicks(),
-    fetchTestimonials(),
     fetchSiteConfig(),
-    fetchMarqueeItems(),
-    fetchHowItWorksSteps(),
-    fetchCategoryVibes(),
     fetchFaqs(),
   ])
 
@@ -330,14 +188,12 @@ export default async function HomePage() {
         statEvents={siteConfig.statEvents || undefined}
         statCities={siteConfig.statCities || undefined}
       />
-      <FomoStrip items={marqueeItems.length > 0 ? marqueeItems : undefined} />
-      <EditorPicksSection events={editorPicks} />
-      <HowItWorksSection steps={howItWorksSteps.length > 0 ? howItWorksSteps : undefined} />
-      <CategoryGridSection categories={featuredCategories.length > 0 ? featuredCategories : undefined} />
-      {/* <HomeClientShell /> */}
       <main>
-        <HomeFeedClient events={events} categories={categories} />
-        {/* <TestimonialsSection testimonials={testimonials} /> */}
+        <StoryReel events={events} />
+        <CategoryPillsBar categories={categories} />
+        <FeaturedExperiencesSection events={editorPicks} />
+        <TrendingEventsSection events={events} />
+        <NewsletterSection />
       </main>
       <Footer />
     </>

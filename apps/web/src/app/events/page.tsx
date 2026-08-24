@@ -1,5 +1,4 @@
 import { Navbar } from '@/components/layout/Navbar'
-import { Footer } from '@/components/layout/Footer'
 import { EventsBrowseClient } from './EventsBrowseClient'
 import type { Event } from '@comfytag/types'
 import type { Metadata } from 'next'
@@ -17,9 +16,9 @@ export const metadata: Metadata = {
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4002'
 
-async function fetchInitialEvents(): Promise<Event[]> {
+async function fetchInitialEvents(showPast: boolean): Promise<Event[]> {
   try {
-    const res = await fetch(`${API}/events?limit=12&page=1`, { next: { revalidate: 60 } })
+    const res = await fetch(`${API}/events/search?limit=12&page=1${showPast ? '&showPast=true' : ''}`, { next: { revalidate: 60 } })
     if (!res.ok) return []
     const data = (await res.json()) as unknown
     if (Array.isArray(data)) return data as Event[]
@@ -47,8 +46,9 @@ async function fetchStates(): Promise<string[]> {
 }
 
 export default async function EventsPage() {
-  const [initialEvents, eventTypes, states] = await Promise.all([
-    fetchInitialEvents(),
+  const [initialUpcoming, initialPast, eventTypes, states] = await Promise.all([
+    fetchInitialEvents(false),
+    fetchInitialEvents(true),
     fetchEventTypes(),
     fetchStates(),
   ])
@@ -56,8 +56,12 @@ export default async function EventsPage() {
   return (
     <>
       <Navbar />
-      <EventsBrowseClient initialEvents={initialEvents} eventTypes={eventTypes} states={states} />
-      <Footer />
+      <EventsBrowseClient
+        initialUpcoming={initialUpcoming}
+        initialPast={initialPast}
+        eventTypes={eventTypes}
+        states={states}
+      />
     </>
   )
 }

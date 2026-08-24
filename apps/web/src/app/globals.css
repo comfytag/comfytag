@@ -58,8 +58,8 @@
   --radius-2xl:  var(--radius-2xl);
   --radius-full: var(--radius-full);
 
-  /* Font families */
-  --font-sans:            var(--font-sans);
+  /* Font families — Inter primary (v2.0); was fed by an unused Geist instance */
+  --font-sans:            var(--font-inter), -apple-system, sans-serif;
   --font-display: var(--font-anybody), var(--font-space-grotesk), sans-serif;
   --font-mono:    var(--font-jetbrains-mono), ui-monospace, monospace;
 
@@ -88,36 +88,36 @@
    Zinc is the cleanest neutral: no warm (stone) or cool (slate) cast
    ───────────────────────────────────────────────────────────────── */
 :root {
-  /* ── Zinc surface scale ──────────────────────────────────────── */   /* zinc-50  */   /* zinc-900 */
-  --card:            oklch(1 0 0);
-  --card-foreground:            oklch(0.145 0 0);   /* zinc-900 */
-  --popover:            oklch(1 0 0);
-  --popover-foreground:            oklch(0.145 0 0);
+  /* ── v2.0 public surfaces — warm stone, see design.md ─────────── */
+  --card:            #FFFFFF;
+  --card-foreground:            #1C1917;   /* warm near-black */
+  --popover:            #FFFFFF;
+  --popover-foreground:            #1C1917;
 
-  /* ── Violet-600 primary ──────────────────────────────────────── */
-  --primary:            oklch(0.205 0 0);   /* violet-600 */
-  --primary-foreground:            oklch(0.985 0 0);
+  /* ── Brand violet primary ──────────────────────────────────────── */
+  --primary:            #7C3AED;   /* brand */
+  --primary-foreground:            #FFFFFF;
 
-  /* ── Zinc-100 secondary ──────────────────────────────────────── */
-  --secondary:            oklch(0.97 0 0);   /* zinc-100 */
-  --secondary-foreground:            oklch(0.205 0 0);   /* zinc-900 */
+  /* ── Violet-tinted secondary (matches badges.draft token) ──────── */
+  --secondary:            #F5F3FF;
+  --secondary-foreground:            #5B21B6;   /* brand-dark */
 
-  /* ── Muted (zinc-100 / zinc-500) ─────────────────────────────── */
-  --muted:            oklch(0.97 0 0);   /* zinc-100 */
-  --muted-foreground:            oklch(0.556 0 0);   /* zinc-500 */
+  /* ── Muted (neutral stone bg / warm secondary text) ────────────── */
+  --muted:            #F5F5F4;
+  --muted-foreground:            #78716C;   /* textPublic.secondary */
 
   /* ── Accent (violet tint for hover/selected states) ──────────── */
-  --accent:            oklch(0.97 0 0);   /* violet-100 */
-  --accent-foreground:            oklch(0.205 0 0);   /* violet-800 */
+  --accent:            #EDE9FE;   /* brand-light */
+  --accent-foreground:            #5B21B6;   /* brand-dark */
 
   /* ── Destructive ─────────────────────────────────────────────── */
-  --destructive:            oklch(0.577 0.245 27.325);   /* red-500 */
+  --destructive:            #EF4444;
   --destructive-foreground: #FFFFFF;
 
-  /* ── Chrome (zinc-200 for clean borders) ─────────────────────── */
-  --border:            oklch(0.922 0 0);   /* zinc-200 */
-  --input:            oklch(0.922 0 0);   /* zinc-200 */
-  --ring:            oklch(0.708 0 0);   /* violet-600 — focus ring */
+  /* ── Chrome (warm stone border, see design.md) ─────────────────── */
+  --border:            #E8E5E0;
+  --input:            #E8E5E0;
+  --ring:            #7C3AED;   /* brand — focus ring */
 
   /* ── shadcn default radius ───────────────────────────────────── */
   --radius:            0.625rem;
@@ -132,13 +132,17 @@
   --color-brand-alpha-8:    rgba(124, 58, 237, 0.08);
 
   /* ── Semantic surface aliases (backward compat) ──────────────── */
-  --color-bg:               #FAFAFA;   /* zinc-50  */
+  --color-bg:               #FAFAF9;   /* warm off-white, see design.md */
   --color-surface:          #FFFFFF;
-  --color-surface-2:        #F4F4F5;   /* zinc-100 */
-  --color-text:             #18181B;   /* zinc-900 */
-  --color-text-muted:       #71717A;   /* zinc-500 */
-  --color-text-secondary:   #71717A;   /* zinc-500 */
-  --color-border:           #E4E4E7;   /* zinc-200 */
+  --color-surface-2:        #F5F5F4;   /* neutral input/muted bg */
+  --color-text:             #1C1917;   /* warm near-black */
+  /* NOTE: kept at the secondary (#78716C) lightness, not the lighter textPublic.muted
+     (#A8A29E) tier — this var is used pervasively for readable supporting copy
+     (subtitles, help text) across auth/checkout forms; the lighter tier fails
+     WCAG AA 4.5:1 on white for body-adjacent text. */
+  --color-text-muted:       #78716C;   /* textPublic.secondary */
+  --color-text-secondary:   #78716C;   /* textPublic.secondary */
+  --color-border:           #E8E5E0;
 
   /* ── Status tokens ───────────────────────────────────────────── */
   --color-success:          #10B981;   /* emerald-500 */
@@ -149,7 +153,7 @@
   --color-info:             #3B82F6;   /* blue-500 */
 
   /* ── Overlay + on-brand ──────────────────────────────────────── */
-  --color-overlay:          rgba(24, 24, 27, 0.60);  /* zinc-900 overlay */
+  --color-overlay:          rgba(28, 25, 23, 0.60);  /* warm near-black overlay */
   --color-text-on-brand:    #FFFFFF;
 
   /* ── Radius scale (v2.0 — drastically tightened, see design.md) ─ */
@@ -176,8 +180,8 @@
   --ease-entrance:  cubic-bezier(0.0, 0.0, 0.2, 1.0);
   --ease-exit:      cubic-bezier(0.4, 0.0, 1.0, 1.0);
   --ease-standard:  cubic-bezier(0.4, 0.0, 0.2, 1.0);
-  --background:            oklch(1 0 0);
-  --foreground:            oklch(0.145 0 0);
+  --background:            #FAFAF9;
+  --foreground:            #1C1917;
   --chart-1:            oklch(0.87 0 0);
   --chart-2:            oklch(0.556 0 0);
   --chart-3:            oklch(0.439 0 0);
@@ -208,7 +212,7 @@ html {
 }
 
 body {
-  font-family:               var(--font-space-grotesk), var(--font-inter), -apple-system, sans-serif;
+  font-family:               var(--font-inter), -apple-system, sans-serif;
   font-size:                 16px;
   line-height:               1.6;
   -webkit-font-smoothing:    antialiased;

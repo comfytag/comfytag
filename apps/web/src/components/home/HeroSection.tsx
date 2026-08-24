@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Search } from 'lucide-react';
+import { Search, ScanFace, ArrowRight } from 'lucide-react';
 import { SearchSuggestionsOverlay } from '@/components/ui/SearchSuggestionsOverlay';
 
 interface HeroSectionProps {
@@ -18,8 +19,6 @@ export function HeroSection({
   headline,
   subtitle,
   statAttendees,
-  statEvents,
-  statCities,
 }: HeroSectionProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,139 +26,98 @@ export function HeroSection({
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push('/events?q=' + encodeURIComponent(searchQuery.trim()));
-    } else {
-      router.push('/events');
-    }
+    router.push(searchQuery.trim() ? '/events?q=' + encodeURIComponent(searchQuery.trim()) : '/events');
   };
 
   return (
-    <section className="w-full px-4 md:px-8 pb-4 md:pb-4">
-      {/*
-        overflow-hidden is intentionally REMOVED from this container.
-        It was clipping the absolutely-positioned dropdown at the card boundary.
-        The background layer below carries its own overflow-hidden + rounded corners
-        so the visual shape is preserved.
-      */}
-      <div className="relative w-full mt-6 lg:mt-10 rounded-2xl border border-white/10 bg-zinc-950 min-h-[60svh] flex flex-col items-center justify-center text-center px-4 py-20">
+    <section
+      className="relative overflow-hidden flex items-center min-h-[560px] md:min-h-[760px]"
+      style={{ background: 'radial-gradient(circle at 70% 30%, var(--color-brand-light) 0%, var(--color-bg) 60%)' }}
+    >
+      <div className="w-full max-w-7xl mx-auto px-4 md:px-10 py-16 md:py-0 grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-12 items-center">
 
-        {/* Background layer — isolated overflow-hidden so bg image clips to rounded corners */}
-        <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-          <img
-            src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=2500&auto=format&fit=crop"
-            alt="Concert Crowd"
-            className="absolute inset-0 w-full h-full object-cover opacity-50"
-          />
-          <div className="absolute inset-0 bg-linear-to-b from-zinc-950/40 via-zinc-950/20 to-zinc-950/90" />
-        </div>
-
-        {/*
-          Content wrapper elevated to z-20.
-          Stats are z-10 and come later in DOM — they would normally win by paint order.
-          z-20 here ensures this entire stacking context outranks them.
-        */}
-        <div className="relative z-20 flex flex-col items-center w-full mt-auto">
-
-          {/* Badge */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/20 backdrop-blur-md px-4 py-1.5 text-xs font-semibold text-violet-100 uppercase tracking-widest">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500" />
-            </span>
-            Nigeria&apos;s #1 Biometric Ticketing
+        {/* ── Left: copy + CTAs (desktop) / single column (mobile) ── */}
+        <div className="md:col-span-6 z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-(--color-brand-alpha-8) text-brand font-bold text-xs uppercase tracking-wider mb-6">
+            <ScanFace className="w-[18px] h-[18px]" aria-hidden="true" />
+            Biometric Ticketing 2.0
           </div>
 
-          {/* Headline — custom copy from CMS, or default with gradient accent */}
-          <h1 className="max-w-4xl text-5xl md:text-7xl font-extrabold tracking-tighter text-white leading-[1.1] mb-6">
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-(--color-text) leading-[1.1] mb-6">
             {headline ?? (
               <>
-                Your face is your{' '}
-                <span className="text-transparent bg-clip-text bg-linear-to-r from-violet-400 to-violet-200">
-                  ticket.
-                </span>
+                Your face is<br />
+                <span className="text-brand">your ticket</span>
               </>
             )}
           </h1>
 
-          {/* Subtitle — custom copy from CMS, or default with badge */}
-          <p className="max-w-2xl text-lg md:text-xl text-zinc-300 mb-10 font-medium">
-            {subtitle ?? (
-              <>
-                No QR codes. No printouts. Just show up and walk in.{' '}
-                <span className="inline-block ml-2 bg-white/10 text-zinc-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-white/20 align-middle tracking-widest">
-                  Face Ticketing Coming Soon
-                </span>
-              </>
-            )}
+          <p className="text-lg text-(--color-text-muted) mb-8 md:mb-10 max-w-lg">
+            {subtitle ?? "The world's first seamless entry experience. No codes, no paper, no waiting. Just show up and enjoy the moment."}
           </p>
 
-          {/*
-            Search wrapper at z-[120].
-            Creates a new stacking context inside z-20 content wrapper so the
-            dropdown (absolute, z-100 inside) clears every sibling within this context.
-          */}
-          <div className="relative z-[120] w-full max-w-3xl mx-auto">
-            <form
-              onSubmit={handleSearch}
-              className="flex items-center bg-white rounded-full p-1.5 md:p-2 border border-transparent focus-within:border-brand focus-within:ring-4 focus-within:ring-violet-500/30 transition-colors duration-(--duration-micro) ease-(--ease-standard)"
-            >
-              <div className="flex items-center flex-1 min-w-0 pl-3 md:pl-4 pr-2">
-                <Search className="h-5 w-5 text-zinc-400 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Search events in Lagos, Abuja..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  spellCheck={false}
-                  className="flex-1 min-w-0 w-full bg-transparent border-none outline-none! focus:outline-none! focus:ring-0! text-zinc-900 placeholder:text-zinc-400 px-2 md:px-4 py-2 md:py-3 text-sm md:text-base truncate"
-                />
-              </div>
-              <button
-                type="submit"
-                className="bg-brand hover:bg-brand-dark text-white rounded-full px-4 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold transition-colors duration-(--duration-micro) ease-(--ease-standard) shrink-0"
-              >
-                Find Events
-              </button>
-            </form>
-
+          {/* Search (matches mockup's inline nav search intent, surfaced here for mobile-first discovery) */}
+          <form onSubmit={handleSearch} className="relative mb-8 md:hidden">
+            <div className="flex items-center bg-(--color-surface) rounded-full border border-(--color-border) focus-within:border-brand transition-colors">
+              <Search className="w-5 h-5 text-(--color-text-muted) ml-4 shrink-0" aria-hidden="true" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                placeholder="Search events…"
+                className="flex-1 min-w-0 bg-transparent border-none outline-none px-3 py-3.5 text-sm text-(--color-text) placeholder:text-(--color-text-muted)"
+              />
+            </div>
             <SearchSuggestionsOverlay
               query={searchQuery}
               isOpen={searchFocused}
-              onClose={() => {
-                setSearchFocused(false);
-                setSearchQuery('');
-              }}
+              onClose={() => { setSearchFocused(false); setSearchQuery(''); }}
             />
-          </div>
+          </form>
 
-          {/* Organizer CTA */}
-          <p className="mt-5 text-sm text-zinc-400">
-            Are you an organiser?{' '}
-            <Link href="/profile" className="text-violet-300 hover:text-violet-200 font-semibold underline underline-offset-2 transition-colors">
-              Host your event on ComfyTag →
+          <div className="flex flex-wrap gap-4">
+            <Link
+              href="/events"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-brand text-white rounded-xl font-bold hover:bg-brand-dark transition-colors"
+            >
+              Explore Events
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </Link>
-          </p>
-        </div>
-
-        {/* Stats — z-10 keeps them visible above the bg layer but below the search module (z-20) */}
-        <div className="relative z-10 w-full max-w-3xl mt-16 pt-8 border-t border-white/10 grid grid-cols-3 gap-4 md:gap-8 divide-x divide-white/10">
-          <div className="flex flex-col items-center">
-            <span className="text-2xl md:text-4xl font-bold text-white tracking-tight">{statAttendees ?? '14K+'}</span>
-            <span className="text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest mt-1">Attendees</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-2xl md:text-4xl font-bold text-white tracking-tight">{statEvents ?? '200+'}</span>
-            <span className="text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest mt-1">Events</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-2xl md:text-4xl font-bold text-white tracking-tight">{statCities ?? '3'}</span>
-            <span className="text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest mt-1">Cities</span>
+            <Link
+              href="/about"
+              className="px-8 py-4 bg-(--color-surface) border-2 border-brand/20 text-brand rounded-xl font-bold hover:bg-(--color-brand-alpha-4) transition-colors"
+            >
+              How it Works
+            </Link>
           </div>
         </div>
 
+        {/* ── Right: tilted image card + live-status badge (desktop only) ── */}
+        <div className="hidden md:block md:col-span-6 relative h-full min-h-[420px]">
+          <div className="relative bg-(--color-surface) border border-(--color-border) p-4 rounded-[2rem] rotate-3 hover:rotate-0 transition-transform duration-700">
+            <div className="relative rounded-[1.5rem] w-full h-[480px] overflow-hidden">
+              <Image
+                src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=1200&auto=format&fit=crop"
+                alt="Attendees entering an event with face-scan entry"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+
+            <div className="absolute -bottom-6 -left-6 bg-(--color-surface) border border-(--color-border) p-6 rounded-2xl max-w-[200px]">
+              <p className="text-xs font-bold text-brand mb-1">Live Status</p>
+              <p className="text-lg font-bold text-(--color-text)">{statAttendees ?? ''} {statAttendees ? 'Entered' : ""}</p>
+              <div className="flex mt-2 -space-x-2">
+                <div className="w-8 h-8 rounded-full border-2 border-(--color-surface) bg-zinc-300" aria-hidden="true" />
+                <div className="w-8 h-8 rounded-full border-2 border-(--color-surface) bg-zinc-400" aria-hidden="true" />
+                <div className="w-8 h-8 rounded-full border-2 border-(--color-surface) bg-zinc-500" aria-hidden="true" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -47,3 +47,24 @@ export function useSavedEvents() {
     enabled: !!session?.user?.token,
   })
 }
+
+// Upgrades the signed-in attendee's existing account to organizer access and
+// hands them off to the partner dashboard — the same PUT /auth/register-organizer
+// endpoint apps/mobile already uses, and the same /handoff mechanism the
+// "Go to Partner Dashboard" button uses for accounts that are already partners.
+// This works on the current session's own token, so it never touches the
+// separate partner register/login flow (and its existing-account 409 dead end).
+export function useBecomePartner() {
+  const { data: session } = useSession()
+  const id = session?.user?.id
+  return useMutation({
+    mutationFn: () =>
+      api
+        .put<{ message: string; user: User; token: string }>(`/auth/register-organizer/${id}`)
+        .then(r => r.data),
+    onSuccess: ({ token }) => {
+      const partnerUrl = process.env.NEXT_PUBLIC_PARTNER_URL ?? 'http://localhost:3001'
+      window.location.href = `${partnerUrl}/handoff?t=${token}`
+    },
+  })
+}

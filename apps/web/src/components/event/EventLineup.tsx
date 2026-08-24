@@ -3,7 +3,6 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Divider } from '@/components/events/EventIcons'
 import { initials } from '@comfytag/utils'
 
 interface Performer {
@@ -19,9 +18,8 @@ export function EventLineup({ performers }: EventLineupProps) {
   if (!performers || performers.length === 0) return null
 
   return (
-    <>
-      <Divider />
-      <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text)', margin: '0 0 14px' }}>
+    <div>
+      <h2 className="text-xl font-bold text-(--color-text) border-l-4 border-brand pl-4 mb-4">
         Lineup
       </h2>
       <div
@@ -82,6 +80,6 @@ export function EventLineup({ performers }: EventLineupProps) {
           </Link>
         ))}
       </div>
-    </>
+    </div>
   )
 }

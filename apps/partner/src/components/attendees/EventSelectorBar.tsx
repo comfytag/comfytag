@@ -31,7 +31,7 @@ export function EventSelectorBar({ events, selectedEventId, onSelectEvent }: Eve
     <div ref={dropdownRef} className="relative inline-block min-w-70">
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="w-full flex items-center justify-between gap-2 bg-white border border-zinc-200 rounded-xl px-4 py-3 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 hover:border-zinc-300 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+        className="w-full flex items-center justify-between gap-2 bg-(--color-surface) border border-(--color-border) rounded-xl px-4 py-3 text-sm font-semibold text-(--color-text) hover:bg-zinc-800 hover:border-zinc-700 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
       >
         <span>{selectedEvent?.name ?? 'Select an event'}</span>
         <ChevronDown
@@ -42,7 +42,7 @@ export function EventSelectorBar({ events, selectedEventId, onSelectEvent }: Eve
       </button>
 
       {dropdownOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-zinc-200/80 rounded-xl z-10 max-h-72 overflow-y-auto">
+        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-(--color-surface) border border-(--color-border) rounded-xl z-10 max-h-72 overflow-y-auto">
           {events.map(event => (
             <button
               key={event._id}
@@ -50,14 +50,14 @@ export function EventSelectorBar({ events, selectedEventId, onSelectEvent }: Eve
                 onSelectEvent(event._id)
                 setDropdownOpen(false)
               }}
-              className={`w-full text-left px-4 py-3 text-sm border-b border-zinc-100 last:border-0 transition-colors ${
+              className={`w-full text-left px-4 py-3 text-sm border-b border-zinc-800 last:border-0 transition-colors ${
                 selectedEventId === event._id
-                  ? 'bg-violet-50 text-violet-700'
-                  : 'text-zinc-900 hover:bg-zinc-50'
+                  ? 'bg-violet-950/40 text-violet-400'
+                  : 'text-(--color-text) hover:bg-zinc-800'
               }`}
             >
               <div className="font-semibold">{event.name}</div>
-              <div className="text-xs text-zinc-400 mt-0.5">
+              <div className="text-xs text-zinc-500 mt-0.5">
                 {event.date
                   ? new Date(event.date).toLocaleDateString('en-GB', {
                       day: '2-digit',

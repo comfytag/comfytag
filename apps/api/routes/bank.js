@@ -1,5 +1,5 @@
 import express from 'express'
-import { createBank, deleteBank, getAllBanks, getBank, updateBank, updateBankStatus } from '../controllers/bank.js'
+import { createBank, deleteBank, getAllBanks, getBank, getBankList, updateBank, updateBankStatus } from '../controllers/bank.js'
 // import { verifyAdmin } from '../utils/admin/verifyToken.js'
 import { verifyUser, verifyAdmin, verifyToken } from '../utils/verifyToken.js'
 
@@ -16,6 +16,12 @@ router.put("/edit/:id", verifyUser,  updateBank)
 // class of bug already fixed on event.js's `/:id/activity` route). Ownership
 // is enforced controller-side against bank.user_id instead.
 router.delete("/:id", verifyToken, deleteBank)
+
+// Reference list of Nigerian banks (name + Paystack bank code) for the
+// add-bank-account dropdown. Must be declared before GET /:userId so Express
+// doesn't swallow "list" as a :userId param.
+router.get("/list", getBankList)
+
 // GET
 router.get("/:userId", verifyUser, getBank)
 // router.get("/:id", getBank)

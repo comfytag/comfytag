@@ -75,11 +75,11 @@ export function SearchInput({
           autoFocus={autoFocus}
           style={{
             width: '100%',
-            padding: '12px 40px',
-            border: `1.5px solid ${focused ? 'var(--color-brand)' : 'var(--color-border)'}`,
+            padding: '10px 40px',
+            border: `1.5px solid ${focused ? 'var(--color-brand)' : 'transparent'}`,
             borderRadius: 'var(--radius-full)',
-            background: 'var(--color-surface)',
-            fontSize: '15px',
+            background: focused ? 'var(--color-surface)' : 'var(--color-surface-2)',
+            fontSize: '14px',
             outline: 'none',
             color: 'var(--color-text)',
             transition: `border-color var(--duration-fast) var(--ease-standard)`,

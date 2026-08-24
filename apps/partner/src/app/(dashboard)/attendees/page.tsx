@@ -71,13 +71,13 @@ export default function AttendeesPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-zinc-900 tracking-tight">Attendees</h1>
-          <p className="mt-1 text-sm text-zinc-500">Manage your global guestlist</p>
+          <h1 className="text-3xl font-black text-(--color-text) tracking-tight">Attendees</h1>
+          <p className="mt-1 text-sm text-(--color-text-muted)">Manage your global guestlist</p>
         </div>
         <button
           onClick={handleExport}
           disabled={!selectedEventId || exportMutation.isPending}
-          className="bg-white border border-zinc-200 text-zinc-900 font-semibold py-2.5 px-5 rounded-xl hover:bg-zinc-50 hover:border-zinc-300 transition-colors flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+          className="bg-(--color-surface) border border-(--color-border) text-(--color-text) font-semibold py-2.5 px-5 rounded-xl hover:bg-zinc-800 hover:border-zinc-700 transition-colors flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
         >
           <Download size={16} aria-hidden="true" />
           {exportMutation.isPending ? 'Exporting…' : 'Export CSV'}
@@ -112,18 +112,18 @@ export default function AttendeesPage() {
 
       {/* Directory */}
       {!selectedEventId ? (
-        <div className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50/50">
-          <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
+        <div className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-900/50">
+          <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
             <Users size={28} className="text-zinc-400" aria-hidden="true" />
           </div>
-          <h3 className="text-zinc-900 font-bold text-lg tracking-tight">No event selected</h3>
-          <p className="mt-2 text-zinc-400 text-sm max-w-xs">
+          <h3 className="text-(--color-text) font-bold text-lg tracking-tight">No event selected</h3>
+          <p className="mt-2 text-zinc-500 text-sm max-w-xs">
             Select an event above to view and manage its attendees.
           </p>
         </div>
       ) : attendeesLoading ? (
-        <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden">
-          <div className="divide-y divide-zinc-100">
+        <div className="bg-(--color-surface) border border-(--color-border) rounded-xl overflow-hidden">
+          <div className="divide-y divide-zinc-800">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="px-6 py-4">
                 <Skeleton height={48} borderRadius={8} />
@@ -132,21 +132,21 @@ export default function AttendeesPage() {
           </div>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-zinc-200 rounded-xl bg-zinc-50/50">
-          <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
+        <div className="py-24 flex flex-col items-center justify-center text-center border-2 border-dashed border-zinc-800 rounded-xl bg-zinc-900/50">
+          <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
             <Users size={28} className="text-zinc-400" aria-hidden="true" />
           </div>
-          <h3 className="text-zinc-900 font-bold text-lg tracking-tight">
+          <h3 className="text-(--color-text) font-bold text-lg tracking-tight">
             {searchQuery || statusFilter !== 'all' ? 'No attendees found' : 'No attendees yet'}
           </h3>
-          <p className="mt-2 text-zinc-400 text-sm max-w-xs">
+          <p className="mt-2 text-zinc-500 text-sm max-w-xs">
             {searchQuery || statusFilter !== 'all'
               ? 'No attendees match your filters. Try adjusting your search.'
               : 'Attendees will appear here once tickets are sold for this event.'}
           </p>
         </div>
       ) : (
-        <div className="bg-white border border-zinc-200/80 rounded-xl overflow-hidden">
+        <div className="bg-(--color-surface) border border-(--color-border) rounded-xl overflow-hidden">
           <div className="max-h-[800px] overflow-y-auto">
             {filtered.map((attendee) => (
               <AttendeeRow

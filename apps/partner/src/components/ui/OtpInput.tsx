@@ -13,7 +13,25 @@ export function OtpInput({ length = 6, value, onChange, onComplete }: OtpInputPr
   const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(length).fill(null))
 
   function handleChange(index: number, inputValue: string) {
-    const char = inputValue.replace(/[^0-9a-zA-Z]/g, '').slice(-1)
+    const digits = inputValue.replace(/[^0-9a-zA-Z]/g, '')
+
+    if (digits.length > 1) {
+      const updated = [...value]
+      for (let i = 0; i < digits.length && index + i < length; i++) {
+        updated[index + i] = digits[i]
+      }
+      onChange(updated)
+
+      const nextIndex = Math.min(index + digits.length, length - 1)
+      inputRefs.current[nextIndex]?.focus()
+
+      if (onComplete && updated.every((d) => d !== '')) {
+        onComplete(updated.join(''))
+      }
+      return
+    }
+
+    const char = digits.slice(-1)
     const updated = [...value]
     updated[index] = char
     onChange(updated)
@@ -46,7 +64,7 @@ export function OtpInput({ length = 6, value, onChange, onComplete }: OtpInputPr
           }}
           type="text"
           inputMode="numeric"
-          maxLength={1}
+          maxLength={length}
           value={digit}
           onChange={(e) => handleChange(i, e.target.value)}
           onKeyDown={(e) => handleKeyDown(i, e)}

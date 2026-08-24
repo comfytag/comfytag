@@ -289,21 +289,37 @@ export default function SecurityPage() {
               marginBottom: '24px',
             }}
           >
-            <h2
-              style={{
-                fontSize: '18px',
-                fontWeight: 700,
-                color: 'var(--color-text)',
-                marginBottom: '20px',
-              }}
-            >
-              Face Enrollment
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+              <h2
+                style={{
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  color: 'var(--color-text)',
+                  margin: 0,
+                }}
+              >
+                Face Enrollment
+              </h2>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  color: 'var(--color-brand)',
+                  background: 'var(--color-brand-light)',
+                  padding: '3px 10px',
+                  borderRadius: '999px',
+                }}
+              >
+                Coming Soon
+              </span>
+            </div>
             <InfoField
               label="Biometric Check-In"
               value={
                 <span style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>
-                  Available in the ComfyTag mobile app
+                  Not yet available
                 </span>
               }
             />
@@ -315,8 +331,9 @@ export default function SecurityPage() {
                 lineHeight: 1.6,
               }}
             >
-              Enroll your face once in the ComfyTag app to enable frictionless
-              check-in at any event — no QR code needed.
+              We&apos;re building frictionless, biometric check-in — enroll your face
+              once and skip the line at the gate. No action needed for now; use
+              your QR ticket to check in.
             </p>
           </section>
 
