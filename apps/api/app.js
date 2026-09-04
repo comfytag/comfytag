@@ -4,6 +4,7 @@ import mongoose from "mongoose"
 import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import helmet from 'helmet';
 import http from 'http'
 import { initializeSocket, setGlobalIoInstance } from './socket/index.js'
 import { validateEnvironment } from './startup.js'
@@ -73,6 +74,12 @@ import { scheduleEventReminders } from './jobs/eventReminderJob.js'
 
 
 // Middlewares
+// Phase 12B: baseline security headers (CSP, X-Frame-Options, HSTS, etc.)
+// applied globally. Previously the ~30 legacy routers mounted below —
+// which are what the live web/partner/admin frontends actually call — had
+// none at all.
+app.use(helmet())
+
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser())

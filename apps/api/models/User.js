@@ -8,7 +8,22 @@ const UserSchema = new Schema({
     token: { type: String, },
     username: { type: String, required: true, unique: true, lowercase: true, trim: true },
         name: { type: String, required: true, },
-        email: { type: String, required: true, lowercase: true },
+        // Phase 12B — unique index added at the DB level, not just enforced
+        // in application code (the previous find-then-create checks in
+        // controllers/auth.js#register and controllers/admin.js#createAdminUser
+        // were both racy: two concurrent requests could both pass the check
+        // before either saved). `lowercase`/`trim` are schema setters, so
+        // they apply to both writes and query casting — every read/write
+        // path normalizes to the same value without needing to touch each
+        // call site individually.
+        //
+        // IMPORTANT: this index is NOT auto-created against a database that
+        // may already contain duplicate emails — MongoDB will refuse to
+        // build a unique index over existing duplicates, which can abort
+        // affected deployments at startup. Run
+        // scripts/migrate-unique-email-index.mjs first; see that script for
+        // the duplicate-detection/report step this depends on.
+        email: { type: String, required: true, lowercase: true, trim: true, unique: true },
         // emailVerified: { type: Boolean, default: false },
         businessName: { 
             type: String,

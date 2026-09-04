@@ -9,7 +9,11 @@ const router = express.Router()
 
 router.post("/:userId", verifyUser, createBank)
 // UPDATE
-router.put("/edit/:id", verifyUser,  updateBank)
+// NOTE: `:id` here is the bank record's id, not the caller's user id, so
+// verifyUser's self-match would always fail for legitimate owners (same
+// class of bug already fixed on the DELETE route below). Ownership is
+// enforced controller-side against bank.user_id instead.
+router.put("/edit/:id", verifyToken, updateBank)
 // DELETE
 // NOTE: `:id` here is the bank record's id, not the caller's user id, so
 // verifyUser's self-match would always fail for legitimate owners (same

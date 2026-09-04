@@ -1,7 +1,18 @@
 import User from '../models/User.js'
 import Audience from '../models/Audience.js'
+import Event from '../models/Event.js'
 import { createError } from '../utils/error.js'
 import { createNotification } from './notification.js'
+
+// Returns true only if the event exists and its planner_id matches partnerId
+// — mirrors controllers/audience.js's own `assertPartnerOwnsEvent` (the same
+// check `manualCheckIn`/`checkInByReference` already use for every other
+// check-in method) so face check-in is held to the identical authorization
+// standard rather than a weaker one.
+const assertPartnerOwnsEvent = async (eventId, partnerId) => {
+    const event = await Event.findOne({ _id: eventId, planner_id: partnerId }).select('_id').lean()
+    return event !== null
+}
 
 // POST /face/enroll/:userId
 // Stores encrypted face template for a user
@@ -75,6 +86,17 @@ export const verifyFace = async (req, res, next) => {
     if (!faceTemplate || !eventId) {
       return next(createError(400,
         'faceTemplate and eventId are required'))
+    }
+
+    // Authorization: only the event's own organizer (or a global admin) may
+    // run face-based check-in for it — matches manualCheckIn/checkInByReference's
+    // existing standard exactly. Without this, any authenticated user could
+    // trigger a 1:N face search (and a real check-in mutation) against an
+    // arbitrary event they have no relationship to.
+    if (!req.user.isAdmin) {
+      const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+      const ownsEvent = await assertPartnerOwnsEvent(eventId, requesterId)
+      if (!ownsEvent) return next(createError(403, 'Not authorized to run face check-in for this event'))
     }
 
     // Every active ticket for this event with a face linked to it

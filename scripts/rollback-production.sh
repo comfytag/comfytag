@@ -28,20 +28,33 @@ ssh -i "$DEPLOY_KEY" -p "$PROD_PORT" "$PROD_HOST" << 'ROLLBACK'
   echo "Stopping current containers..."
   docker compose -f docker-compose.prod.yml down --remove-orphans 2>/dev/null || true
 
-  echo "Checking available images..."
-  docker image ls | grep comfytag
+  echo "Restoring the previous deployment (tagged :rollback by the deploy pipeline before this release replaced it)..."
+  MISSING_ROLLBACK_TAG=0
+  for app in api web partner admin; do
+    if docker image inspect comfytag-$app:rollback >/dev/null 2>&1; then
+      docker tag comfytag-$app:rollback comfytag-$app:latest
+    else
+      echo "  ⚠️  No comfytag-$app:rollback tag found — cannot auto-restore this image."
+      MISSING_ROLLBACK_TAG=1
+    fi
+  done
+
+  if [ "$MISSING_ROLLBACK_TAG" = "1" ]; then
+    echo ""
+    echo "⚠️  One or more images had no :rollback tag (first deploy since this rollback"
+    echo "tagging was added, or the tag was pruned). Choose manually from:"
+    docker image ls --filter "reference=comfytag*" --format "{{.Repository}}:{{.Tag}} (created {{.CreatedAt}})"
+    echo "  docker tag <image:version> <image:latest>"
+  fi
+
+  echo "Recording the previously-deployed commit this rollback restores to (if known)..."
+  cat DEPLOYED_COMMIT.txt.rollback 2>/dev/null || echo "  (not recorded — check the deploy workflow's run history for the previous run's commit SHA)"
+
+  echo "Starting containers on the restored images..."
+  docker compose -f docker-compose.prod.yml up -d --no-build
 
   echo ""
-  echo "⚠️  Manual action required!"
-  echo "The current Docker images have been stopped."
-  echo "Please choose which images to restore:"
-  echo ""
-  docker image ls --filter "reference=comfytag*:latest" --format "{{.Repository}} (created {{.CreatedAt}})"
-  echo ""
-  echo "To restore a specific image:"
-  echo "  docker tag <image:version> <image:latest>"
-  echo "  docker compose -f docker-compose.prod.yml up -d"
-  echo ""
+  echo "Verify with: ./scripts/health-check-prod.sh"
 
 ROLLBACK
 
