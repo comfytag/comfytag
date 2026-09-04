@@ -250,6 +250,23 @@ export const getUser = async (req,res,next) =>{
             return res.status(404).json({ success: false, message: 'User not found.' })
         }
 
+        // optionalAuth (routes/users.js) decodes a token if one was sent but
+        // never requires one — req.user is only set when the caller is signed
+        // in. isSelfOrAdmin distinguishes "the profile's own owner, or an
+        // admin, fetching it" from every other caller (an anonymous visitor,
+        // or a different signed-in user) viewing an organizer's public page.
+        const requesterId = req.user ? (req.user._id ?? req.user.id ?? '').toString() : null
+        const isSelfOrAdmin = requesterId !== null && (requesterId === user._id.toString() || req.user.isAdmin === true)
+
+        // This route is public for everyone ELSE — respect the user's own
+        // `privacySettings.publicProfile` opt-out for other viewers, but the
+        // owner (or an admin) must always be able to see their own profile
+        // regardless of that setting. 404 rather than 403 so a private
+        // profile's existence isn't confirmed to a non-owner.
+        if (!isSelfOrAdmin && user.privacySettings?.publicProfile === false) {
+            return res.status(404).json({ success: false, message: 'User not found.' })
+        }
+
         // Lazily generate and persist referralFallbackCode for existing users
         let fallbackCode = user.referralFallbackCode;
         if (!fallbackCode) {
@@ -292,17 +309,50 @@ export const getUser = async (req,res,next) =>{
             return str.replace(/â€"|â€™|â€˜|â€œ|â€|â„¹|â‚¦|Â·|â‰¥|â"€/g, '').trim();
         };
 
-        const { password, isAdmin, ...OtherDetails } = user._doc;
-        res.status(200).json({
-            ...OtherDetails,
-            phone: sanitizeString(user.phone) || '',
+        // Explicit allowlist for this PUBLIC route — this must never spread
+        // the raw document. Previously it returned every field except
+        // password/isAdmin, which leaked phone, address, email, businessName,
+        // kycStatus/kycRejectionReason, and — most seriously —
+        // `verify.photo`/`verify.idDocument` (the user's KYC selfie and
+        // government-id upload URLs) to anyone on the internet.
+        const publicProfile = {
+            _id: user._id,
+            username: user.username,
+            name: user.name,
             avatar: sanitizeString(user.avatar) || null,
+            image: sanitizeString(user.image) || null,
+            bgImg: sanitizeString(user.bgImg) || null,
+            businessName: user.businessName || null,
+            isPartner: user.isPartner,
+            premium: user.premium,
             referralCode,
             events: organizerEvents,
             followerCount,
             eventCount,
             totalTicketsSold,
-        });
+        };
+
+        // Additional fields only the profile's own owner (or an admin) may
+        // see — the web/partner/mobile settings and "my profile" screens
+        // read these directly off this same endpoint. Still never includes
+        // password, faceTemplate, isAdmin, or the raw `verify.*` KYC upload
+        // URLs/rejection reason (those are served by the dedicated
+        // `/partner/kyc/:userId` endpoint instead, which the KYC review flow
+        // already uses).
+        if (isSelfOrAdmin) {
+            Object.assign(publicProfile, {
+                phone: user.phone ?? null,
+                email: user.email ?? null,
+                isVerify: user.isVerify,
+                kycStatus: user.kycStatus,
+                privacySettings: user.privacySettings ?? null,
+                notificationPreferences: user.notificationPreferences ?? null,
+                onboarding: user.onboarding ?? null,
+                createdAt: user.createdAt,
+            });
+        }
+
+        res.status(200).json(publicProfile);
     }catch(err){
         next(err)
     }

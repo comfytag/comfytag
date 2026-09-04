@@ -213,6 +213,16 @@ export const register = async (req,res,next) =>{
 				if (saveError.code === 11000 && saveError.keyPattern?.referralCode && attempt < 5) {
 					continue;
 				}
+				// Phase 12B: the pre-check above is a find-then-create race —
+				// two concurrent registrations with the same email can both
+				// pass it before either saves. The DB-level unique index on
+				// User.email (added this phase) is what actually prevents
+				// the duplicate; this turns the resulting E11000 into the
+				// same friendly 409 the non-race path already returns,
+				// instead of a raw 500.
+				if (saveError.code === 11000 && saveError.keyPattern?.email) {
+					return res.status(409).send({ message: "User with given email already Exist!" });
+				}
 				throw saveError;
 			}
 		}

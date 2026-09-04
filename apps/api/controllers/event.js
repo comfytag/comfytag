@@ -14,6 +14,26 @@ function toSlug(name) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
+// Legacy event lifecycle guard (Phase 12B). These are the only statuses the
+// schema understands and the only transitions permitted between them.
+// 'ended' has no dedicated controller — it's reached through a normal
+// updateEvent PATCH (see the FLOW 3B/3C side effects below) — so it's
+// enforced here rather than in its own function. Terminal states
+// ('ended', 'cancelled') have no outgoing transitions: neither can be
+// silently resurrected back to 'published' through this file.
+const EVENT_STATUSES = ['draft', 'published', 'ended', 'cancelled']
+const EVENT_LIFECYCLE_TRANSITIONS = {
+    draft: ['published', 'cancelled'],
+    published: ['ended', 'cancelled'],
+    ended: [],
+    cancelled: [],
+}
+
+function isValidEventStatusTransition(from, to) {
+    if (from === to) return true
+    return (EVENT_LIFECYCLE_TRANSITIONS[from] || []).includes(to)
+}
+
 
 // CREATE
 export const createEvent = async (req, res, next) => {
@@ -88,11 +108,36 @@ export const updateEvent = async (req, res, next) => {
                 : updateData.ticketType.reduce((sum, t) => sum + (t.capacity || 0), 0)
         }
 
-        const updatedEvent = await Event.findByIdAndUpdate(
-            req.params.id,
-            { $set: updateData },
-            { new: true, runValidators: false }
-        )
+        // Lifecycle guard (Phase 12B): a client-supplied `status` is only
+        // ever applied if it's a real value and a legal transition from the
+        // event's current status — never accepted at face value. The update
+        // itself is guarded on the status this check was made against, so a
+        // concurrent status change can't slip through underneath it.
+        let updatedEvent
+        if ('status' in updateData && updateData.status !== event.status) {
+            const desiredStatus = updateData.status
+            if (!EVENT_STATUSES.includes(desiredStatus)) {
+                return next(createError(400, `status must be one of: ${EVENT_STATUSES.join(', ')}`))
+            }
+            if (!isValidEventStatusTransition(event.status, desiredStatus)) {
+                return next(createError(409, `Cannot transition event from '${event.status}' to '${desiredStatus}'.`))
+            }
+
+            updatedEvent = await Event.findOneAndUpdate(
+                { _id: req.params.id, status: event.status },
+                { $set: updateData },
+                { new: true, runValidators: false }
+            )
+            if (!updatedEvent) {
+                return next(createError(409, 'This event\'s status changed since it was loaded. Please retry.'))
+            }
+        } else {
+            updatedEvent = await Event.findByIdAndUpdate(
+                req.params.id,
+                { $set: updateData },
+                { new: true, runValidators: false }
+            )
+        }
 
         // Respond immediately — side-effects must not block or fail the response
         res.status(200).json(updatedEvent)
@@ -307,12 +352,23 @@ export const publishEvent = async (req, res, next) => {
             return next(createError(403, 'You can only publish your own events'))
         }
 
-        // Explicit status transition to 'published'
-        const updatedEvent = await Event.findByIdAndUpdate(
-            eventId,
+        // Lifecycle guard (Phase 12B): a cancelled or ended event can never
+        // be resurrected to 'published' through this endpoint.
+        if (event.status === 'ended' || event.status === 'cancelled') {
+            return next(createError(409, `Cannot publish an event that is already '${event.status}'.`))
+        }
+
+        // Atomic, status-guarded transition to 'published' — draft->published
+        // is the real transition; published->published is a harmless no-op
+        // (e.g. a double-click), not a resurrection of a terminal state.
+        const updatedEvent = await Event.findOneAndUpdate(
+            { _id: eventId, status: { $in: ['draft', 'published'] } },
             { $set: { status: 'published' } },
             { new: true, runValidators: false }
         )
+        if (!updatedEvent) {
+            return next(createError(409, 'This event\'s status changed since it was loaded. Please retry.'))
+        }
 
         // Respond immediately — follower notifications are fire-and-forget
         res.status(200).json(updatedEvent)
@@ -408,12 +464,25 @@ export const cancelEvent = async (req, res, next) => {
             return next(createError(403, 'You can only cancel your own events'))
         }
 
-        // Explicit status transition to 'cancelled'
-        const updatedEvent = await Event.findByIdAndUpdate(
-            eventId,
+        // Lifecycle guard (Phase 12B): an event that has already ended
+        // cannot be retroactively cancelled; an already-cancelled event is a
+        // harmless no-op (e.g. a double-click), not a rejected transition.
+        if (event.status === 'ended') {
+            return next(createError(409, 'Cannot cancel an event that has already ended.'))
+        }
+        if (event.status === 'cancelled') {
+            return res.status(200).json(event)
+        }
+
+        // Atomic, status-guarded transition to 'cancelled'.
+        const updatedEvent = await Event.findOneAndUpdate(
+            { _id: eventId, status: event.status },
             { $set: { status: 'cancelled' } },
             { new: true, runValidators: true }
         )
+        if (!updatedEvent) {
+            return next(createError(409, 'This event\'s status changed since it was loaded. Please retry.'))
+        }
 
         // Emit Socket.io event for real-time event cancellation
         const io = req.app.locals.io
@@ -674,6 +743,14 @@ export const eventsByFilter = async (req, res, next) => {
 
 // PUT /events/:id/tiers/:tierId
 // Update a single ticket tier in-place
+//
+// Validation (Phase 12B): every field is checked server-side before it's
+// applied — price/capacity type and range, capacity never reduced below
+// tickets already sold, tier names unique within the event, and price/name
+// locked once real sales exist for this tier. Sold count is derived from
+// actual Audience records (mirrors getTicketTierStats), not the `sold`
+// counter on the tier itself, which this file's own comments document as
+// potentially stale.
 export const updateTicketTier = async (req, res, next) => {
     try {
         const { id: eventId, tierId } = req.params
@@ -690,8 +767,48 @@ export const updateTicketTier = async (req, res, next) => {
         const tierIndex = event.ticketType.findIndex(t => t._id.toString() === tierId)
         if (tierIndex === -1) return next(createError(404, 'Ticket tier not found'))
 
+        const tier = event.ticketType[tierIndex]
+        const tierNameLower = tier.name.toLowerCase()
+        const soldTickets = await Audience.find({ event_id: eventId, type: tierNameLower, status: { $ne: 'refunded' } })
+            .select('numOfTicket')
+            .lean()
+        const soldCount = soldTickets.reduce((sum, t) => sum + t.numOfTicket, 0)
+
+        if (price !== undefined) {
+            if (typeof price !== 'number' || !Number.isFinite(price) || price < 0) {
+                return next(createError(400, 'price must be a non-negative number.'))
+            }
+            if (soldCount > 0 && price !== tier.price) {
+                return next(createError(400, 'Cannot change price for a tier that already has ticket sales.'))
+            }
+        }
+
+        if (capacity !== undefined && capacity !== null) {
+            if (typeof capacity !== 'number' || !Number.isInteger(capacity) || capacity < 0) {
+                return next(createError(400, 'capacity must be a non-negative integer, or null for unlimited.'))
+            }
+            if (capacity < soldCount) {
+                return next(createError(400, `capacity cannot be reduced below the ${soldCount} ticket(s) already sold for this tier.`))
+            }
+        }
+
+        let normalizedName
+        if (name !== undefined) {
+            normalizedName = String(name).trim()
+            if (!normalizedName) {
+                return next(createError(400, 'name must not be empty.'))
+            }
+            if (soldCount > 0 && normalizedName.toLowerCase() !== tierNameLower) {
+                return next(createError(400, 'Cannot rename a tier that already has ticket sales.'))
+            }
+            const duplicate = event.ticketType.some((t, i) => i !== tierIndex && t.name.toLowerCase() === normalizedName.toLowerCase())
+            if (duplicate) {
+                return next(createError(409, 'Another ticket tier with this name already exists for this event.'))
+            }
+        }
+
         // Update tier fields
-        if (name !== undefined) event.ticketType[tierIndex].name = name
+        if (normalizedName !== undefined) event.ticketType[tierIndex].name = normalizedName
         if (price !== undefined) event.ticketType[tierIndex].price = price
         if (capacity !== undefined) event.ticketType[tierIndex].capacity = capacity
 
@@ -749,12 +866,23 @@ export const deleteTicketTier = async (req, res, next) => {
 
 // GET /events/:id/tiers/stats
 // Get per-tier sold/capacity breakdown
+// Phase 3 security fix (confirmed IDOR in the Phase 3A inspection): this
+// route previously had no auth middleware at all, and no ownership check
+// here either — any unauthenticated caller could read any organizer's
+// per-tier price/capacity/sold data for any event id. `routes/event.js`
+// now applies `verifyToken` on this route; this ownership check closes the
+// remaining gap. Data source/computation is unchanged.
 export const getTicketTierStats = async (req, res, next) => {
     try {
         const { id: eventId } = req.params
 
         const event = await Event.findById(eventId)
         if (!event) return next(createError(404, 'Event not found'))
+
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (event.planner_id.toString() !== requesterId && !req.user.isAdmin) {
+            return next(createError(403, 'Not authorized to view ticket tier stats for this event'))
+        }
 
         const tickets = await Audience.find({ event_id: eventId })
 

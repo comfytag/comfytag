@@ -69,6 +69,7 @@ export const getPromoCodesForEvent = async (req, res, next) => {
 
     const event = await Event.findById(eventId)
     if (!event) return next(createError(404, 'Event not found'))
+    assertOwnsEvent(event, req)
 
     res.status(200).json({
       eventId,

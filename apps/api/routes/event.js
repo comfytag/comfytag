@@ -41,7 +41,11 @@ router.post("/:userId", verifyUser, createEvent)
 router.get("/:id/activity", verifyToken, getEventActivity)
 
 // Ticket tier management
-router.get("/:id/tiers/stats", getTicketTierStats)
+// Phase 3 security fix: this route had NO auth middleware at all (confirmed
+// IDOR in the Phase 3A inspection — any unauthenticated caller could read
+// any organizer's per-tier price/capacity/sold for any event id). Ownership
+// is checked inside the controller, same pattern as getEventActivity above.
+router.get("/:id/tiers/stats", verifyToken, getTicketTierStats)
 router.put("/:id/tiers/:tierId", verifyToken, updateTicketTier)
 router.delete("/:id/tiers/:tierId", verifyToken, deleteTicketTier)
 

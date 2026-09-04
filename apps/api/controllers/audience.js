@@ -141,7 +141,17 @@ export const createFreeAudience = async (req, res, next) => {
 // CREATE
 export const createAudience = async (req, res, next) => {
     const eventId = req.params.eventId;
-    const userId = req.params.userId;
+
+    // SECURITY (Phase 5B legacy containment fix — see Phase 5A inspection
+    // §31 Critical #1 / docs/backend/PHASE_5B_PAYMENT_COMMERCE.md): the
+    // ticket/Audience is always created for the AUTHENTICATED caller, never
+    // for whatever :userId the client puts in the URL. Previously this
+    // route trusted req.params.userId outright, which let any logged-in
+    // user create a paid ticket under an arbitrary other user's account by
+    // calling POST /audience/<victim's id>/:eventId with a reference they
+    // themselves paid for. req.params.userId is intentionally never read
+    // for identity below this point.
+    const userId = (req.user._id ?? req.user.id ?? '').toString()
 
     try {
         const event = await Event.findById(eventId)
@@ -359,6 +369,10 @@ export const getAllAudience = async (req, res, next) => {
 export const getUserAudience = async (req, res, next) => {
     try {
         const userId = req.params.userId
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (!req.user.isAdmin && userId !== requesterId) {
+            return next(createError(403, 'Not authorized to view another user\'s tickets'))
+        }
         const userEmail = req.user?.email
 
         const query = userEmail
@@ -459,6 +473,13 @@ export const getEventAudience = async (req, res, next) => {
 
 // POST /audience/:id/checkin
 // Manual check-in toggle by organizer
+//
+// Safety (Phase 12B): the actual state transition is a single atomic
+// findOneAndUpdate guarded on the ticket's current checkedIn value, not a
+// read-then-save — so two near-simultaneous requests for the same ticket
+// (e.g. a double-tap, or two staff scanning the same wristband) can never
+// both apply. Ownership/authorization is still checked against a read
+// beforehand; only the mutation itself needs to be atomic.
 export const manualCheckIn = async (req, res, next) => {
     try {
         const { id: ticketId } = req.params
@@ -473,17 +494,25 @@ export const manualCheckIn = async (req, res, next) => {
             if (!ownsEvent) return next(createError(403, 'Not authorized to check in tickets for this event'))
         }
 
-        // Update check-in status
-        ticket.checkedIn = checkedIn
-        if (checkedIn) {
-            ticket.checkedInAt = new Date()
-            ticket.checkedInMethod = 'manual'
-        } else {
-            ticket.checkedInAt = null
-            ticket.checkedInMethod = null
+        const update = checkedIn
+            ? { $set: { checkedIn: true, checkedInAt: new Date(), checkedInMethod: 'manual' } }
+            : { $set: { checkedIn: false, checkedInAt: null, checkedInMethod: null } }
+
+        // Only succeeds if the ticket's checkedIn state actually differs from
+        // the one being requested — the DB serializes concurrent attempts.
+        const updated = await Audience.findOneAndUpdate(
+            { _id: ticketId, checkedIn: { $ne: checkedIn } },
+            update,
+            { new: true }
+        )
+
+        if (!updated) {
+            return res.status(409).json({
+                success: false,
+                message: checkedIn ? 'Ticket is already checked in.' : 'Ticket is not currently checked in.',
+            })
         }
 
-        const updated = await ticket.save()
         res.status(200).json({
             message: checkedIn ? 'Ticket checked in' : 'Check-in reversed',
             ticket: updated,
@@ -546,6 +575,13 @@ export const exportEventAudienceCSV = async (req, res, next) => {
 
 // POST /audience/checkin-by-ref
 // QR / barcode scanner check-in: accepts a ticket reference string
+//
+// Safety (Phase 12B): the actual check-in transition is a single atomic
+// findOneAndUpdate guarded on `checkedIn: { $ne: true }`, not a
+// read-then-save — two simultaneous scans of the same physical ticket
+// (two scanners at once, or a slow network causing a retry) can therefore
+// never both succeed. Everything read beforehand (authorization,
+// refunded/transferred status) is a precondition, not the transition itself.
 export const checkInByReference = async (req, res, next) => {
     try {
         const { reference } = req.body
@@ -563,29 +599,30 @@ export const checkInByReference = async (req, res, next) => {
         if (ticket.status === 'refunded') return res.status(400).json({ success: false, message: 'Ticket has been refunded' })
         if (ticket.status === 'transferred') return res.status(400).json({ success: false, message: 'Ticket has been transferred' })
 
-        if (ticket.checkedIn) {
+        const updated = await Audience.findOneAndUpdate(
+            { _id: ticket._id, checkedIn: { $ne: true } },
+            { $set: { checkedIn: true, checkedInAt: new Date(), checkedInMethod: 'qr', status: 'used' } },
+            { new: true }
+        )
+
+        if (!updated) {
+            const current = await Audience.findById(ticket._id)
             return res.status(200).json({
                 success: false,
                 alreadyCheckedIn: true,
-                attendeeName: ticket.name,
-                checkedInAt: ticket.checkedInAt,
-                ticketType: ticket.type,
+                attendeeName: current?.name,
+                checkedInAt: current?.checkedInAt,
+                ticketType: current?.type,
             })
         }
 
-        ticket.checkedIn = true
-        ticket.checkedInAt = new Date()
-        ticket.checkedInMethod = 'qr'
-        ticket.status = 'used'
-        await ticket.save()
-
         res.status(200).json({
             success: true,
-            attendeeName: ticket.name,
-            email: ticket.email,
-            ticketType: ticket.type,
-            numOfTicket: ticket.numOfTicket,
-            checkedInAt: ticket.checkedInAt,
+            attendeeName: updated.name,
+            email: updated.email,
+            ticketType: updated.type,
+            numOfTicket: updated.numOfTicket,
+            checkedInAt: updated.checkedInAt,
         })
     } catch (err) {
         next(err)

@@ -1,7 +1,6 @@
 // import {Bank, Withdraw} from '../models/Bank.js'
 import Bank from '../models/Bank.js';
 import Withdraw from '../models/Withdraw.js';
-import User from '../models/User.js';
 import { createNotification, notifyAdmins } from './notification.js';
 import { createError } from '../utils/error.js';
 import { computeAvailableBalance } from './analytics.js';
@@ -265,29 +264,63 @@ export const createWithdraw = async (req, res, next) => {
 }
 
 
-// UPDATE
-export const updateWithdraw = async (req,res,next) =>{
-    try{
+// UPDATE — status changes only, and only the transitions a finance admin may
+// make by hand. This endpoint must NEVER be able to set `processing`/`sent`
+// — those are exclusively reachable via admin.js#processPayout (the real
+// Paystack transfer call) and the Paystack transfer webhook. Every field
+// other than `status`/`rejectionReason` is rejected outright — this used to
+// be `$set: req.body`, which let a caller overwrite amount/bankName/
+// acctNumber/user_id/transferCode/anything else in the document (see
+// discussion/security — the P0 fix this replaces). Route-level access is
+// gated to `verifyAdminRole(['finance'])` (see routes/withdraw.js).
+const WITHDRAW_STATUS_TRANSITIONS = {
+    pending: ['approved', 'rejected'],
+    approved: ['rejected'],
+}
+
+export const updateWithdraw = async (req, res, next) => {
+    try {
         const withdrawId = req.params.id
+        const allowedFields = ['status', 'rejectionReason']
+        const unexpectedFields = Object.keys(req.body).filter(f => !allowedFields.includes(f))
+        if (unexpectedFields.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Unexpected field(s): ${unexpectedFields.join(', ')}`,
+            })
+        }
+
         const { status, rejectionReason } = req.body
+        if (!status) {
+            return res.status(400).json({ success: false, message: 'status is required' })
+        }
 
         const withdraw = await Withdraw.findById(withdrawId)
         if (!withdraw) return res.status(404).json({ message: 'Withdrawal request not found' })
 
-        const user = await User.findById(withdraw.user_id)
-        const baseUrl = process.env.BASE_URL || 'https://comfytag.com'
+        const allowedNextStatuses = WITHDRAW_STATUS_TRANSITIONS[withdraw.status] || []
+        if (!allowedNextStatuses.includes(status)) {
+            return res.status(409).json({
+                success: false,
+                message: `Cannot change status from '${withdraw.status}' to '${status}' via this endpoint.`,
+            })
+        }
+
+        const update = { status }
+        if (status === 'rejected') {
+            update.failureReason = rejectionReason || null
+        }
 
         const updatedWithdraw = await Withdraw.findByIdAndUpdate(
             withdrawId,
-           { $set: req.body},
-           {new: true}
+            { $set: update },
+            { new: true }
         )
 
-        // Create in-app notifications and enqueue emails (non-blocking)
+        // Create in-app notifications (non-blocking)
         const io = req.app.locals.io
 
-        if (status === 'approved' || status === 'sent') {
-            // PAYOUT APPROVED/SENT
+        if (status === 'approved') {
             await createNotification({
               userId: withdraw.user_id.toString(),
               type: 'payout_approved',
@@ -302,7 +335,6 @@ export const updateWithdraw = async (req,res,next) =>{
             }).catch(err => console.error('[Notification] Payout approved failed:', err.message))
 
         } else if (status === 'rejected') {
-            // PAYOUT REJECTED
             await createNotification({
               userId: withdraw.user_id.toString(),
               type: 'payout_rejected',
@@ -319,20 +351,28 @@ export const updateWithdraw = async (req,res,next) =>{
         }
 
         res.status(200).json(updatedWithdraw)
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }
 
 
-// DELETE
-export const deleteWithdraw = async (req,res,next) =>{
-    try{
-        await Withdraw.findByIdAndDelete(
-            req.params.id
-        )
+// DELETE — ownership-checked (previously any authenticated caller could
+// delete any user's withdrawal by id, silently un-counting it from
+// computeAvailableBalance).
+export const deleteWithdraw = async (req, res, next) => {
+    try {
+        const withdraw = await Withdraw.findById(req.params.id)
+        if (!withdraw) return res.status(404).json({ message: 'Withdrawal request not found' })
+
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (withdraw.user_id.toString() !== requesterId && !req.user.isAdmin) {
+            return next(createError(403, 'You are not authorized!'))
+        }
+
+        await Withdraw.findByIdAndDelete(req.params.id)
         res.status(200).json('Withdraw has been deleted')
-    }catch(err){
+    } catch (err) {
         next(err)
     }
 }
@@ -340,8 +380,18 @@ export const deleteWithdraw = async (req,res,next) =>{
 // GET
 export const getWithdraw = async (req,res,next) =>{
     try{
-        const getWithdraw = await Withdraw.findById({_id: req.params.id})
-            res.status(200).json(getWithdraw)
+        const getWithdraw = await Withdraw.findById(req.params.id)
+        if (!getWithdraw) return next(createError(404, 'Withdraw record not found'))
+
+        // `:id` here is the Withdraw record's own id, not the caller's user
+        // id — ownership must be checked against `withdraw.user_id` directly
+        // (same reasoning already documented on the DELETE route above).
+        const requesterId = (req.user._id ?? req.user.id ?? '').toString()
+        if (getWithdraw.user_id !== requesterId && !req.user.isAdmin) {
+            return next(createError(403, 'You are not authorized!'))
+        }
+
+        res.status(200).json(getWithdraw)
     }catch(err){
         next(err)
     }

@@ -49,7 +49,6 @@ jobs:
         run: pnpm build
       - name: ✅ Unit & Integration Tests
         run: pnpm test:ci
-        continue-on-error: true
 
   docker-build:
     name: 🐳 Docker Build & Push to GHCR
@@ -143,25 +142,43 @@ jobs:
           envs: GITHUB_TOKEN,REPO_OWNER
           script: |
             cd /home/deploy/comfytag
+
+            echo "🏷️ Tagging the currently-running images as :rollback before replacing them..."
+            for app in api web partner admin; do
+              docker tag comfytag-$app:latest comfytag-$app:rollback 2>/dev/null || echo "  (no existing comfytag-$app:latest to tag — first deploy)"
+            done
+            PREVIOUS_COMMIT=$(cat DEPLOYED_COMMIT.txt 2>/dev/null || echo "unknown")
+            cp DEPLOYED_COMMIT.txt DEPLOYED_COMMIT.txt.rollback 2>/dev/null || true
+
             echo "📡 Pulling latest code..."
             git pull origin main
-            
+
             echo "🔐 Logging into GitHub Container Registry..."
             OWNER_LOWER=$(echo "$REPO_OWNER" | tr '[:upper:]' '[:lower:]')
             echo $GITHUB_TOKEN | docker login ghcr.io -u $OWNER_LOWER --password-stdin
-            
+
             echo "📥 Pulling pre-built Docker images..."
             docker pull ghcr.io/$OWNER_LOWER/comfytag-api:latest
             docker pull ghcr.io/$OWNER_LOWER/comfytag-web:latest
             docker pull ghcr.io/$OWNER_LOWER/comfytag-partner:latest
             docker pull ghcr.io/$OWNER_LOWER/comfytag-admin:latest
-            
+
+            echo "🔎 Verifying the exact digests just pulled (compare against this run's own push, not a cached/mutated tag)..."
+            docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/$OWNER_LOWER/comfytag-api:latest
+            docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/$OWNER_LOWER/comfytag-web:latest
+            docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/$OWNER_LOWER/comfytag-partner:latest
+            docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/$OWNER_LOWER/comfytag-admin:latest
+
             echo "🏷️ Re-tagging images so local compose recognizes them..."
             docker tag ghcr.io/$OWNER_LOWER/comfytag-api:latest comfytag-api:latest
             docker tag ghcr.io/$OWNER_LOWER/comfytag-web:latest comfytag-web:latest
             docker tag ghcr.io/$OWNER_LOWER/comfytag-partner:latest comfytag-partner:latest
             docker tag ghcr.io/$OWNER_LOWER/comfytag-admin:latest comfytag-admin:latest
-            
+
+            echo "📝 Recording the deployed commit..."
+            echo "${{ github.sha }}" > DEPLOYED_COMMIT.txt
+            echo "Deploying commit ${{ github.sha }} (previous: $PREVIOUS_COMMIT)"
+
             echo "🔄 Starting containers..."
             docker compose -f docker-compose.prod.yml up -d --no-build
             
